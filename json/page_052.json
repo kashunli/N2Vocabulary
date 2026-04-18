@@ -1,0 +1,94 @@
+{
+  "page": 52,
+  "page_type": "vocabulary",
+  "section": "Unit 03 形容詞 A (Entries 227–232)",
+  "entries": [
+    {
+      "number": 227,
+      "reading": "おさない",
+      "kanji": "幼い",
+      "verb_pattern": null,
+      "meaning_en": "young; childish; immature",
+      "meaning_zh": "幼小; 幼稚",
+      "meaning_ko": "어리다, 미숙하다",
+      "examples": [
+        "幼い子どもが遊んでいる。",
+        "彼は体は大人だが、考え方は幼い。"
+      ],
+      "collocations": "合: 幼友達 | 関: 幼稚な、未熟な | 合: ①②幼さ"
+    },
+    {
+      "number": 228,
+      "reading": "こころぼそい",
+      "kanji": "心細い",
+      "verb_pattern": null,
+      "meaning_en": "lonely, helpless",
+      "meaning_zh": "心中没底, 不安的",
+      "meaning_ko": "불안하다",
+      "examples": [
+        "初めて来日したときは、言葉もわからず知り合いもなく、とても心細かった。"
+      ],
+      "collocations": "合: 心細さ | 対: 心強い | 類: 不安な"
+    },
+    {
+      "number": 229,
+      "reading": "",
+      "kanji": "かわいそうな",
+      "verb_pattern": null,
+      "meaning_en": "poor, pitiful",
+      "meaning_zh": "可怜, 凄惨的",
+      "meaning_ko": "가엽다, 불쌍하다",
+      "examples": [
+        "子どもを叱ったが、泣いているのを見てかわいそうになった。",
+        "「犬がひかれて死んでるよ」「かわいそうに……」"
+      ],
+      "collocations": "類: 哀れな | 関: 気の毒な"
+    },
+    {
+      "number": 230,
+      "reading": "きのどくな",
+      "kanji": "気の毒な",
+      "verb_pattern": null,
+      "meaning_en": "pitful, regrettable",
+      "meaning_zh": "悲惨的, 可怜的",
+      "meaning_ko": "딱하다, 안되다, 불쌍하다",
+      "examples": [
+        "「彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……」",
+        "彼は確かに失敗したが、あんなに非難されては気の毒だ。"
+      ],
+      "collocations": "関: かわいそうな"
+    },
+    {
+      "number": 231,
+      "reading": "まずしい",
+      "kanji": "貧しい",
+      "verb_pattern": null,
+      "meaning_en": "poor, needy",
+      "meaning_zh": "贫穷, 贫乏的",
+      "meaning_ko": "가난하다, 빈약하다",
+      "examples": [
+        "私は貧しい家に育った。",
+        "貧しい {生活／食事／家庭／国 ……}"
+      ],
+      "collocations": "連: 心が__ | 合: 貧しさ | 対: 豊かな ☞ N3 568、裕福な | 関: 貧乏な"
+    },
+    {
+      "number": 232,
+      "reading": "おしい",
+      "kanji": "惜しい",
+      "verb_pattern": null,
+      "meaning_en": "be a pity; be a great loss",
+      "meaning_zh": "遗憾的, 可惜的; 值得珍惜的",
+      "meaning_ko": "아깝다",
+      "examples": [
+        "あと一つ問題ができていれば合格だったのに。惜しかった。",
+        "今までがんばったのだから、ここでやめるのは惜しい。",
+        "まだ使える物を捨てるのは惜しい。",
+        "時間が惜しい。",
+        "惜しい人を亡くした。"
+      ],
+      "collocations": "類: 残念な | 類: もったいない | 合: ①②惜しさ"
+    }
+  ],
+  "raw_text": "227 おさない 幼い young; childish; immature / 幼小; 幼稚 / 어리다, 미숙하다 ① ・幼い子どもが遊んでいる。 合 幼友達 ② ・彼は体は大人だが、考え方は幼い。 関 幼稚な、未熟な 合 ①②幼さ 228 こころぼそい 心細い lonely, helpless / 心中没底, 不安的 / 불안하다 ・初めて来日したときは、言葉もわからず知り合いもなく、とても心細かった。 合 心細さ 対 心強い 類 不安な 229 かわいそうな poor, pitiful / 可怜, 凄惨的 / 가엽다, 불쌍하다 ・子どもを叱ったが、泣いているのを見てかわいそうになった。 ・「犬がひかれて死んでるよ」「かわいそうに……」 類 哀れな 関 気の毒な 230 きのどくな 気の毒な pitiful, regrettable / 悲惨的, 可怜的 / 딱하다, 안되다, 불쌍하다 ・「彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……」 ・彼は確かに失敗したが、あんなに非難されては気の毒だ。 関 かわいそうな 231 まずしい 貧しい poor, needy / 贫穷, 贫乏的 / 가난하다, 빈약하다 ・私は貧しい家に育った。 ・貧しい {生活／食事／家庭／国 ...} 連 心が_ 合 貧しさ 対 豊かな ☞ N3 568、裕福な 関 貧乏な 232 おしい 惜しい be a pity; be a great loss / 遗憾的, 可惜的; 值得珍惜的 / 아깝다 ① ・あと一つ問題ができていれば合格だったのに。惜しかった。 類 残念な ② ・今までがんばったのだから、ここでやめるのは惜しい。 ・まだ使える物を捨てるのは惜しい。 ・時間が惜しい。 ・惜しい人を亡くした。 類 もったいない 合 ①②惜しさ 51"
+}

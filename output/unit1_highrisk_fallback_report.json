@@ -1,0 +1,1183 @@
+[
+  {
+    "index": 17,
+    "track": "02 1-02.mp3",
+    "headword": "才能",
+    "old": {
+      "track": "02 1-02.mp3",
+      "word": [
+        107.16,
+        107.94
+      ],
+      "sentence": [
+        108.76,
+        111.64
+      ]
+    },
+    "new": {
+      "word": {
+        "start": 107.249,
+        "end": 108.254
+      },
+      "sentence": {
+        "start": 109.11,
+        "end": 111.651
+      }
+    },
+    "medium_segments": [
+      {
+        "start": 102.28,
+        "end": 107.06,
+        "text": "将来の希望は海外で働くことだ"
+      },
+      {
+        "start": 107.06,
+        "end": 108.76,
+        "text": "才能"
+      },
+      {
+        "start": 108.76,
+        "end": 111.74,
+        "text": "彼女には音楽の才能がある"
+      }
+    ],
+    "fallback_after": {
+      "word": {
+        "start": false,
+        "end": false
+      },
+      "sentence": {
+        "start": false,
+        "end": false
+      }
+    }
+  },
+  {
+    "index": 23,
+    "track": "03 1-03.mp3",
+    "headword": "まねスル（真似）",
+    "old": {
+      "track": "03 1-03.mp3",
+      "word": [
+        34.525,
+        35.8
+      ],
+      "sentence": [
+        35.8,
+        37.452
+      ]
+    },
+    "new": {
+      "word": {
+        "start": 33.189,
+        "end": 33.647
+      },
+      "sentence": {
+        "start": 34.525,
+        "end": 37.452
+      }
+    },
+    "medium_segments": [
+      {
+        "start": 28.22,
+        "end": 32.22,
+        "text": "彼女の動作は優雅で美しい"
+      },
+      {
+        "start": 33.36,
+        "end": 34.48,
+        "text": "真似"
+      },
+      {
+        "start": 34.48,
+        "end": 38.22,
+        "text": "子供は何でも親の真似をしたがるものだ"
+      }
+    ],
+    "fallback_after": {
+      "word": {
+        "start": false,
+        "end": false
+      },
+      "sentence": {
+        "start": false,
+        "end": false
+      }
+    }
+  },
+  {
+    "index": 33,
+    "track": "03 1-03.mp3",
+    "headword": "地位",
+    "old": {
+      "track": "03 1-03.mp3",
+      "word": [
+        99.094,
+        99.72
+      ],
+      "sentence": [
+        99.72,
+        103.189
+      ]
+    },
+    "new": {
+      "word": {
+        "start": 99.094,
+        "end": 99.583
+      },
+      "sentence": {
+        "start": 100.367,
+        "end": 103.189
+      }
+    },
+    "medium_segments": [
+      {
+        "start": 93.7,
+        "end": 98.3,
+        "text": "出世もしたいが仕事ばかりの人生も嫌だ"
+      },
+      {
+        "start": 99.16000000000001,
+        "end": 100.04,
+        "text": "地位"
+      },
+      {
+        "start": 100.04,
+        "end": 104.0,
+        "text": "地位が上がるとともにストレスも増える"
+      }
+    ],
+    "fallback_after": {
+      "word": {
+        "start": false,
+        "end": false
+      },
+      "sentence": {
+        "start": false,
+        "end": false
+      }
+    }
+  },
+  {
+    "index": 36,
+    "track": "03 1-03.mp3",
+    "headword": "支度",
+    "old": {
+      "track": "03 1-03.mp3",
+      "word": [
+        117.059,
+        117.86
+      ],
+      "sentence": [
+        117.86,
+        120.06
+      ]
+    },
+    "new": {
+      "word": {
+        "start": 117.059,
+        "end": 117.767
+      },
+      "sentence": {
+        "start": 118.597,
+        "end": 120.06
+      }
+    },
+    "medium_segments": [
+      {
+        "start": 111.84,
+        "end": 116.52,
+        "text": "私は大学で経済学を先行した"
+      },
+      {
+        "start": 116.52,
+        "end": 117.9,
+        "text": "支度"
+      },
+      {
+        "start": 117.9,
+        "end": 121.64,
+        "text": "出かけるから支度しなさい"
+      }
+    ],
+    "fallback_after": {
+      "word": {
+        "start": false,
+        "end": false
+      },
+      "sentence": {
+        "start": false,
+        "end": false
+      }
+    }
+  },
+  {
+    "index": 38,
+    "track": "03 1-03.mp3",
+    "headword": "しわ",
+    "old": {
+      "track": "03 1-03.mp3",
+      "word": [
+        134.08,
+        134.76
+      ],
+      "sentence": [
+        129.441,
+        133.622
+      ]
+    },
+    "new": {
+      "word": {
+        "start": 129.441,
+        "end": 129.99
+      },
+      "sentence": {
+        "start": 130.925,
+        "end": 133.622
+      }
+    },
+    "medium_segments": [
+      {
+        "start": 123.6,
+        "end": 128.84,
+        "text": "玄関に前進を映す大きな鏡が置いてある"
+      },
+      {
+        "start": 129.64000000000001,
+        "end": 130.6,
+        "text": "シワ"
+      },
+      {
+        "start": 130.6,
+        "end": 133.86,
+        "text": "歳をとると顔のシワが増える"
+      }
+    ],
+    "fallback_after": {
+      "word": {
+        "start": false,
+        "end": false
+      },
+      "sentence": {
+        "start": false,
+        "end": false
+      }
+    }
+  },
+  {
+    "index": 48,
+    "track": "04 1-04.mp3",
+    "headword": "苦労スル",
+    "old": {
+      "track": "04 1-04.mp3",
+      "word": [
+        63.451,
+        65.316
+      ],
+      "sentence": [
+        65.962,
+        67.527
+      ]
+    },
+    "new": {
+      "word": {
+        "start": 65.316,
+        "end": 65.962
+      },
+      "sentence": {
+        "start": 66.748,
+        "end": 71.34
+      }
+    },
+    "medium_segments": [
+      {
+        "start": 58.44,
+        "end": 64.94,
+        "text": "山本選手の活躍を期待していたが期待外れの結果に終わった"
+      },
+      {
+        "start": 64.94,
+        "end": 66.38,
+        "text": "苦労"
+      },
+      {
+        "start": 66.38,
+        "end": 72.62,
+        "text": "父の死後母は苦労して私たちを育ててくれた"
+      }
+    ],
+    "fallback_after": {
+      "word": {
+        "start": false,
+        "end": false
+      },
+      "sentence": {
+        "start": false,
+        "end": false
+      }
+    }
+  },
+  {
+    "index": 49,
+    "track": "04 1-04.mp3",
+    "headword": "意志 / 意思",
+    "old": {
+      "track": "04 1-04.mp3",
+      "word": [
+        68.325,
+        69.547
+      ],
+      "sentence": [
+        71.34,
+        73.603
+      ]
+    },
+    "new": {
+      "word": {
+        "start": 73.143,
+        "end": 73.603
+      },
+      "sentence": {
+        "start": 74.4,
+        "end": 78.192
+      }
+    },
+    "medium_segments": [
+      {
+        "start": 66.38,
+        "end": 72.62,
+        "text": "父の死後母は苦労して私たちを育ててくれた"
+      },
+      {
+        "start": 73.26,
+        "end": 73.7,
+        "text": "意思"
+      },
+      {
+        "start": 74.16,
+        "end": 79.84,
+        "text": "彼女は意思が固いからきっと目的を達成するだろう"
+      }
+    ],
+    "fallback_after": {
+      "word": {
+        "start": false,
+        "end": false
+      },
+      "sentence": {
+        "start": false,
+        "end": false
+      }
+    }
+  },
+  {
+    "index": 70,
+    "track": "06 1-06.mp3",
+    "headword": "駐車スル",
+    "old": {
+      "track": "06 1-06.mp3",
+      "word": [
+        0.0,
+        1.28
+      ],
+      "sentence": [
+        2.0,
+        5.5
+      ]
+    },
+    "new": {
+      "word": {
+        "start": 0.652,
+        "end": 1.352
+      },
+      "sentence": {
+        "start": 2.207,
+        "end": 5.504
+      }
+    },
+    "medium_segments": [
+      {
+        "start": 0.8600000000000079,
+        "end": 1.9,
+        "text": "駐車"
+      },
+      {
+        "start": 1.9,
+        "end": 6.0,
+        "text": "日曜日の都心は駐車するところがない"
+      }
+    ],
+    "fallback_after": {
+      "word": {
+        "start": false,
+        "end": false
+      },
+      "sentence": {
+        "start": false,
+        "end": false
+      }
+    }
+  },
+  {
+    "index": 72,
+    "track": "06 1-06.mp3",
+    "headword": "平日",
+    "old": {
+      "track": "06 1-06.mp3",
+      "word": [
+        11.88,
+        12.56
+      ],
+      "sentence": [
+        13.22,
+        16.54
+      ]
+    },
+    "new": {
+      "word": {
+        "start": 12.028,
+        "end": 12.812
+      },
+      "sentence": {
+        "start": 13.536,
+        "end": 16.57
+      }
+    },
+    "medium_segments": [
+      {
+        "start": 8.4,
+        "end": 11.0,
+        "text": "規則に違反する"
+      },
+      {
+        "start": 11.920000000000009,
+        "end": 12.96,
+        "text": "平日"
+      },
+      {
+        "start": 12.96,
+        "end": 17.0,
+        "text": "あの店は平日は9時まで営業している"
+      }
+    ],
+    "fallback_after": {
+      "word": {
+        "start": false,
+        "end": false
+      },
+      "sentence": {
+        "start": false,
+        "end": false
+      }
+    }
+  },
+  {
+    "index": 74,
+    "track": "06 1-06.mp3",
+    "headword": "日中",
+    "old": {
+      "track": "06 1-06.mp3",
+      "word": [
+        22.7,
+        23.48
+      ],
+      "sentence": [
+        24.2,
+        28.76
+      ]
+    },
+    "new": {
+      "word": {
+        "start": 23.174,
+        "end": 23.693
+      },
+      "sentence": {
+        "start": 24.533,
+        "end": 28.672
+      }
+    },
+    "medium_segments": [
+      {
+        "start": 19.18,
+        "end": 22.0,
+        "text": "日付を書く"
+      },
+      {
+        "start": 23.040000000000006,
+        "end": 24.08,
+        "text": "日中"
+      },
+      {
+        "start": 24.08,
+        "end": 28.8,
+        "text": "朝晩は冷え込むが日中は穏やかな天気が続いている"
+      }
+    ],
+    "fallback_after": {
+      "word": {
+        "start": false,
+        "end": false
+      },
+      "sentence": {
+        "start": false,
+        "end": false
+      }
+    }
+  },
+  {
+    "index": 85,
+    "track": "06 1-06.mp3",
+    "headword": "無料",
+    "old": {
+      "track": "06 1-06.mp3",
+      "word": [
+        99.98,
+        100.44
+      ],
+      "sentence": [
+        101.34,
+        104.46
+      ]
+    },
+    "new": {
+      "word": {
+        "start": 100.012,
+        "end": 100.807
+      },
+      "sentence": {
+        "start": 101.538,
+        "end": 104.624
+      }
+    },
+    "medium_segments": [
+      {
+        "start": 93.48,
+        "end": 99.6,
+        "text": "4個550円のリンゴをおまけしてもらって500円で買った"
+      },
+      {
+        "start": 99.6,
+        "end": 101.42,
+        "text": "無料"
+      },
+      {
+        "start": 101.42,
+        "end": 106.26,
+        "text": "ただいま無料で試教品を差し上げております"
+      }
+    ],
+    "fallback_after": {
+      "word": {
+        "start": false,
+        "end": false
+      },
+      "sentence": {
+        "start": false,
+        "end": false
+      }
+    }
+  },
+  {
+    "index": 86,
+    "track": "06 1-06.mp3",
+    "headword": "現金",
+    "old": {
+      "track": "06 1-06.mp3",
+      "word": [
+        106.16,
+        107.12
+      ],
+      "sentence": [
+        107.74,
+        112.24
+      ]
+    },
+    "new": {
+      "word": {
+        "start": 106.42,
+        "end": 107.294
+      },
+      "sentence": {
+        "start": 108.066,
+        "end": 112.292
+      }
+    },
+    "medium_segments": [
+      {
+        "start": 101.42,
+        "end": 106.26,
+        "text": "ただいま無料で試教品を差し上げております"
+      },
+      {
+        "start": 106.26,
+        "end": 107.74,
+        "text": "現金"
+      },
+      {
+        "start": 107.74,
+        "end": 113.22,
+        "text": "彼は新車を買ってなんと現金で支払ったそうだ"
+      }
+    ],
+    "fallback_after": {
+      "word": {
+        "start": false,
+        "end": false
+      },
+      "sentence": {
+        "start": false,
+        "end": false
+      }
+    }
+  },
+  {
+    "index": 90,
+    "track": "07 1-07.mp3",
+    "headword": "予算",
+    "old": {
+      "track": "07 1-07.mp3",
+      "word": [
+        14.96,
+        16.26
+      ],
+      "sentence": [
+        16.8,
+        20.32
+      ]
+    },
+    "new": {
+      "word": {
+        "start": 15.593,
+        "end": 16.311
+      },
+      "sentence": {
+        "start": 17.071,
+        "end": 18.779
+      }
+    },
+    "medium_segments": [
+      {
+        "start": 9.34,
+        "end": 15.08,
+        "text": "今年は支出が収入を上回って赤字になった"
+      },
+      {
+        "start": 15.08,
+        "end": 16.8,
+        "text": "予算"
+      },
+      {
+        "start": 16.8,
+        "end": 20.36,
+        "text": "来年度の予算を立てる"
+      },
+      {
+        "start": 20.36,
+        "end": 21.8,
+        "text": "利益"
+      }
+    ],
+    "fallback_after": {
+      "word": {
+        "start": false,
+        "end": false
+      },
+      "sentence": {
+        "start": false,
+        "end": false
+      }
+    }
+  },
+  {
+    "index": 91,
+    "track": "07 1-07.mp3",
+    "headword": "利益",
+    "old": {
+      "track": "07 1-07.mp3",
+      "word": [
+        20.32,
+        21.16
+      ],
+      "sentence": [
+        21.62,
+        24.98
+      ]
+    },
+    "new": {
+      "word": {
+        "start": 20.517,
+        "end": 21.218
+      },
+      "sentence": {
+        "start": 21.969,
+        "end": 24.663
+      }
+    },
+    "medium_segments": [
+      {
+        "start": 16.8,
+        "end": 20.36,
+        "text": "来年度の予算を立てる"
+      },
+      {
+        "start": 20.36,
+        "end": 21.8,
+        "text": "利益"
+      },
+      {
+        "start": 21.8,
+        "end": 26.2,
+        "text": "企業が利益を追求するのは当然だ"
+      }
+    ],
+    "fallback_after": {
+      "word": {
+        "start": false,
+        "end": false
+      },
+      "sentence": {
+        "start": false,
+        "end": false
+      }
+    }
+  },
+  {
+    "index": 92,
+    "track": "07 1-07.mp3",
+    "headword": "赤字",
+    "old": {
+      "track": "07 1-07.mp3",
+      "word": [
+        26.3,
+        27.06
+      ],
+      "sentence": [
+        27.58,
+        32.02
+      ]
+    },
+    "new": {
+      "word": {
+        "start": 26.46,
+        "end": 27.08
+      },
+      "sentence": {
+        "start": 27.883,
+        "end": 31.581
+      }
+    },
+    "medium_segments": [
+      {
+        "start": 21.8,
+        "end": 26.2,
+        "text": "企業が利益を追求するのは当然だ"
+      },
+      {
+        "start": 26.2,
+        "end": 27.7,
+        "text": "赤字"
+      },
+      {
+        "start": 27.7,
+        "end": 32.7,
+        "text": "今月は支出が多く家計は赤字だった"
+      }
+    ],
+    "fallback_after": {
+      "word": {
+        "start": false,
+        "end": false
+      },
+      "sentence": {
+        "start": false,
+        "end": false
+      }
+    }
+  },
+  {
+    "index": 93,
+    "track": "07 1-07.mp3",
+    "headword": "経費",
+    "old": {
+      "track": "07 1-07.mp3",
+      "word": [
+        33.14,
+        33.9
+      ],
+      "sentence": [
+        34.6,
+        39.22
+      ]
+    },
+    "new": {
+      "word": {
+        "start": 33.39,
+        "end": 33.988
+      },
+      "sentence": {
+        "start": 34.814,
+        "end": 37.965
+      }
+    },
+    "medium_segments": [
+      {
+        "start": 27.7,
+        "end": 32.7,
+        "text": "今月は支出が多く家計は赤字だった"
+      },
+      {
+        "start": 33.38,
+        "end": 34.32,
+        "text": "経費"
+      },
+      {
+        "start": 34.32,
+        "end": 39.68,
+        "text": "宣伝に経費をかけたので売上が伸びた"
+      },
+      {
+        "start": 39.68,
+        "end": 41.04,
+        "text": "感情"
+      }
+    ],
+    "fallback_after": {
+      "word": {
+        "start": false,
+        "end": false
+      },
+      "sentence": {
+        "start": false,
+        "end": false
+      }
+    }
+  },
+  {
+    "index": 94,
+    "track": "07 1-07.mp3",
+    "headword": "勘定(ヲ)スル",
+    "old": {
+      "track": "07 1-07.mp3",
+      "word": [
+        39.22,
+        40.36
+      ],
+      "sentence": [
+        41.18,
+        43.14
+      ]
+    },
+    "new": {
+      "word": {
+        "start": 39.75,
+        "end": 40.612
+      },
+      "sentence": {
+        "start": 41.416,
+        "end": 42.677
+      }
+    },
+    "medium_segments": [
+      {
+        "start": 34.32,
+        "end": 39.68,
+        "text": "宣伝に経費をかけたので売上が伸びた"
+      },
+      {
+        "start": 39.68,
+        "end": 41.04,
+        "text": "感情"
+      },
+      {
+        "start": 41.04,
+        "end": 43.82,
+        "text": "金を勘定する"
+      }
+    ],
+    "fallback_after": {
+      "word": {
+        "start": false,
+        "end": false
+      },
+      "sentence": {
+        "start": false,
+        "end": false
+      }
+    }
+  },
+  {
+    "index": 96,
+    "track": "07 1-07.mp3",
+    "headword": "請求(ヲ)スル",
+    "old": {
+      "track": "07 1-07.mp3",
+      "word": [
+        52.66,
+        53.54
+      ],
+      "sentence": [
+        54.14,
+        57.3
+      ]
+    },
+    "new": {
+      "word": {
+        "start": 52.739,
+        "end": 53.747
+      },
+      "sentence": {
+        "start": 54.453,
+        "end": 56.441
+      }
+    },
+    "medium_segments": [
+      {
+        "start": 45.76,
+        "end": 52.12,
+        "text": "隣の家の窓ガラスを割ってしまったので修理代を弁償した"
+      },
+      {
+        "start": 53.32000000000001,
+        "end": 54.28,
+        "text": "請求"
+      },
+      {
+        "start": 54.28,
+        "end": 57.8,
+        "text": "大学に資料を請求する"
+      },
+      {
+        "start": 57.8,
+        "end": 59.36,
+        "text": "景気"
+      }
+    ],
+    "fallback_after": {
+      "word": {
+        "start": false,
+        "end": false
+      },
+      "sentence": {
+        "start": false,
+        "end": false
+      }
+    }
+  },
+  {
+    "index": 97,
+    "track": "07 1-07.mp3",
+    "headword": "景気",
+    "old": {
+      "track": "07 1-07.mp3",
+      "word": [
+        57.96,
+        58.78
+      ],
+      "sentence": [
+        59.38,
+        63.16
+      ]
+    },
+    "new": {
+      "word": {
+        "start": 58.245,
+        "end": 58.908
+      },
+      "sentence": {
+        "start": 59.712,
+        "end": 62.923
+      }
+    },
+    "medium_segments": [
+      {
+        "start": 54.28,
+        "end": 57.8,
+        "text": "大学に資料を請求する"
+      },
+      {
+        "start": 57.8,
+        "end": 59.36,
+        "text": "景気"
+      },
+      {
+        "start": 59.36,
+        "end": 64.34,
+        "text": "景気が悪くなると倒産する会社が増える"
+      }
+    ],
+    "fallback_after": {
+      "word": {
+        "start": false,
+        "end": false
+      },
+      "sentence": {
+        "start": false,
+        "end": false
+      }
+    }
+  },
+  {
+    "index": 98,
+    "track": "07 1-07.mp3",
+    "headword": "募金(ヲ)スル",
+    "old": {
+      "track": "07 1-07.mp3",
+      "word": [
+        64.46,
+        65.5
+      ],
+      "sentence": [
+        66.06,
+        69.02
+      ]
+    },
+    "new": {
+      "word": {
+        "start": 64.745,
+        "end": 65.537
+      },
+      "sentence": {
+        "start": 66.368,
+        "end": 69.042
+      }
+    },
+    "medium_segments": [
+      {
+        "start": 59.36,
+        "end": 64.34,
+        "text": "景気が悪くなると倒産する会社が増える"
+      },
+      {
+        "start": 64.34,
+        "end": 65.98,
+        "text": "募金"
+      },
+      {
+        "start": 65.98,
+        "end": 70.36,
+        "text": "地震の被災者のために募金した"
+      }
+    ],
+    "fallback_after": {
+      "word": {
+        "start": false,
+        "end": false
+      },
+      "sentence": {
+        "start": false,
+        "end": false
+      }
+    }
+  },
+  {
+    "index": 99,
+    "track": "07 1-07.mp3",
+    "headword": "募集(ヲ)スル",
+    "old": {
+      "track": "07 1-07.mp3",
+      "word": [
+        70.6,
+        71.34
+      ],
+      "sentence": [
+        72.16,
+        75.64
+      ]
+    },
+    "new": {
+      "word": {
+        "start": 70.837,
+        "end": 71.722
+      },
+      "sentence": {
+        "start": 72.511,
+        "end": 75.353
+      }
+    },
+    "medium_segments": [
+      {
+        "start": 65.98,
+        "end": 70.36,
+        "text": "地震の被災者のために募金した"
+      },
+      {
+        "start": 70.36,
+        "end": 72.16,
+        "text": "募集"
+      },
+      {
+        "start": 72.16,
+        "end": 76.62,
+        "text": "アルバイトを募集していたので応募した"
+      },
+      {
+        "start": 76.62,
+        "end": 78.28,
+        "text": "価値"
+      }
+    ],
+    "fallback_after": {
+      "word": {
+        "start": false,
+        "end": false
+      },
+      "sentence": {
+        "start": false,
+        "end": false
+      }
+    }
+  },
+  {
+    "index": 100,
+    "track": "07 1-07.mp3",
+    "headword": "価値",
+    "old": {
+      "track": "07 1-07.mp3",
+      "word": [
+        76.82,
+        77.6
+      ],
+      "sentence": [
+        77.6,
+        81.34
+      ]
+    },
+    "new": {
+      "word": {
+        "start": 77.154,
+        "end": 77.619
+      },
+      "sentence": {
+        "start": 78.425,
+        "end": 81.289
+      }
+    },
+    "medium_segments": [
+      {
+        "start": 72.16,
+        "end": 76.62,
+        "text": "アルバイトを募集していたので応募した"
+      },
+      {
+        "start": 76.62,
+        "end": 78.28,
+        "text": "価値"
+      },
+      {
+        "start": 78.28,
+        "end": 81.52,
+        "text": "情報は新しいほど価値が高い"
+      }
+    ],
+    "fallback_after": {
+      "word": {
+        "start": false,
+        "end": false
+      },
+      "sentence": {
+        "start": false,
+        "end": false
+      }
+    }
+  }
+]

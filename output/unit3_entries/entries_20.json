@@ -1,0 +1,65 @@
+[
+  {
+    "index": 256,
+    "unit_number": 3,
+    "headword": "辛い",
+    "reading": "つらい",
+    "sentence": "①・子どもはつらい経験を乗り越えて成長する。 ・花粉症なので、春は本当につらい。 ・どんなにつらくても、最後までがんばるつもりだ。"
+  },
+  {
+    "index": 257,
+    "unit_number": 3,
+    "headword": "きつい",
+    "reading": "",
+    "sentence": "①・太ってしまってズボンがきつくなった。 ・{靴/服/スケジュール ...} がきつい。"
+  },
+  {
+    "index": 258,
+    "unit_number": 3,
+    "headword": "緩い",
+    "reading": "ゆるい",
+    "sentence": "①・やせてスカートがゆるくなった。"
+  },
+  {
+    "index": 259,
+    "unit_number": 3,
+    "headword": "鈍い",
+    "reading": "にぶい",
+    "sentence": "①・このナイフは切れ味がにぶい。"
+  },
+  {
+    "index": 260,
+    "unit_number": 3,
+    "headword": "鋭い",
+    "reading": "するどい",
+    "sentence": "①・熊はするどい爪を持っている。 ・彼はするどい目で私をにらんだ。"
+  },
+  {
+    "index": 261,
+    "unit_number": 3,
+    "headword": "荒い / 粗い",
+    "reading": "あらい",
+    "sentence": "[荒] ①・彼は気性が荒い。 ・金遣いが荒い。"
+  },
+  {
+    "index": 262,
+    "unit_number": 3,
+    "headword": "強引な",
+    "reading": "ごういんな",
+    "sentence": "与党は国会で強引に法案を通した。 ・強引な {人/性格/態度/やり方 ...}"
+  },
+  {
+    "index": 263,
+    "unit_number": 3,
+    "headword": "勝手な",
+    "reading": "ってな",
+    "sentence": "①・勝手な言動は他の人の迷惑になる。 ・彼は人の物を勝手に使うので困る。 ・「こんなうち、出て行ってやる!」「勝手にしろ!」"
+  },
+  {
+    "index": 264,
+    "unit_number": 3,
+    "headword": "強気な",
+    "reading": "つよきな",
+    "sentence": "①・彼女は強気な性格で、ときどき周りと衝突する。"
+  }
+]

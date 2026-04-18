@@ -1,0 +1,78 @@
+{
+  "page": 91,
+  "page_type": "column",
+  "section": "まとめ1 複合動詞 (Entries 456-460)",
+  "entries": [
+    {
+      "number": 456,
+      "reading": "けなおす",
+      "kanji": "かけ直す",
+      "verb_pattern": "か",
+      "meaning_en": "call again",
+      "meaning_zh": "再打（电话）",
+      "meaning_ko": "다시 걸다",
+      "examples": [
+        "・（電話をかけたが、相手がいなかったとき）「またあとでかけ直します」"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 457,
+      "reading": "でなおす",
+      "kanji": "出直す",
+      "verb_pattern": null,
+      "meaning_en": "come again",
+      "meaning_zh": "再来，重来",
+      "meaning_ko": "돌아갔다가 다시 나오다",
+      "examples": [
+        "・（もう一度来る必要があるとき）「改めて出直してまいります」"
+      ],
+      "collocations": "関: (名) 出直し (例. 地震で何もかも失った。また一から出直しだ。)"
+    },
+    {
+      "number": 458,
+      "reading": "もちなおす",
+      "kanji": "／ヲ持ち直す",
+      "verb_pattern": null,
+      "meaning_en": "change one's grip; get better",
+      "meaning_zh": "重新拿",
+      "meaning_ko": "바꾸어 들다, 회복되다",
+      "examples": [
+        "・落としそうになった荷物を持ち直す。"
+      ],
+      "collocations": "関: 〈自〉 (例．・悪化する一方だった景気が持ち直した。 ・｛病気／天気 ･･･｝が持ち直す。) | 関: ＜その他＞ ヲ見直す ☞ 742 ①②、ヲ書き直す、ヲ言い直す、ヲ作り直す など"
+    },
+    {
+      "number": 459,
+      "reading": "んがえなおす",
+      "kanji": "考え直す",
+      "verb_pattern": "か",
+      "meaning_en": "think over",
+      "meaning_zh": "重新考虑",
+      "meaning_ko": "다시 생각하다, 재고하다",
+      "examples": [
+        "・仕事を辞めるつもりだったが、考え直したほうがいいと言われた。"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 460,
+      "reading": "おもいなおす",
+      "kanji": "思い直す",
+      "verb_pattern": null,
+      "meaning_en": "change one's mind",
+      "meaning_zh": "改变主意，重新考虑",
+      "meaning_ko": "생각을 다시 하다, 재고하다",
+      "examples": [
+        "・就職するつもりだったが、思い直して進学することにした。"
+      ],
+      "collocations": "関: ＜その他＞ ヲ見直す ☞ 742 ③"
+    }
+  ],
+  "column": {
+    "number": 10,
+    "title": "事故",
+    "items": []
+  },
+  "raw_text": "1-33\n456 かけなおす ヲかけ直す call again / 再打（电话） / 다시 걸다\n・（電話をかけたが、相手がいなかったとき）「またあとでかけ直します」\n457 でなおす ガ出直す come again / 再来，重来 / 돌아갔다가 다시 나오다\n・（もう一度来る必要があるとき）「改めて出直してまいります」\n(名) 出直し (例. 地震で何もかも失った。また一から出直しだ。)\n458 もちなおす ガ／ヲ持ち直す change one's grip; get better / 重新拿 / 바꾸어 들다, 회복되다\n・落としそうになった荷物を持ち直す。\n〈自〉 (例．・悪化する一方だった景気が持ち直した。 ・｛病気／天気 ･･･｝が持ち直す。)\n＜その他＞ ヲ見直す ☞ 742 ①②、ヲ書き直す、ヲ言い直す、ヲ作り直す など\n\n〜直す② もう一度考えて、考えを変える [Correct, Change] reconsider and change one's mind / 重新考虑，改变主意 / 다시 한번 생각하여 생각을 바꾸다\n459 かんがえなおす ヲ考え直す think over / 重新考虑 / 다시 생각하다, 재고하다\n・仕事を辞めるつもりだったが、考え直したほうがいいと言われた。\n460 おもいなおす ヲ思い直す change one's mind / 改变主意，重新考虑 / 생각을 다시 하다, 재고하다\n・就職するつもりだったが、思い直して進学することにした。\n＜その他＞ ヲ見直す ☞ 742 ③\n\nコラム 10 事故 Accidents / 事故 / 사고\n火事／火災 fire / 失火・火灾 / 화재\n爆発（事故） explosion accident / 爆炸事故 / 폭발 사고\n人身事故 accident causing injury or death / 人身事故 / 인신사고\n墜落（事故） plane crash / (飞机)坠毁,飞机失事 / 추락 사고\n遭難（事故） distress / 遇难事故 / 조난 사고\n水難事故 disaster at sea, drowning accident / (船舶)遇难 / 수난 사고\nおぼれる drown / 溺水,淹没 / 물에 빠지다, 익사하다\n（川に）流される get washed away by a current / 被河水冲走 / 강물에 휩쓸려 가다\n（高波に）さらわれる get washed away by the high waves / 被大浪卷走 / 큰 파도에 휩쓸리다\n交通事故 traffic accident / 交通事故 / 교통사고\n衝突（事故） collision / 撞车事故 / 충돌 사고\n正面衝突 head-on collision / 正面冲突 / 정면충돌\n追突（事故） rear-end collision / (车辆)追尾事故 / 추돌 사고\n接触（事故） minor accident / (车辆)碰撞事故 / 접촉 사고\n（車に）ひかれる be run over / 被车轧 / 차에 치이다\n（車に）はねられる be hit by a car / 被车撞 / 차에 들이받히다\n〈〜に／と〉ぶつかる／衝突する collide (with ~) / 撞车 / 부딪치다・충돌하다\n〈〜に〉追突する rear-end / (车辆)追尾 / 추돌하다\n〈〜と〉接触する come in contact with / (车辆)碰撞 / 접촉하다\nけが人 injured person / 受伤者 / 부상자\n死傷（者） casualties / 死伤者 / 사상자\n死亡（者） deceased person / 死者 / 사망자\n行方不明 missing / 失踪；去向不明 / 행방불명\n重体 critical condition / 病危 / 중태\n重傷 ⇔ 軽傷 serious illness / 重病 / 중상 ⇔ slight injury / 轻伤 / 경상\n意識不明 unconsciousness / 失去意识；神志不清 / 의식불명\n被害者 ⇔ 加害者 victim, injured person / 受害者，被害人 / 피해자 ⇔ assailant, murderer / 加害者 / 가해자\n現場 the scene / 现场 / 현장\n90"
+}

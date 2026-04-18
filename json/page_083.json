@@ -1,0 +1,157 @@
+{
+  "page": 83,
+  "page_type": "vocabulary",
+  "section": "まとめ1 複合動詞 (Entries 371–381)",
+  "entries": [
+    {
+      "number": 371,
+      "reading": "たちあがる",
+      "kanji": "立ち上がる",
+      "verb_pattern": null,
+      "meaning_en": "stand up",
+      "meaning_zh": "站起来，起立",
+      "meaning_ko": "일어서다",
+      "examples": [
+        "・いすから立ち上がる。",
+        "・プロジェクトが立ち上がる。"
+      ],
+      "collocations": "関: (名) 立ち上がり | 関: 〈他〉 立ち上げる ☞ 387"
+    },
+    {
+      "number": 372,
+      "reading": "とびあがる",
+      "kanji": "飛び上がる",
+      "verb_pattern": null,
+      "meaning_en": "jump up",
+      "meaning_zh": "跳起来",
+      "meaning_ko": "펄쩍 뛰다, 뛰어오르다",
+      "examples": [
+        "・飛び上がって喜ぶ。",
+        "・驚いて飛び上がった。"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 373,
+      "reading": "うかびあがる",
+      "kanji": "浮かび上がる",
+      "verb_pattern": null,
+      "meaning_en": "floated up to the surface, emerge",
+      "meaning_zh": "浮起来，出现",
+      "meaning_ko": "떠오르다, 부상하다",
+      "examples": [
+        "・水面に浮かび上がる。",
+        "・Aが容疑者として浮かび上がった。"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 374,
+      "reading": "まいあがる",
+      "kanji": "舞い上がる",
+      "verb_pattern": null,
+      "meaning_en": "stir up; be excited",
+      "meaning_zh": "飞扬，高兴得手舞足蹈",
+      "meaning_ko": "날아오르다",
+      "examples": [
+        "・｛砂／ほこり …｝が舞い上がる。",
+        "・女の子から告白されて、彼は舞い上がった。"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 375,
+      "reading": "もえあがる",
+      "kanji": "燃え上がる",
+      "verb_pattern": null,
+      "meaning_en": "blaze up",
+      "meaning_zh": "燃起，烧起",
+      "meaning_ko": "타오르다",
+      "examples": [
+        "・｛火／闘志／恋心 …｝が燃え上がる。"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 376,
+      "reading": "もりあがる",
+      "kanji": "盛り上がる",
+      "verb_pattern": null,
+      "meaning_en": "swell, stand up; warm up",
+      "meaning_zh": "鼓起，凸起；（气氛）热烈，高涨起来",
+      "meaning_ko": "부풀어 오르다, 고조되다",
+      "examples": [
+        "・筋肉が盛り上がっている。",
+        "・パーティーが盛り上がる。"
+      ],
+      "collocations": "関: (名) 盛り上がり→＿に欠ける"
+    },
+    {
+      "number": 377,
+      "reading": "わきあがる",
+      "kanji": "沸(湧)き上がる",
+      "verb_pattern": null,
+      "meaning_en": "well up, arise",
+      "meaning_zh": "沸腾，掀起；涌现",
+      "meaning_ko": "터져 나오다, 끓어 오르다",
+      "examples": [
+        "・歓声が沸き上がる。",
+        "・｛悲しみ／怒り …｝が湧き上がってくる。"
+      ],
+      "collocations": "関: <その他> 起き上がる、勝ち上がる など"
+    },
+    {
+      "number": 378,
+      "reading": "はれあがる",
+      "kanji": "晴れ上がる",
+      "verb_pattern": null,
+      "meaning_en": "clear up",
+      "meaning_zh": "(天气)放晴",
+      "meaning_ko": "맑게 개다",
+      "examples": [
+        "・晴れ上がった秋空"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 379,
+      "reading": "ふるえあがる",
+      "kanji": "震え上がる",
+      "verb_pattern": null,
+      "meaning_en": "be terrified",
+      "meaning_zh": "发抖，打颤，哆嗦",
+      "meaning_ko": "부들부들 떨다",
+      "examples": [
+        "・｛寒さ／恐怖 …｝に震え上がる。"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 380,
+      "reading": "ちぢみあがる",
+      "kanji": "縮み上がる",
+      "verb_pattern": null,
+      "meaning_en": "cower",
+      "meaning_zh": "缩小很多，收缩得厉害",
+      "meaning_ko": "바짝 움츠러들다",
+      "examples": [
+        "・｛寒さ／恐怖 …｝に縮み上がる。"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 381,
+      "reading": "ひあがる",
+      "kanji": "干上がる",
+      "verb_pattern": null,
+      "meaning_en": "dry up",
+      "meaning_zh": "干枯，干涸",
+      "meaning_ko": "완전히 말라붙다",
+      "examples": [
+        "・｛池／湖／川 …｝が干上がる。"
+      ],
+      "collocations": ""
+    }
+  ],
+  "raw_text": "まとめ1 複合動詞 371 ~ 460\nI 〜上がる① 〈自〉 上へ移動する、上方へ向けて〜する\n[Rise, Up] go upward, do ~ upward / 上，升；……上，……起来 / 위로 이동하다, 위쪽을 향해 〜하다\n371 たちあがる ガ立ち上がる stand up / 站起来，起立 / 일어서다\n・いすから立ち上がる。 ・プロジェクトが立ち上がる。\n(名) 立ち上がり\n〈他〉 立ち上げる ☞ 387\n372 とびあがる ガ飛び上がる jump up / 跳起来 / 펄쩍 뛰다, 뛰어오르다\n・飛び上がって喜ぶ。 ・驚いて飛び上がった。\n373 うかびあがる ガ浮かび上がる floated up to the surface, emerge / 浮起来，出现 / 떠오르다, 부상하다\n・水面に浮かび上がる。 ・Aが容疑者として浮かび上がった。\n374 まいあがる ガ舞い上がる stir up; be excited / 飞扬，高兴得手舞足蹈 / 날아오르다\n・｛砂／ほこり …｝が舞い上がる。 ・女の子から告白されて、彼は舞い上がった。\n375 もえあがる ガ燃え上がる blaze up / 燃起，烧起 / 타오르다\n・｛火／闘志／恋心 …｝が燃え上がる。\n376 もりあがる ガ盛り上がる swell, stand up; warm up / 鼓起，凸起；（气氛）热烈，高涨起来 / 부풀어 오르다, 고조되다\n・筋肉が盛り上がっている。 ・パーティーが盛り上がる。\n(名) 盛り上がり→＿に欠ける\n377 わきあがる ガ沸(湧)き上がる well up, arise / 沸腾，掀起；涌现 / 터져 나오다, 끓어 오르다\n・歓声が沸き上がる。 ・｛悲しみ／怒り …｝が湧き上がってくる。\n<その他> 起き上がる、勝ち上がる など\n〜上がる② 〈自〉 十分に〜する、ひどく〜する\n[Rise, Up] do ~ completely, do ~ very much / 完成，彻底；严重地……，激烈地…… / 충분히 〜하다, 아주 〜하다\n378 はれあがる ガ晴れ上がる clear up / (天气)放晴 / 맑게 개다\n・晴れ上がった秋空\n379 ふるえあがる ガ震え上がる be terrified / 发抖，打颤，哆嗦 / 부들부들 떨다\n・｛寒さ／恐怖 …｝に震え上がる。\n380 ちぢみあがる ガ縮み上がる cower / 缩小很多，收缩得厉害 / 바짝 움츠러들다\n・｛寒さ／恐怖 …｝に縮み上がる。\n381 ひあがる ガ干上がる dry up / 干枯，干涸 / 완전히 말라붙다\n・｛池／湖／川 …｝が干上がる。\n82"
+}

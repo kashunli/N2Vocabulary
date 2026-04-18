@@ -1,0 +1,644 @@
+[
+  {
+    "index": 117,
+    "unit_number": 2,
+    "headword": "しゃがむ",
+    "reading": "しゃがむ",
+    "expected_sentence": "子どもが道にしゃがんで地面の虫を見ている。",
+    "track_name": "09 1-09.mp3",
+    "track_path": "audio\\Unit2 動詞A\\09 1-09.mp3",
+    "word_clip": "output\\clips\\unit02\\word117.mp3",
+    "sentence_clip": "output\\clips\\unit02\\sentence117.mp3",
+    "word_start": 0.668889,
+    "word_end": 1.288503,
+    "sentence_start": 2.072676,
+    "sentence_end": 5.649887,
+    "word_transcript": "しゃ が む",
+    "sentence_transcript": "子 供 が 道 に しゃ が んで 地 面 の 虫 を 見て いる 。",
+    "word_score": 1.0,
+    "sentence_score": 0.923,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      0
+    ],
+    "sentence_piece_ids": [
+      1
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 118,
+    "unit_number": 2,
+    "headword": "どく",
+    "reading": "どく",
+    "expected_sentence": "「ちょっとそこをどいてください」",
+    "track_name": "09 1-09.mp3",
+    "track_path": "audio\\Unit2 動詞A\\09 1-09.mp3",
+    "word_clip": "output\\clips\\unit02\\word118.mp3",
+    "sentence_clip": "output\\clips\\unit02\\sentence118.mp3",
+    "word_start": 7.454535,
+    "word_end": 7.92771,
+    "sentence_start": 8.755261,
+    "sentence_end": 10.468435,
+    "word_transcript": "毒",
+    "sentence_transcript": "ちょっと そ こ を ど いて ください 。",
+    "word_score": 0.0,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "ASR: ドイテクださい→どいてください",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      2
+    ],
+    "sentence_piece_ids": [
+      3
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 119,
+    "unit_number": 2,
+    "headword": "どける",
+    "reading": "どける",
+    "expected_sentence": "「通行のじゃまになるので、自転車を歩道からどけてください」",
+    "track_name": "09 1-09.mp3",
+    "track_path": "audio\\Unit2 動詞A\\09 1-09.mp3",
+    "word_clip": "output\\clips\\unit02\\word119.mp3",
+    "sentence_clip": "output\\clips\\unit02\\sentence119.mp3",
+    "word_start": 12.266667,
+    "word_end": 12.900068,
+    "sentence_start": 13.695782,
+    "sentence_end": 17.926939,
+    "word_transcript": "ド ケ ール",
+    "sentence_transcript": "通 行 の 邪 魔 にな る ので 自 転 車 を 歩 道 から ど けて ください 。",
+    "word_score": 0.0,
+    "sentence_score": 0.914,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "ASR: ドケール→どける",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      4
+    ],
+    "sentence_piece_ids": [
+      5,
+      6
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 120,
+    "unit_number": 2,
+    "headword": "かぶる",
+    "reading": "かぶる",
+    "expected_sentence": "帽子をかぶる。",
+    "track_name": "09 1-09.mp3",
+    "track_path": "audio\\Unit2 動詞A\\09 1-09.mp3",
+    "word_clip": "output\\clips\\unit02\\word120.mp3",
+    "sentence_clip": "output\\clips\\unit02\\sentence120.mp3",
+    "word_start": 19.748277,
+    "word_end": 20.214785,
+    "sentence_start": 21.046236,
+    "sentence_end": 22.307166,
+    "word_transcript": "被 る",
+    "sentence_transcript": "帽 子 を か ぶ る",
+    "word_score": 0.5,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      7
+    ],
+    "sentence_piece_ids": [
+      8
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 121,
+    "unit_number": 2,
+    "headword": "かぶせる",
+    "reading": "かぶせる",
+    "expected_sentence": "ぬれないように、自転車にシートをかぶせておいた。",
+    "track_name": "09 1-09.mp3",
+    "track_path": "audio\\Unit2 動詞A\\09 1-09.mp3",
+    "word_clip": "output\\clips\\unit02\\word121.mp3",
+    "sentence_clip": "output\\clips\\unit02\\sentence121.mp3",
+    "word_start": 24.098549,
+    "word_end": 24.759909,
+    "sentence_start": 25.580884,
+    "sentence_end": 29.28195,
+    "word_transcript": "か ぶ せ る",
+    "sentence_transcript": "濡 れない ように 自 転 車 に シ ート を か ぶ せて お いた",
+    "word_score": 1.0,
+    "sentence_score": 0.973,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      9
+    ],
+    "sentence_piece_ids": [
+      10,
+      11
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 122,
+    "unit_number": 2,
+    "headword": "かじる",
+    "reading": "かじる",
+    "expected_sentence": "りんごを丸ごとかじる。",
+    "track_name": "09 1-09.mp3",
+    "track_path": "audio\\Unit2 動詞A\\09 1-09.mp3",
+    "word_clip": "output\\clips\\unit02\\word122.mp3",
+    "sentence_clip": "output\\clips\\unit02\\sentence122.mp3",
+    "word_start": 31.079592,
+    "word_end": 31.579433,
+    "sentence_start": 32.39737,
+    "sentence_end": 34.187687,
+    "word_transcript": "か じ る 。",
+    "sentence_transcript": "リ ン ゴ を 丸 ご とか じ る",
+    "word_score": 1.0,
+    "sentence_score": 0.667,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "ASR: 臨後→りんご",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      12
+    ],
+    "sentence_piece_ids": [
+      13
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 123,
+    "unit_number": 2,
+    "headword": "撃つ",
+    "reading": "うつ",
+    "expected_sentence": "警官が犯人をピストルで撃った。",
+    "track_name": "09 1-09.mp3",
+    "track_path": "audio\\Unit2 動詞A\\09 1-09.mp3",
+    "word_clip": "output\\clips\\unit02\\word123.mp3",
+    "sentence_clip": "output\\clips\\unit02\\sentence123.mp3",
+    "word_start": 35.995329,
+    "word_end": 36.33034,
+    "sentence_start": 37.136168,
+    "sentence_end": 39.583492,
+    "word_transcript": "う つ",
+    "sentence_transcript": "警 官 が 犯 人 を ピ スト ル で 撃 った 。",
+    "word_score": 1.0,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "ASR: 計刊が半人→警官が犯人",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      14
+    ],
+    "sentence_piece_ids": [
+      15
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 124,
+    "unit_number": 2,
+    "headword": "漕ぐ",
+    "reading": "こぐ",
+    "expected_sentence": "自転車 (のペダル) をこぐ。",
+    "track_name": "09 1-09.mp3",
+    "track_path": "audio\\Unit2 動詞A\\09 1-09.mp3",
+    "word_clip": "output\\clips\\unit02\\word124.mp3",
+    "sentence_clip": "output\\clips\\unit02\\sentence124.mp3",
+    "word_start": 41.349524,
+    "word_end": 41.684694,
+    "sentence_start": 42.350091,
+    "sentence_end": 43.799932,
+    "word_transcript": "コ ング",
+    "sentence_transcript": "自 転 車 を 漕 ぐ",
+    "word_score": 0.0,
+    "sentence_score": 0.444,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      16
+    ],
+    "sentence_piece_ids": [
+      17
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 125,
+    "unit_number": 2,
+    "headword": "敷く",
+    "reading": "しく",
+    "expected_sentence": "床にふとんを敷く。",
+    "track_name": "09 1-09.mp3",
+    "track_path": "audio\\Unit2 動詞A\\09 1-09.mp3",
+    "word_clip": "output\\clips\\unit02\\word125.mp3",
+    "sentence_clip": "output\\clips\\unit02\\sentence125.mp3",
+    "word_start": 45.50483,
+    "word_end": 45.997483,
+    "sentence_start": 46.839705,
+    "sentence_end": 48.446213,
+    "word_transcript": "しく",
+    "sentence_transcript": "床 に 布 団 を 敷 く 。",
+    "word_score": 1.0,
+    "sentence_score": 0.667,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      18
+    ],
+    "sentence_piece_ids": [
+      19
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 126,
+    "unit_number": 2,
+    "headword": "つぐ",
+    "reading": "つぐ",
+    "expected_sentence": "水をコップにつぐ。",
+    "track_name": "09 1-09.mp3",
+    "track_path": "audio\\Unit2 動詞A\\09 1-09.mp3",
+    "word_clip": "output\\clips\\unit02\\word126.mp3",
+    "sentence_clip": "output\\clips\\unit02\\sentence126.mp3",
+    "word_start": 50.250998,
+    "word_end": 50.705578,
+    "sentence_start": 51.585147,
+    "sentence_end": 53.266281,
+    "word_transcript": "次 ぐ",
+    "sentence_transcript": "水 を コ ップ に つ ぐ 。",
+    "word_score": 0.667,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      20
+    ],
+    "sentence_piece_ids": [
+      21
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 127,
+    "unit_number": 2,
+    "headword": "配る",
+    "reading": "くばる",
+    "expected_sentence": "先生が生徒にプリントを配った。",
+    "track_name": "09 1-09.mp3",
+    "track_path": "audio\\Unit2 動詞A\\09 1-09.mp3",
+    "word_clip": "output\\clips\\unit02\\word127.mp3",
+    "sentence_clip": "output\\clips\\unit02\\sentence127.mp3",
+    "word_start": 55.16746,
+    "word_end": 55.684444,
+    "sentence_start": 56.492245,
+    "sentence_end": 59.554104,
+    "word_transcript": "配 る",
+    "sentence_transcript": "先生 が 生 徒 に プ リ ント を 配 った",
+    "word_score": 0.5,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      22
+    ],
+    "sentence_piece_ids": [
+      23
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 128,
+    "unit_number": 2,
+    "headword": "放る",
+    "reading": "ほうる",
+    "expected_sentence": "ボールをほうる。",
+    "track_name": "09 1-09.mp3",
+    "track_path": "audio\\Unit2 動詞A\\09 1-09.mp3",
+    "word_clip": "output\\clips\\unit02\\word128.mp3",
+    "sentence_clip": "output\\clips\\unit02\\sentence128.mp3",
+    "word_start": 61.425193,
+    "word_end": 61.936961,
+    "sentence_start": 62.738458,
+    "sentence_end": 64.072834,
+    "word_transcript": "オ ール",
+    "sentence_transcript": "ボ ール を 放 る",
+    "word_score": 0.0,
+    "sentence_score": 0.833,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      24
+    ],
+    "sentence_piece_ids": [
+      25
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 129,
+    "unit_number": 2,
+    "headword": "掘る",
+    "reading": "ほる",
+    "expected_sentence": "地面に穴を掘る。",
+    "track_name": "09 1-09.mp3",
+    "track_path": "audio\\Unit2 動詞A\\09 1-09.mp3",
+    "word_clip": "output\\clips\\unit02\\word129.mp3",
+    "sentence_clip": "output\\clips\\unit02\\sentence129.mp3",
+    "word_start": 65.940839,
+    "word_end": 66.190748,
+    "sentence_start": 67.030567,
+    "sentence_end": 68.761179,
+    "word_transcript": "オ ル",
+    "sentence_transcript": "地 面 に 穴 を 掘 る",
+    "word_score": 0.0,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      26
+    ],
+    "sentence_piece_ids": [
+      27
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 130,
+    "unit_number": 2,
+    "headword": "まく",
+    "reading": "まく",
+    "expected_sentence": "畑に野菜の種をまく。",
+    "track_name": "09 1-09.mp3",
+    "track_path": "audio\\Unit2 動詞A\\09 1-09.mp3",
+    "word_clip": "output\\clips\\unit02\\word130.mp3",
+    "sentence_clip": "output\\clips\\unit02\\sentence130.mp3",
+    "word_start": 70.567755,
+    "word_end": 70.943152,
+    "sentence_start": 71.747256,
+    "sentence_end": 74.090136,
+    "word_transcript": "マ ー ク",
+    "sentence_transcript": "畑 に 野 菜 の 種 を ま く 。",
+    "word_score": 0.0,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      28
+    ],
+    "sentence_piece_ids": [
+      29
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 131,
+    "unit_number": 2,
+    "headword": "計る／測る／量る",
+    "reading": "はかる",
+    "expected_sentence": "",
+    "track_name": "09 1-09.mp3",
+    "track_path": "audio\\Unit2 動詞A\\09 1-09.mp3",
+    "word_clip": "output\\clips\\unit02\\word131.mp3",
+    "sentence_clip": "output\\clips\\unit02\\sentence131.mp3",
+    "word_start": 75.899615,
+    "word_end": 76.422381,
+    "sentence_start": 77.242993,
+    "sentence_end": 78.53127,
+    "word_transcript": "ア カ ール",
+    "sentence_transcript": "時間 を は か る 。",
+    "word_score": 0.0,
+    "sentence_score": 0.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "sentence: 時間をはかる (short example)",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      30
+    ],
+    "sentence_piece_ids": [
+      31
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 132,
+    "unit_number": 2,
+    "headword": "占う",
+    "reading": "うらなう",
+    "expected_sentence": "来年の運勢を占ってもらった。",
+    "track_name": "09 1-09.mp3",
+    "track_path": "audio\\Unit2 動詞A\\09 1-09.mp3",
+    "word_clip": "output\\clips\\unit02\\word132.mp3",
+    "sentence_clip": "output\\clips\\unit02\\sentence132.mp3",
+    "word_start": 80.354444,
+    "word_end": 80.989751,
+    "sentence_start": 81.793787,
+    "sentence_end": 84.697506,
+    "word_transcript": "占 う",
+    "sentence_transcript": "来 年 の 運 勢 を 占 って も ら った",
+    "word_score": 0.4,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      32
+    ],
+    "sentence_piece_ids": [
+      33
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  }
+]

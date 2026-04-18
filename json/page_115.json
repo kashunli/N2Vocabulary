@@ -1,0 +1,143 @@
+{
+  "page": 115,
+  "page_type": "vocabulary",
+  "section": "Unit 06 副詞 (Entries 557-565)",
+  "entries": [
+    {
+      "number": 557,
+      "reading": "にやにや／にやりと",
+      "kanji": "にやにや／にやりと (にやにや／にやりとスル)",
+      "verb_pattern": null,
+      "meaning_en": "grin, smirk",
+      "meaning_zh": "默默地笑，不出声地笑",
+      "meaning_ko": "히죽히죽, 히죽",
+      "examples": [
+        "・「何をにやにやしているんだ。気持ち悪い」",
+        "・悪事が成功したときのことを想像して、彼はにやりと笑った。"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 558,
+      "reading": "どきどき／どきりと",
+      "kanji": "どきどき／どきりと (どきどきスル／どきりとスル)",
+      "verb_pattern": null,
+      "meaning_en": "thump; beat fast",
+      "meaning_zh": "七上八下，忐忑不安",
+      "meaning_ko": "두근두근, 철렁",
+      "examples": [
+        "・緊張で胸がどきどきする。",
+        "・隠していたことを指摘されて、どきりとした。"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 559,
+      "reading": "はらはら",
+      "kanji": "はらはら (はらはらスル)",
+      "verb_pattern": null,
+      "meaning_en": "feel uneasy; flutter",
+      "meaning_zh": "提心吊胆；飘落，扑簌簌（落泪）",
+      "meaning_ko": "조마조마, 하늘하늘, 뚝뚝",
+      "examples": [
+        "①［はらはら（と）］・桜の花びらがはらはらと散った。",
+        "・少女ははらはらと涙を流した。",
+        "②［はらはらする］・綱渡りを見ながらはらはらした。"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 560,
+      "reading": "んかん",
+      "kanji": "かんかん",
+      "verb_pattern": "か",
+      "meaning_en": "be in a rage; blaze",
+      "meaning_zh": "大怒，大发脾气；毒辣辣地",
+      "meaning_ko": "노발대발, 쨍쨍",
+      "examples": [
+        "①・「お父さん、怒ってる？」「かんかんだよ」",
+        "・かんかんになって怒る。",
+        "②・真夏の太陽がかんかん（と）照りつける。"
+      ],
+      "collocations": "合: かんかん照り"
+    },
+    {
+      "number": 561,
+      "reading": "びしょびしょ／びっしょり",
+      "kanji": "びしょびしょ／びっしょり",
+      "verb_pattern": null,
+      "meaning_en": "sopping",
+      "meaning_zh": "湿透，淋透",
+      "meaning_ko": "흠뻑 젖은 모양, 흠뻑, 줄줄",
+      "examples": [
+        "・洗面台の周りがびしょびしょだ。",
+        "・にわか雨に降られ、びっしょりぬれてしまった。",
+        "・私は暑がりなので、ちょっと運動しただけで汗びっしょりになる。"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 562,
+      "reading": "うろうろ",
+      "kanji": "うろうろ (うろうろスル)",
+      "verb_pattern": null,
+      "meaning_en": "hang around, stroll",
+      "meaning_zh": "转来转去，徘徊，转悠",
+      "meaning_ko": "서성거림, 어슬렁어슬렁",
+      "examples": [
+        "・友人の家の場所がわからず、30分もうろうろ（と）歩き回った。",
+        "・あやしい男が家の周りをうろうろしている。"
+      ],
+      "collocations": "関: うろつく"
+    },
+    {
+      "number": 563,
+      "reading": "のろのろ",
+      "kanji": "のろのろ (のろのろスル)",
+      "verb_pattern": null,
+      "meaning_en": "slowly, at a snail's pace",
+      "meaning_zh": "慢吞吞，迟缓",
+      "meaning_ko": "느릿느릿, 꾸물꾸물",
+      "examples": [
+        "・渋滞で、車はのろのろとしか進まなかった。",
+        "・老人はのろのろ（と）立ち上がった。",
+        "・時間はのろのろ（と）過ぎていった。",
+        "・のろのろした動き"
+      ],
+      "collocations": "合: のろのろ運転 | 関: (イ形) のろい"
+    },
+    {
+      "number": 564,
+      "reading": "ふらふら",
+      "kanji": "ふらふら (ふらふらスル)",
+      "verb_pattern": null,
+      "meaning_en": "dizzy; changeable; hardly knowing what one was doing",
+      "meaning_zh": "晕乎乎，蹒跚；摇摆不定；糊里糊涂",
+      "meaning_ko": "휘청휘청, 비틀비틀, 갈팡질팡, 무심코",
+      "examples": [
+        "①・熱で頭がふらふらする。",
+        "・向こうから、ふらふら（と）人が歩いて来る。",
+        "②・彼は考え方がふらふらしていて、ちょっと信用できない。",
+        "③・空腹のあまり、ついふらふらと万引きしてしまった。"
+      ],
+      "collocations": "関: ①②ふらつく"
+    },
+    {
+      "number": 565,
+      "reading": "ぶらぶら",
+      "kanji": "ぶらぶら (ぶらぶらスル)",
+      "verb_pattern": null,
+      "meaning_en": "stroll; idle; swing",
+      "meaning_zh": "溜达；赋闲，在家闲居；晃荡",
+      "meaning_ko": "어슬렁어슬렁, 빈둥빈둥, 대롱대롱",
+      "examples": [
+        "①・折れた木の枝がぶらぶら（と）揺れている。",
+        "②・ひまだったので、近所をぶらぶらした。",
+        "・ぶらぶら｛歩く／散歩する…｝。",
+        "③・先月失業し、今は家でぶらぶらしている。"
+      ],
+      "collocations": "関: ぶらつく"
+    }
+  ],
+  "raw_text": "557 にやにや／にやりと (にやにや／にやりとスル)\nmeaning: grin, smirk / 默默地笑，不出声地笑 / 히죽히죽, 히죽\nexamples:\n- ・「何をにやにやしているんだ。気持ち悪い」\n- ・悪事が成功したときのことを想像して、彼はにやりと笑った。\ncollocations:\n\n558 どきどき／どきりと (どきどきスル／どきりとスル)\nmeaning: thump; beat fast / 七上八下，忐忑不安 / 두근두근, 철렁\nexamples:\n- ・緊張で胸がどきどきする。\n- ・隠していたことを指摘されて、どきりとした。\ncollocations:\n\n559 はらはら (はらはらスル)\nmeaning: feel uneasy; flutter / 提心吊胆；飘落，扑簌簌（落泪） / 조마조마, 하늘하늘, 뚝뚝\nexamples:\n- ①［はらはら（と）］・桜の花びらがはらはらと散った。\n- ・少女ははらはらと涙を流した。\n- ②［はらはらする］・綱渡りを見ながらはらはらした。\ncollocations:\n\n560 かんかん\nmeaning: be in a rage; blaze / 大怒，大发脾气；毒辣辣地 / 노발대발, 쨍쨍\nexamples:\n- ①・「お父さん、怒ってる？」「かんかんだよ」\n- ・かんかんになって怒る。\n- ②・真夏の太陽がかんかん（と）照りつける。\ncollocations: 合: かんかん照り\n\n561 びしょびしょ／びっしょり\nmeaning: sopping / 湿透，淋透 / 흠뻑 젖은 모양, 흠뻑, 줄줄\nexamples:\n- ・洗面台の周りがびしょびしょだ。\n- ・にわか雨に降られ、びっしょりぬれてしまった。\n- ・私は暑がりなので、ちょっと運動しただけで汗びっしょりになる。\ncollocations:\n\n562 うろうろ (うろうろスル)\nmeaning: hang around, stroll / 转来转去，徘徊，转悠 / 서성거림, 어슬렁어슬렁\nexamples:\n- ・友人の家の場所がわからず、30分もうろうろ（と）歩き回った。\n- ・あやしい男が家の周りをうろうろしている。\ncollocations: 関: うろつく\n\n563 のろのろ (のろのろスル)\nmeaning: slowly, at a snail's pace / 慢吞吞，迟缓 / 느릿느릿, 꾸물꾸물\nexamples:\n- ・渋滞で、車はのろのろとしか進まなかった。\n- ・老人はのろのろ（と）立ち上がった。\n- ・時間はのろのろ（と）過ぎていった。\n- ・のろのろした動き\ncollocations: 合: のろのろ運転 | 関: (イ形) のろい\n\n564 ふらふら (ふらふらスル)\nmeaning: dizzy; changeable; hardly knowing what one was doing / 晕乎乎，蹒跚；摇摆不定；糊里糊涂 / 휘청휘청, 비틀비틀, 갈팡질팡, 무심코\nexamples:\n- ①・熱で頭がふらふらする。\n- ・向こうから、ふらふら（と）人が歩いて来る。\n- ②・彼は考え方がふらふらしていて、ちょっと信用できない。\n- ③・空腹のあまり、ついふらふらと万引きしてしまった。\ncollocations: 関: ①②ふらつく\n\n565 ぶらぶら (ぶらぶらスル)\nmeaning: stroll; idle; swing / 溜达；赋闲，在家闲居；晃荡 / 어슬렁어슬렁, 빈둥빈둥, 대롱대롱\nexamples:\n- ①・折れた木の枝がぶらぶら（と）揺れている。\n- ②・ひまだったので、近所をぶらぶらした。\n- ・ぶらぶら｛歩く／散歩する…｝。\n- ③・先月失業し、今は家でぶらぶらしている。\ncollocations: 関: ぶらつく"
+}

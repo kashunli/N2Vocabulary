@@ -1,0 +1,109 @@
+{
+  "page": 137,
+  "page_type": "column",
+  "section": "まとめ2 同じ漢字を含む名詞 (Entries 656-680)",
+  "entries": [
+    {
+      "number": 656,
+      "reading": "ぞうだい",
+      "kanji": "増大",
+      "verb_pattern": null,
+      "meaning_en": "increase",
+      "meaning_zh": "增大，增加",
+      "meaning_ko": "증대",
+      "examples": [
+        "・時が経つとともに、不安が増大した。",
+        "・{不満／生産量 ...}が増大する。"
+      ],
+      "collocations": "対: ガ減少スル | 類: ガ増加スル | 関: ガ／ヲ増す"
+    },
+    {
+      "number": 657,
+      "reading": "ぞうりょう",
+      "kanji": "増量",
+      "verb_pattern": null,
+      "meaning_en": "increase (in weight; in number)",
+      "meaning_zh": "增量，增多",
+      "meaning_ko": "증량",
+      "examples": [
+        "・（宣伝）「現在、1割増量サービス中です」",
+        "・病気が悪化し、薬が増量された。"
+      ],
+      "collocations": "対: ガ／ヲ減量スル ☞ 662"
+    },
+    {
+      "number": 658,
+      "reading": "ぞうぜい",
+      "kanji": "増税",
+      "verb_pattern": null,
+      "meaning_en": "tax increase",
+      "meaning_zh": "加税，增税",
+      "meaning_ko": "증세",
+      "examples": [
+        "・労働人口が減少し、政府は増税を考えているらしい。",
+        "・所得税が増税された。"
+      ],
+      "collocations": "対: ガ／ヲ減税スル"
+    },
+    {
+      "number": 659,
+      "reading": "ぞういん",
+      "kanji": "増員",
+      "verb_pattern": null,
+      "meaning_en": "increase in the number of personnel",
+      "meaning_zh": "增加人员",
+      "meaning_ko": "증원",
+      "examples": [
+        "・アメリカ大統領来日に当たり、警備員が増員された。",
+        "・定員を増員する。"
+      ],
+      "collocations": "対: ヲ削減スル ☞ N1"
+    },
+    {
+      "number": 660,
+      "reading": "げんてん",
+      "kanji": "減点",
+      "verb_pattern": null,
+      "meaning_en": "deduction of points",
+      "meaning_zh": "扣分",
+      "meaning_ko": "감점",
+      "examples": [
+        "・漢字のテストで、送り仮名を間違えて減点された。"
+      ],
+      "collocations": "対: ガ／ヲ加点スル"
+    },
+    {
+      "number": 661,
+      "reading": "げんたい",
+      "kanji": "減退",
+      "verb_pattern": null,
+      "meaning_en": "decline",
+      "meaning_zh": "减退，衰退",
+      "meaning_ko": "감퇴",
+      "examples": [
+        "・暑さのせいで食欲が減退した。"
+      ],
+      "collocations": "対: ガ増進スル"
+    },
+    {
+      "number": 662,
+      "reading": "げんりょう",
+      "kanji": "減量",
+      "verb_pattern": null,
+      "meaning_en": "loss in quantity [weight]; losing weight",
+      "meaning_zh": "减量",
+      "meaning_ko": "감량",
+      "examples": [
+        "・洗剤の中身が減量された。これでは値上げと同じだ。",
+        "・ボクサーの加藤選手は試合前の減量に苦しんでいる。"
+      ],
+      "collocations": "対: ガ／ヲ増量スル ☞ 657"
+    }
+  ],
+  "column": {
+    "number": null,
+    "title": "",
+    "items": []
+  },
+  "raw_text": "まとめ2 同じ漢字を含む名詞 656 〜 680\nI 「増」「減」が付く言葉\nVocabulary containing 「増 (increase)」 or 「減 (decrease)」 / 带有 “増”、“減” 的词 / 「増」「減」이 붙는 말\n656 ぞうだい ガ／ヲ増大スル increase / 增大，增加 / 증대\n・時が経つとともに、不安が増大した。 ・{不満／生産量 ...}が増大する。\n対 ガ減少スル 類 ガ増加スル 関 ガ／ヲ増す\n※「増加」は具体的な物の数、「増大」は抽象的なことがらについて言うことが多い。\n657 ぞうりょう ガ／ヲ増量スル increase (in weight; in number) / 增量，增多 / 증량\n・（宣伝）「現在、1割増量サービス中です」 ・病気が悪化し、薬が増量された。\n対 ガ／ヲ減量スル ☞ 662\n658 ぞうぜい ガ／ヲ増税スル tax increase / 加税，增税 / 증세\n・労働人口が減少し、政府は増税を考えているらしい。 ・所得税が増税された。\n対 ガ／ヲ減税スル\n659 ぞういん ガ／ヲ増員スル increase in the number of personnel / 增加人员 / 증원\n・アメリカ大統領来日に当たり、警備員が増員された。 ・定員を増員する。\n対 ヲ削減スル ☞ N1\n660 げんてん ガ／ヲ減点スル deduction of points / 扣分 / 감점\n・漢字のテストで、送り仮名を間違えて減点された。\n対 ガ／ヲ加点スル\n661 げんたい ガ減退スル decline / 减退，衰退 / 감퇴\n・暑さのせいで食欲が減退した。\n対 ガ増進スル\n662 げんりょう ガ／ヲ減量スル loss in quantity [weight]; losing weight / 减量 / 감량\n① ・洗剤の中身が減量された。これでは値上げと同じだ。\n対 ガ／ヲ増量スル ☞ 657\n② ・ボクサーの加藤選手は試合前の減量に苦しんでいる。\n\n＜その他＞\nぞうげん 増減、 ぞうがく 増額 ⇔ げんがく 減額、 ぞうさん 増産 ⇔ げんさん 減産、 *ぞうしゅう 増収 ⇔ *げんしゅう 減収、 ぞうすい 増水、 ぞうはつ 増発、 *げんえん 減塩、 げんそく 減速 ⇔ かそく 加速、\nきゅうぞう 急増、 ばいぞう 倍増、 はんげん 半減 (* 「する」は付かない)\n136"
+}

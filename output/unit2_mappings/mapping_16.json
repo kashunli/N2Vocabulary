@@ -1,0 +1,9 @@
+[
+  {"index": 214, "word": {"start": 0.00, "end": 1.46}, "sentence": {"start": 1.88, "end": 4.94}, "note": "ASR: つとめる→努める"},
+  {"index": 215, "word": {"start": 6.48, "end": 7.42}, "sentence": {"start": 8.04, "end": 11.40}, "note": ""},
+  {"index": 216, "word": {"start": 12.92, "end": 13.98}, "sentence": {"start": 14.32, "end": 16.22}, "note": "same pronunciation as 214, different kanji (務める vs 努める)"},
+  {"index": 217, "word": {"start": 17.80, "end": 18.76}, "sentence": {"start": 19.40, "end": 23.18}, "note": ""},
+  {"index": 218, "word": {"start": 24.92, "end": 25.42}, "sentence": {"start": 26.16, "end": 30.02}, "note": "ASR: 対写する→退社する"},
+  {"index": 219, "word": {"start": 31.56, "end": 32.64}, "sentence": {"start": 33.32, "end": 35.86}, "note": ""},
+  {"index": 220, "word": {"start": 37.36, "end": 38.42}, "sentence": {"start": 38.92, "end": 42.96}, "note": "ASR: 地務局→事務局"}
+]

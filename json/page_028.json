@@ -1,0 +1,147 @@
+{
+  "page": 28,
+  "page_type": "vocabulary",
+  "section": "Unit 02 動詞 A",
+  "entries": [
+    {
+      "number": 107,
+      "reading": "うたがう",
+      "kanji": "疑う",
+      "verb_pattern": null,
+      "meaning_en": "suspect; doubt",
+      "meaning_zh": "怀疑; 猜疑",
+      "meaning_ko": "혐의 두다, 의심하다",
+      "examples": [
+        "警察は私を犯人ではないかと疑っているらしい。",
+        "小さな子どもは人を疑うことを知らない。",
+        "私は彼の成功を疑ったことはない。"
+      ],
+      "collocations": "連: 良識を～ | 対: ヲ信じる | 慣: 目を～ (例. あり得ない光景を見て、自分の目を疑った。) | (名): ①②疑い → ～を持つ、～がある⇔ない (例. ガンの疑いがある。)"
+    },
+    {
+      "number": 108,
+      "reading": "くるしむ",
+      "kanji": "苦しむ",
+      "verb_pattern": null,
+      "meaning_en": "be troubled (with), suffer (from)",
+      "meaning_zh": "难受; 受折磨; 烦恼, 苦于",
+      "meaning_ko": "괴로워하다",
+      "examples": [
+        "学校でいじめられて苦しんでいる子どもが大勢いる。",
+        "私は長年腰痛 {に／で} 苦しんできた。"
+      ],
+      "collocations": "連: 理解に～ | (名): 苦しみ | <他>: ヲ苦しめる (例. 父は家族を大切にせず、母を苦しめた。)"
+    },
+    {
+      "number": 109,
+      "reading": "なしむ",
+      "kanji": "悲しむ",
+      "verb_pattern": "か",
+      "meaning_en": "feel sad, be sorrowful",
+      "meaning_zh": "悲哀, 伤心",
+      "meaning_ko": "슬퍼하다",
+      "examples": [
+        "娘はペットの死を悲しんで、1 日中泣いていた。"
+      ],
+      "collocations": "対: ヲ喜ぶ | (名): 悲しみ"
+    },
+    {
+      "number": 110,
+      "reading": "がっかりする",
+      "kanji": "がっかりする",
+      "verb_pattern": "ガ",
+      "meaning_en": "be disappointed",
+      "meaning_zh": "失望, 灰心",
+      "meaning_ko": "실망하다",
+      "examples": [
+        "試験に落ちて、がっかりした。",
+        "この結果には {がっかりしている／がっかりだ}。"
+      ],
+      "collocations": null
+    },
+    {
+      "number": 111,
+      "reading": "はげます",
+      "kanji": "励ます",
+      "verb_pattern": null,
+      "meaning_en": "encourage",
+      "meaning_zh": "鼓励",
+      "meaning_ko": "격려하다",
+      "examples": [
+        "受験に失敗した友人を励ました。",
+        "「皆さんの応援に励まされました」"
+      ],
+      "collocations": "関: ヲ激励スル | (名): 励まし"
+    },
+    {
+      "number": 112,
+      "reading": "うなずく",
+      "kanji": "うなずく",
+      "verb_pattern": "ガ",
+      "meaning_en": "nod; nod in agreement",
+      "meaning_zh": "首肯; 同意",
+      "meaning_ko": "고개를 끄덕이다, 수긍하다",
+      "examples": [
+        "祖父は何も言わずにうなずいた。",
+        "何度頼んでも、父はうなずいてくれない。"
+      ],
+      "collocations": null
+    },
+    {
+      "number": 113,
+      "reading": "はりきる",
+      "kanji": "張り切る",
+      "verb_pattern": null,
+      "meaning_en": "work hard, be eager",
+      "meaning_zh": "干劲十足, 精神抖擞",
+      "meaning_ko": "의욕이 충만되다",
+      "examples": [
+        "入社第一日目、娘は張り切って出勤した。",
+        "今年も運動会で優勝しようと、クラス全員張り切っている。"
+      ],
+      "collocations": null
+    },
+    {
+      "number": 114,
+      "reading": "いばる",
+      "kanji": "威張る",
+      "verb_pattern": null,
+      "meaning_en": "act big, be arrogant",
+      "meaning_zh": "自高自大, 摆架子",
+      "meaning_ko": "뽐내다, 으스대다",
+      "examples": [
+        "自分ができるからといって、すぐにいばる人は嫌われる。"
+      ],
+      "collocations": null
+    },
+    {
+      "number": 115,
+      "reading": "どなる",
+      "kanji": "怒鳴る",
+      "verb_pattern": null,
+      "meaning_en": "shout, yell",
+      "meaning_zh": "大声喊叫, 大声斥责",
+      "meaning_ko": "소리치다, 고함치다",
+      "examples": [
+        "「そんなに大声でどならなくても聞こえますよ」",
+        "父親に「出て行け!」とどなられた。"
+      ],
+      "collocations": "合: ヲ怒鳴りつける、怒鳴り声"
+    },
+    {
+      "number": 116,
+      "reading": "あばれる",
+      "kanji": "暴れる",
+      "verb_pattern": null,
+      "meaning_en": "act violently, rampage",
+      "meaning_zh": "闹, 乱闹",
+      "meaning_ko": "난폭하게 굴다, 날뛰다",
+      "examples": [
+        "弟は気が短く、子どものころはすぐに暴れて、よく物を壊したものだ。",
+        "酒に酔って暴れるなんて最低だと思う。"
+      ],
+      "collocations": "合: ガ大暴れスル"
+    }
+  ],
+  "raw_text": "107 うたがう ヲ疑う suspect; doubt / 怀疑; 猜疑 / 혐의 두다, 의심하다 ①・警察は私を犯人ではないかと疑っているらしい。 ②・小さな子どもは人を疑うことを知らない。 ・私は彼の成功を疑ったことはない。 連 良識を_ 対 ヲ信じる 慣 目を_(例. あり得ない光景を見て、自分の目を疑った。) (名) ①②疑い→ _を持つ、~がある⇔ない (例. ガンの疑いがある。) 108 くるしむ ガ苦しむ be troubled (with), suffer (from) / 难受; 受折磨; 烦恼, 苦于 / 괴로워하다 ・学校でいじめられて苦しんでいる子どもが大勢いる。 ・私は長年腰痛 {に／で} 苦しんできた。 連 理解に_ (名) 苦しみ <他> ヲ苦しめる (例. 父は家族を大切にせず、母を苦しめた。) 109 かなしむ ヲ悲しむ feel sad, be sorrowful / 悲哀, 伤心 / 슬퍼하다 ・娘はペットの死を悲しんで、1 日中泣いていた。 対 ヲ喜ぶ (名) 悲しみ 110 がっかりする ガがっかりする be disappointed / 失望, 灰心 / 실망하다 ・試験に落ちて、がっかりした。 ・この結果には {がっかりしている／がっかりだ}。 111 はげます ヲ励ます encourage / 鼓励 / 격려하다 ・受験に失敗した友人を励ました。 ・「皆さんの応援に励まされました」 関 ヲ激励スル (名) 励まし 112 うなずく ガうなずく nod; nod in agreement / 首肯; 同意 / 고개를 끄덕이다, 수긍하다 ①・祖父は何も言わずにうなずいた。 ②・何度頼んでも、父はうなずいてくれない。 113 はりきる ガ張り切る work hard, be eager / 干劲十足, 精神抖擞 / 의욕이 충만되다 ・入社第一日目、娘は張り切って出勤した。 ・今年も運動会で優勝しようと、クラス全員張り切っている。 114 いばる ガ威張る act big, be arrogant / 自高自大, 摆架子 / 뽐내다, 으스대다 ・自分ができるからといって、すぐにいばる人は嫌われる。 115 どなる ガ怒鳴る shout, yell / 大声喊叫, 大声斥责 / 소리치다, 고함치다 ・「そんなに大声でどならなくても聞こえますよ」 ・父親に「出て行け!」とどなられた。 合 ヲ怒鳴りつける、怒鳴り声 116 あばれる ガ暴れる act violently, rampage / 闹, 乱闹 / 난폭하게 굴다, 날뛰다 ・弟は気が短く、子どものころはすぐに暴れて、よく物を壊したものだ。 ・酒に酔って暴れるなんて最低だと思う。 合 ガ大暴れスル 27"
+}

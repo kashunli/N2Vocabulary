@@ -1,0 +1,114 @@
+[
+  {
+    "index": 101,
+    "unit_number": 2,
+    "headword": "好む",
+    "reading": "このむ",
+    "sentence": "一般にお年寄りはあっさりした味を好む。"
+  },
+  {
+    "index": 102,
+    "unit_number": 2,
+    "headword": "嫌う",
+    "reading": "きらう",
+    "sentence": "彼女は彼を嫌っているようだ。"
+  },
+  {
+    "index": 103,
+    "unit_number": 2,
+    "headword": "願う",
+    "reading": "ねがう",
+    "sentence": "世界平和を願う。"
+  },
+  {
+    "index": 104,
+    "unit_number": 2,
+    "headword": "甘える",
+    "reading": "あまえる",
+    "sentence": "子どもが母親に甘える。"
+  },
+  {
+    "index": 105,
+    "unit_number": 2,
+    "headword": "かわいがる",
+    "reading": "かわいがる",
+    "sentence": "息子は妹をとてもかわいがっている。"
+  },
+  {
+    "index": 106,
+    "unit_number": 2,
+    "headword": "気付く <気が付く>",
+    "reading": "きづく",
+    "sentence": "犯人は刑事に気付いて逃げてしまった。"
+  },
+  {
+    "index": 107,
+    "unit_number": 2,
+    "headword": "疑う",
+    "reading": "うたがう",
+    "sentence": "警察は私を犯人ではないかと疑っているらしい。"
+  },
+  {
+    "index": 108,
+    "unit_number": 2,
+    "headword": "苦しむ",
+    "reading": "くるしむ",
+    "sentence": "学校でいじめられて苦しんでいる子どもが大勢いる。"
+  },
+  {
+    "index": 109,
+    "unit_number": 2,
+    "headword": "悲しむ",
+    "reading": "なしむ",
+    "sentence": "娘はペットの死を悲しんで、1 日中泣いていた。"
+  },
+  {
+    "index": 110,
+    "unit_number": 2,
+    "headword": "がっかりする",
+    "reading": "がっかりする",
+    "sentence": "試験に落ちて、がっかりした。"
+  },
+  {
+    "index": 111,
+    "unit_number": 2,
+    "headword": "励ます",
+    "reading": "はげます",
+    "sentence": "受験に失敗した友人を励ました。"
+  },
+  {
+    "index": 112,
+    "unit_number": 2,
+    "headword": "うなずく",
+    "reading": "うなずく",
+    "sentence": "祖父は何も言わずにうなずいた。"
+  },
+  {
+    "index": 113,
+    "unit_number": 2,
+    "headword": "張り切る",
+    "reading": "はりきる",
+    "sentence": "入社第一日目、娘は張り切って出勤した。"
+  },
+  {
+    "index": 114,
+    "unit_number": 2,
+    "headword": "威張る",
+    "reading": "いばる",
+    "sentence": "自分ができるからといって、すぐにいばる人は嫌われる。"
+  },
+  {
+    "index": 115,
+    "unit_number": 2,
+    "headword": "怒鳴る",
+    "reading": "どなる",
+    "sentence": "「そんなに大声でどならなくても聞こえますよ」"
+  },
+  {
+    "index": 116,
+    "unit_number": 2,
+    "headword": "暴れる",
+    "reading": "あばれる",
+    "sentence": "弟は気が短く、子どものころはすぐに暴れて、よく物を壊したものだ。"
+  }
+]

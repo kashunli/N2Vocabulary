@@ -1,0 +1,12 @@
+[
+  {
+    "track": "08 1-08.mp3",
+    "track_num": "08",
+    "raw_json_file": "unit2_track_08_large-v3-turbo_wcpp_ml1.json",
+    "segments_file": "unit2_track_08_large-v3-turbo_wcpp_segments.json",
+    "transcript_file": "unit2_track_08_large-v3-turbo_wcpp_transcript.txt",
+    "segment_count": 267,
+    "audio_seconds_approx": 110.95,
+    "elapsed_seconds": 29.3
+  }
+]

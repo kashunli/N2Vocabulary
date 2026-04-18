@@ -1,0 +1,13 @@
+[
+  {"index": 245, "word": {"start": 0.592, "end": 1.580}, "sentence": {"start": 2.278, "end": 5.604}, "word_segment_idx": 0, "sentence_segment_indices": [1,2], "note": "Sentence split across 2 segments"},
+  {"index": 246, "word": {"start": 7.282, "end": 8.279}, "sentence": {"start": 9.040, "end": 12.765}, "word_segment_idx": 3, "sentence_segment_indices": [4,5], "note": "Sentence split: とんでもないねなんだ→とんでもない値段だ"},
+  {"index": 247, "word": {"start": 14.503, "end": 15.363}, "sentence": {"start": 16.127, "end": 19.375}, "word_segment_idx": 6, "sentence_segment_indices": [7,8], "note": "Sentence split across 2 segments"},
+  {"index": 248, "word": {"start": 21.207, "end": 22.251}, "sentence": {"start": 22.965, "end": 26.872}, "word_segment_idx": 9, "sentence_segment_indices": [10,11], "note": "Sentence split across 2 segments"},
+  {"index": 249, "word": {"start": 28.627, "end": 29.566}, "sentence": {"start": 30.313, "end": 33.892}, "word_segment_idx": 12, "sentence_segment_indices": [13,14], "note": "Sentence split across 2 segments"},
+  {"index": 250, "word": {"start": 35.617, "end": 36.523}, "sentence": {"start": 37.261, "end": 40.655}, "word_segment_idx": 15, "sentence_segment_indices": [16,17], "note": "Sentence split: 確保→格好 ASR error"},
+  {"index": 251, "word": {"start": 42.318, "end": 43.495}, "sentence": {"start": 44.187, "end": 47.243}, "word_segment_idx": 18, "sentence_segment_indices": [19], "note": "ASR: ずーずーし→ずうずうしい"},
+  {"index": 252, "word": {"start": 49.022, "end": 49.585}, "sentence": {"start": 50.363, "end": 55.267}, "word_segment_idx": 20, "sentence_segment_indices": [21,22], "note": "Sentence split across 2 segments"},
+  {"index": 253, "word": {"start": 56.995, "end": 63.487}, "sentence": {"start": 65.223, "end": 65.825}, "word_segment_idx": 23, "sentence_segment_indices": [27], "note": "Word merged with sentence fragments: ニクラシー→憎らしい ASR, word spans regions 23-26"},
+  {"index": 254, "word": {"start": 66.542, "end": 68.513}, "sentence": {"start": 70.178, "end": 70.980}, "word_segment_idx": 28, "sentence_segment_indices": [29], "note": "ASR: ニクイ→憎い"},
+  {"index": 255, "word": {"start": 71.722, "end": 73.571}, "sentence": {"start": 71.722, "end": 73.571}, "word_segment_idx": 30, "sentence_segment_indices": [30], "note": "ASR: ケワシー→険しい, word and sentence merged into one segment"}
+]

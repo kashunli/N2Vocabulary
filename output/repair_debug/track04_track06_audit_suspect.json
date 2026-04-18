@@ -1,0 +1,50 @@
+[
+  {
+    "index": 49,
+    "unit_number": 1,
+    "track_name": "04 1-04.mp3",
+    "headword": "意志 / 意思",
+    "reading": "いし",
+    "expected_sentence": "彼女は意志が {固い／強い} から、きっと目的を達成するだろう。",
+    "word_clip": "output\\clips\\unit01\\word49.mp3",
+    "sentence_clip": "output\\clips\\unit01\\sentence49.mp3",
+    "word_duration": 0.46,
+    "sentence_duration": 3.791995,
+    "word_transcript_audit": "一喜",
+    "sentence_transcript_audit": "彼女は意思が固いからきっと目的を達成するだろう。",
+    "word_score_audit": 0.4,
+    "sentence_score_audit": 0.954,
+    "word_status": "suspect",
+    "sentence_status": "ok",
+    "status": "suspect",
+    "word_reasons": [
+      "word_asr_mismatch"
+    ],
+    "sentence_reasons": [],
+    "note": "whisper.cpp large-v3-turbo confirms the full 意志 sentence occupies this window"
+  },
+  {
+    "index": 79,
+    "unit_number": 1,
+    "track_name": "06 1-06.mp3",
+    "headword": "現在",
+    "reading": "げんざい",
+    "expected_sentence": "駅前は昔は畑だったが、現在は大きなショッピングセンターになっている。",
+    "word_clip": "output\\clips\\unit01\\word79.mp3",
+    "sentence_clip": "output\\clips\\unit01\\sentence79.mp3",
+    "word_duration": 0.42,
+    "sentence_duration": 5.38,
+    "word_transcript_audit": "ご視聴ありがとうございました",
+    "sentence_transcript_audit": "駅前は昔は畑だったが、現在は大きなショッピングセンターになっている。",
+    "word_score_audit": 0.2,
+    "sentence_score_audit": 1.0,
+    "word_status": "suspect",
+    "sentence_status": "ok",
+    "status": "suspect",
+    "word_reasons": [
+      "word_clip_too_long_or_merged"
+    ],
+    "sentence_reasons": [],
+    "note": ""
+  }
+]

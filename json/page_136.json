@@ -1,0 +1,53 @@
+{
+  "page": 136,
+  "page_type": "column",
+  "section": "名詞 C (Entries 581-655)",
+  "entries": [
+    {
+      "number": 653,
+      "reading": "とかい",
+      "kanji": "都会",
+      "verb_pattern": null,
+      "meaning_en": "city",
+      "meaning_zh": "都市",
+      "meaning_ko": "도회, 도시",
+      "examples": [
+        "・田舎の高校生だった私は、都会にあこがれていた。"
+      ],
+      "collocations": "連: _に出る | 合: _的な | 対: 田舎 | 関: 都市、都心、下町"
+    },
+    {
+      "number": 654,
+      "reading": "よろん",
+      "kanji": "世論",
+      "verb_pattern": null,
+      "meaning_en": "public opinion",
+      "meaning_zh": "舆论, 公论",
+      "meaning_ko": "여론",
+      "examples": [
+        "・現代の政治家は世論を無視することはできない。"
+      ],
+      "collocations": "合: _調査 | 備考: 「せろん」とも言う。"
+    },
+    {
+      "number": 655,
+      "reading": "みんぞく",
+      "kanji": "民族",
+      "verb_pattern": null,
+      "meaning_en": "race, ethnic group",
+      "meaning_zh": "民族",
+      "meaning_ko": "민족",
+      "examples": [
+        "・世界にはさまざまな民族が存在する。",
+        "・ロシアは多民族国家だ。"
+      ],
+      "collocations": "合: 少数_、多_、単一_、異_、_学、_主義"
+    }
+  ],
+  "column": {
+    "number": 15,
+    "title": "",
+    "items": []
+  },
+  "raw_text": "653 とかい 都会 city / 都市 / 도회, 도시\n・田舎の高校生だった私は、都会にあこがれていた。\n連 _に出る 合 _的な 対 田舎 関 都市、都心、下町\n654 よろん 世論 public opinion / 舆论, 公论 / 여론\n・現代の政治家は世論を無視することはできない。\n※「せろん」とも言う。 合 _調査\n655 みんぞく 民族 race, ethnic group / 民族 / 민족\n・世界にはさまざまな民族が存在する。 ・ロシアは多民族国家だ。\n合 少数_、多_、単一_、異_、_学、_主義\n\nコラム 15 会社 Companies / 公司 / 회사\n◆企業 (きぎょう) enterprise, business, corporation / 企业 / 기업 (大_、中小_、ベンチャー_ ...)\n◆会社 (かいしゃ) company, firm / 公司 / 회사 (株式_、合弁_、貿易_、建築_ ...)\n商社 (しょうしゃ) trading [business] company / 商社, 贸易公司 / 상사\n出版社 (しゅっぱんしゃ) publishing company / 出版社 / 출판사\n新聞社 (しんぶんしゃ) newspaper company / 报社 / 신문사\nメーカー manufacturer / 制造商 / 메이커, 유명 제품의 제조 회사\n小売店／卸売店 (こうりてん／おろしうりてん) retail shop / wholesale shop / 零售店 / 批发店 / 소매점 / 도매점\n本店／支店 (ほんてん／してん) head office; main shop / branch (office [store]) / 总店 / 分店, 支店, 分公司 / 본점 / 지점\n本社／支社 (ほんしゃ／ししゃ) head [main] office / branch office / 总社, 总公司 / 支店, 分公司 / 본사 / 지사\n営業所 (えいぎょうしょ) place of business / 营业所 / 영업소\n◆組織 (そしき) organization / 组织 / 조직\n総務 (そうむ) general affairs / 总务 / 총무\n人事 (じんじ) personnel affairs / 人事 / 인사\n営業 (えいぎょう) business (affairs) / 营业 / 영업\n経理 (けいり) accounting / 会计 / 경리\n広報 (こうほう) public information, public relations / 宣传 / 홍보\n企画 (きかく) planning, project / 规划, 计划 / 기획\n◆役職 (やくしょく)・肩書き (かたがき) post, official position / 职务・头衔 / 직무, 지위\n代表取締役 (だいひょうとりしまりやく) (社長) representative director, CEO, president / 董事长・总经理 / 대표 중역 '사장\n取締役 (とりしまりやく) (役員) director / 董事 / 임원, 중역\n専務 (せんむ) (senior) executive director / 专务 / 전무\n常務 (じょうむ) executive director / 常务 / 상무\n部長 (ぶちょう) general manager / 部长 / 부장\n課長 (かちょう) head of a section / 科长 / 과장\n係長 (かかりちょう) subsection chief / 股长 / 계장\n◆その他\n名刺 (めいし) business [visiting] card / 名片 / 명함\n履歴書 (りれきしょ) curriculum vitae, résumé / 履历书 / 이력서\n135"
+}

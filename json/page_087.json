@@ -1,0 +1,172 @@
+{
+  "page": 87,
+  "page_type": "vocabulary",
+  "section": "まとめ1 複合動詞 (Entries 412–423)",
+  "entries": [
+    {
+      "number": 412,
+      "reading": "さしこむ",
+      "kanji": "差し込む",
+      "verb_pattern": null,
+      "meaning_en": "shine in",
+      "meaning_zh": "射入，照进来",
+      "meaning_ko": "들어오다",
+      "examples": [
+        "・日の光が部屋いっぱいに差し込んでいる。"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 413,
+      "reading": "しみこむ",
+      "kanji": "染み込む",
+      "verb_pattern": null,
+      "meaning_en": "soak; sink into",
+      "meaning_zh": "渗入；铭刻",
+      "meaning_ko": "스며들다, 배어들다",
+      "examples": [
+        "・雨が土にしみ込む。",
+        "・母の教えが胸にしみ込んでいる。"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 414,
+      "reading": "ひっこむ",
+      "kanji": "引っ込む",
+      "verb_pattern": null,
+      "meaning_en": "retire, stand back",
+      "meaning_zh": "退开，退隐；凹入；让在一边",
+      "meaning_ko": "틀어박히다, 물러나다, 쑥 들어가다",
+      "examples": [
+        "・秘書は客を応接室に通すと、奥へ引っ込んだ。",
+        "・父は退職後、田舎に引っ込んだ。",
+        "・その建物は大通りから引っ込んだところにあるのでわかりづらい。",
+        "・「あなたは関係ないんだから、引っ込んでてください」"
+      ],
+      "collocations": "関: <その他> どなり込む、逃げ込む、攻め込む、注ぎ込む ☞ 419 など"
+    },
+    {
+      "number": 415,
+      "reading": "つめこむ",
+      "kanji": "詰め込む",
+      "verb_pattern": null,
+      "meaning_en": "jam, cram",
+      "meaning_zh": "尽量装入，填满",
+      "meaning_ko": "가득 채워 넣다",
+      "examples": [
+        "・かばんに荷物を詰め込む。"
+      ],
+      "collocations": "関: (名) 詰め込み→＿教育"
+    },
+    {
+      "number": 416,
+      "reading": "のみこむ",
+      "kanji": "飲み込む",
+      "verb_pattern": null,
+      "meaning_en": "swallow",
+      "meaning_zh": "囫囵咽下；理解，领会",
+      "meaning_ko": "삼키다, 이해하다",
+      "examples": [
+        "・食べ物をかまずに飲み込む。",
+        "・状況を飲み込むのに時間がかかった。"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 417,
+      "reading": "はこびこむ",
+      "kanji": "運び込む",
+      "verb_pattern": null,
+      "meaning_en": "carry in",
+      "meaning_zh": "搬进，运进",
+      "meaning_ko": "나르다",
+      "examples": [
+        "・引っ越しの荷物を部屋に運び込む。"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 418,
+      "reading": "うちこむ",
+      "kanji": "／ヲ打ち込む",
+      "verb_pattern": null,
+      "meaning_en": "feed (data) into ~; smash ~ into; be absorbed in",
+      "meaning_zh": "输入；猛烈扣杀",
+      "meaning_ko": "입력하다, 쳐넣다, 열중하다",
+      "examples": [
+        "・パソコンにデータを打ち込む。",
+        "・強いサーブを打ち込む。"
+      ],
+      "collocations": "関: (名) 打ち込み | 関: 〈自〉 (例. 研究に打ち込む。 ☞ 〜込む④)"
+    },
+    {
+      "number": 419,
+      "reading": "そそぎこむ",
+      "kanji": "／ヲ注ぎ込む",
+      "verb_pattern": null,
+      "meaning_en": "offer (love), give (affection)",
+      "meaning_zh": "倾注",
+      "meaning_ko": "부어 넣다, 흘러들어 가다",
+      "examples": [
+        "・子どもに愛情を注ぎ込む。"
+      ],
+      "collocations": "関: 〈自〉 (例. 川が海に注ぎ込むところを河口と言う。 ☞ 〜込む①)"
+    },
+    {
+      "number": 420,
+      "reading": "ひきこむ",
+      "kanji": "引き込む",
+      "verb_pattern": null,
+      "meaning_en": "draw into",
+      "meaning_zh": "拉进，引诱进来",
+      "meaning_ko": "끌어들이다",
+      "examples": [
+        "・友人を悪の道に引き込む。",
+        "・話に引き込まれる。"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 421,
+      "reading": "きこむ",
+      "kanji": "書き込む",
+      "verb_pattern": "か",
+      "meaning_en": "superior",
+      "meaning_zh": "长辈",
+      "meaning_ko": "윗사람",
+      "examples": [
+        "・ノートに感想を書き込む。"
+      ],
+      "collocations": "関: (名) 書き込み→＿＿をする"
+    },
+    {
+      "number": 422,
+      "reading": "まきこむ",
+      "kanji": "巻き込む",
+      "verb_pattern": null,
+      "meaning_en": "involve",
+      "meaning_zh": "牵连",
+      "meaning_ko": "말려들게 하다",
+      "examples": [
+        "・事故に巻き込まれてけがをした。"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 423,
+      "reading": "おいこむ",
+      "kanji": "追い込む",
+      "verb_pattern": null,
+      "meaning_en": "drive into",
+      "meaning_zh": "赶进；逼入",
+      "meaning_ko": "몰아넣다, 곤경에 빠뜨리다, 총력을 경주하다",
+      "examples": [
+        "・羊の群れを囲いに追い込む。",
+        "・彼は責任を追及され、追い込まれた状況にある。"
+      ],
+      "collocations": "関: (名) 追い込み (例. 投票日まであと数日。候補者たちは必死に追い込みをかけている。)"
+    }
+  ],
+  "raw_text": "412 さしこむ ガ差し込む shine in / 射入，照进来 / 들어오다\n・日の光が部屋いっぱいに差し込んでいる。\n413 しみこむ ガ染み込む soak; sink into / 渗入；铭刻 / 스며들다, 배어들다\n・雨が土にしみ込む。 ・母の教えが胸にしみ込んでいる。\n414 ひっこむ ガ引っ込む retire, stand back / 退开，退隐；凹入；让在一边 / 틀어박히다, 물러나다, 쑥 들어가다\n・秘書は客を応接室に通すと、奥へ引っ込んだ。 ・父は退職後、田舎に引っ込んだ。\n・その建物は大通りから引っ込んだところにあるのでわかりづらい。\n・「あなたは関係ないんだから、引っ込んでてください」\n<その他> どなり込む、逃げ込む、攻め込む、注ぎ込む ☞ 419 など\n\n〜込む② 〈他〉 中に入れる [Enter, In] put ~ inside / 使……进去，让……进去 / 안에 넣다\n415 つめこむ ヲ詰め込む jam, cram / 尽量装入，填满 / 가득 채워 넣다\n・かばんに荷物を詰め込む。\n(名) 詰め込み→＿＿教育\n416 のみこむ ヲ飲み込む swallow / 囫囵咽下；理解，领会 / 삼키다, 이해하다\n・食べ物をかまずに飲み込む。 ・状況を飲み込むのに時間がかかった。\n417 はこびこむ ヲ運び込む carry in / 搬进，运进 / 나르다\n・引っ越しの荷物を部屋に運び込む。\n418 うちこむ ガ／ヲ打ち込む feed (data) into ~; smash ~ into; be absorbed in / 输入；猛烈扣杀 / 입력하다, 쳐넣다, 열중하다\n・パソコンにデータを打ち込む。 ・強いサーブを打ち込む。\n(名) 打ち込み 〈自〉 (例. 研究に打ち込む。 ☞ 〜込む④)\n419 そそぎこむ ガ／ヲ注ぎ込む offer (love), give (affection) / 倾注 / 부어 넣다, 흘러들어 가다\n・子どもに愛情を注ぎ込む。\n〈自〉 (例. 川が海に注ぎ込むところを河口と言う。 ☞ 〜込む①)\n420 ひきこむ ヲ引き込む draw into / 拉进，引诱进来 / 끌어들이다\n・友人を悪の道に引き込む。 ・話に引き込まれる。\n421 かきこむ ヲ書き込む superior / 长辈 / 윗사람\n・ノートに感想を書き込む。\n(名) 書き込み→＿＿をする\n422 まきこむ ヲ巻き込む involve / 牵连 / 말려들게 하다\n・事故に巻き込まれてけがをした。\n423 おいこむ ヲ追い込む drive into / 赶进；逼入 / 몰아넣다, 곤경에 빠뜨리다, 총력을 경주하다\n・羊の群れを囲いに追い込む。 ・彼は責任を追及され、追い込まれた状況にある。\n(名) 追い込み (例. 投票日まであと数日。候補者たちは必死に追い込みをかけている。)\n86"
+}

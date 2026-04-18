@@ -1,0 +1,143 @@
+{
+  "page": 31,
+  "page_type": "vocabulary",
+  "section": "Unit 02 動詞 A",
+  "entries": [
+    {
+      "number": 133,
+      "reading": "ひっぱる",
+      "kanji": "引っ張る",
+      "verb_pattern": null,
+      "meaning_en": "pull; persuade (a person) to join",
+      "meaning_zh": "拉, 拽; 拉拢",
+      "meaning_ko": "끌다, 당기다, 끌어들이다",
+      "examples": [
+        "このひもを引っ張ると電気がつく。",
+        "おもちゃ売り場から離れない子どもの手を引っ張って、外に出た。",
+        "「新入生をたくさん、うちのクラブに引っ張ってこよう」"
+      ],
+      "collocations": null
+    },
+    {
+      "number": 134,
+      "reading": "つく",
+      "kanji": "突く",
+      "verb_pattern": null,
+      "meaning_en": "stab, prick; walk on ~; put one's seal on ~; attack; pierce",
+      "meaning_zh": "戳, 刺; 撑, 拄; 说中; (味道) 冲鼻, 刺激",
+      "meaning_ko": "치다, 찍다, 찌르다, 떠밀다, 짚다, 찌다",
+      "examples": [
+        "けんかして相手の胸を手で突いた。",
+        "フォークで肉を突く。",
+        "針で指を突いてしまった。",
+        "転んでとっさに地面に手を突いた。",
+        "つえをついて歩く。",
+        "書類に判をつく。",
+        "話の {核心／矛盾 ……} を突く。",
+        "相手の不意を突く。",
+        "悪臭が鼻を突いた。",
+        "母の涙に胸を突かれた。"
+      ],
+      "collocations": null
+    },
+    {
+      "number": 135,
+      "reading": "つきあたる",
+      "kanji": "突き当たる",
+      "verb_pattern": null,
+      "meaning_en": "come to the end (of a street); run into, run up against",
+      "meaning_zh": "走到尽头; 碰到 (困难, 问题)",
+      "meaning_ko": "막다르다, 부딪치다",
+      "examples": [
+        "「この道をまっすぐ行って、突き当たったら左に曲がってください」",
+        "計画は予算不足という問題に突き当たった。"
+      ],
+      "collocations": "(名): 突き当たり"
+    },
+    {
+      "number": 136,
+      "reading": "たちどまる",
+      "kanji": "立ち止まる",
+      "verb_pattern": null,
+      "meaning_en": "stop, stand still",
+      "meaning_zh": "站住, 停步",
+      "meaning_ko": "멈추어 서다",
+      "examples": [
+        "道で声をかけられて立ち止まった。",
+        "自分の人生はこのままでいいのか、少し立ち止まって考えてみたい。"
+      ],
+      "collocations": null
+    },
+    {
+      "number": 137,
+      "reading": "ちかよる",
+      "kanji": "近寄る",
+      "verb_pattern": null,
+      "meaning_en": "approach",
+      "meaning_zh": "接近, 靠近",
+      "meaning_ko": "다가가다, 가까이하다",
+      "examples": [
+        "物音がしたので窓に近寄って外を見た。",
+        "「この川は危険なので近寄らないでください」"
+      ],
+      "collocations": "類: ガ近づく | 合: 近寄りがたい (例. あの先生は立派すぎて近寄りがたい。)"
+    },
+    {
+      "number": 138,
+      "reading": "よこぎる",
+      "kanji": "横切る",
+      "verb_pattern": null,
+      "meaning_en": "cross, traverse",
+      "meaning_zh": "横穿; 越过, 挡住",
+      "meaning_ko": "가로지르다, 스치다",
+      "examples": [
+        "道を横切って向こう側に渡った。",
+        "何か黒いものが視界を横切った。"
+      ],
+      "collocations": null
+    },
+    {
+      "number": 139,
+      "reading": "ころぶ",
+      "kanji": "転ぶ",
+      "verb_pattern": null,
+      "meaning_en": "fall (over); (things) turn out",
+      "meaning_zh": "跌倒, 摔跟头; 事态变化",
+      "meaning_ko": "넘어지다, 추세가 변하다",
+      "examples": [
+        "雪道ですべって転んでしまった。",
+        "状況がどう転んでも、この計画には影響はない。"
+      ],
+      "collocations": "合: 寝転ぶ (例. ソファーに寝転んでテレビを見た。)"
+    },
+    {
+      "number": 140,
+      "reading": "つまずく",
+      "kanji": "つまずく",
+      "verb_pattern": "ガ",
+      "meaning_en": "stumble; fail",
+      "meaning_zh": "绊倒, 摔倒; 受挫",
+      "meaning_ko": "발이 걸려 넘어질 뻔하다, 실패하다, 차질이 생기다",
+      "examples": [
+        "道で石につまずいてころんでしまった。",
+        "映画製作は、資金集めの段階でつまずいている。"
+      ],
+      "collocations": "(名): つまずき"
+    },
+    {
+      "number": 141,
+      "reading": "ひく",
+      "kanji": "ひく",
+      "verb_pattern": "ヲ",
+      "meaning_en": "run over",
+      "meaning_zh": "(车) 轧, 撞车",
+      "meaning_ko": "치다",
+      "examples": [
+        "車にひかれて骨折した。",
+        "線路内に入り込んで遊んでいた子どもが電車にひかれて死亡した。"
+      ],
+      "collocations": null
+    }
+  ],
+  "raw_text": "1-10 133 ひっぱる ヲ引っ張る pull; persuade (a person) to join / 拉, 拽; 拉拢 / 끌다, 당기다, 끌어들이다 ①・このひもを引っ張ると電気がつく。 ・おもちゃ売り場から離れない子どもの手を引っ張って、外に出た。 ②・「新入生をたくさん、うちのクラブに引っ張ってこよう」 134 つく ヲ突く stab, prick; walk on ~, put one's seal on ~; attack; pierce / 戳, 刺; 撑, 拄; 说中; (味道) 冲鼻, 刺激 / 치다, 찍다, 찌르다, 떠밀다, 짚다, 찌다 ①・けんかして相手の胸を手で突いた。 ・フォークで肉を突く。 ・針で指を突いてしまった。 ②・転んでとっさに地面に手を突いた。 ・つえをついて歩く。 ・書類に判をつく。 ③・話の {核心／矛盾 ...} を突く。 ・相手の不意を突く。 ④・悪臭が鼻を突いた。 ・母の涙に胸を突かれた。 135 つきあたる ガ突き当たる come to the end (of a street); run into, run up against / 走到尽头; 碰到 (困難, 問題) / 막다르다, 부딪치다 ①・「この道をまっすぐ行って、突き当たったら左に曲がってください」 (名) 突き当たり ☞ コラム 5「道案内」 ②・計画は予算不足という問題に突き当たった。 136 たちどまる ガ立ち止まる stop, stand still / 站住, 停步 / 멈추어 서다 ・道で声をかけられて立ち止まった。 ・自分の人生はこのままでいいのか、少し立ち止まって考えてみたい。 137 ちかよる ガ近寄る approach / 接近, 靠近 / 다가가다, 가까이하다 ・物音がしたので窓に近寄って外を見た。 ・「この川は危険なので近寄らないでください」 類 ガ近づく 合 近寄りがたい (例. あの先生は立派すぎて近寄りがたい。) 138 よこぎる ガ横切る cross, traverse / 横穿; 越过, 挡住 / 가로지르다, 스치다 ・道を横切って向こう側に渡った。 ・何か黒いものが視界を横切った。 139 ころぶ ガ転ぶ fall (over); (things) turn out / 跌倒, 摔跟头; 事态変化 / 넘어지다, 추세가 변하다 ①・雪道ですべって転んでしまった。 合 寝転ぶ (例. ソファーに寝転んでテレビを見た。) ②・状況がどう転んでも、この計画には影響はない。 140 つまずく ガつまずく stumble; fail / 绊倒, 摔倒; 受挫 / 발이 걸려 넘어질 뻔하다, 실패하다, 차질이 생기다 ①・道で石につまずいてころんでしまった。 ②・映画製作は、資金集めの段階でつまずいている。 (名) つまずき 141 ひく ヲひく run over / (车) 轧, 撞车 / 치다 ・車にひかれて骨折した。 ・線路内に入り込んで遊んでいた子どもが電車にひかれて死亡した。 ☞ コラム 10「事故」 30"
+}

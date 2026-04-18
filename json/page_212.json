@@ -1,0 +1,42 @@
+{
+  "page": 212,
+  "page_type": "column",
+  "section": "Unit 11 名詞 D (Entries 993-994)",
+  "entries": [
+    {
+      "number": 989,
+      "reading": "むじゅん",
+      "kanji": "矛盾",
+      "verb_pattern": null,
+      "meaning_en": "contradiction",
+      "meaning_zh": "不一致, 矛盾",
+      "meaning_ko": "모순",
+      "examples": [
+        "田中(たなか)さんは言(い)っていることとしていることが矛盾(むじゅん)している。",
+        "論文(ろんぶん)を書(か)くときは、論理(ろんり)に矛盾(むじゅん)があってはならない。"
+      ],
+      "collocations": "連: 矛盾(むじゅん)がある⇔ない"
+    },
+    {
+      "number": 990,
+      "reading": "そんざい",
+      "kanji": "存在",
+      "verb_pattern": null,
+      "meaning_en": "existence; being",
+      "meaning_zh": "在, 存在",
+      "meaning_ko": "존재",
+      "examples": [
+        "世界(せかい)にはUFOの存在(そんざい)を信(しん)じる人(ひと)が多(おお)くいる。",
+        "彼女(かのじょ)はクラスの中(なか)では目立(めだ)たない存在(そんざい)だ。",
+        "初代(しょだい)の社長(しゃちょう)は、偉大(いだい)な存在(そんざい)だった。"
+      ],
+      "collocations": "合: 存在感(そんざいかん) | 連: 存在(そんざい)感(かん)がある (例. あの人(ひと)は個性(こせい)が強(つよ)くてとても存在感(そんざいかん)がある。)"
+    }
+  ],
+  "column": {
+    "number": 20,
+    "title": "環境問題",
+    "items": []
+  },
+  "raw_text": "989 むじゅん ガ矛盾スル contradiction / 不一致, 矛盾 / 모순\n・ 田中さんは言っていることとしていることが矛盾している。\n・ 論文を書くときは、論理に矛盾があってはならない。\n[連] _がある⇔ない\n990 そんざい ガ存在スル existence; being / 在, 存在 / 존재\n① ・ 世界には UFO の存在を信じる人が多くいる。\n② ・ 彼女はクラスの中では目立たない存在だ。 ・ 初代の社長は、偉大な存在だった。\n[合] _感→ (例. あの人は個性が強くてとても存在感がある。)\n\nコラム 20 環境問題 Environmental problems / 环境问题 / 환경 문제\n地球温暖化 global warming / 全球变暖 / 지구 온난화\n温室効果ガス greenhouse gas / 温室效应气体 / 온실 효과 가스\nCO2 / 二酸化炭素 carbon dioxide / 二氧化碳 / 이산화탄소\nオゾンホール ozone hole / 臭氧洞 / 오존홀\nフロンガス chlorofluorocarbon / 氟利昂 / 프론 가스, 프레온 가스\n紫外線 ultraviolet rays / 紫外线 / 자외선\n海面上昇 rise in sea level / 海面上升 / 해면 상승\n異常気象 abnormal weather / 异常气象, 反常气象 / 기상 이변, 이상 기후\n冷夏 cool summer / 冷夏 / 냉하, 서늘한 여름\n暖冬 warm winter / 暖冬 / 춥지 않은 겨울\n砂漠化 desertification / 沙漠化 / 사막화\n酸性雨 acid rain / 酸雨 / 산성비\n森林破壊 deforestation / 森林破坏 / 삼림 파괴\n食糧危機 food shortage [crisis] / 粮食危机 / 식량 위기\nごみ問題 waste problem / 垃圾问题 / 쓰레기 문제\nごみ分別 separate collection of trash / 垃圾的分类 / 쓰레기 분리 (수거)\n公害 environmental pollution / 公害 / 공해\n大気汚染 air pollution / 大气污染 / 대기 오염\nスモッグ / 光化学スモッグ smog/photochemical smog / 烟雾, 烟尘 / 스모그 / 광화학 스모그\n環境ホルモン endocrine disruptor / 环境激素 / 환경 호르몬\n排気ガス exhaust gas / (汽车) 废气, 尾气 / 배기가스\n水質汚濁 water pollution / 水质污染 / 수질 오탁, 수질 오염\n工業排水 industrial wastewater / 工业污水 / 공업 폐수\n土壌汚染 soil pollution / 土壤污染 / 토양 오염\n地盤沈下 subsidence / 地面沉降 / 地表下沉 / 지반 침하\n騒音 noise / 噪音 / 소음\n異臭 stench, offensive smell / 异臭, 怪味 / 이취, 이상한 냄새\nリサイクル recycling / (废品) 再利用, 回收 / 재활용, 리사이클\nエコロジー > エコ ecology / 生态学, 环保意识 / 에코, 친환경\n環境保護 environmental protection / 环境保护, 环保 / 환경 보호\n自然保護 preservation of nature / 保护自然环境 / 자연 보호\n211"
+}

@@ -1,0 +1,837 @@
+[
+  {
+    "track_name": "03 1-03.mp3",
+    "index": 21,
+    "headword": "遺伝スル",
+    "reading": "いでん",
+    "expected_sentence": "私の左利きは親からの遺伝だ。",
+    "root_cause": "shared_boundary_neighbor",
+    "old_word": [
+      20.701995,
+      21.393084
+    ],
+    "old_sentence": [
+      22.242426,
+      27.790522
+    ],
+    "new_word": [
+      20.702,
+      21.393
+    ],
+    "new_sentence": [
+      22.242,
+      27.065
+    ],
+    "note": "ASR: 移転→遺伝 (word); Whisper detected 動作 in this region but audio is for 遺伝",
+    "audit_status": "asr_noise",
+    "audit_word_transcript": "イテン",
+    "audit_sentence_transcript": "私の左聞きは親からの移転だ",
+    "audit_word_reasons": [
+      "word_orthography_or_reading_drift"
+    ],
+    "audit_sentence_reasons": [],
+    "large_backend_word": null,
+    "large_backend_sentence": null,
+    "large_backend_word_score": null,
+    "large_backend_sentence_score": null,
+    "resolution": "fixed_with_word_asr_noise"
+  },
+  {
+    "track_name": "03 1-03.mp3",
+    "index": 22,
+    "headword": "動作",
+    "reading": "どうさ",
+    "expected_sentence": "彼女の動作は優雅で美しい。",
+    "root_cause": "word_sentence_merge",
+    "old_word": [
+      28.652562,
+      29.7039
+    ],
+    "old_sentence": [
+      30.160113,
+      33.646916
+    ],
+    "new_word": [
+      27.065,
+      27.791
+    ],
+    "new_sentence": [
+      28.653,
+      31.326
+    ],
+    "note": "whisper.cpp large-v3-turbo + 0.12s local silence windows separated the true headword and sentence",
+    "audit_status": "ok",
+    "audit_word_transcript": "どうさ",
+    "audit_sentence_transcript": "彼女の動作は 夕画で美しい",
+    "audit_word_reasons": [],
+    "audit_sentence_reasons": [],
+    "large_backend_word": null,
+    "large_backend_sentence": null,
+    "large_backend_word_score": null,
+    "large_backend_sentence_score": null,
+    "resolution": "fixed"
+  },
+  {
+    "track_name": "03 1-03.mp3",
+    "index": 25,
+    "headword": "食欲",
+    "reading": "しょくよく",
+    "expected_sentence": "今、かぜをひいて食欲がない。",
+    "root_cause": "shared_boundary_neighbor",
+    "old_word": [
+      49.0961,
+      50.093265
+    ],
+    "old_sentence": [
+      50.963878,
+      56.676939
+    ],
+    "new_word": [
+      49.096,
+      50.093
+    ],
+    "new_sentence": [
+      50.964,
+      53.924
+    ],
+    "note": "",
+    "audit_status": "ok",
+    "audit_word_transcript": "食欲",
+    "audit_sentence_transcript": "今、風を引いて食欲がない。",
+    "audit_word_reasons": [],
+    "audit_sentence_reasons": [],
+    "large_backend_word": null,
+    "large_backend_sentence": null,
+    "large_backend_word_score": null,
+    "large_backend_sentence_score": null,
+    "resolution": "fixed"
+  },
+  {
+    "track_name": "03 1-03.mp3",
+    "index": 26,
+    "headword": "外食スル",
+    "reading": "がいしょく",
+    "expected_sentence": "一人暮らしになって、外食が増えた。",
+    "root_cause": "word_sentence_merge",
+    "old_word": [
+      57.422154,
+      58.588934
+    ],
+    "old_sentence": [
+      59.007392,
+      62.146735
+    ],
+    "new_word": [
+      55.797,
+      56.371
+    ],
+    "new_sentence": [
+      57.422,
+      59.946
+    ],
+    "note": "whisper.cpp large-v3-turbo + 0.12s local silence windows removed the merged word/sentence split",
+    "audit_status": "suspect",
+    "audit_word_transcript": "会社",
+    "audit_sentence_transcript": "一人グラシになって、外食が増えた。",
+    "audit_word_reasons": [
+      "word_matches_neighbor_29"
+    ],
+    "audit_sentence_reasons": [],
+    "large_backend_word": "外食",
+    "large_backend_sentence": "一人暮らしになって外食が増えた。",
+    "large_backend_word_score": 1.0,
+    "large_backend_sentence_score": 1.0,
+    "resolution": "fixed_large_backend_confirms"
+  },
+  {
+    "track_name": "03 1-03.mp3",
+    "index": 27,
+    "headword": "家事",
+    "reading": "かじ",
+    "expected_sentence": "最近は、家事や育児もする男性が増えた。",
+    "root_cause": "word_sentence_merge",
+    "old_word": [
+      63.023832,
+      63.682381
+    ],
+    "old_sentence": [
+      64.371406,
+      66.40195
+    ],
+    "new_word": [
+      61.707,
+      62.147
+    ],
+    "new_sentence": [
+      63.024,
+      66.402
+    ],
+    "note": "whisper.cpp large-v3-turbo + 0.12s local silence windows removed the merged word/sentence split",
+    "audit_status": "ok",
+    "audit_word_transcript": "カジ",
+    "audit_sentence_transcript": "最近はカジやイクジもする男性が増えた",
+    "audit_word_reasons": [],
+    "audit_sentence_reasons": [],
+    "large_backend_word": null,
+    "large_backend_sentence": null,
+    "large_backend_word_score": null,
+    "large_backend_sentence_score": null,
+    "resolution": "fixed"
+  },
+  {
+    "track_name": "03 1-03.mp3",
+    "index": 31,
+    "headword": "出勤",
+    "reading": "しゅっきん",
+    "expected_sentence": "毎朝8時に出勤している。",
+    "root_cause": "empty_sentence_window",
+    "old_word": [
+      86.909274,
+      87.17449
+    ],
+    "old_sentence": [
+      87.478005,
+      87.898912
+    ],
+    "new_word": [
+      86.909,
+      87.899
+    ],
+    "new_sentence": [
+      88.639,
+      90.636
+    ],
+    "note": "whisper.cpp large-v3-turbo recovered the spoken word+sentence pair after the empty sentence window",
+    "audit_status": "ok",
+    "audit_word_transcript": "主金",
+    "audit_sentence_transcript": "毎朝8時に出勤している",
+    "audit_word_reasons": [],
+    "audit_sentence_reasons": [],
+    "large_backend_word": null,
+    "large_backend_sentence": null,
+    "large_backend_word_score": null,
+    "large_backend_sentence_score": null,
+    "resolution": "fixed"
+  },
+  {
+    "track_name": "04 1-04.mp3",
+    "index": 49,
+    "headword": "意志 / 意思",
+    "reading": "いし",
+    "expected_sentence": "彼女は意志が {固い／強い} から、きっと目的を達成するだろう。",
+    "root_cause": "shared_boundary_neighbor",
+    "old_word": [
+      73.142789,
+      73.603401
+    ],
+    "old_sentence": [
+      74.400385,
+      78.191814
+    ],
+    "new_word": [
+      73.143,
+      73.603
+    ],
+    "new_sentence": [
+      74.4,
+      78.192
+    ],
+    "note": "whisper.cpp large-v3-turbo confirms the full 意志 sentence occupies this window",
+    "audit_status": "suspect",
+    "audit_word_transcript": "1 c",
+    "audit_sentence_transcript": "彼女は一晴が硬いからきっと目的を達成するだろう",
+    "audit_word_reasons": [
+      "word_asr_mismatch"
+    ],
+    "audit_sentence_reasons": [],
+    "large_backend_word": "一喜",
+    "large_backend_sentence": "彼女は意思が固いからきっと目的を達成するだろう。",
+    "large_backend_word_score": 0.4,
+    "large_backend_sentence_score": 0.954,
+    "resolution": "fixed_large_backend_confirms"
+  },
+  {
+    "track_name": "04 1-04.mp3",
+    "index": 50,
+    "headword": "感情",
+    "reading": "んじょう",
+    "expected_sentence": "田中さんはすぐに感情が顔に出る。",
+    "root_cause": "neighbor_sentence_leak",
+    "old_word": [
+      74.400385,
+      75.997143
+    ],
+    "old_sentence": [
+      76.540726,
+      78.191814
+    ],
+    "new_word": [
+      80.005,
+      80.912
+    ],
+    "new_sentence": [
+      81.723,
+      84.068
+    ],
+    "note": "whisper.cpp large-v3-turbo + 0.12s local silence windows removed the neighbor sentence leak from entry 49",
+    "audit_status": "suspect",
+    "audit_word_transcript": "館内を",
+    "audit_sentence_transcript": "花火さんはすぐに感情が顔に出る",
+    "audit_word_reasons": [
+      "word_matches_neighbor_45"
+    ],
+    "audit_sentence_reasons": [],
+    "large_backend_word": "感情",
+    "large_backend_sentence": "田中さんはすぐに感情が顔に出る。",
+    "large_backend_word_score": 0.889,
+    "large_backend_sentence_score": 1.0,
+    "resolution": "fixed_large_backend_confirms"
+  },
+  {
+    "track_name": "05 1-05.mp3",
+    "index": 54,
+    "headword": "券",
+    "reading": "けん",
+    "expected_sentence": "あの店はいつも込んでいて、入るのに整理券が必要だ。",
+    "root_cause": "shared_boundary_neighbor",
+    "old_word": [
+      17.215238,
+      17.644195
+    ],
+    "old_sentence": [
+      18.346893,
+      21.174898
+    ],
+    "new_word": [
+      17.215,
+      17.644
+    ],
+    "new_sentence": [
+      18.347,
+      22.715
+    ],
+    "note": "",
+    "audit_status": "asr_noise",
+    "audit_word_transcript": "ピン",
+    "audit_sentence_transcript": "あの店はいつも混んでいて、ハイルのに整理権が必要だ。",
+    "audit_word_reasons": [
+      "word_orthography_or_reading_drift"
+    ],
+    "audit_sentence_reasons": [],
+    "large_backend_word": null,
+    "large_backend_sentence": null,
+    "large_backend_word_score": null,
+    "large_backend_sentence_score": null,
+    "resolution": "fixed_with_word_asr_noise"
+  },
+  {
+    "track_name": "05 1-05.mp3",
+    "index": 55,
+    "headword": "名簿",
+    "reading": "めいぼ",
+    "expected_sentence": "クラスの名簿を作る。",
+    "root_cause": "cascade_anchor_drift",
+    "old_word": [
+      21.435193,
+      22.714853
+    ],
+    "old_sentence": [
+      24.50907,
+      25.160159
+    ],
+    "new_word": [
+      24.509,
+      25.16
+    ],
+    "new_sentence": [
+      25.961,
+      27.471
+    ],
+    "note": "",
+    "audit_status": "suspect",
+    "audit_word_transcript": "Nable",
+    "audit_sentence_transcript": "クラスの目望を作る",
+    "audit_word_reasons": [
+      "word_asr_mismatch"
+    ],
+    "audit_sentence_reasons": [],
+    "large_backend_word": "名簿",
+    "large_backend_sentence": "クラスの名簿を作る。",
+    "large_backend_word_score": 1.0,
+    "large_backend_sentence_score": 1.0,
+    "resolution": "fixed_large_backend_confirms"
+  },
+  {
+    "track_name": "05 1-05.mp3",
+    "index": 56,
+    "headword": "表",
+    "reading": "ひょう",
+    "expected_sentence": "成績を表にする。",
+    "root_cause": "cascade_anchor_drift",
+    "old_word": [
+      25.961497,
+      27.471066
+    ],
+    "old_sentence": [
+      29.274082,
+      29.851927
+    ],
+    "new_word": [
+      29.274,
+      29.852
+    ],
+    "new_sentence": [
+      30.669,
+      32.202
+    ],
+    "note": "",
+    "audit_status": "asr_noise",
+    "audit_word_transcript": "今日",
+    "audit_sentence_transcript": "性責を表にする",
+    "audit_word_reasons": [
+      "word_orthography_or_reading_drift"
+    ],
+    "audit_sentence_reasons": [],
+    "large_backend_word": null,
+    "large_backend_sentence": null,
+    "large_backend_word_score": null,
+    "large_backend_sentence_score": null,
+    "resolution": "fixed_with_word_asr_noise"
+  },
+  {
+    "track_name": "05 1-05.mp3",
+    "index": 57,
+    "headword": "針",
+    "reading": "はり",
+    "expected_sentence": "針に糸を通す。",
+    "root_cause": "cascade_anchor_drift",
+    "old_word": [
+      30.66898,
+      32.202222
+    ],
+    "old_sentence": [
+      34.027551,
+      34.423129
+    ],
+    "new_word": [
+      34.028,
+      34.423
+    ],
+    "new_sentence": [
+      35.247,
+      36.66
+    ],
+    "note": "",
+    "audit_status": "suspect",
+    "audit_word_transcript": "ハーディ",
+    "audit_sentence_transcript": "針に糸を通す。",
+    "audit_word_reasons": [
+      "word_asr_mismatch"
+    ],
+    "audit_sentence_reasons": [],
+    "large_backend_word": "ハディ",
+    "large_backend_sentence": "針に糸を通す。",
+    "large_backend_word_score": 0.4,
+    "large_backend_sentence_score": 1.0,
+    "resolution": "fixed_large_backend_confirms"
+  },
+  {
+    "track_name": "05 1-05.mp3",
+    "index": 58,
+    "headword": "栓",
+    "reading": "せん",
+    "expected_sentence": "ビールの栓を抜く。",
+    "root_cause": "cascade_anchor_drift",
+    "old_word": [
+      35.247483,
+      36.660159
+    ],
+    "old_sentence": [
+      38.490159,
+      39.161406
+    ],
+    "new_word": [
+      38.49,
+      39.161
+    ],
+    "new_sentence": [
+      39.887,
+      41.308
+    ],
+    "note": "",
+    "audit_status": "suspect",
+    "audit_word_transcript": "SIN!",
+    "audit_sentence_transcript": "ビールの線を抜く",
+    "audit_word_reasons": [
+      "word_asr_mismatch"
+    ],
+    "audit_sentence_reasons": [],
+    "large_backend_word": "1000",
+    "large_backend_sentence": "ビールの線を抜く。",
+    "large_backend_word_score": 0.0,
+    "large_backend_sentence_score": 1.0,
+    "resolution": "sentence_fixed_word_still_short_asr"
+  },
+  {
+    "track_name": "05 1-05.mp3",
+    "index": 59,
+    "headword": "湯気",
+    "reading": "ゆげ",
+    "expected_sentence": "うどんの湯気で眼鏡がくもってしまった。",
+    "root_cause": "cascade_anchor_drift",
+    "old_word": [
+      39.886644,
+      41.308118
+    ],
+    "old_sentence": [
+      43.115306,
+      43.567823
+    ],
+    "new_word": [
+      43.115,
+      43.568
+    ],
+    "new_sentence": [
+      44.322,
+      46.876
+    ],
+    "note": "",
+    "audit_status": "suspect",
+    "audit_word_transcript": "右の方向を押して、",
+    "audit_sentence_transcript": "うどんのゆげで、根が根がくもってしまう。",
+    "audit_word_reasons": [
+      "word_clip_contains_sentence_audio",
+      "word_matches_neighbor_52",
+      "word_clip_too_long_or_merged"
+    ],
+    "audit_sentence_reasons": [],
+    "large_backend_word": "ユングエ",
+    "large_backend_sentence": "うどんの湯気で眼鏡が曇ってしまった。",
+    "large_backend_word_score": 0.333,
+    "large_backend_sentence_score": 1.0,
+    "resolution": "sentence_fixed_word_still_short_asr"
+  },
+  {
+    "track_name": "05 1-05.mp3",
+    "index": 60,
+    "headword": "日当たり",
+    "reading": "ひあたり",
+    "expected_sentence": "私の部屋は南向きで日当たりがいい。",
+    "root_cause": "cascade_anchor_drift",
+    "old_word": [
+      44.322222,
+      45.266961
+    ],
+    "old_sentence": [
+      45.60254,
+      47.156508
+    ],
+    "new_word": [
+      49.013,
+      49.805
+    ],
+    "new_sentence": [
+      50.611,
+      53.716
+    ],
+    "note": "",
+    "audit_status": "ok",
+    "audit_word_transcript": "ピアタリ",
+    "audit_sentence_transcript": "私の部屋は南向きで、火当たりがいい。",
+    "audit_word_reasons": [],
+    "audit_sentence_reasons": [],
+    "large_backend_word": null,
+    "large_backend_sentence": null,
+    "large_backend_word_score": null,
+    "large_backend_sentence_score": null,
+    "resolution": "fixed"
+  },
+  {
+    "track_name": "05 1-05.mp3",
+    "index": 61,
+    "headword": "空",
+    "reading": "ら",
+    "expected_sentence": "昨夜は一人でワインびんを空にした。",
+    "root_cause": "cascade_anchor_drift",
+    "old_word": [
+      49.012812,
+      49.805283
+    ],
+    "old_sentence": [
+      50.610635,
+      52.434014
+    ],
+    "new_word": [
+      55.521,
+      55.904
+    ],
+    "new_sentence": [
+      56.816,
+      59.935
+    ],
+    "note": "",
+    "audit_status": "asr_noise",
+    "audit_word_transcript": "カラ",
+    "audit_sentence_transcript": "作業は一人でワイン一輪を空にした",
+    "audit_word_reasons": [
+      "word_orthography_or_reading_drift"
+    ],
+    "audit_sentence_reasons": [],
+    "large_backend_word": null,
+    "large_backend_sentence": null,
+    "large_backend_word_score": null,
+    "large_backend_sentence_score": null,
+    "resolution": "fixed_with_word_asr_noise"
+  },
+  {
+    "track_name": "05 1-05.mp3",
+    "index": 62,
+    "headword": "斜め",
+    "reading": "ななめ",
+    "expected_sentence": "地震で家が斜めに傾いた。",
+    "root_cause": "cascade_anchor_drift",
+    "old_word": [
+      52.762449,
+      53.716417
+    ],
+    "old_sentence": [
+      55.521179,
+      55.903515
+    ],
+    "new_word": [
+      61.672,
+      62.295
+    ],
+    "new_sentence": [
+      63.106,
+      65.82
+    ],
+    "note": "",
+    "audit_status": "ok",
+    "audit_word_transcript": "斜め",
+    "audit_sentence_transcript": "自信で家が斜めに固むいた",
+    "audit_word_reasons": [],
+    "audit_sentence_reasons": [],
+    "large_backend_word": null,
+    "large_backend_sentence": null,
+    "large_backend_word_score": null,
+    "large_backend_sentence_score": null,
+    "resolution": "fixed"
+  },
+  {
+    "track_name": "05 1-05.mp3",
+    "index": 63,
+    "headword": "履歴",
+    "reading": "りれき",
+    "expected_sentence": "会社に応募するにあたり、履歴書を書いた。",
+    "root_cause": "cascade_anchor_drift",
+    "old_word": [
+      56.81585,
+      59.93517
+    ],
+    "old_sentence": [
+      61.672426,
+      62.295397
+    ],
+    "new_word": [
+      67.64,
+      68.37
+    ],
+    "new_sentence": [
+      69.187,
+      72.332
+    ],
+    "note": "",
+    "audit_status": "ok",
+    "audit_word_transcript": "リレッキ",
+    "audit_sentence_transcript": "会社に応募するにあたり、リレキシュを書いた。",
+    "audit_word_reasons": [],
+    "audit_sentence_reasons": [],
+    "large_backend_word": null,
+    "large_backend_sentence": null,
+    "large_backend_word_score": null,
+    "large_backend_sentence_score": null,
+    "resolution": "fixed"
+  },
+  {
+    "track_name": "05 1-05.mp3",
+    "index": 64,
+    "headword": "娯楽",
+    "reading": "ごらく",
+    "expected_sentence": "うちの父は、釣りを娯楽として楽しんでいる。",
+    "root_cause": "cascade_anchor_drift",
+    "old_word": [
+      63.106485,
+      63.761293
+    ],
+    "old_sentence": [
+      64.176508,
+      65.820272
+    ],
+    "new_word": [
+      74.131,
+      74.907
+    ],
+    "new_sentence": [
+      75.69,
+      79.11
+    ],
+    "note": "",
+    "audit_status": "asr_noise",
+    "audit_word_transcript": "ご覧",
+    "audit_sentence_transcript": "うちの父は、すりをご覧として楽しんでいる。",
+    "audit_word_reasons": [
+      "word_orthography_or_reading_drift"
+    ],
+    "audit_sentence_reasons": [],
+    "large_backend_word": null,
+    "large_backend_sentence": null,
+    "large_backend_word_score": null,
+    "large_backend_sentence_score": null,
+    "resolution": "fixed_with_word_asr_noise"
+  },
+  {
+    "track_name": "05 1-05.mp3",
+    "index": 65,
+    "headword": "司会",
+    "reading": "しかい",
+    "expected_sentence": "友人に結婚式の司会を頼んだ。",
+    "root_cause": "cascade_anchor_drift",
+    "old_word": [
+      67.640181,
+      68.369569
+    ],
+    "old_sentence": [
+      69.18746,
+      70.717687
+    ],
+    "new_word": [
+      80.953,
+      81.664
+    ],
+    "new_sentence": [
+      82.389,
+      85.026
+    ],
+    "note": "",
+    "audit_status": "ok",
+    "audit_word_transcript": "しっかい",
+    "audit_sentence_transcript": "友人に結婚式の司会を頼んだ",
+    "audit_word_reasons": [],
+    "audit_sentence_reasons": [],
+    "large_backend_word": null,
+    "large_backend_sentence": null,
+    "large_backend_word_score": null,
+    "large_backend_sentence_score": null,
+    "resolution": "fixed"
+  },
+  {
+    "track_name": "05 1-05.mp3",
+    "index": 66,
+    "headword": "歓迎スル",
+    "reading": "んげい",
+    "expected_sentence": "新入社員を歓迎する会が開かれた。",
+    "root_cause": "cascade_anchor_drift",
+    "old_word": [
+      71.305805,
+      72.331859
+    ],
+    "old_sentence": [
+      74.13102,
+      74.906667
+    ],
+    "new_word": [
+      86.807,
+      87.706
+    ],
+    "new_sentence": [
+      88.529,
+      91.169
+    ],
+    "note": "",
+    "audit_status": "suspect",
+    "audit_word_transcript": "行け",
+    "audit_sentence_transcript": "新入社員を関係する会が開かれた",
+    "audit_word_reasons": [
+      "word_asr_mismatch"
+    ],
+    "audit_sentence_reasons": [],
+    "large_backend_word": "反映",
+    "large_backend_sentence": "新入社員を歓迎する会が開かれた",
+    "large_backend_word_score": 0.571,
+    "large_backend_sentence_score": 0.98,
+    "resolution": "fixed_large_backend_confirms"
+  },
+  {
+    "track_name": "05 1-05.mp3",
+    "index": 67,
+    "headword": "窓口",
+    "reading": "まどぐち",
+    "expected_sentence": "「銀行／役所／病院 ……」の窓口には大勢の人が並んでいた。",
+    "root_cause": "cascade_anchor_drift",
+    "old_word": [
+      75.689796,
+      76.477642
+    ],
+    "old_sentence": [
+      77.050544,
+      79.109841
+    ],
+    "new_word": [
+      92.964,
+      93.844
+    ],
+    "new_sentence": [
+      94.551,
+      97.946
+    ],
+    "note": "",
+    "audit_status": "ok",
+    "audit_word_transcript": "窓口",
+    "audit_sentence_transcript": "銀行の窓口には、王勢の人が並んでいた",
+    "audit_word_reasons": [],
+    "audit_sentence_reasons": [],
+    "large_backend_word": null,
+    "large_backend_sentence": null,
+    "large_backend_word_score": null,
+    "large_backend_sentence_score": null,
+    "resolution": "fixed"
+  },
+  {
+    "track_name": "05 1-05.mp3",
+    "index": 68,
+    "headword": "手続き(ヲ)スル",
+    "reading": "てつづき",
+    "expected_sentence": "入学の手続きをする。",
+    "root_cause": "cascade_anchor_drift",
+    "old_word": [
+      80.95263,
+      81.664195
+    ],
+    "old_sentence": [
+      82.388707,
+      85.025533
+    ],
+    "new_word": [
+      99.706,
+      100.214
+    ],
+    "new_sentence": [
+      101.305,
+      103.135
+    ],
+    "note": "",
+    "audit_status": "suspect",
+    "audit_word_transcript": "ベッツス",
+    "audit_sentence_transcript": "入学の手続きをする",
+    "audit_word_reasons": [
+      "word_asr_mismatch"
+    ],
+    "audit_sentence_reasons": [],
+    "large_backend_word": "手続き",
+    "large_backend_sentence": "入学の手続きをする",
+    "large_backend_word_score": 1.0,
+    "large_backend_sentence_score": 0.963,
+    "resolution": "fixed_large_backend_confirms"
+  }
+]

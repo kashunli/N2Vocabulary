@@ -1,0 +1,138 @@
+{
+  "page": 41,
+  "page_type": "vocabulary",
+  "section": "Unit 02 動詞 A (Entries 186–194)",
+  "entries": [
+    {
+      "number": 186,
+      "reading": "ほどける",
+      "kanji": "ほどける",
+      "verb_pattern": "ガ",
+      "meaning_en": "come untied; (tension) is released",
+      "meaning_zh": "松开",
+      "meaning_ko": "풀리다",
+      "examples": [
+        "靴のひもがほどけた。",
+        "彼女の冗談で、みんなの緊張がほどけた。"
+      ],
+      "collocations": "類: ガとける"
+    },
+    {
+      "number": 187,
+      "reading": "ほどく",
+      "kanji": "ほどく",
+      "verb_pattern": "ヲ",
+      "meaning_en": "untie; unravel; untangle",
+      "meaning_zh": "解开; 拆开",
+      "meaning_ko": "풀다, 뜯다",
+      "examples": [
+        "荷物のひもをほどいて中のものを出す。",
+        "彼女は結んであった髪をパラリとほどいた。",
+        "両国間のからまった糸をほどいて、友好関係を築く。",
+        "古い服をほどいて縫い直す。"
+      ],
+      "collocations": "類: ヲとく"
+    },
+    {
+      "number": 188,
+      "reading": "れる",
+      "kanji": "枯れる",
+      "verb_pattern": "か",
+      "meaning_en": "wither, die",
+      "meaning_zh": "凋零, 枯萎",
+      "meaning_ko": "시들다",
+      "examples": [
+        "害虫のせいで、木が枯れてしまった。"
+      ],
+      "collocations": null
+    },
+    {
+      "number": 189,
+      "reading": "らす",
+      "kanji": "枯らす",
+      "verb_pattern": "か",
+      "meaning_en": "wither",
+      "meaning_zh": "使……枯萎",
+      "meaning_ko": "시들게 하다, 말려 죽이다",
+      "examples": [
+        "病気が発生し、多くの木を枯らしてしまった。"
+      ],
+      "collocations": null
+    },
+    {
+      "number": 190,
+      "reading": "いたむ",
+      "kanji": "傷む",
+      "verb_pattern": null,
+      "meaning_en": "be damaged; spoil",
+      "meaning_zh": "腐败, 变坏",
+      "meaning_ko": "(음식이) 상하다",
+      "examples": [
+        "生魚は傷みやすいから、早く食べた方がいい。"
+      ],
+      "collocations": "(名) 傷み → ～が早い、～が激しい"
+    },
+    {
+      "number": 191,
+      "reading": "しめる",
+      "kanji": "湿る",
+      "verb_pattern": null,
+      "meaning_en": "become damp; moisten",
+      "meaning_zh": "潮湿",
+      "meaning_ko": "눅눅해지다, 축축해지다",
+      "examples": [
+        "朝干した洗濯物がまだ湿っている。",
+        "{空気／部屋／服／髪 ……} が湿る。"
+      ],
+      "collocations": "合: 湿り気、湿っぽい | (名) 湿り | 関: 湿気、湿度、ガ乾燥する ☞ 299"
+    },
+    {
+      "number": 192,
+      "reading": "こおる",
+      "kanji": "凍る",
+      "verb_pattern": null,
+      "meaning_en": "freeze",
+      "meaning_zh": "冻, 结冰",
+      "meaning_ko": "얼다",
+      "examples": [
+        "水が凍る。",
+        "水道(管)が凍る。",
+        "冷凍庫の中でパンがかちかちに凍っている。"
+      ],
+      "collocations": "関: 氷"
+    },
+    {
+      "number": 193,
+      "reading": "ふるえる",
+      "kanji": "震える",
+      "verb_pattern": null,
+      "meaning_en": "tremble, shake; vibrate",
+      "meaning_zh": "发抖, 哆嗦; 震动",
+      "meaning_ko": "떨리다, 흔들리다",
+      "examples": [
+        "寒さ {に／で} 手足がぶるぶる震えた。",
+        "{恐怖／怒り ……} に体が震える。",
+        "{喜び／期待／感動 ……} で胸が震える。",
+        "緊張で {声／手 ……} が震える。",
+        "道路工事の振動で窓ガラスががたがた震えた。"
+      ],
+      "collocations": "合: ガ震え上がる | (名) 震え"
+    },
+    {
+      "number": 194,
+      "reading": "がやく",
+      "kanji": "輝く",
+      "verb_pattern": "か",
+      "meaning_en": "shine; look bright",
+      "meaning_zh": "放光, 闪耀; 洋溢",
+      "meaning_ko": "빛나다, 반짝이다",
+      "examples": [
+        "空に太陽が輝いている。",
+        "彼女の指には大きなダイヤモンドが輝いていた。",
+        "優勝した選手の顔は喜びに輝いていた。"
+      ],
+      "collocations": "(名) ①②輝き"
+    }
+  ],
+  "raw_text": "186 ほどける ガほどける come untied; (tension) is released / 松开 / 풀리다 ① ・靴のひもがほどけた。 ② ・彼女の冗談で、みんなの緊張がほどけた。 類 ガとける 187 ほどく ヲほどく untie; unravel; untangle / 解开; 拆开 / 풀다, 뜯다 ① ・荷物のひもをほどいて中のものを出す。 ・彼女は結んであった髪をパラリとほどいた。 ・両国間のからまった糸をほどいて、友好関係を築く。 類 ヲとく ② ・古い服をほどいて縫い直す。 188 かれる ガ枯れる wither, die / 凋零, 枯萎 / 시들다 ・害虫のせいで、木が枯れてしまった。 189 からす ヲ枯らす wither / 使……枯萎 / 시들게 하다, 말려 죽이다 ・病気が発生し、多くの木を枯らしてしまった。 190 いたむ ガ傷む be damaged; spoil / 腐败, 变坏 / (음식이) 상하다 ・生魚は傷みやすいから、早く食べた方がいい。 (名) 傷み → _が早い、_が激しい 191 しめる ガ湿る become damp; moisten / 潮湿 / 눅눅해지다, 축축해지다 ・朝干した洗濯物がまだ湿っている。 ・{空気／部屋／服／髪 ...} が湿る。 合 湿り気、湿っぽい 関 湿気、湿度、ガ乾燥する ☞ 299 (名) 湿り 192 こおる ガ凍る freeze / 冻, 结冰 / 얼다 ・水が凍る。 ・水道(管)が凍る。 ・冷凍庫の中でパンがかちかちに凍っている。 関 氷 193 ふるえる ガ震える tremble, shake; vibrate / 发抖, 哆嗦; 震动 / 떨리다, 흔들리다 ① ・寒さ {に／で} 手足がぶるぶる震えた。 ・{恐怖／怒り ...} に体が震える。 ・{喜び／期待／感動 ...} で胸が震える。 ・緊張で {声／手 ...} が震える。 合 ガ震え上がる (名) 震え ② ・道路工事の振動で窓ガラスががたがた震えた。 194 かがやく ガ輝く shine; look bright / 放光, 闪耀; 洋溢 / 빛나다, 반짝이다 ① ・空に太陽が輝いている。 ・彼女の指には大きなダイヤモンドが輝いていた。 ② ・優勝した選手の顔は喜びに輝いていた。 (名) ①②輝き 40"
+}

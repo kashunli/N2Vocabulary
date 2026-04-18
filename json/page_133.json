@@ -1,0 +1,150 @@
+{
+  "page": 133,
+  "page_type": "vocabulary",
+  "section": "名詞 C (Entries 581-655)",
+  "entries": [
+    {
+      "number": 631,
+      "reading": "さぎょう",
+      "kanji": "作業",
+      "verb_pattern": null,
+      "meaning_en": "work, operation",
+      "meaning_zh": "工作，操作",
+      "meaning_ko": "작업",
+      "examples": [
+        "・時計を作る仕事は、作業が細かくて複雑だ。",
+        "・「時間が少ないから、能率的に作業を進めましょう」"
+      ],
+      "collocations": "連: _が進む・_を進める | 合: 単純_、手_、流れ_、_着"
+    },
+    {
+      "number": 632,
+      "reading": "くふう",
+      "kanji": "工夫",
+      "verb_pattern": null,
+      "meaning_en": "artifice, device",
+      "meaning_zh": "设法，想办法",
+      "meaning_ko": "궁리함, 고안",
+      "examples": [
+        "・仕事のやり方を工夫すれば、もう少し時間を短縮できるだろう。",
+        "・今年はクリスマスツリーの飾り付けに工夫を凝らした。"
+      ],
+      "collocations": "連: _を凝らす"
+    },
+    {
+      "number": 633,
+      "reading": "しょうか",
+      "kanji": "消化",
+      "verb_pattern": null,
+      "meaning_en": "digestion, assimilation, consumption",
+      "meaning_zh": "消化；理解；处理，用完",
+      "meaning_ko": "소화",
+      "examples": [
+        "・私は胃腸が弱いので、消化がいいものを食べるようにしている。",
+        "・調べたことを自分なりに消化しなければ、レポートを書くのは難しい。",
+        "・厳しいスケジュールだったが、何とか消化できた。",
+        "・年度内に予算を消化する。"
+      ],
+      "collocations": "連: {が／に}いい⇔悪い | 合: 不良_、_器官"
+    },
+    {
+      "number": 634,
+      "reading": "きゅうしゅう",
+      "kanji": "吸収",
+      "verb_pattern": null,
+      "meaning_en": "absorption",
+      "meaning_zh": "吸收",
+      "meaning_ko": "흡수",
+      "examples": [
+        "・この物質は{水分／におい／音 ...}を吸収する。",
+        "・植物は根から栄養を吸収する。",
+        "・留学したら、できるだけ多くの知識を吸収したい。"
+      ],
+      "collocations": "合: _力"
+    },
+    {
+      "number": 635,
+      "reading": "せっち",
+      "kanji": "設置",
+      "verb_pattern": null,
+      "meaning_en": "installation",
+      "meaning_zh": "安装，设置",
+      "meaning_ko": "설치",
+      "examples": [
+        "・工場に新しい機械を設置する。",
+        "・その問題について検討する委員会を設置した。"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 636,
+      "reading": "せってい",
+      "kanji": "設定",
+      "verb_pattern": null,
+      "meaning_en": "fixing, setting up",
+      "meaning_zh": "设定",
+      "meaning_ko": "설정",
+      "examples": [
+        "・エアコンの温度を26度に設定する。",
+        "・携帯電話の料金には、さまざまなプランが設定されている。"
+      ],
+      "collocations": "合: 料金_、初期_"
+    },
+    {
+      "number": 637,
+      "reading": "ちょうせつ",
+      "kanji": "調節",
+      "verb_pattern": null,
+      "meaning_en": "control, regulation",
+      "meaning_zh": "调节，调整",
+      "meaning_ko": "조절",
+      "examples": [
+        "・リモコンで温度の調節をする。",
+        "・いすの高さを調節する。"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 638,
+      "reading": "ちょうせい",
+      "kanji": "調整",
+      "verb_pattern": null,
+      "meaning_en": "adjustment",
+      "meaning_zh": "调整",
+      "meaning_ko": "조정",
+      "examples": [
+        "・テレビの映りが悪いので、アンテナの向きを調整した。",
+        "・{日程／利害 ...}を調整する。"
+      ],
+      "collocations": "合: 年末_"
+    },
+    {
+      "number": 589,
+      "reading": "いほう",
+      "kanji": "解放",
+      "verb_pattern": "か",
+      "meaning_en": "release, liberation; open",
+      "meaning_zh": "解放；开放；打开",
+      "meaning_ko": "해방 / 개방",
+      "examples": [
+        "・人質を解放する。",
+        "・抑圧から解放された。"
+      ],
+      "collocations": "合: 奴隷_ | ※ ヲ開放スル ☞ 667"
+    },
+    {
+      "number": 640,
+      "reading": "そうごう",
+      "kanji": "総合",
+      "verb_pattern": null,
+      "meaning_en": "synthesis; together",
+      "meaning_zh": "综合",
+      "meaning_ko": "종합",
+      "examples": [
+        "・皆の意見を総合して、結論を出した。"
+      ],
+      "collocations": "合: _的な、_病院、_大学、_商社"
+    }
+  ],
+  "raw_text": "631 さぎょう ヲ作業(ヲ)スル work, operation / 工作，操作 / 작업\n・時計を作る仕事は、作業が細かくて複雑だ。\n・「時間が少ないから、能率的に作業を進めましょう」\n連 _が進む・_を進める 合 単純_、手_、流れ_、_着\n632 くふう ヲ工夫(ヲ)スル artifice, device / 设法，想办法 / 궁리함, 고안\n・仕事のやり方を工夫すれば、もう少し時間を短縮できるだろう。\n・今年はクリスマスツリーの飾り付けに工夫を凝らした。\n連 _を凝らす\n633 しょうか ヲ消化スル digestion, assimilation, consumption / 消化；理解；处理，用完 / 소화\n① ・私は胃腸が弱いので、消化 {が／に} いいものを食べるようにしている。\n連 {が／に} いい⇔悪い 合 不良_、_器官\n② ・調べたことを自分なりに消化しなければ、レポートを書くのは難しい。\n③ ・厳しいスケジュールだったが、何とか消化できた。 ・年度内に予算を消化する。\n634 きゅうしゅう ヲ吸収スル absorption / 吸收 / 흡수\n・この物質は {水分／におい／音 ...} を吸収する。 ・植物は根から栄養を吸収する。\n・留学したら、できるだけ多くの知識を吸収したい。\n合 _力\n635 せっち ヲ設置(ヲ)スル installation / 安装，设置 / 설치\n・工場に新しい機械を設置する。 ・その問題について検討する委員会を設置した。\n636 せってい ヲ設定(ヲ)スル fixing, setting up / 设定 / 설정\n・エアコンの温度を 26 度に設定する。\n・携帯電話の料金には、さまざまなプランが設定されている。\n合 料金_、初期_\n637 ちょうせつ ヲ調節(ヲ)スル control, regulation / 调节，调整 / 조절\n・リモコンで温度の調節をする。 ・いすの高さを調節する。\n638 ちょうせい ヲ調整スル adjustment / 调整 / 조정\n・テレビの映りが悪いので、アンテナの向きを調整した。 ・{日程／利害 ...} を調整する。\n合 年末_\n639 かいほう ヲ解放スル release, liberation; open / 解放；开放；打开 / 해방 / 개방\n・人質を解放する。 ・抑圧から解放された。\n合 奴隷_ ※ ヲ開放スル ☞ 667\n640 そうごう ヲ総合スル synthesis; together / 综合 / 종합\n・皆の意見を総合して、結論を出した。\n合 _的な、_病院、_大学、_商社\n132"
+}

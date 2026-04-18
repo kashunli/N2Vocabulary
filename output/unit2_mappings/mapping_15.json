@@ -1,0 +1,14 @@
+[
+  {"index": 202, "word": {"start": 0.00, "end": 1.24}, "sentence": {"start": 1.86, "end": 5.20}, "note": "ASR: 逃がす→にがす"},
+  {"index": 203, "word": {"start": 6.68, "end": 7.48}, "sentence": {"start": 7.90, "end": 11.30}, "note": ""},
+  {"index": 204, "word": {"start": 12.92, "end": 13.72}, "sentence": {"start": 14.40, "end": 17.02}, "note": ""},
+  {"index": 205, "word": {"start": 18.82, "end": 19.36}, "sentence": {"start": 20.08, "end": 23.14}, "note": ""},
+  {"index": 206, "word": {"start": 24.92, "end": 25.48}, "sentence": {"start": 26.14, "end": 29.96}, "note": "ASR: 上にの→上着の"},
+  {"index": 207, "word": {"start": 31.08, "end": 31.96}, "sentence": {"start": 32.42, "end": 35.82}, "note": ""},
+  {"index": 208, "word": {"start": 37.70, "end": 38.52}, "sentence": {"start": 38.90, "end": 42.60}, "note": "ASR: かかわる→関わる"},
+  {"index": 209, "word": {"start": 44.08, "end": 45.16}, "sentence": {"start": 45.60, "end": 48.54}, "note": ""},
+  {"index": 210, "word": {"start": 50.08, "end": 50.76}, "sentence": {"start": 51.26, "end": 55.74}, "note": "ASR: パツ→立つ, 不任→赴任"},
+  {"index": 211, "word": {"start": 56.94, "end": 57.94}, "sentence": {"start": 58.50, "end": 61.52}, "note": "ASR: 向かえる→迎える"},
+  {"index": 212, "word": {"start": 62.92, "end": 63.76}, "sentence": {"start": 64.32, "end": 67.16}, "note": "ASR: モテル→持てる"},
+  {"index": 213, "word": {"start": 68.78, "end": 69.70}, "sentence": {"start": 70.34, "end": 73.16}, "note": "ASR: 戦える→たとえられる"}
+]

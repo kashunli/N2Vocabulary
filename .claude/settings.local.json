@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(.venv/Scripts/python parse/scripts/make_html.py)",
+      "Bash(.venv/bin/python parse/scripts/make_html.py)",
+      "Bash(\"/d/n2Prepare/materialToLearn/N2Vocabulary/.venv/bin/python\" parse/scripts/make_html.py)",
+      "Bash(python3 parse/scripts/make_html.py)",
+      "Bash(whisper --help)",
+      "Bash(ffmpeg -version)",
+      "Bash(python3:*)",
+      "Bash(sort -t/ -k1)",
+      "Bash(cp:*)",
+      "Bash(python parse/scripts/merge_explanations.py output/explanations_unit04_chunk3.json)",
+      "Bash(python:*)",
+      "Bash(xargs echo:*)",
+      "Bash(ffmpeg -y -ss 102.449 -t 7.403 -i \"audio/Unit2 動詞A/08 1-08.mp3\" -acodec libmp3lame -q:a 2 output/clips/test_fix/sentence116_full.mp3 python -c \" import whisper model = whisper.load_model\\('base'\\) result = model.transcribe\\('output/clips/test_fix/sentence116_full.mp3', language='ja', verbose=False\\) print\\('Full sentence 116 clip transcript:'\\) print\\(f' {result[\\\\\"text\\\\\"].strip\\(\\)}'\\) print\\(\\) print\\('Expected:'\\) print\\(' 弟は気が短く、子どものころはすぐに暴れて、よく物を壊したものだ。'\\) print\\(\\) from difflib import SequenceMatcher score = SequenceMatcher\\(None, result['text'].strip\\(\\), '弟は気が短く、子どものころはすぐに暴れて、よく物を壊したものだ。'\\).ratio\\(\\) print\\(f'Match: {score:.3f}'\\) \")",
+      "Bash(pip3 list:*)",
+      "Bash(pip3 --version)",
+      "Bash(/c/Users/lochl/AppData/Local/Python/pythoncore-3.14-64/python.exe -c \"import sys; print\\(sys.version\\); import pip\")",
+      "Bash(cp \"D:/n2Prepare/materialToLearn/N2Vocabulary/output/N2Words.apkg\" \"D:/n2Prepare/ankiCardsToBuilt/\")",
+      "Bash(cp \"D:/n2Prepare/materialToLearn/N2Vocabulary/output/N2Words_listening.apkg\" \"D:/n2Prepare/ankiCardsToBuilt/\")",
+      "Bash(ls output/clips/unit02/*.mp3)"
+    ]
+  }
+}

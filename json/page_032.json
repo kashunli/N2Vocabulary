@@ -1,0 +1,124 @@
+{
+  "page": 32,
+  "page_type": "vocabulary",
+  "section": "Unit 02 動詞 A",
+  "entries": [
+    {
+      "number": 142,
+      "reading": "おぼれる",
+      "kanji": "おぼれる",
+      "verb_pattern": "ガ",
+      "meaning_en": "drown; be addicted to, lose oneself in",
+      "meaning_zh": "溺水, 落水; 沉溺于, 迷恋",
+      "meaning_ko": "물에 빠지다, 빠지다",
+      "examples": [
+        "川に落ちておぼれている子どもを助けた。",
+        "{酒／賭け事 ……} におぼれる。"
+      ],
+      "collocations": "☞ コラム 10「事故」"
+    },
+    {
+      "number": 143,
+      "reading": "いたむ",
+      "kanji": "痛む",
+      "verb_pattern": null,
+      "meaning_en": "hurt, pain",
+      "meaning_zh": "痛, 疼",
+      "meaning_ko": "아프다, 괴롭다",
+      "examples": [
+        "{歯／頭／足 ……} が痛む。",
+        "苦しんでいる友人のことを思うと、心が痛む。"
+      ],
+      "collocations": "(名): 痛み"
+    },
+    {
+      "number": 144,
+      "reading": "かかる",
+      "kanji": "かかる",
+      "verb_pattern": "ガ",
+      "meaning_en": "catch, suffer from",
+      "meaning_zh": "患病, 染病",
+      "meaning_ko": "(병에) 걸리다",
+      "examples": [
+        "インフルエンザにかかって、学校を休んだ。"
+      ],
+      "collocations": null
+    },
+    {
+      "number": 145,
+      "reading": "よう",
+      "kanji": "酔う",
+      "verb_pattern": null,
+      "meaning_en": "get drunk; feel sick; be intoxicated by",
+      "meaning_zh": "醉; 晕 (车、船等); 陶醉",
+      "meaning_ko": "술에 취하다, 멀미하다, 도취하다",
+      "examples": [
+        "酒に酔う。",
+        "酔った勢いで、好きな人に告白した。",
+        "車に酔うので、バス旅行に行けないのが残念だ。",
+        "{船／飛行機 ……} に酔う。",
+        "観客はその歌手のすばらしい歌に酔っていた。",
+        "彼は成功に酔った。"
+      ],
+      "collocations": "(名): 酔い → ～が回る、～が覚める | 合: 二日酔い、ガ酔っぱらう (例. 夫はぐでんぐでんに酔っぱらって帰ってきた。)、酔っぱらい (例. 駅前で酔っぱらいが騒いでいる。) | 合: 乗り物酔い、船酔い、酔い止め (の薬) | 類: うっとりする"
+    },
+    {
+      "number": 146,
+      "reading": "はく",
+      "kanji": "吐く",
+      "verb_pattern": null,
+      "meaning_en": "breathe; vomit; blow; express",
+      "meaning_zh": "吐, 吐出; 呕吐; 喷出; 吐露",
+      "meaning_ko": "뱉다, 내쉬다, 토하다, 뿜어내다, 토로하다",
+      "examples": [
+        "息を吸って吐く。",
+        "悪いものを食べたのか、胃の中のものを全部吐いてしまった。"
+      ],
+      "collocations": "対: ヲ吸う | 合: ①②ヲ吐き出す (例. 火山が煙を吐き出している。) | 慣: 弱音を吐く、本音を吐く"
+    },
+    {
+      "number": 147,
+      "reading": "みる",
+      "kanji": "診る",
+      "verb_pattern": null,
+      "meaning_en": "examine, make a diagnosis",
+      "meaning_zh": "诊察, 看 (病)",
+      "meaning_ko": "진찰하다",
+      "examples": [
+        "体の調子が悪いので医者に診てもらおう。",
+        "医者が患者を診る。"
+      ],
+      "collocations": "類: ヲ診察する"
+    },
+    {
+      "number": 148,
+      "reading": "みまう",
+      "kanji": "見舞う",
+      "verb_pattern": null,
+      "meaning_en": "(go to the hospital and) visit; hit",
+      "meaning_zh": "探病, 访问; 遭受, 受害",
+      "meaning_ko": "문병하다, 찾아오다",
+      "examples": [
+        "入院中の友だちをみんなで見舞った。",
+        "ここはたびたび台風に見舞われる地域だ。",
+        "{災害／災難 ……} に見舞われる。"
+      ],
+      "collocations": "(名): 見舞い | ※ 受身形で使うことが多い。"
+    },
+    {
+      "number": 149,
+      "reading": "つとめる",
+      "kanji": "勤める",
+      "verb_pattern": null,
+      "meaning_en": "work; be employed",
+      "meaning_zh": "工作, 任职",
+      "meaning_ko": "근무하다",
+      "examples": [
+        "会社に勤める。",
+        "定年まで無事に勤め上げた。"
+      ],
+      "collocations": "合: 勤め先、勤め口、勤め人、勤め上げる | 類: ガ勤務する | (名): 勤め (例. 「お勤めはどちらですか」) → ～に出る、～をやめる"
+    }
+  ],
+  "raw_text": "142 おぼれる ガおぼれる drown; be addicted to, lose oneself in / 溺水, 落水; 沉溺于, 迷恋 / 물에 빠지다, 빠지다 ①・川に落ちておぼれている子どもを助けた。 ☞ コラム 10「事故」 ②・{酒／賭け事 ...} におぼれる。 143 いたむ ガ痛む hurt, pain / 痛, 疼 / 아프다, 괴롭다 ・{歯／頭／足 ...} が痛む。 ・苦しんでいる友人のことを思うと、心が痛む。 (名) 痛み 144 かかる ガかかる catch, suffer from / 患病, 染病 / (병에) 걸리다 ・インフルエンザにかかって、学校を休んだ。 145 よう ガ酔う get drunk; feel sick; be intoxicated by / 醉; 晕 (车、船等); 陶醉 / 술에 취하다, 멀미하다, 도취하다 ①・酒に酔う。 ・酔った勢いで、好きな人に告白した。 (名) 酔い → _が回る、_が覚める 合 二日酔い、ガ酔っぱらう (例. 夫はぐでんぐでんに酔っぱらって帰ってきた。)、酔っぱらい (例. 駅前で酔っぱらいが騒いでいる。) ②・車に酔うので、バス旅行に行けないのが残念だ。 ・{船／飛行機 ...} に酔う。 合 乗り物酔い、船酔い、酔い止め (の薬) ③・観客はその歌手のすばらしい歌に酔っていた。 ・彼は成功に酔った。 類 うっとりする 146 はく ヲ吐く breathe; vomit; blow; express / 吐, 吐出; 呕吐; 喷出; 吐露 / 뱉다, 내쉬다, 토하다, 뿜어내다, 토로하다 ①・息を吸って吐く。 対 ヲ吸う ②・悪いものを食べたのか、胃の中のものを全部吐いてしまった。 合 ①②ヲ吐き出す (例. 火山が煙を吐き出している。) 慣 弱音を吐く、本音を吐く 147 みる ヲ診る examine, make a diagnosis / 诊察, 看 (病) / 진찰하다 ・体の調子が悪いので医者に診てもらおう。 ・医者が患者を診る。 類 ヲ診察する 148 みまう ヲ見舞う (go to the hospital and) visit; hit / 探病, 访问; 遭受, 受害 / 문병하다, 찾아오다 ①・入院中の友だちをみんなで見舞った。 (名) 見舞い ②・ここはたびたび台風に見舞われる地域だ。 ・{災害／災難 ...} に見舞われる。 ※ 受身形で使うことが多い。 149 つとめる ガ勤める work; be employed / 工作, 任职 / 근무하다 ・会社に勤める。 ・定年まで無事に勤め上げた。 合 勤め先、勤め口、勤め人、勤め上げる 類 ガ勤務する (名) 勤め (例. 「お勤めはどちらですか」) → _に出る、_をやめる 31"
+}

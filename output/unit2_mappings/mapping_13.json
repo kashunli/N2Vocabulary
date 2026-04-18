@@ -1,0 +1,16 @@
+[
+  {"index": 172, "word": {"start": 0.00, "end": 1.28}, "sentence": {"start": 1.68, "end": 3.42}, "note": "ASR: コロがある→ころがる"},
+  {"index": 173, "word": {"start": 4.74, "end": 5.82}, "sentence": {"start": 6.44, "end": 9.82}, "note": "ASR: コロがす→ころがす, 弾→球"},
+  {"index": 174, "word": {"start": 11.18, "end": 12.22}, "sentence": {"start": 12.60, "end": 15.08}, "note": "ASR: 片向く→傾く, 自身で平→地震で塀"},
+  {"index": 175, "word": {"start": 16.60, "end": 17.66}, "sentence": {"start": 18.28, "end": 22.40}, "note": "ASR: 片向ける→傾ける"},
+  {"index": 176, "word": {"start": 24.08, "end": 24.94}, "sentence": {"start": 25.52, "end": 30.32}, "note": "ASR: 処理→書類, 作園→机"},
+  {"index": 177, "word": {"start": 31.86, "end": 32.74}, "sentence": {"start": 33.20, "end": 35.64}, "note": "ASR: アニ→兄"},
+  {"index": 178, "word": {"start": 37.18, "end": 38.12}, "sentence": {"start": 38.68, "end": 41.68}, "note": "ASR: うち残→うちの子"},
+  {"index": 179, "word": {"start": 43.22, "end": 44.14}, "sentence": {"start": 44.78, "end": 46.94}, "note": ""},
+  {"index": 180, "word": {"start": 48.72, "end": 49.40}, "sentence": {"start": 50.12, "end": 51.92}, "note": "ASR: キザむ→刻む"},
+  {"index": 181, "word": {"start": 53.26, "end": 54.38}, "sentence": {"start": 54.66, "end": 57.90}, "note": "ASR: ハサマル→挟まる"},
+  {"index": 182, "word": {"start": 59.28, "end": 60.20}, "sentence": {"start": 60.80, "end": 64.20}, "note": "ASR: ハサム→挟む"},
+  {"index": 183, "word": {"start": 65.96, "end": 66.88}, "sentence": {"start": 67.42, "end": 70.84}, "note": "ASR: 景気→ケーキ"},
+  {"index": 184, "word": {"start": 72.40, "end": 73.34}, "sentence": {"start": 73.80, "end": 76.94}, "note": "ASR: ゆでたじゃないも→ゆでたじゃがいも"},
+  {"index": 185, "word": {"start": 78.30, "end": 79.22}, "sentence": {"start": 79.68, "end": 82.40}, "note": "ASR: 気にぶつかって→木にぶつかって"}
+]

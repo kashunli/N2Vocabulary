@@ -1,0 +1,87 @@
+{
+	"systeminfo": "WHISPER : COREML = 0 | OPENVINO = 0 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | OPENMP = 1 | REPACK = 1 | ",
+	"model": {
+		"type": "large",
+		"multilingual": true,
+		"vocab": 51866,
+		"audio": {
+			"ctx": 1500,
+			"state": 1280,
+			"head": 20,
+			"layer": 32
+		},
+		"text": {
+			"ctx": 448,
+			"state": 1280,
+			"head": 20,
+			"layer": 4
+		},
+		"mels": 128,
+		"ftype": 1
+	},
+	"params": {
+		"model": "tools/whispercpp-windows/ggml-large-v3-turbo.bin",
+		"language": "ja",
+		"translate": false
+	},
+	"result": {
+		"language": "ja"
+	},
+	"transcription": [
+		{
+			"timestamps": {
+				"from": "00:00:00,000",
+				"to": "00:00:30,000"
+			},
+			"offsets": {
+				"from": 0,
+				"to": 30000
+			},
+			"text": "私にはこの問題を解決する能力はない。あなたの性格の長所と短所を言ってください。子どもたちの個性を伸ばすような教育がしたい。私の左利きは親からの遺伝だ。"
+		},
+		{
+			"timestamps": {
+				"from": "00:00:30,000",
+				"to": "00:01:00,000"
+			},
+			"offsets": {
+				"from": 30000,
+				"to": 60000
+			},
+			"text": "優雅で美しい。まね。子どもは何でも親のまねをしたがるものだ。睡眠。アンケートの結果、睡眠時間は平均7時間という人が最も多かった。食欲。今、風邪をひいて食欲がない。外食。一人暮らしになって外食が増えた。"
+		},
+		{
+			"timestamps": {
+				"from": "00:01:00,000",
+				"to": "00:01:30,000"
+			},
+			"offsets": {
+				"from": 60000,
+				"to": 90000
+			},
+			"text": "家事。最近は家事や育児もする男性が増えた。出産。先日、姉が女の子を出産した。介護。お年寄りの介護をする。共働き。結婚20年、ずっと共働きです。出勤。"
+		},
+		{
+			"timestamps": {
+				"from": "00:01:30,000",
+				"to": "00:02:00,000"
+			},
+			"offsets": {
+				"from": 90000,
+				"to": 120000
+			},
+			"text": "出勤。出勤。出勤。"
+		},
+		{
+			"timestamps": {
+				"from": "00:02:00,000",
+				"to": "00:02:30,000"
+			},
+			"offsets": {
+				"from": 120000,
+				"to": 150000
+			},
+			"text": "全身。玄関に全身を映す大きな鏡が置いてある。しわ。歳をとると顔のシワが増える。"
+		}
+	]
+}

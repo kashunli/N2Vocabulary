@@ -1,0 +1,240 @@
+[
+  {
+    "index": 133,
+    "word": {
+      "start": 0.711,
+      "end": 1.395,
+      "piece_ids": [0, 1]
+    },
+    "sentence": {
+      "start": 2.098,
+      "end": 4.575,
+      "piece_ids": [2]
+    },
+    "note": ""
+  },
+  {
+    "index": 134,
+    "word": {
+      "start": 6.281,
+      "end": 6.641,
+      "piece_ids": [3]
+    },
+    "sentence": {
+      "start": 7.335,
+      "end": 9.867,
+      "piece_ids": [4]
+    },
+    "note": "ASR: 憲化→けんか"
+  },
+  {
+    "index": 135,
+    "word": {
+      "start": 11.556,
+      "end": 12.324,
+      "piece_ids": [5]
+    },
+    "sentence": {
+      "start": 13.162,
+      "end": 17.563,
+      "piece_ids": [6]
+    },
+    "note": ""
+  },
+  {
+    "index": 136,
+    "word": {
+      "start": 19.380,
+      "end": 20.090,
+      "piece_ids": [7]
+    },
+    "sentence": {
+      "start": 20.823,
+      "end": 23.350,
+      "piece_ids": [8]
+    },
+    "note": ""
+  },
+  {
+    "index": 137,
+    "word": {
+      "start": 25.151,
+      "end": 25.733,
+      "piece_ids": [9]
+    },
+    "sentence": {
+      "start": 26.541,
+      "end": 30.096,
+      "piece_ids": [10, 11]
+    },
+    "note": ""
+  },
+  {
+    "index": 138,
+    "word": {
+      "start": 31.931,
+      "end": 32.618,
+      "piece_ids": [12]
+    },
+    "sentence": {
+      "start": 33.437,
+      "end": 36.228,
+      "piece_ids": [13]
+    },
+    "note": ""
+  },
+  {
+    "index": 139,
+    "word": {
+      "start": 38.037,
+      "end": 38.577,
+      "piece_ids": [14]
+    },
+    "sentence": {
+      "start": 39.394,
+      "end": 41.945,
+      "piece_ids": [15]
+    },
+    "note": ""
+  },
+  {
+    "index": 140,
+    "word": {
+      "start": 43.782,
+      "end": 44.510,
+      "piece_ids": [16]
+    },
+    "sentence": {
+      "start": 45.306,
+      "end": 48.116,
+      "piece_ids": [17]
+    },
+    "note": "ASR: 詰まずいて→つまずいて"
+  },
+  {
+    "index": 141,
+    "word": {
+      "start": 49.944,
+      "end": 50.385,
+      "piece_ids": [18]
+    },
+    "sentence": {
+      "start": 51.181,
+      "end": 53.251,
+      "piece_ids": [19]
+    },
+    "note": ""
+  },
+  {
+    "index": 142,
+    "word": {
+      "start": 55.100,
+      "end": 55.741,
+      "piece_ids": [20]
+    },
+    "sentence": {
+      "start": 56.405,
+      "end": 59.261,
+      "piece_ids": [21]
+    },
+    "note": "ASR: 褒れる→おぼれる"
+  },
+  {
+    "index": 143,
+    "word": {
+      "start": 61.058,
+      "end": 61.596,
+      "piece_ids": [22]
+    },
+    "sentence": {
+      "start": 62.397,
+      "end": 63.289,
+      "piece_ids": [23]
+    },
+    "note": ""
+  },
+  {
+    "index": 144,
+    "word": {
+      "start": 65.090,
+      "end": 65.637,
+      "piece_ids": [24]
+    },
+    "sentence": {
+      "start": 66.444,
+      "end": 69.595,
+      "piece_ids": [25]
+    },
+    "note": "ASR: 掛かる"
+  },
+  {
+    "index": 145,
+    "word": {
+      "start": 71.316,
+      "end": 71.749,
+      "piece_ids": [26]
+    },
+    "sentence": {
+      "start": 72.460,
+      "end": 73.484,
+      "piece_ids": [27]
+    },
+    "note": "ASR: 弱う→酔う"
+  },
+  {
+    "index": 146,
+    "word": {
+      "start": 75.298,
+      "end": 75.664,
+      "piece_ids": [28]
+    },
+    "sentence": {
+      "start": 76.471,
+      "end": 77.884,
+      "piece_ids": [29]
+    },
+    "note": "ASR: 白→はく, word very short"
+  },
+  {
+    "index": 147,
+    "word": {
+      "start": 79.689,
+      "end": 80.065,
+      "piece_ids": [30]
+    },
+    "sentence": {
+      "start": 80.878,
+      "end": 84.233,
+      "piece_ids": [31]
+    },
+    "note": ""
+  },
+  {
+    "index": 148,
+    "word": {
+      "start": 86.023,
+      "end": 86.605,
+      "piece_ids": [32]
+    },
+    "sentence": {
+      "start": 87.469,
+      "end": 90.368,
+      "piece_ids": [33]
+    },
+    "note": "ASR: 見まう→みまう"
+  },
+  {
+    "index": 149,
+    "word": {
+      "start": 92.208,
+      "end": 92.844,
+      "piece_ids": [34]
+    },
+    "sentence": {
+      "start": 93.669,
+      "end": 94.845,
+      "piece_ids": [35]
+    },
+    "note": ""
+  }
+]

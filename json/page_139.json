@@ -1,0 +1,95 @@
+{
+  "page": 139,
+  "page_type": "column",
+  "section": "まとめ2 同じ漢字を含む名詞 (Entries 656-680)",
+  "entries": [
+    {
+      "number": null,
+      "reading": "いぜん",
+      "kanji": "改善",
+      "verb_pattern": "か",
+      "meaning_en": "improvement",
+      "meaning_zh": "改善",
+      "meaning_ko": "개선",
+      "examples": [
+        "・組合は待遇の改善を求めてストを行った。",
+        "・「生活を改善しなければ、生活習慣病は治りませんよ」"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": null,
+      "reading": "いりょう",
+      "kanji": "改良",
+      "verb_pattern": "か",
+      "meaning_en": "improvement, amelioration",
+      "meaning_zh": "改良",
+      "meaning_ko": "개량",
+      "examples": [
+        "・その製品は改良を重ねることで、いっそう使いやすくなった。"
+      ],
+      "collocations": "連: _を加える、_を重ねる | 合: 品種_"
+    },
+    {
+      "number": null,
+      "reading": "いかく",
+      "kanji": "改革",
+      "verb_pattern": "か",
+      "meaning_en": "reform",
+      "meaning_zh": "改革",
+      "meaning_ko": "개혁",
+      "examples": [
+        "・古い制度を改革しなければ、この国の発展は望めない。"
+      ],
+      "collocations": "合: 税制_、農地_、宗教_ | 類: ヲ変革スル、ヲ革新スル | 関: 革命"
+    },
+    {
+      "number": null,
+      "reading": "いせい",
+      "kanji": "改正",
+      "verb_pattern": "か",
+      "meaning_en": "revision, amendment",
+      "meaning_zh": "改正",
+      "meaning_ko": "개정",
+      "examples": [
+        "・4月から新幹線のダイヤが改正されるそうだ。",
+        "・{法律／条約／規則 ...}を改正する。"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": null,
+      "reading": "いてい",
+      "kanji": "改定",
+      "verb_pattern": "か",
+      "meaning_en": "revision",
+      "meaning_zh": "改定",
+      "meaning_ko": "개정",
+      "examples": [
+        "・来年から消費税率が改定されることになった。",
+        "・{定価／規約 ...}を改定する。"
+      ],
+      "collocations": "関: ヲ訂正スル ☞ 929"
+    },
+    {
+      "number": null,
+      "reading": "いしゅう",
+      "kanji": "改修",
+      "verb_pattern": "か",
+      "meaning_en": "repair",
+      "meaning_zh": "改修",
+      "meaning_ko": "개수",
+      "examples": [
+        "・アパートが古くなったので、大規模な改修が行われることになった。",
+        "・{道路／橋／建築物／河川 ...}を改修する。"
+      ],
+      "collocations": "合: _工事"
+    }
+  ],
+  "column": {
+    "number": null,
+    "title": "",
+    "items": []
+  },
+  "raw_text": "＜その他＞ 開閉、 開演⇔*終演、 開始、 開示、 開通、 開封、 開門 (* 「する」は付かない)\n\nIII 「改」が付く言葉 Vocabulary containing 「改 (re-)」 / 带有 “改” 的词 / 「改」이 붙는 말\n670 かいぜん ガ／ヲ改善スル improvement / 改善 / 개선\n・組合は待遇の改善を求めてストを行った。\n・「生活を改善しなければ、生活習慣病は治りませんよ」\n671 かいりょう ヲ改良スル improvement, amelioration / 改良 / 개량\n・その製品は改良を重ねることで、いっそう使いやすくなった。\n連 _を加える、_を重ねる 合 品種_\n※「改良」は具体的なものを、「改善」はものごとの状態を改めるときに多く使う。\n672 かいかく ヲ改革スル reform / 改革 / 개혁\n・古い制度を改革しなければ、この国の発展は望めない。\n合 税制_、農地_、宗教_ 類 ヲ変革スル、ヲ革新スル 関 革命\n673 かいせい ヲ改正スル revision, amendment / 改正 / 개정\n・4月から新幹線のダイヤが改正されるそうだ。\n・{法律／条約／規則 ...}を改正する。\n674 かいてい ヲ改定スル revision / 改定 / 개정\n・来年から消費税率が改定されることになった。 ・{定価／規約 ...}を改定する。\n関 ヲ訂正スル ☞ 929\n675 かいしゅう ヲ改修スル repair / 改修 / 개수\n・アパートが古くなったので、大規模な改修が行われることになった。\n・{道路／橋／建築物／河川 ...}を改修する。\n合 _工事\n＜その他＞ 改造、 改心、 改築、 改行、 改名、 改札口 ☞ N3 コラム 12\n138"
+}

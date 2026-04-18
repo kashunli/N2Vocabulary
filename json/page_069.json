@@ -1,0 +1,59 @@
+{
+  "page": 69,
+  "page_type": "column",
+  "section": "Unit 04 名詞 B (Entries 318–320) & Column 8 Disasters",
+  "entries": [
+    {
+      "number": 318,
+      "reading": "ほか",
+      "kanji": "外",
+      "verb_pattern": null,
+      "meaning_en": "someone (else); something (else); other than; as well as",
+      "meaning_zh": "其他; 别的; 除此之外",
+      "meaning_ko": "딴 것, 이외, 딴 곳, 밖에",
+      "examples": [
+        "・「私にはわかりませんので、ほかの人に聞いてください」 ・「ほかに質問はありませんか」",
+        "・(店で) 「ほかの物を見せてください」",
+        "・英語のほか、スペイン語も話せる。",
+        "・ここよりほかに行くところはない。",
+        "・山田課長ほか2名が出席した。"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 319,
+      "reading": "さかい",
+      "kanji": "境",
+      "verb_pattern": null,
+      "meaning_en": "boundary",
+      "meaning_zh": "界线, 分界",
+      "meaning_ko": "경계",
+      "examples": [
+        "・隣の家との境には塀がある。 ・秋分の日を境に、急に涼しくなった。"
+      ],
+      "collocations": "連: ～を境にする | 合: 境目、県境 | 類: 境界 | 関: 国境 | 慣: 生死の境をさまよう"
+    },
+    {
+      "number": 320,
+      "reading": "なかば",
+      "kanji": "半ば",
+      "verb_pattern": null,
+      "meaning_en": "half; middle",
+      "meaning_zh": "一半; 中央, 中间",
+      "meaning_ko": "절반, 거의, 중간",
+      "examples": [
+        "①・彼女の話の半ばはうそだ。",
+        "[(副)] ・試験ができなかったので、合格は半ばあきらめていた。",
+        "②・東京は6月の半ばあたりから雨が多くなる。 ・試合の半ばに雨が降り出した。",
+        "・50歳になり人生も半ばを過ぎた。"
+      ],
+      "collocations": "類: ①半分 | 関: ②中旬、中ほど、中間"
+    }
+  ],
+  "column": {
+    "number": 8,
+    "title": "災害",
+    "items": []
+  },
+  "raw_text": "318 ほか 外 someone (else); something (else); other than; as well as / 其他; 别的; 除此之外 / 딴 것, 이외, 딴 곳, 밖에 ・「私にはわかりませんので、ほかの人に聞いてください」 ・「ほかに質問はありませんか」 ・(店で) 「ほかの物を見せてください」 ・英語のほか、スペイン語も話せる。 ・ここよりほかに行くところはない。 ・山田課長ほか2名が出席した。 319 さかい 境 boundary / 界线, 分界 / 경계 ・隣の家との境には塀がある。 ・秋分の日を境に、急に涼しくなった。 連 ト/ニ__を接する 合 __目、県境 類 境界 関 国境 慣 生死の境をさまよう 320 なかば 半ば half; middle / 一半; 中央, 中间 / 절반, 거의, 중간 ① ・彼女の話の半ばはうそだ。 [(副)] ・試験ができなかったので、合格は半ばあきらめていた。 類 半分 ② ・東京は6月の半ばあたりから雨が多くなる。 ・試合の半ばに雨が降り出した。 ・50歳になり人生も半ばを過ぎた。 関 中旬、中ほど、中間 コラム 8 災害 Disasters / 灾害 / 재해 ◆風 台風 typhoon 暴風雨 storm 突風 blast 竜巻 tornado ◆雨 大雨 heavy rain 集中豪雨 local downpour ◆雪 大雪 heavy snow 吹雪 snowstorm, blizzard 雪崩 avalanche ◆水 洪水 flood 氾濫 flooding, inundation 増水 rise of a river 浸水 flooding, inundation 水害 flood damage 堤防決壊 collapse of embankment 津波 tsunami 高波 high wave 水没 submergence ◆火 山火事/森林火災 forest fire 噴火 eruption ◆地 地震 earthquake 震度 seismic intensity マグニチュード magnitude 震源 hypocenter 余震 aftershock 山崩れ landslide がけ崩れ landslide 地割れ crack in the ground ◆天候 冷害 damage from cold weather 干ばつ drought 日照り drought, dry weather ◆その他 落雷 strike of lightning 68"
+}

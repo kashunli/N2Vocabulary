@@ -1,0 +1,26 @@
+[
+  {
+    "index": 134,
+    "unit_number": 2,
+    "track_name": "10 1-10.mp3",
+    "headword": "突く",
+    "reading": "つく",
+    "expected_sentence": "けんかして相手の胸を手で突いた。",
+    "word_clip": "output\\clips\\unit02\\word134.mp3",
+    "sentence_clip": "output\\clips\\unit02\\sentence134.mp3",
+    "word_duration": 0.36,
+    "sentence_duration": 2.531973,
+    "word_transcript_audit": "救う",
+    "sentence_transcript_audit": "ケンカして相手の胸を手でついた。",
+    "word_score_audit": 0.4,
+    "sentence_score_audit": 1.0,
+    "word_status": "suspect",
+    "sentence_status": "ok",
+    "status": "suspect",
+    "word_reasons": [
+      "word_asr_mismatch"
+    ],
+    "sentence_reasons": [],
+    "note": "ASR: 憲化→けんか"
+  }
+]

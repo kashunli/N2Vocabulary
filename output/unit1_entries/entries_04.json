@@ -1,0 +1,86 @@
+[
+  {
+    "index": 39,
+    "unit_number": 1,
+    "headword": "服装",
+    "reading": "ふくそう",
+    "sentence": "「面接にはきちんとした服装で行きなさい」"
+  },
+  {
+    "index": 40,
+    "unit_number": 1,
+    "headword": "礼",
+    "reading": "れい",
+    "sentence": "親切にしてもらった礼を述べる。"
+  },
+  {
+    "index": 41,
+    "unit_number": 1,
+    "headword": "世辞",
+    "reading": "せじ",
+    "sentence": "「いいネクタイですね」と世辞を言う。"
+  },
+  {
+    "index": 42,
+    "unit_number": 1,
+    "headword": "言い訳",
+    "reading": "いわけ",
+    "sentence": "田中さんはいつも言い訳ばかり言って、自分の失敗を認めようとしない。"
+  },
+  {
+    "index": 43,
+    "unit_number": 1,
+    "headword": "話題",
+    "reading": "わだい",
+    "sentence": "野中さんはとても話題が豊富な人で、話していて楽しい。"
+  },
+  {
+    "index": 44,
+    "unit_number": 1,
+    "headword": "秘密",
+    "reading": "ひみつ",
+    "sentence": "「あなたを信用して私の秘密を打ち明けます」"
+  },
+  {
+    "index": 45,
+    "unit_number": 1,
+    "headword": "尊敬スル",
+    "reading": "そんけい",
+    "sentence": "マザー・テレサは世界中の人々に尊敬されている。"
+  },
+  {
+    "index": 46,
+    "unit_number": 1,
+    "headword": "謙遜スル",
+    "reading": "けんそん",
+    "sentence": "ほめられたとき、謙遜して「そんなことはありません」と言う人も多い。"
+  },
+  {
+    "index": 47,
+    "unit_number": 1,
+    "headword": "期待スル",
+    "reading": "きたい",
+    "sentence": "山本選手の活躍を期待していたが、期待はずれの結果に終わった。"
+  },
+  {
+    "index": 48,
+    "unit_number": 1,
+    "headword": "苦労スル",
+    "reading": "くろう",
+    "sentence": "父の死後、母は苦労して私たちを育ててくれた。"
+  },
+  {
+    "index": 49,
+    "unit_number": 1,
+    "headword": "意志 / 意思",
+    "reading": "いし",
+    "sentence": "彼女は意志が {固い／強い} から、きっと目的を達成するだろう。"
+  },
+  {
+    "index": 50,
+    "unit_number": 1,
+    "headword": "感情",
+    "reading": "んじょう",
+    "sentence": "田中さんはすぐに感情が顔に出る。"
+  }
+]

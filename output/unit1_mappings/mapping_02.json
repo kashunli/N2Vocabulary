@@ -1,0 +1,18 @@
+[
+  {"index": 1, "word": {"start": 0.619, "end": 1.536}, "sentence": {"start": 2.413, "end": 4.466}},
+  {"index": 2, "word": {"start": 6.358, "end": 7.215}, "sentence": {"start": 7.961, "end": 10.393}},
+  {"index": 3, "word": {"start": 12.242, "end": 12.702}, "sentence": {"start": 13.564, "end": 16.088}},
+  {"index": 4, "word": {"start": 18.026, "end": 18.816}, "sentence": {"start": 19.673, "end": 24.120}},
+  {"index": 5, "word": {"start": 25.882, "end": 26.806}, "sentence": {"start": 27.670, "end": 30.231}},
+  {"index": 6, "word": {"start": 32.080, "end": 32.734}, "sentence": {"start": 33.618, "end": 36.184}},
+  {"index": 7, "word": {"start": 38.032, "end": 38.885}, "sentence": {"start": 39.747, "end": 43.647}},
+  {"index": 8, "word": {"start": 45.511, "end": 46.299}, "sentence": {"start": 47.163, "end": 50.546}},
+  {"index": 9, "word": {"start": 52.364, "end": 52.997}, "sentence": {"start": 53.868, "end": 56.467}},
+  {"index": 10, "word": {"start": 58.321, "end": 58.942}, "sentence": {"start": 59.806, "end": 61.818}},
+  {"index": 11, "word": {"start": 63.573, "end": 64.291}, "sentence": {"start": 65.160, "end": 69.190}},
+  {"index": 12, "word": {"start": 71.051, "end": 71.531}, "sentence": {"start": 72.331, "end": 75.674}},
+  {"index": 13, "word": {"start": 77.523, "end": 78.231}, "sentence": {"start": 79.113, "end": 82.341}},
+  {"index": 14, "word": {"start": 84.119, "end": 84.750}, "sentence": {"start": 85.605, "end": 89.164}},
+  {"index": 15, "word": {"start": 91.024, "end": 91.913}, "sentence": {"start": 92.794, "end": 98.927}},
+  {"index": 16, "word": {"start": 100.780, "end": 101.689}, "sentence": {"start": 102.493, "end": 105.375}}
+]

@@ -1,0 +1,140 @@
+{
+  "page": 113,
+  "page_type": "vocabulary",
+  "section": "Unit 06 副詞 (Entries 540-548)",
+  "entries": [
+    {
+      "number": 540,
+      "reading": "すでに",
+      "kanji": "すでに",
+      "verb_pattern": null,
+      "meaning_en": "already",
+      "meaning_zh": "已经",
+      "meaning_ko": "이미, 벌써",
+      "examples": [
+        "・私が駅に着いたとき、終電はすでに出た後だった。",
+        "・彼女が出会ったとき、彼はすでに結婚していたそうだ。"
+      ],
+      "collocations": "類: もう ※「すでに」の方がかたい表現。 | 対: いまだに、まだ"
+    },
+    {
+      "number": 541,
+      "reading": "じぜんに",
+      "kanji": "じぜんに (事前に)",
+      "verb_pattern": null,
+      "meaning_en": "beforehand",
+      "meaning_zh": "事先",
+      "meaning_ko": "사전에",
+      "examples": [
+        "・インタビューの相手に、事前に質問を伝えておいた。",
+        "・何事も、事前の準備が大切だ。"
+      ],
+      "collocations": "合: 事前連絡 | 類: 前もって、あらかじめ | 対: 事後に（→事後報告）"
+    },
+    {
+      "number": 542,
+      "reading": "とうじつ",
+      "kanji": "とうじつ (当日)",
+      "verb_pattern": null,
+      "meaning_en": "that day",
+      "meaning_zh": "当天",
+      "meaning_ko": "당일",
+      "examples": [
+        "・入試当日、熱を出してしまった。",
+        "・決勝戦は1週間後だ。当日は朝から応援に行くつもりだ。"
+      ],
+      "collocations": "合: 当日券 | 関: 前日、翌日"
+    },
+    {
+      "number": 543,
+      "reading": "とうじ",
+      "kanji": "とうじ (当時)",
+      "verb_pattern": null,
+      "meaning_en": "in those days, then",
+      "meaning_zh": "当时，那时",
+      "meaning_ko": "당시",
+      "examples": [
+        "・私は京都出身だが、当時住んでいた家はもうない。",
+        "・来日当時は、日本語は全くできなかった。",
+        "・この部屋は父が生きていた当時のままにしてある"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 544,
+      "reading": "いちじ",
+      "kanji": "いちじ (一時)",
+      "verb_pattern": null,
+      "meaning_en": "once; temporarily; momentary",
+      "meaning_zh": "一段时间；临时；一时的",
+      "meaning_ko": "잠시, 한때, 일시",
+      "examples": [
+        "①・子どものころ、一時アメリカに住んでいたことがある。",
+        "②・大雨のため、新幹線は一時ストップした。",
+        "・（天気予報）くもり一時雨",
+        "③・一時の感情で大切なことを決めない方がいい。"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 545,
+      "reading": "しきゅう",
+      "kanji": "しきゅう (至急)",
+      "verb_pattern": null,
+      "meaning_en": "immediately, urgently",
+      "meaning_zh": "即刻，火速",
+      "meaning_ko": "지급, 매우 급함",
+      "examples": [
+        "・この患者は至急病院へ運ぶ必要がある。",
+        "・「至急おいでください」"
+      ],
+      "collocations": "合: 大至急"
+    },
+    {
+      "number": 546,
+      "reading": "ただちに",
+      "kanji": "ただちに (直ちに)",
+      "verb_pattern": null,
+      "meaning_en": "immediately; directly",
+      "meaning_zh": "立刻，马上；即",
+      "meaning_ko": "곧, 바로",
+      "examples": [
+        "①・事故の情報はただちに社長に伝えられた。",
+        "・「全員ただちに集合せよ」",
+        "②・栄養不足の子どもたちにとって、肺炎は直ちに死を意味する。"
+      ],
+      "collocations": "類: ①すぐに ※「ただちに」の方がかたい表現。 | 類: ②直接"
+    },
+    {
+      "number": 547,
+      "reading": "さっそく",
+      "kanji": "さっそく (早速)",
+      "verb_pattern": null,
+      "meaning_en": "at once, right away",
+      "meaning_zh": "立刻，马上，赶紧",
+      "meaning_ko": "당장, 즉시",
+      "examples": [
+        "・新しいレストランができたので、さっそく行ってみた。",
+        "・ボーナスが出たので、さっそく新しい靴とスーツを買った。"
+      ],
+      "collocations": "類: すぐに"
+    },
+    {
+      "number": 548,
+      "reading": "いきなり",
+      "kanji": "いきなり",
+      "verb_pattern": null,
+      "meaning_en": "suddenly; without notice",
+      "meaning_zh": "突然，冷不防",
+      "meaning_ko": "느닷없이, 갑자기",
+      "examples": [
+        "・ノックもせずにいきなり部屋に入るのは失礼だ。",
+        "・いきなり道にとび出すと、危ない。",
+        "・いきなり質問されて答えられなかった。",
+        "※準備や心構えができていないときに使う。"
+      ],
+      "collocations": "類: 急に、突然"
+    }
+  ],
+  "raw_text": "540 すでに\nmeaning: already / 已经 / 이미, 벌써\nexamples:\n- ・私が駅に着いたとき、終電はすでに出た後だった。\n- ・彼女が出会ったとき、彼はすでに結婚していたそうだ。\ncollocations: 類: もう ※「すでに」の方がかたい表現。 | 対: いまだに、まだ\n\n541 じぜんに (事前に)\nmeaning: beforehand / 事先 / 사전에\nexamples:\n- ・インタビューの相手に、事前に質問を伝えておいた。\n- ・何事も、事前の準備が大切だ。\ncollocations: 合: 事前連絡 | 類: 前もって、あらかじめ | 対: 事後に（→事後報告）\n\n542 とうじつ (当日)\nmeaning: that day / 当天 / 당일\nexamples:\n- ・入試当日、熱を出してしまった。\n- ・決勝戦は1週間後だ。当日は朝から応援に行くつもりだ。\ncollocations: 合: 当日券 | 関: 前日、翌日\n\n543 とうじ (当時)\nmeaning: in those days, then / 当时，那时 / 당시\nexamples:\n- ・私は京都出身だが、当時住んでいた家はもうない。\n- ・来日当時は、日本語は全くできなかった。\n- ・この部屋は父が生きていた当時のままにしてある\ncollocations:\n\n544 いちじ (一時)\nmeaning: once; temporarily; momentary / 一段时间；临时；一时的 / 잠시, 한때, 일시\nexamples:\n- ①・子どものころ、一時アメリカに住んでいたことがある。\n- ②・大雨のため、新幹線は一時ストップした。\n- ・（天気予報）くもり一時雨\n- ③・一時の感情で大切なことを決めない方がいい。\ncollocations:\n\n545 しきゅう (至急)\nmeaning: immediately, urgently / 即刻，火速 / 지급, 매우 급함\nexamples:\n- ・この患者は至急病院へ運ぶ必要がある。\n- ・「至急おいでください」\ncollocations: 合: 大至急\n\n546 ただちに (直ちに)\nmeaning: immediately; directly / 立刻，马上；即 / 곧, 바로\nexamples:\n- ①・事故の情報はただちに社長に伝えられた。\n- ・「全員ただちに集合せよ」\n- ②・栄養不足の子どもたちにとって、肺炎は直ちに死を意味する。\ncollocations: 類: ①すぐに ※「ただちに」の方がかたい表現。 | 類: ②直接\n\n547 さっそく (早速)\nmeaning: at once, right away / 立刻，马上，赶紧 / 당장, 즉시\nexamples:\n- ・新しいレストランができたので、さっそく行ってみた。\n- ・ボーナスが出たので、さっそく新しい靴とスーツを買った。\ncollocations: 類: すぐに\n\n548 いきなり\nmeaning: suddenly; without notice / 突然，冷不防 / 느닷없이, 갑자기\nexamples:\n- ・ノックもせずにいきなり部屋に入るのは失礼だ。\n- ・いきなり道にとび出すと、危ない。\n- ・いきなり質問されて答えられなかった。\n- ※準備や心構えができていないときに使う。\ncollocations: 類: 急に、突然"
+}

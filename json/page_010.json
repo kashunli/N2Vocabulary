@@ -1,0 +1,138 @@
+{
+  "page": 10,
+  "page_type": "vocabulary",
+  "section": "Unit 01 名詞 A",
+  "entries": [
+    {
+      "number": 9,
+      "reading": "ふたご",
+      "kanji": "双子",
+      "verb_pattern": null,
+      "meaning_en": "twin(s)",
+      "meaning_zh": "孪生子, 双胞胎",
+      "meaning_ko": "쌍둥이",
+      "examples": [
+        "私には双子の弟がいます。"
+      ],
+      "collocations": "類: 双生児"
+    },
+    {
+      "number": 10,
+      "reading": "まいご",
+      "kanji": "迷子",
+      "verb_pattern": null,
+      "meaning_en": "lost child",
+      "meaning_zh": "迷路; 走丟的孩子",
+      "meaning_ko": "미아",
+      "examples": [
+        "(アナウンス)「迷子のお知らせをいたします」",
+        "東京駅は広くて迷子になりそうだ。"
+      ],
+      "collocations": "連: ～になる"
+    },
+    {
+      "number": 11,
+      "reading": "たにん",
+      "kanji": "他人",
+      "verb_pattern": null,
+      "meaning_en": "another person; others",
+      "meaning_zh": "陌生人; 别人",
+      "meaning_ko": "타인, 남, 제삼자",
+      "examples": [
+        "友だちだと思って声をかけたら、まったくの他人だった。",
+        "他人にはわからない家族の事情がある。"
+      ],
+      "collocations": null
+    },
+    {
+      "number": 12,
+      "reading": "てき",
+      "kanji": "敵",
+      "verb_pattern": null,
+      "meaning_en": "enemy",
+      "meaning_zh": "敌人; 对手",
+      "meaning_ko": "적, 상대",
+      "examples": [
+        "兄弟は敵と味方に分かれて戦った。",
+        "彼女は敵に回すと怖い。",
+        "敵のチームに大勝利した。",
+        "対戦相手は強敵だ。"
+      ],
+      "collocations": "連: ①②ヲ～に回す、～味方に分かれる | 合: ①②油断大～、～国、～地、ヲ～視する | 対: ①②味方"
+    },
+    {
+      "number": 13,
+      "reading": "みかた",
+      "kanji": "味方 [ガ味方(ヲ)スル]",
+      "verb_pattern": null,
+      "meaning_en": "friend, supporter; side",
+      "meaning_zh": "朋友, 伙伴",
+      "meaning_ko": "내 편, 편듦",
+      "examples": [
+        "何があっても、私はあなたの味方です",
+        "私と弟がけんかすると、母はいつも弟 {の／に} 味方をする。"
+      ],
+      "collocations": "連: ～になる・～をする | 対: 敵"
+    },
+    {
+      "number": 14,
+      "reading": "ひっしゃ",
+      "kanji": "筆者",
+      "verb_pattern": null,
+      "meaning_en": "author, writer",
+      "meaning_zh": "笔者",
+      "meaning_ko": "필자",
+      "examples": [
+        "筆者の最も言いたいことを下から選びなさい。",
+        "この筆者の考え方に私は賛成だ。"
+      ],
+      "collocations": "関: 著者、作者、作家"
+    },
+    {
+      "number": 15,
+      "reading": "じゅみょう",
+      "kanji": "寿命",
+      "verb_pattern": null,
+      "meaning_en": "life, life span",
+      "meaning_zh": "寿命; 使用寿命",
+      "meaning_ko": "수명",
+      "examples": [
+        "医学の進歩によって、人間の寿命は100年前に比べるとずいぶん伸びた。",
+        "この時計は最近よく止まる。20年も使っているから寿命が来たのだろうか。"
+      ],
+      "collocations": "連: ～が伸びる・～を伸ばす、～が来る | 合: 平均～"
+    },
+    {
+      "number": 16,
+      "reading": "しょうらい",
+      "kanji": "将来",
+      "verb_pattern": null,
+      "meaning_en": "future",
+      "meaning_zh": "将来, 未来, 前途",
+      "meaning_ko": "장래, 미래",
+      "examples": [
+        "将来の希望は海外で働くことだ。",
+        "日本の将来を考える。",
+        "この子は絵がうまくて今から将来が楽しみだ。",
+        "彼女は将来有望な新人だ。",
+        "(副) 「あなたは将来何になりたいですか」",
+        "近い将来、エイズは完全に治る病気になるだろう。"
+      ],
+      "collocations": "連: 近い～ | 類: 未来"
+    },
+    {
+      "number": 17,
+      "reading": "さいのう",
+      "kanji": "才能",
+      "verb_pattern": null,
+      "meaning_en": "talent, gift",
+      "meaning_zh": "才能, 才华",
+      "meaning_ko": "재능",
+      "examples": [
+        "彼女には、音楽の才能がある。"
+      ],
+      "collocations": "連: ～がある⇔ない、～が豊かだ⇔～に乏しい、～に恵まれる"
+    }
+  ],
+  "raw_text": "9 ふたご 双子 twin(s) / 孪生子, 双胞胎 / 쌍둥이 ・私には双子の弟がいます。 類 双生児 10 まいご 迷子 lost child / 迷路; 走丟的孩子 / 미아 ・(アナウンス)「迷子のお知らせをいたします」 ・東京駅は広くて迷子になりそうだ。 連 _になる 11 たにん 他人 another person; others / 陌生人; 别人 / 타인, 남, 제삼자 ・友だちだと思って声をかけたら、まったくの他人だった。 ・他人にはわからない家族の事情がある。 12 てき 敵 enemy / 敌人; 对手 / 적, 상대 ①・兄弟は敵と味方に分かれて戦った。 ・彼女は敵に回すと怖い。 ②・敵のチームに大勝利した。 ・対戦相手は強敵だ。 連 ①②ヲ_に回す、_味方に分かれる 合 ①②油断大_、_国、_地、ヲ_視する 対 ①②味方 13 みかた 味方 ガ味方(ヲ)スル friend, supporter; side / 朋友, 伙伴 / 내 편, 편듦 ・「何があっても、私はあなたの味方です」 ・私と弟がけんかすると、母はいつも弟 {の／に} 味方をする。 連 _になる・_をする 対 敵 14 ひっしゃ 筆者 author, writer / 笔者 / 필자 ・筆者の最も言いたいことを下から選びなさい。 ・この筆者の考え方に私は賛成だ。 関 著者、作者、作家 15 じゅみょう 寿命 life, life span / 寿命; 使用寿命 / 수명 ・医学の進歩によって、人間の寿命は100年前に比べるとずいぶん伸びた。 ・この時計は最近よく止まる。20年も使っているから寿命が来たのだろうか。 連 _が伸びる・_を伸ばす、_が来る 合 平均_ 16 しょうらい 将来 future / 将来, 未来, 前途 / 장래, 미래 ・将来の希望は海外で働くことだ。 ・日本の将来を考える。 ・この子は絵がうまくて今から将来が楽しみだ。 ・彼女は将来有望な新人だ。 [(副)] ・「あなたは将来何になりたいですか」 ・近い将来、エイズは完全に治る病気になるだろう。 連 近い_ 類 未来 17 さいのう 才能 talent, gift / 才能, 才华 / 재능 ・彼女には、音楽の才能がある。 連 _がある⇔ない、_が豊かだ⇔_に乏しい、_に恵まれる 9"
+}

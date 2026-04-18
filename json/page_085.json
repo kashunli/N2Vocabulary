@@ -1,0 +1,154 @@
+{
+  "page": 85,
+  "page_type": "vocabulary",
+  "section": "まとめ1 複合動詞 (Entries 392–402)",
+  "entries": [
+    {
+      "number": 392,
+      "reading": "きあげる",
+      "kanji": "書き上げる",
+      "verb_pattern": "か",
+      "meaning_en": "finish writing, write off",
+      "meaning_zh": "写完",
+      "meaning_ko": "다 쓰다",
+      "examples": [
+        "・レポートを書き上げた。"
+      ],
+      "collocations": "関: 〈自〉 書き上がる"
+    },
+    {
+      "number": 393,
+      "reading": "そだてあげる",
+      "kanji": "育て上げる",
+      "verb_pattern": null,
+      "meaning_en": "bring up",
+      "meaning_zh": "抚养大，养育成人",
+      "meaning_ko": "길러 내다",
+      "examples": [
+        "・子どもを育て上げる。"
+      ],
+      "collocations": "関: <その他> 仕上げる ☞ 710、編み上げる"
+    },
+    {
+      "number": 394,
+      "reading": "よみあげる",
+      "kanji": "読み上げる",
+      "verb_pattern": null,
+      "meaning_en": "read out",
+      "meaning_zh": "宣读，高声读",
+      "meaning_ko": "낭독하다",
+      "examples": [
+        "・卒業生の名前を読み上げる。"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 395,
+      "reading": "ぞえあげる",
+      "kanji": "数え上げる",
+      "verb_pattern": "か",
+      "meaning_en": "enumerate",
+      "meaning_zh": "列举出来",
+      "meaning_ko": "열거하다",
+      "examples": [
+        "・欠点を数え上げる。"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 396,
+      "reading": "なげだす",
+      "kanji": "投げ出す",
+      "verb_pattern": null,
+      "meaning_en": "throw out; give up",
+      "meaning_zh": "伸出；中途放弃",
+      "meaning_ko": "뻗다, 내팽개치다, 포기하다",
+      "examples": [
+        "①・足を投げ出して座る。",
+        "②・問題が難しくて、途中で投げ出してしまった。"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 397,
+      "reading": "もちだす",
+      "kanji": "持ち出す",
+      "verb_pattern": null,
+      "meaning_en": "carry out, take out",
+      "meaning_zh": "拿出出，带出去",
+      "meaning_ko": "들고 나가다, 반출하다",
+      "examples": [
+        "・この本は図書館から持ち出さないでください。"
+      ],
+      "collocations": "関: (名) 持ち出し"
+    },
+    {
+      "number": 398,
+      "reading": "おいだす",
+      "kanji": "追い出す",
+      "verb_pattern": null,
+      "meaning_en": "expel, kick out",
+      "meaning_zh": "赶出去",
+      "meaning_ko": "쫓아내다, 내쫓다",
+      "examples": [
+        "・入ってきた虫を追い出す。",
+        "・遊んでばかりいる息子を家から追い出した。"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 399,
+      "reading": "ほうりだす",
+      "kanji": "放り出す",
+      "verb_pattern": null,
+      "meaning_en": "throw out; throw aside",
+      "meaning_zh": "扔开，丢开",
+      "meaning_ko": "내던지다",
+      "examples": [
+        "・子どもは学校から帰ってくると、かばんをほうり出して遊びに行った。"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 400,
+      "reading": "しだす",
+      "kanji": "貸し出す",
+      "verb_pattern": "か",
+      "meaning_en": "lend out",
+      "meaning_zh": "出借",
+      "meaning_ko": "대출하다",
+      "examples": [
+        "①・「この図書館では雑誌も貸し出ししていますか」",
+        "②・銀行が金を貸し出す。"
+      ],
+      "collocations": "対: ヲ借り出す | 関: (名) ①②貸し出し（／貸出）→＿期間"
+    },
+    {
+      "number": 401,
+      "reading": "ききだす",
+      "kanji": "聞き出す",
+      "verb_pattern": null,
+      "meaning_en": "get (information) out of ~",
+      "meaning_zh": "问出来",
+      "meaning_ko": "물어서 알아내다, 캐내다",
+      "examples": [
+        "・相手から情報を聞き出す。"
+      ],
+      "collocations": ""
+    },
+    {
+      "number": 402,
+      "reading": "つれだす",
+      "kanji": "連れ出す",
+      "verb_pattern": null,
+      "meaning_en": "take out",
+      "meaning_zh": "领出去，带出去",
+      "meaning_ko": "데리고 나가다",
+      "examples": [
+        "・嫌がる娘をむりやり連れ出して病院へ行った。"
+      ],
+      "collocations": ""
+    }
+  ],
+  "raw_text": "〜上げる③ 〈他〉 完了する、達成する [Raise, Up] complete, achieve / 完了，完成，作完 / 완료하다, 달성하다\n392 かきあげる ヲ書き上げる finish writing, write off / 写完 / 다 쓰다\n・レポートを書き上げた。\n〈自〉 書き上がる\n393 そだてあげる ヲ育て上げる bring up / 抚养大，养育成人 / 길러 내다\n・子どもを育て上げる。\n<その他> 仕上げる ☞ 710、編み上げる\n\nⅠ 〜上げる④ 〈他〉 一つ一つ取り上げて示す [Raise, Up] take up and show each one of them / 举，提起 / 하나씩 다루어 제시하다\n394 よみあげる ヲ読み上げる read out / 宣读，高声读 / 낭독하다\n・卒業生の名前を読み上げる。\n395 かぞえあげる ヲ数え上げる enumerate / 列举出来 / 열거하다\n・欠点を数え上げる。\n\nⅢ 〜出す① 〈他〉 中から外に出す [Take out, Out] let ~ out / 出；（从里向外）拿出，取出 / 안에서 밖으로 꺼내다\n396 なげだす ヲ投げ出す throw out; give up / 伸出；中途放弃 / 뻗다, 내팽개치다, 포기하다\n①・足を投げ出して座る。\n②・問題が難しくて、途中で投げ出してしまった。\n397 もちだす ヲ持ち出す carry out, take out / 拿出出，带出去 / 들고 나가다, 반출하다\n・この本は図書館から持ち出さないでください。\n(名) 持ち出し\n398 おいだす ヲ追い出す expel, kick out / 赶出去 / 쫓아내다, 내쫓다\n・入ってきた虫を追い出す。 ・遊んでばかりいる息子を家から追い出した。\n399 ほうりだす ヲ放り出す throw out; throw aside / 扔开，丢开 / 내던지다\n・子どもは学校から帰ってくると、かばんをほうり出して遊びに行った。\n400 かしだす ヲ貸し出す lend out / 出借 / 대출하다\n①・「この図書館では雑誌も貸し出ししていますか」\n対 ヲ借り出す\n②・銀行が金を貸し出す。\n(名) ①②貸し出し（／貸出）→＿＿期間\n401 ききだす ヲ聞き出す get (information) out of ~ / 问出来 / 물어서 알아내다, 캐내다\n・相手から情報を聞き出す。\n402 つれだす ヲ連れ出す take out / 领出去，带出去 / 데리고 나가다\n・嫌がる娘をむりやり連れ出して病院へ行った。\n84"
+}

@@ -1,0 +1,23 @@
+[
+  {"index": 18, "word": {"start": 0.728, "end": 1.556}, "sentence": {"start": 2.420, "end": 6.258}, "note": ""},
+  {"index": 19, "word": {"start": 8.109, "end": 8.750}, "sentence": {"start": 9.610, "end": 12.637}, "note": "ASR: 正確→性格, 誕生→短所"},
+  {"index": 20, "word": {"start": 14.484, "end": 15.169}, "sentence": {"start": 15.883, "end": 18.858}, "note": "Whisper didn't transcribe sentence content, but region 6 covers it"},
+  {"index": 21, "word": {"start": 20.702, "end": 21.393}, "sentence": {"start": 22.242, "end": 27.065}, "note": "ASR: 移転→遺伝 (word); Whisper detected 動作 in this region but audio is for 遺伝"},
+  {"index": 22, "word": {"start": 27.065, "end": 27.791}, "sentence": {"start": 28.653, "end": 31.326}, "note": "whisper.cpp large-v3-turbo + 0.12s local silence windows separated the true headword and sentence"},
+  {"index": 23, "word": {"start": 33.189, "end": 33.647}, "sentence": {"start": 34.525, "end": 37.452}, "note": "medium split confirmed; remapped to ffmpeg silence edges"},
+  {"index": 24, "word": {"start": 39.278, "end": 40.309}, "sentence": {"start": 41.177, "end": 47.221}, "note": "ASR: 水民→睡眠; sentence split into 3 regions by silence — combined"},
+  {"index": 25, "word": {"start": 49.096, "end": 50.093}, "sentence": {"start": 50.964, "end": 53.924}, "note": ""},
+  {"index": 26, "word": {"start": 55.797, "end": 56.371}, "sentence": {"start": 57.422, "end": 59.946}, "note": "whisper.cpp large-v3-turbo + 0.12s local silence windows removed the merged word/sentence split"},
+  {"index": 27, "word": {"start": 61.707, "end": 62.147}, "sentence": {"start": 63.024, "end": 66.402}, "note": "whisper.cpp large-v3-turbo + 0.12s local silence windows removed the merged word/sentence split"},
+  {"index": 28, "word": {"start": 68.381, "end": 69.358}, "sentence": {"start": 70.205, "end": 73.193}, "note": "ASR: 穴→姉"},
+  {"index": 29, "word": {"start": 75.129, "end": 75.726}, "sentence": {"start": 76.496, "end": 78.406}, "note": "ASR: 会後→介護, 落とし寄り→お年寄り"},
+  {"index": 30, "word": {"start": 80.257, "end": 81.313}, "sentence": {"start": 82.116, "end": 85.048}, "note": "ASR: 友ばたらき→共働き"},
+  {"index": 31, "word": {"start": 86.909, "end": 87.899}, "sentence": {"start": 88.639, "end": 90.636}, "note": "whisper.cpp large-v3-turbo recovered the spoken word+sentence pair after the empty sentence window"},
+  {"index": 32, "word": {"start": 92.343, "end": 93.079}, "sentence": {"start": 93.820, "end": 97.240}, "note": ""},
+  {"index": 33, "word": {"start": 99.094, "end": 99.583}, "sentence": {"start": 100.367, "end": 103.189}, "note": "medium split confirmed; remapped to ffmpeg silence edges"},
+  {"index": 34, "word": {"start": 105.044, "end": 105.857}, "sentence": {"start": 106.661, "end": 108.611}, "note": "ASR: 10件→受験"},
+  {"index": 35, "word": {"start": 110.479, "end": 111.547}, "sentence": {"start": 112.293, "end": 115.193}, "note": "ASR: 先行→専攻"},
+  {"index": 36, "word": {"start": 117.059, "end": 117.767}, "sentence": {"start": 118.597, "end": 120.060}, "note": "medium split confirmed; remapped to ffmpeg silence edges"},
+  {"index": 37, "word": {"start": 121.928, "end": 122.897}, "sentence": {"start": 123.720, "end": 127.569}, "note": "ASR: 前進→全身"},
+  {"index": 38, "word": {"start": 129.441, "end": 129.990}, "sentence": {"start": 130.925, "end": 133.622}, "note": "medium shows spoken order word then sentence; remapped to ffmpeg silence edges"}
+]
