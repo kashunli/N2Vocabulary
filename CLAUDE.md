@@ -17,21 +17,25 @@ N2Vocabulary/
 ├── parse/
 │   ├── N2語彙トレーニング.pdf     ← source textbook
 │   ├── scripts/                 ← all Python scripts
-│   │   ├── parse_book.py        ← OCR markdown → structured JSON
-│   │   ├── assign_track_clips.py← main audio clip extraction (Whisper + ffmpeg)
-│   │   ├── deduce_boundary_clips.py ← recover unmatched clips
+│   │   ├── align_track_by_llm.py    ← PRIMARY: Whisper + LLM audio alignment
+│   │   ├── audit_unit_clips.py      ← verify cut clips by re-transcription
+│   │   ├── cache_track_transcripts.py ← per-track Whisper caching (Vulkan GPU)
+│   │   ├── audit_review_candidates.py ← auto-approve uncertain alignments
+│   │   ├── suggest_local_repair.py  ← local repair from silence-bounded regions
 │   │   ├── merge_assigned_clips.py  ← merge clip paths into vocabulary DB
-│   │   ├── make_clean_db.py     ← rebuild vocabulary_db.json from combined JSON
-│   │   ├── make_anki.py         ← build N2Words.apkg
-│   │   ├── make_anki_listening.py ← build N2Words_listening.apkg
-│   │   ├── make_html.py         ← generate dashboard.html
+│   │   ├── report_suspicious_medium.py ← flag suspicious Whisper matches
+│   │   ├── gen_missing_report.py    ← missing audio report
+│   │   ├── parse_book.py            ← OCR markdown → structured JSON
+│   │   ├── make_anki.py             ← build N2Words.apkg
+│   │   ├── make_anki_listening.py   ← build N2Words_listening.apkg
+│   │   ├── make_html.py             ← generate dashboard.html
+│   │   ├── make_clean_db.py         ← rebuild vocabulary_db.json from combined JSON
 │   │   ├── merge_explanations.py    ← merge AI explanation batches into DB
 │   │   ├── dump_explanation_batch.py ← print next unexplained entries
 │   │   ├── build_vocab_audio_dataset.py
-│   │   ├── audit_review_candidates.py ← auto-approve audio matches
 │   │   └── pipeline/            ← core audio utilities
 │   │       ├── audio.py         ← cut_clip, detect_nonsilent_chunks, transcribe_track
-│   │       ├── align.py         ← alignment algorithms, gap recovery
+│   │       ├── align.py         ← alignment algorithms
 │   │       ├── vocab.py, text.py, output.py, models.py
 │   ├── structured/              ← page-level parsed JSON from parse_book.py
 │   └── pages_8_15_schema/       ← reference schema documentation
@@ -44,7 +48,7 @@ N2Vocabulary/
 │   ├── review_assigned.json     ← audio alignment results with match scores
 │   ├── N2Words.apkg             ← word-centered Anki deck
 │   └── N2Words_listening.apkg   ← sentence-listening Anki deck (all 1142 explained)
-├── jlpt-audio-cutter/           ← Claude Code skill for audio clip operations
+├── gpt-track-piece-mapper/      ← Claude Code skill for unit piece-mapping
 ├── tools/whispercpp-windows/    ← whisper-cli.exe + DLLs + ggml models (Vulkan GPU backend)
 │   ├── whisper-cli.exe          ← whisper.cpp binary (Vulkan-enabled, built from source)
 │   ├── ggml-vulkan.dll         ← Vulkan GPU runtime for AMD RX 6900/6950 XT
@@ -60,17 +64,11 @@ N2Vocabulary/
 ### Audio Clip Extraction
 
 ```bash
-# Single track (openai/Python whisper backend — CPU only)
-python3 -u parse/scripts/assign_track_clips.py \
-    --track "audio/Unit3 形容詞A/19 1-19.mp3" \
-    --start 245 --end 255 \
-    --silence-duration 0.25 --device cpu
-
-# Single track (whisper.cpp Vulkan GPU backend — AMD RX 6900/6950 XT)
+# Align a single track (whisper.cpp Vulkan GPU — AMD RX 6900/6950 XT)
 python3 -u parse/scripts/align_track_by_llm.py \
     --backend whisper_cpp \
     --wcpp-binary tools/whispercpp-windows/whisper-cli.exe \
-    --wcpp-model tools/whispercpp-windows/ggml-medium.bin \
+    --wcpp-model tools/whispercpp-windows/ggml-large-v3-turbo.bin \
     --track "audio/..." --entries-json /tmp/entries.json
 
 # Smoke test the whisper.cpp backend
@@ -79,10 +77,17 @@ python3 parse/scripts/align_track_by_llm.py --backend whisper_cpp \
     --wcpp-model tools/whispercpp-windows/ggml-medium.bin \
     --backend-info
 
-# Multiple tracks via config
-python3 -u parse/scripts/assign_track_clips.py \
-    --config parse/scripts/track_ranges.json \
-    --silence-duration 0.25 --device cpu
+# Cache full-track transcripts (before alignment or repair)
+python3 parse/scripts/cache_track_transcripts.py \
+    --track "audio/..." \
+    --wcpp-binary tools/whispercpp-windows/whisper-cli.exe \
+    --wcpp-model tools/whispercpp-windows/ggml-large-v3-turbo.bin
+
+# Re-audit already-cut clips
+python3 parse/scripts/audit_unit_clips.py --unit 1
+
+# Suggest local repairs for bad clips
+python3 parse/scripts/suggest_local_repair.py --unit 1
 
 # Merge results into vocabulary DB
 python3 parse/scripts/merge_assigned_clips.py output/review_assigned.json
@@ -140,11 +145,12 @@ python3 parse/scripts/parse_book.py --page 9 --page 10 --clean
 1. **OCR** (external, Aliyun qwen-vl-ocr) renders PDF pages → markdown under `ocr/pages/page-*/markdown.md`
 2. **Parse** (`parse_book.py`) converts OCR markdown → page-level JSON in `json/`
 3. **Combine** → `output/vocabulary_combined.json` (master vocab with meanings, examples, relations)
-4. **Audio alignment** (`assign_track_clips.py`):
+4. **Audio alignment** (`align_track_by_llm.py`):
+   - `cache_track_transcripts.py` saves full-track Whisper transcripts
    - ffmpeg silence detection splits MP3 tracks into speech chunks
-   - Whisper transcribes each chunk with constrained vocabulary search
-   - Forward-search algorithm matches transcripts to vocab entries
-   - Gap recovery handles unmatched entries between matched neighbors
+   - LLM semantically matches Whisper segments to vocab entries (handles ASR errors)
+   - `audit_unit_clips.py` re-transcribes cut clips to verify quality
+   - `suggest_local_repair.py` proposes targeted repairs for bad clips
 5. **Merge** (`merge_assigned_clips.py`) updates clip paths into vocabulary DB
 
 ### Pipeline 2: Explanations → Anki Decks
@@ -180,4 +186,4 @@ python3 parse/scripts/parse_book.py --page 9 --page 10 --clean
 - DLLs (`ggml.dll`, `ggml-vulkan.dll`, `ggml-cpu.dll`, `ggml-base.dll`, `whisper.dll`) must be co-located with `whisper-cli.exe` in `tools/whispercpp-windows/`
 - Source code for the Vulkan build is at `D:\wcpp\whisper.cpp-src` (built with `cmake -B build -G Ninja -DGGML_VULKAN=1` using VS 2022)
 - Read `RESUME.md` for full project history and design decisions
-- The `jlpt-audio-cutter/` directory contains a Claude Code skill — read `SKILL.md` for audio operations
+- `gpt-track-piece-mapper/` skill handles unit piece-mapping for complex alignment cases
