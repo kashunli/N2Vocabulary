@@ -1,0 +1,149 @@
+[
+  {
+    "index": 435,
+    "word": {"start": 0.626, "end": 1.407, "piece_ids": [0], "flags": []},
+    "sentence": {"start": 2.093, "end": 5.111, "piece_ids": [1, 2], "flags": []},
+    "flags": [],
+    "note": "Sentence spans the quoted lead-in and the resolution clause."
+  },
+  {
+    "index": 436,
+    "word": {"start": 6.872, "end": 7.439, "piece_ids": [3], "flags": []},
+    "sentence": {"start": 8.219, "end": 11.527, "piece_ids": [4], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 437,
+    "word": {"start": 13.215, "end": 14.024, "piece_ids": [5], "flags": []},
+    "sentence": {"start": 14.710, "end": 18.190, "piece_ids": [6], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 438,
+    "word": {"start": 19.986, "end": 20.800, "piece_ids": [7], "flags": []},
+    "sentence": {"start": 21.474, "end": 23.781, "piece_ids": [8], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 439,
+    "word": {"start": 25.607, "end": 26.385, "piece_ids": [9], "flags": []},
+    "sentence": {"start": 27.087, "end": 28.886, "piece_ids": [10], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 440,
+    "word": {"start": 30.644, "end": 31.420, "piece_ids": [11], "flags": []},
+    "sentence": {"start": 32.138, "end": 33.974, "piece_ids": [12], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 441,
+    "word": {"start": 35.725, "end": 36.392, "piece_ids": [13], "flags": []},
+    "sentence": {"start": 37.098, "end": 39.785, "piece_ids": [14], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 442,
+    "word": {"start": 41.543, "end": 42.265, "piece_ids": [15], "flags": []},
+    "sentence": {"start": 42.915, "end": 46.997, "piece_ids": [16, 17], "flags": []},
+    "flags": [],
+    "note": "Sentence spans the money clause and the present-giving clause."
+  },
+  {
+    "index": 443,
+    "word": {"start": 48.750, "end": 49.753, "piece_ids": [18], "flags": []},
+    "sentence": {"start": 50.507, "end": 54.562, "piece_ids": [19, 20], "flags": []},
+    "flags": [],
+    "note": "Sentence spans the topic lead-in and the agreement clause."
+  },
+  {
+    "index": 444,
+    "word": {"start": 56.348, "end": 57.448, "piece_ids": [21], "flags": []},
+    "sentence": {"start": 58.181, "end": 61.340, "piece_ids": [22], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 445,
+    "word": {"start": 63.500, "end": 64.481, "piece_ids": [24], "flags": []},
+    "sentence": {"start": 65.197, "end": 69.330, "piece_ids": [25], "flags": []},
+    "flags": [],
+    "note": "Ignored stray garbage piece 23 between entries 444 and 445 because it does not belong to any target item."
+  },
+  {
+    "index": 446,
+    "word": {"start": 71.018, "end": 71.892, "piece_ids": [26], "flags": []},
+    "sentence": {"start": 72.653, "end": 75.459, "piece_ids": [27], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 447,
+    "word": {"start": 77.209, "end": 78.211, "piece_ids": [28], "flags": []},
+    "sentence": {"start": 78.940, "end": 82.059, "piece_ids": [29], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 448,
+    "word": {"start": 83.821, "end": 84.871, "piece_ids": [30], "flags": []},
+    "sentence": {"start": 85.588, "end": 90.976, "piece_ids": [31, 32], "flags": []},
+    "flags": [],
+    "note": "Sentence spans the thought setup and the shared-point conclusion."
+  },
+  {
+    "index": 449,
+    "word": {"start": 92.627, "end": 93.351, "piece_ids": [33], "flags": []},
+    "sentence": {"start": 93.972, "end": 97.780, "piece_ids": [34], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 450,
+    "word": {"start": 99.507, "end": 100.416, "piece_ids": [35], "flags": []},
+    "sentence": {"start": 101.099, "end": 106.852, "piece_ids": [36, 37], "flags": []},
+    "flags": [],
+    "note": "Sentence spans the problem setup and the help received."
+  },
+  {
+    "index": 451,
+    "word": {"start": 108.490, "end": 109.390, "piece_ids": [38], "flags": []},
+    "sentence": {"start": 110.068, "end": 113.721, "piece_ids": [39], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 452,
+    "word": {"start": 115.484, "end": 116.330, "piece_ids": [40], "flags": []},
+    "sentence": {"start": 117.003, "end": 120.410, "piece_ids": [41], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 453,
+    "word": {"start": 122.164, "end": 123.142, "piece_ids": [42], "flags": []},
+    "sentence": {"start": 123.932, "end": 127.106, "piece_ids": [43], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 454,
+    "word": {"start": 128.830, "end": 129.654, "piece_ids": [44], "flags": []},
+    "sentence": {"start": 130.374, "end": 132.622, "piece_ids": [45], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 455,
+    "word": {"start": 134.411, "end": 135.274, "piece_ids": [46], "flags": []},
+    "sentence": {"start": 136.034, "end": 139.856, "piece_ids": [47, 48], "flags": []},
+    "flags": [],
+    "note": "Sentence spans the failed-experiment setup and the retry clause."
+  }
+]

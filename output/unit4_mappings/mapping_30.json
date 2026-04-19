@@ -1,0 +1,142 @@
+[
+  {
+    "index": 392,
+    "word": {"start": 0.614, "end": 1.446, "piece_ids": [0], "flags": []},
+    "sentence": {"start": 2.215, "end": 3.831, "piece_ids": [1], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 393,
+    "word": {"start": 5.592, "end": 6.555, "piece_ids": [2], "flags": []},
+    "sentence": {"start": 7.264, "end": 8.732, "piece_ids": [3], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 394,
+    "word": {"start": 10.487, "end": 11.328, "piece_ids": [4], "flags": []},
+    "sentence": {"start": 12.080, "end": 14.465, "piece_ids": [5], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 395,
+    "word": {"start": 16.239, "end": 17.172, "piece_ids": [6], "flags": []},
+    "sentence": {"start": 17.898, "end": 19.576, "piece_ids": [7], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 396,
+    "word": {"start": 21.339, "end": 22.027, "piece_ids": [8], "flags": []},
+    "sentence": {"start": 22.813, "end": 24.566, "piece_ids": [9], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 397,
+    "word": {"start": 26.335, "end": 27.093, "piece_ids": [10], "flags": []},
+    "sentence": {"start": 27.840, "end": 31.025, "piece_ids": [11], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 398,
+    "word": {"start": 32.762, "end": 33.413, "piece_ids": [12], "flags": []},
+    "sentence": {"start": 34.117, "end": 36.015, "piece_ids": [13], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 399,
+    "word": {"start": 37.723, "end": 38.444, "piece_ids": [14], "flags": []},
+    "sentence": {"start": 39.152, "end": 43.904, "piece_ids": [15], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 400,
+    "word": {"start": 45.718, "end": 46.445, "piece_ids": [16], "flags": []},
+    "sentence": {"start": 47.201, "end": 50.363, "piece_ids": [17, 18], "flags": []},
+    "flags": [],
+    "note": "Sentence spans the lead-in clause and the question tail."
+  },
+  {
+    "index": 401,
+    "word": {"start": 52.035, "end": 52.675, "piece_ids": [19], "flags": []},
+    "sentence": {"start": 53.469, "end": 55.522, "piece_ids": [20], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 402,
+    "word": {"start": 57.230, "end": 57.951, "piece_ids": [21], "flags": []},
+    "sentence": {"start": 58.715, "end": 62.213, "piece_ids": [22], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 403,
+    "word": {"start": 63.986, "end": 64.961, "piece_ids": [23], "flags": []},
+    "sentence": {"start": 65.672, "end": 69.168, "piece_ids": [24], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 404,
+    "word": {"start": 70.918, "end": 71.672, "piece_ids": [25], "flags": []},
+    "sentence": {"start": 72.444, "end": 74.699, "piece_ids": [26], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 405,
+    "word": {"start": 76.450, "end": 77.122, "piece_ids": [27], "flags": []},
+    "sentence": {"start": 77.890, "end": 80.266, "piece_ids": [28], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 406,
+    "word": {"start": 82.026, "end": 82.901, "piece_ids": [29], "flags": []},
+    "sentence": {"start": 83.620, "end": 87.371, "piece_ids": [30], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 407,
+    "word": {"start": 89.040, "end": 89.948, "piece_ids": [31], "flags": []},
+    "sentence": {"start": 90.675, "end": 93.654, "piece_ids": [32], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 408,
+    "word": {"start": 95.407, "end": 96.128, "piece_ids": [33], "flags": []},
+    "sentence": {"start": 96.955, "end": 99.308, "piece_ids": [34], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 409,
+    "word": {"start": 101.094, "end": 101.749, "piece_ids": [35], "flags": []},
+    "sentence": {"start": 102.525, "end": 103.718, "piece_ids": [36], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 410,
+    "word": {"start": 105.406, "end": 106.061, "piece_ids": [37], "flags": []},
+    "sentence": {"start": 106.724, "end": 109.049, "piece_ids": [38], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 411,
+    "word": {"start": 110.763, "end": 111.397, "piece_ids": [39], "flags": []},
+    "sentence": {"start": 112.111, "end": 113.301, "piece_ids": [40], "flags": []},
+    "flags": [],
+    "note": ""
+  }
+]

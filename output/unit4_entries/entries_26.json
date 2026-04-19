@@ -1,0 +1,107 @@
+[
+  {
+    "index": 321,
+    "unit_number": 4,
+    "headword": "普段",
+    "reading": "ふだん",
+    "sentence": "普段は7時に起きるが、今日は寝坊してしまった。"
+  },
+  {
+    "index": 322,
+    "unit_number": 4,
+    "headword": "日常",
+    "reading": "にちじょう",
+    "sentence": "日常の業務を果たす。"
+  },
+  {
+    "index": 323,
+    "unit_number": 4,
+    "headword": "一般",
+    "reading": "いっぱん",
+    "sentence": "これは一般の店では手に入らない薬だ。 ・{国民/世間} 一般の {意見/習慣}"
+  },
+  {
+    "index": 324,
+    "unit_number": 4,
+    "headword": "常識",
+    "reading": "じょうしき",
+    "sentence": "ミスをしたらきちんと責任をとるのが社会人の常識だ。 ・あの人には常識がない。"
+  },
+  {
+    "index": 325,
+    "unit_number": 4,
+    "headword": "ことわざ",
+    "reading": "ことわざ",
+    "sentence": "ことわざには教訓が含まれていることが多い。"
+  },
+  {
+    "index": 326,
+    "unit_number": 4,
+    "headword": "権利",
+    "reading": "けんり",
+    "sentence": "①・すべての国民には健康的な生活を送る権利がある。 ・権利を主張する。"
+  },
+  {
+    "index": 327,
+    "unit_number": 4,
+    "headword": "義務",
+    "reading": "ぎむ",
+    "sentence": "親には子どもに教育を受けさせる義務がある。 ・社会人としての義務を果たす。"
+  },
+  {
+    "index": 328,
+    "unit_number": 4,
+    "headword": "きっかけ",
+    "reading": "きっかけ",
+    "sentence": "けんかのきっかけは、つまらないことだった。"
+  },
+  {
+    "index": 329,
+    "unit_number": 4,
+    "headword": "行動スル",
+    "reading": "こうどうする",
+    "sentence": "彼の行動は、とても立派だった。 ・あの3人は、いつも一緒に行動している。"
+  },
+  {
+    "index": 330,
+    "unit_number": 4,
+    "headword": "使用スル",
+    "reading": "しようする",
+    "sentence": "今は、文書の作成にはパソコンが使用されることが多い。"
+  },
+  {
+    "index": 331,
+    "unit_number": 4,
+    "headword": "提出スル",
+    "reading": "ていしゅつする",
+    "sentence": "願書の提出は10月31日までだ。 ・会社に報告書を提出する。"
+  },
+  {
+    "index": 332,
+    "unit_number": 4,
+    "headword": "期限",
+    "reading": "きげん",
+    "sentence": "支払いの期限を延ばしてもらった。 ・このチケットの有効期限は3月5日です。"
+  },
+  {
+    "index": 333,
+    "unit_number": 4,
+    "headword": "延期スル",
+    "reading": "えんきする",
+    "sentence": "大雨のため、運動会は1週間後に延期された。 ・出発を1日延期する。"
+  },
+  {
+    "index": 334,
+    "unit_number": 4,
+    "headword": "延長スル",
+    "reading": "えんちょうする",
+    "sentence": "結論が出なかったので、会議は30分延長された。 ・開館時間を7時まで延長する。"
+  },
+  {
+    "index": 335,
+    "unit_number": 4,
+    "headword": "短縮スル",
+    "reading": "たんしゅくする",
+    "sentence": "冬は動物園の営業時間が短縮される。 ・{時間/距離 ...} を短縮する。"
+  }
+]

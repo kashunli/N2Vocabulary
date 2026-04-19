@@ -1,0 +1,572 @@
+[
+  {
+    "index": 461,
+    "unit_number": 5,
+    "track_name": "34 1-34.mp3",
+    "headword": "アンテナ",
+    "reading": "antenna",
+    "expected_sentence_raw": "①・アンテナの向きのせいかテレビの映りが悪い。",
+    "expected_sentence": "アンテナの向きのせいかテレビの映りが悪い。",
+    "expected_sentence_candidates": [
+      "アンテナの向きのせいかテレビの映りが悪い。"
+    ],
+    "word_clip": "output/clips/unit05/word461.mp3",
+    "sentence_clip": "output/clips/unit05/sentence461.mp3",
+    "word_duration": 0.611995,
+    "sentence_duration": 3.400998,
+    "word_transcript_audit": "アン��ナ",
+    "sentence_transcript_audit": "アン��ナの向きのせいか、テレビの映りが悪い。",
+    "word_score_audit": 0.0,
+    "sentence_score_audit": 0.936,
+    "word_status": "suspect",
+    "sentence_status": "ok",
+    "status": "suspect",
+    "word_reasons": [
+      "word_clip_contains_sentence_audio",
+      "word_matches_neighbor_469"
+    ],
+    "sentence_reasons": [],
+    "note": ""
+  },
+  {
+    "index": 462,
+    "unit_number": 5,
+    "track_name": "34 1-34.mp3",
+    "headword": "イヤホン",
+    "reading": "earphone",
+    "expected_sentence_raw": "・電車の中でイヤホンをつけて音楽を聴いている若者が多い。",
+    "expected_sentence": "電車の中でイヤホンをつけて音楽を聴いている若者が多い。",
+    "expected_sentence_candidates": [
+      "電車の中でイヤホンをつけて音楽を聴いている若者が多い。"
+    ],
+    "word_clip": "output/clips/unit05/word462.mp3",
+    "sentence_clip": "output/clips/unit05/sentence462.mp3",
+    "word_duration": 0.546009,
+    "sentence_duration": 4.410998,
+    "word_transcript_audit": "やほん",
+    "sentence_transcript_audit": "電車の中でイヤホンをつけて音楽を聴いている若者が多い。",
+    "word_score_audit": 0.0,
+    "sentence_score_audit": 1.0,
+    "word_status": "suspect",
+    "sentence_status": "ok",
+    "status": "suspect",
+    "word_reasons": [
+      "word_clip_contains_sentence_audio",
+      "word_matches_neighbor_469"
+    ],
+    "sentence_reasons": [],
+    "note": ""
+  },
+  {
+    "index": 463,
+    "unit_number": 5,
+    "track_name": "34 1-34.mp3",
+    "headword": "サイレン",
+    "reading": "siren",
+    "expected_sentence_raw": "・工場でお昼のサイレンが鳴った。",
+    "expected_sentence": "工場でお昼のサイレンが鳴った。",
+    "expected_sentence_candidates": [
+      "工場でお昼のサイレンが鳴った。"
+    ],
+    "word_clip": "output/clips/unit05/word463.mp3",
+    "sentence_clip": "output/clips/unit05/sentence463.mp3",
+    "word_duration": 0.608005,
+    "sentence_duration": 2.253991,
+    "word_transcript_audit": "サイレン",
+    "sentence_transcript_audit": "工場でお昼のサイレンが鳴った。",
+    "word_score_audit": 0.0,
+    "sentence_score_audit": 1.0,
+    "word_status": "suspect",
+    "sentence_status": "ok",
+    "status": "suspect",
+    "word_reasons": [
+      "word_clip_contains_sentence_audio",
+      "word_matches_neighbor_471"
+    ],
+    "sentence_reasons": [],
+    "note": ""
+  },
+  {
+    "index": 464,
+    "unit_number": 5,
+    "track_name": "34 1-34.mp3",
+    "headword": "ード",
+    "reading": "cord",
+    "expected_sentence_raw": "・アイロンのコードをコンセントにつないだ。",
+    "expected_sentence": "アイロンのコードをコンセントにつないだ。",
+    "expected_sentence_candidates": [
+      "アイロンのコードをコンセントにつないだ。"
+    ],
+    "word_clip": "output/clips/unit05/word464.mp3",
+    "sentence_clip": "output/clips/unit05/sentence464.mp3",
+    "word_duration": 0.426009,
+    "sentence_duration": 2.725986,
+    "word_transcript_audit": "コード",
+    "sentence_transcript_audit": "アイロンのコードをコンセントにつないだ。",
+    "word_score_audit": 0.0,
+    "sentence_score_audit": 1.0,
+    "word_status": "suspect",
+    "sentence_status": "ok",
+    "status": "suspect",
+    "word_reasons": [
+      "word_clip_contains_sentence_audio",
+      "word_matches_neighbor_471"
+    ],
+    "sentence_reasons": [],
+    "note": ""
+  },
+  {
+    "index": 466,
+    "unit_number": 5,
+    "track_name": "34 1-34.mp3",
+    "headword": "ーター",
+    "reading": "meter",
+    "expected_sentence_raw": "①・メーターを見ると、電気やガスの使用量がわかる。",
+    "expected_sentence": "メーターを見ると、電気やガスの使用量がわかる。",
+    "expected_sentence_candidates": [
+      "メーターを見ると、電気やガスの使用量がわかる。"
+    ],
+    "word_clip": "output/clips/unit05/word466.mp3",
+    "sentence_clip": "output/clips/unit05/sentence466.mp3",
+    "word_duration": 0.71,
+    "sentence_duration": 3.792993,
+    "word_transcript_audit": "メーター",
+    "sentence_transcript_audit": "メーターを見ると、電気やガスの使用量がわかる。",
+    "word_score_audit": 0.0,
+    "sentence_score_audit": 1.0,
+    "word_status": "suspect",
+    "sentence_status": "ok",
+    "status": "suspect",
+    "word_reasons": [
+      "word_clip_contains_sentence_audio",
+      "word_matches_neighbor_472"
+    ],
+    "sentence_reasons": [],
+    "note": ""
+  },
+  {
+    "index": 467,
+    "unit_number": 5,
+    "track_name": "34 1-34.mp3",
+    "headword": "ペア",
+    "reading": "pair",
+    "expected_sentence_raw": "・男女がペアになってゲームをした。",
+    "expected_sentence": "男女がペアになってゲームをした。",
+    "expected_sentence_candidates": [
+      "男女がペアになってゲームをした。"
+    ],
+    "word_clip": "output/clips/unit05/word467.mp3",
+    "sentence_clip": "output/clips/unit05/sentence467.mp3",
+    "word_duration": 0.306009,
+    "sentence_duration": 2.557982,
+    "word_transcript_audit": "ヘア",
+    "sentence_transcript_audit": "男女がペアになってゲームをした",
+    "word_score_audit": 0.0,
+    "sentence_score_audit": 0.97,
+    "word_status": "suspect",
+    "sentence_status": "ok",
+    "status": "suspect",
+    "word_reasons": [
+      "word_matches_neighbor_471"
+    ],
+    "sentence_reasons": [],
+    "note": ""
+  },
+  {
+    "index": 469,
+    "unit_number": 5,
+    "track_name": "34 1-34.mp3",
+    "headword": "アクセント",
+    "reading": "アクセント",
+    "expected_sentence_raw": "① 「おかあさん」のアクセントは、「か」の音にある。",
+    "expected_sentence": "「おかあさん」のアクセントは、「か」の音にある。",
+    "expected_sentence_candidates": [
+      "「おかあさん」のアクセントは、「か」の音にある。"
+    ],
+    "word_clip": "output/clips/unit05/word469.mp3",
+    "sentence_clip": "output/clips/unit05/sentence469.mp3",
+    "word_duration": 2.92,
+    "sentence_duration": 3.133991,
+    "word_transcript_audit": "アクセントお母さんのアクセントは",
+    "sentence_transcript_audit": "お母さんのアクセントは、かの音にある。",
+    "word_score_audit": 0.455,
+    "sentence_score_audit": 0.9,
+    "word_status": "suspect",
+    "sentence_status": "ok",
+    "status": "suspect",
+    "word_reasons": [
+      "word_clip_too_long_or_merged"
+    ],
+    "sentence_reasons": [],
+    "note": ""
+  },
+  {
+    "index": 474,
+    "unit_number": 5,
+    "track_name": "35 1-35.mp3",
+    "headword": "イラスト",
+    "reading": "イラスト",
+    "expected_sentence_raw": "この本はイラストがたくさんあって内容が理解しやすい。",
+    "expected_sentence": "この本はイラストがたくさんあって内容が理解しやすい。",
+    "expected_sentence_candidates": [
+      "この本はイラストがたくさんあって内容が理解しやすい。"
+    ],
+    "word_clip": "output/clips/unit05/word474.mp3",
+    "sentence_clip": "output/clips/unit05/sentence474.mp3",
+    "word_duration": 0.591995,
+    "sentence_duration": 2.626009,
+    "word_transcript_audit": "イラスト",
+    "sentence_transcript_audit": "この本はイラストがたくさんあって",
+    "word_score_audit": 1.0,
+    "sentence_score_audit": 0.723,
+    "word_status": "ok",
+    "sentence_status": "suspect",
+    "status": "suspect",
+    "word_reasons": [],
+    "sentence_reasons": [
+      "sentence_prefix_or_suffix_only"
+    ],
+    "note": ""
+  },
+  {
+    "index": 479,
+    "unit_number": 5,
+    "track_name": "35 1-35.mp3",
+    "headword": "サンプル",
+    "reading": "サンプル",
+    "expected_sentence_raw": "食堂の入り口に料理のサンプルが置いてある。",
+    "expected_sentence": "食堂の入り口に料理のサンプルが置いてある。",
+    "expected_sentence_candidates": [
+      "食堂の入り口に料理のサンプルが置いてある。"
+    ],
+    "word_clip": "output/clips/unit05/word479.mp3",
+    "sentence_clip": "output/clips/unit05/sentence479.mp3",
+    "word_duration": 0.588005,
+    "sentence_duration": 3.33,
+    "word_transcript_audit": "繧ｵ繝ｳ繝励Ν",
+    "sentence_transcript_audit": "食堂の入り口に料理のサン��ルが置いてある。",
+    "word_score_audit": 0.0,
+    "sentence_score_audit": 0.945,
+    "word_status": "suspect",
+    "sentence_status": "ok",
+    "status": "suspect",
+    "word_reasons": [
+      "word_asr_mismatch"
+    ],
+    "sentence_reasons": [],
+    "note": ""
+  },
+  {
+    "index": 483,
+    "unit_number": 5,
+    "track_name": "36 1-36.mp3",
+    "headword": "ーバー",
+    "reading": "オーバー",
+    "expected_sentence_raw": "① 志願者が定員をオーバーした。",
+    "expected_sentence": "志願者が定員をオーバーした。",
+    "expected_sentence_candidates": [
+      "志願者が定員をオーバーした。"
+    ],
+    "word_clip": "output/clips/unit05/word483-deduced.mp3",
+    "sentence_clip": "output/clips/unit05/sentence483-deduced.mp3",
+    "word_duration": 0.625011,
+    "sentence_duration": 2.24,
+    "word_transcript_audit": "オー��ー",
+    "sentence_transcript_audit": "志願者が店員をオー��ーした",
+    "word_score_audit": 0.4,
+    "sentence_score_audit": 0.812,
+    "word_status": "suspect",
+    "sentence_status": "ok",
+    "status": "suspect",
+    "word_reasons": [
+      "word_asr_mismatch"
+    ],
+    "sentence_reasons": [],
+    "note": ""
+  },
+  {
+    "index": 485,
+    "unit_number": 5,
+    "track_name": "36 1-36.mp3",
+    "headword": "ーブ",
+    "reading": "カーブ",
+    "expected_sentence_raw": "① 道が大きくカーブしている。",
+    "expected_sentence": "道が大きくカーブしている。",
+    "expected_sentence_candidates": [
+      "道が大きくカーブしている。"
+    ],
+    "word_clip": "output/clips/unit05/word485.mp3",
+    "sentence_clip": "output/clips/unit05/sentence485.mp3",
+    "word_duration": 0.449002,
+    "sentence_duration": 2.17,
+    "word_transcript_audit": "ハー��",
+    "sentence_transcript_audit": "道が大きくカー��している。",
+    "word_score_audit": 0.0,
+    "sentence_score_audit": 0.897,
+    "word_status": "suspect",
+    "sentence_status": "ok",
+    "status": "suspect",
+    "word_reasons": [
+      "word_asr_mismatch"
+    ],
+    "sentence_reasons": [],
+    "note": ""
+  },
+  {
+    "index": 489,
+    "unit_number": 5,
+    "track_name": "36 1-36.mp3",
+    "headword": "トップ",
+    "reading": "トップ",
+    "expected_sentence_raw": "① 100メートル走でトップでゴールインした。",
+    "expected_sentence": "100メートル走でトップでゴールインした。",
+    "expected_sentence_candidates": [
+      "100メートル走でトップでゴールインした。"
+    ],
+    "word_clip": "output/clips/unit05/word489.mp3",
+    "sentence_clip": "output/clips/unit05/sentence489.mp3",
+    "word_duration": 0.973968,
+    "sentence_duration": 2.689977,
+    "word_transcript_audit": "100メートル走で、",
+    "sentence_transcript_audit": "100メートル走でトップでゴールインした。",
+    "word_score_audit": 0.167,
+    "sentence_score_audit": 1.0,
+    "word_status": "suspect",
+    "sentence_status": "ok",
+    "status": "suspect",
+    "word_reasons": [
+      "word_clip_contains_sentence_audio",
+      "word_clip_too_long_or_merged"
+    ],
+    "sentence_reasons": [],
+    "note": ""
+  },
+  {
+    "index": 493,
+    "unit_number": 5,
+    "track_name": "37 1-37.mp3",
+    "headword": "ー",
+    "reading": "レギュラー",
+    "expected_sentence_raw": "① （スポーツ）チームのレギュラーになれるようにがんばっている。",
+    "expected_sentence": "チームのレギュラーになれるようにがんばっている。",
+    "expected_sentence_candidates": [
+      "チームのレギュラーになれるようにがんばっている。"
+    ],
+    "word_clip": "output/clips/unit05/word493.mp3",
+    "sentence_clip": "output/clips/unit05/sentence493.mp3",
+    "word_duration": 0.649002,
+    "sentence_duration": 2.535011,
+    "word_transcript_audit": "でゆら",
+    "sentence_transcript_audit": "チームのレギュラーになれるように頑張っている",
+    "word_score_audit": 0.286,
+    "sentence_score_audit": 0.977,
+    "word_status": "suspect",
+    "sentence_status": "ok",
+    "status": "suspect",
+    "word_reasons": [
+      "word_asr_mismatch"
+    ],
+    "sentence_reasons": [],
+    "note": ""
+  },
+  {
+    "index": 494,
+    "unit_number": 5,
+    "track_name": "37 1-37.mp3",
+    "headword": "ーチ",
+    "reading": "コーチ",
+    "expected_sentence_raw": "① ここの柔道部のコーチは厳しいことで有名だ。",
+    "expected_sentence": "ここの柔道部のコーチは厳しいことで有名だ。",
+    "expected_sentence_candidates": [
+      "ここの柔道部のコーチは厳しいことで有名だ。"
+    ],
+    "word_clip": "output/clips/unit05/word494.mp3",
+    "sentence_clip": "output/clips/unit05/sentence494.mp3",
+    "word_duration": 0.457982,
+    "sentence_duration": 3.522993,
+    "word_transcript_audit": "コー��",
+    "sentence_transcript_audit": "ここの柔道部のコー��は厳しいことで有名だ。",
+    "word_score_audit": 0.333,
+    "sentence_score_audit": 0.926,
+    "word_status": "suspect",
+    "sentence_status": "ok",
+    "status": "suspect",
+    "word_reasons": [
+      "word_asr_mismatch"
+    ],
+    "sentence_reasons": [],
+    "note": ""
+  },
+  {
+    "index": 497,
+    "unit_number": 5,
+    "track_name": "37 1-37.mp3",
+    "headword": "キャンパス",
+    "reading": "キャンパス",
+    "expected_sentence_raw": "この大学のキャンパスは緑が豊かだ。",
+    "expected_sentence": "この大学のキャンパスは緑が豊かだ。",
+    "expected_sentence_candidates": [
+      "この大学のキャンパスは緑が豊かだ。"
+    ],
+    "word_clip": "output/clips/unit05/word497.mp3",
+    "sentence_clip": "output/clips/unit05/sentence497.mp3",
+    "word_duration": 0.599002,
+    "sentence_duration": 2.855011,
+    "word_transcript_audit": "繧ｭ繝｣繝ｳ繝代せ",
+    "sentence_transcript_audit": "この大学のキャン��スは緑が豊かだ。",
+    "word_score_audit": 0.0,
+    "sentence_score_audit": 0.933,
+    "word_status": "suspect",
+    "sentence_status": "ok",
+    "status": "suspect",
+    "word_reasons": [
+      "word_asr_mismatch"
+    ],
+    "sentence_reasons": [],
+    "note": ""
+  },
+  {
+    "index": 505,
+    "unit_number": 5,
+    "track_name": "37 1-37.mp3",
+    "headword": "ーズン",
+    "reading": "シーズン",
+    "expected_sentence_raw": "日本では12月から2月にかけてが受験のシーズンだ。",
+    "expected_sentence": "日本では12月から2月にかけてが受験のシーズンだ。",
+    "expected_sentence_candidates": [
+      "日本では12月から2月にかけてが受験のシーズンだ。"
+    ],
+    "word_clip": "output/clips/unit05/word505.mp3",
+    "sentence_clip": "output/clips/unit05/sentence505.mp3",
+    "word_duration": 0.685011,
+    "sentence_duration": 3.022993,
+    "word_transcript_audit": "シーズン",
+    "sentence_transcript_audit": "日本では12月から2月にかけてが、",
+    "word_score_audit": 1.0,
+    "sentence_score_audit": 0.8,
+    "word_status": "ok",
+    "sentence_status": "suspect",
+    "status": "suspect",
+    "word_reasons": [],
+    "sentence_reasons": [
+      "sentence_prefix_or_suffix_only"
+    ],
+    "note": ""
+  },
+  {
+    "index": 506,
+    "unit_number": 5,
+    "track_name": "37 1-37.mp3",
+    "headword": "ダイヤ",
+    "reading": "ダイヤ",
+    "expected_sentence_raw": "事故で列車のダイヤが乱れたが、数時間後に復旧した。",
+    "expected_sentence": "事故で列車のダイヤが乱れたが、数時間後に復旧した。",
+    "expected_sentence_candidates": [
+      "事故で列車のダイヤが乱れたが、数時間後に復旧した。"
+    ],
+    "word_clip": "output/clips/unit05/word506.mp3",
+    "sentence_clip": "output/clips/unit05/sentence506.mp3",
+    "word_duration": 0.733991,
+    "sentence_duration": 4.303991,
+    "word_transcript_audit": "ダイアグラム",
+    "sentence_transcript_audit": "事故で列車のダイヤが乱れたが、数時間後に復旧した。",
+    "word_score_audit": 0.444,
+    "sentence_score_audit": 1.0,
+    "word_status": "suspect",
+    "sentence_status": "ok",
+    "status": "suspect",
+    "word_reasons": [
+      "word_clip_too_long_or_merged"
+    ],
+    "sentence_reasons": [],
+    "note": ""
+  },
+  {
+    "index": 508,
+    "unit_number": 5,
+    "track_name": "37 1-37.mp3",
+    "headword": "ービス",
+    "reading": "サービス",
+    "expected_sentence_raw": "① 「当社はお客様に喜ばれるサービスを心がけております」",
+    "expected_sentence": "当社はお客様に喜ばれるサービスを心がけております",
+    "expected_sentence_candidates": [
+      "当社はお客様に喜ばれるサービスを心がけております"
+    ],
+    "word_clip": "output/clips/unit05/word508.mp3",
+    "sentence_clip": "output/clips/unit05/sentence508.mp3",
+    "word_duration": 1.910975,
+    "sentence_duration": 4.129977,
+    "word_transcript_audit": "サー��ス当社は",
+    "sentence_transcript_audit": "当社はお客様に喜ばれるサー��スを心がけております",
+    "word_score_audit": 0.333,
+    "sentence_score_audit": 0.954,
+    "word_status": "suspect",
+    "sentence_status": "ok",
+    "status": "suspect",
+    "word_reasons": [
+      "word_clip_too_long_or_merged"
+    ],
+    "sentence_reasons": [],
+    "note": ""
+  },
+  {
+    "index": 509,
+    "unit_number": 5,
+    "track_name": "38 1-38.mp3",
+    "headword": "ール",
+    "reading": "アルコール",
+    "expected_sentence_raw": "① 注射の前にアルコールで消毒する。",
+    "expected_sentence": "注射の前にアルコールで消毒する。",
+    "expected_sentence_candidates": [
+      "注射の前にアルコールで消毒する。"
+    ],
+    "word_clip": null,
+    "sentence_clip": null,
+    "word_duration": null,
+    "sentence_duration": null,
+    "word_transcript_audit": "",
+    "sentence_transcript_audit": "",
+    "word_score_audit": 0.0,
+    "sentence_score_audit": 0.0,
+    "word_status": "suspect",
+    "sentence_status": "suspect",
+    "status": "suspect",
+    "word_reasons": [
+      "word_transcript_empty"
+    ],
+    "sentence_reasons": [
+      "sentence_transcript_empty"
+    ],
+    "note": ""
+  },
+  {
+    "index": 510,
+    "unit_number": 5,
+    "track_name": "38 1-38.mp3",
+    "headword": "ーション",
+    "reading": "デコレーション",
+    "expected_sentence_raw": "12月になると、多くの店がクリスマスのデコレーションをする。",
+    "expected_sentence": "12月になると、多くの店がクリスマスのデコレーションをする。",
+    "expected_sentence_candidates": [
+      "12月になると、多くの店がクリスマスのデコレーションをする。"
+    ],
+    "word_clip": null,
+    "sentence_clip": null,
+    "word_duration": null,
+    "sentence_duration": null,
+    "word_transcript_audit": "",
+    "sentence_transcript_audit": "",
+    "word_score_audit": 0.0,
+    "sentence_score_audit": 0.0,
+    "word_status": "suspect",
+    "sentence_status": "suspect",
+    "status": "suspect",
+    "word_reasons": [
+      "word_transcript_empty"
+    ],
+    "sentence_reasons": [
+      "sentence_transcript_empty"
+    ],
+    "note": ""
+  }
+]

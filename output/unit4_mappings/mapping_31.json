@@ -1,0 +1,169 @@
+[
+  {
+    "index": 412,
+    "word": {"start": 0.582, "end": 1.335, "piece_ids": [0], "flags": []},
+    "sentence": {"start": 2.116, "end": 5.013, "piece_ids": [1], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 413,
+    "word": {"start": 6.791, "end": 7.530, "piece_ids": [2], "flags": []},
+    "sentence": {"start": 8.283, "end": 10.008, "piece_ids": [3], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 414,
+    "word": {
+      "start": 10.500,
+      "end": 12.338,
+      "piece_ids": [4, 5],
+      "flags": ["bridge_split"],
+      "preserve_boundaries": ["start", "end"]
+    },
+    "sentence": {"start": 13.000, "end": 16.840, "piece_ids": [6], "flags": []},
+    "flags": [],
+    "note": "Word lead-in is missed by 0.25s silence detection; preserve exact span across the micro-gap before piece 5."
+  },
+  {
+    "index": 415,
+    "word": {"start": 18.511, "end": 19.217, "piece_ids": [7], "flags": []},
+    "sentence": {"start": 19.981, "end": 21.832, "piece_ids": [8], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 416,
+    "word": {"start": 23.584, "end": 24.214, "piece_ids": [9], "flags": []},
+    "sentence": {"start": 24.890, "end": 26.865, "piece_ids": [10], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 417,
+    "word": {"start": 28.622, "end": 29.364, "piece_ids": [11], "flags": []},
+    "sentence": {"start": 30.032, "end": 32.593, "piece_ids": [12], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 418,
+    "word": {"start": 34.354, "end": 34.944, "piece_ids": [13], "flags": []},
+    "sentence": {"start": 35.656, "end": 37.614, "piece_ids": [14], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 419,
+    "word": {"start": 39.368, "end": 40.220, "piece_ids": [15], "flags": []},
+    "sentence": {"start": 41.007, "end": 43.070, "piece_ids": [16], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 420,
+    "word": {"start": 44.893, "end": 45.492, "piece_ids": [17], "flags": []},
+    "sentence": {"start": 46.258, "end": 48.527, "piece_ids": [18], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 421,
+    "word": {"start": 50.281, "end": 50.963, "piece_ids": [19], "flags": []},
+    "sentence": {"start": 51.678, "end": 53.635, "piece_ids": [20], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 422,
+    "word": {"start": 55.358, "end": 56.012, "piece_ids": [21], "flags": []},
+    "sentence": {"start": 56.801, "end": 59.059, "piece_ids": [22], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 423,
+    "word": {"start": 60.815, "end": 61.404, "piece_ids": [23], "flags": []},
+    "sentence": {"start": 62.110, "end": 64.384, "piece_ids": [24], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 424,
+    "word": {"start": 66.167, "end": 66.841, "piece_ids": [25], "flags": []},
+    "sentence": {"start": 67.630, "end": 71.795, "piece_ids": [26, 27], "flags": []},
+    "flags": [],
+    "note": "Sentence spans the lead-in clause and the main clause."
+  },
+  {
+    "index": 425,
+    "word": {"start": 73.554, "end": 74.422, "piece_ids": [28], "flags": []},
+    "sentence": {"start": 75.122, "end": 77.024, "piece_ids": [29], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 426,
+    "word": {"start": 78.734, "end": 79.283, "piece_ids": [30], "flags": []},
+    "sentence": {"start": 79.937, "end": 81.932, "piece_ids": [31], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 427,
+    "word": {"start": 83.752, "end": 84.501, "piece_ids": [32], "flags": []},
+    "sentence": {"start": 85.222, "end": 88.080, "piece_ids": [33], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 428,
+    "word": {"start": 89.778, "end": 90.643, "piece_ids": [34], "flags": []},
+    "sentence": {"start": 91.341, "end": 93.706, "piece_ids": [35], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 429,
+    "word": {"start": 95.462, "end": 96.207, "piece_ids": [36], "flags": []},
+    "sentence": {"start": 96.995, "end": 99.434, "piece_ids": [37], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 430,
+    "word": {"start": 101.190, "end": 101.893, "piece_ids": [38], "flags": []},
+    "sentence": {"start": 102.650, "end": 105.849, "piece_ids": [39, 40], "flags": []},
+    "flags": [],
+    "note": "Sentence spans two pieces split at the clause boundary."
+  },
+  {
+    "index": 431,
+    "word": {"start": 107.602, "end": 108.197, "piece_ids": [41], "flags": []},
+    "sentence": {"start": 108.915, "end": 110.081, "piece_ids": [42], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 432,
+    "word": {"start": 111.853, "end": 112.468, "piece_ids": [43], "flags": []},
+    "sentence": {"start": 113.211, "end": 114.934, "piece_ids": [44], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 433,
+    "word": {"start": 116.688, "end": 117.463, "piece_ids": [45], "flags": []},
+    "sentence": {"start": 118.195, "end": 120.887, "piece_ids": [46], "flags": []},
+    "flags": [],
+    "note": ""
+  },
+  {
+    "index": 434,
+    "word": {"start": 122.697, "end": 123.479, "piece_ids": [47], "flags": []},
+    "sentence": {"start": 124.097, "end": 126.984, "piece_ids": [48], "flags": []},
+    "flags": [],
+    "note": ""
+  }
+]

@@ -1,0 +1,348 @@
+Track: 36 1-36.mp3
+Entries: 3 (indices 488-490)
+Cache: output\whisper_cache\unit5_track_36_large_v3_turbo_wcpp_segments.json and output\whisper_cache\unit5_track_36_large_v3_turbo_wcpp_transcript.txt
+
+[1/4] Transcribing track with Whisper...
+  Detected 182 segments
+
+[2/4] Detecting silence boundaries...
+  Found 29 speech regions, 61 silence boundaries
+
+[3/4] Building LLM prompt for matching...
+
+================================================================================
+Align the audio track `36 1-36.mp3` to these vocabulary entries.
+
+## Whisper segments (detected by full-track transcription)
+  [  0.00-  0.60] カ
+  [  0.60-  0.72] ー�
+  [  0.72-  1.35] �。
+  [  1.35-  1.62] 道
+  [  1.62-  1.82] が
+  [  1.82-  1.89] 大
+  [  1.89-  2.16] き
+  [  2.16-  2.62] く
+  [  2.62-  2.70] カ
+  [  2.70-  3.21] ー�
+  [  3.21-  3.24] �
+  [  3.24-  3.78] して
+  [  3.78-  4.31] いる
+  [  4.31-  4.58] 。
+  [  4.58-  4.86] コ
+  [  4.86-  5.13] ー
+  [  5.13-  5.67] ス
+  [  5.67-  5.74] 。
+  [  5.74-  6.21] この
+  [  6.21-  6.75] 道
+  [  6.75-  6.99] は
+  [  6.99-  7.02] 市
+  [  7.02-  7.29] 民
+  [  7.29-  7.56] マ
+  [  7.56-  8.10] ラ
+  [  8.10-  8.15] ソ
+  [  8.15-  8.37] ン
+  [  8.37-  8.64] の
+  [  8.64-  8.91] コ
+  [  8.91-  9.18] ー
+  [  9.18-  9.45] ス
+  [  9.45-  9.99] にな
+  [  9.99- 10.53] って
+  [ 10.53- 11.09] いる
+  [ 11.09- 11.34] 。
+  [ 11.34- 11.84] レ
+  [ 11.84- 11.89] ー
+  [ 11.89- 12.15] ス
+  [ 12.15- 12.60] 。
+  [ 12.60- 12.69] 競
+  [ 12.69- 13.11] 輪
+  [ 13.11- 13.23] 場
+  [ 13.23- 13.50] へ
+  [ 13.50- 13.77] レ
+  [ 13.77- 14.31] ー
+  [ 14.31- 14.36] ス
+  [ 14.36- 14.58] を
+  [ 14.58- 14.85] 見
+  [ 14.85- 15.12] に
+  [ 15.12- 15.39] 行
+  [ 15.39- 15.92] った
+  [ 15.92- 16.20] 。
+  [ 16.20- 16.63] リ
+  [ 16.63- 17.20] ード
+  [ 17.20- 17.28] 。
+  [ 17.28- 17.55] 英
+  [ 17.55- 17.67] 国
+  [ 17.67- 18.19] は
+  [ 18.19- 18.42] 経
+  [ 18.42- 18.67] 済
+  [ 18.67- 18.90] で
+  [ 18.90- 19.44] 世界
+  [ 19.44- 19.71] を
+  [ 19.71- 19.98] リ
+  [ 19.98- 20.52] ード
+  [ 20.52- 21.06] して
+  [ 21.06- 21.81] いる
+  [ 21.81- 21.87] 。
+  [ 21.87- 22.14] ト
+  [ 22.14- 22.95] ップ
+  [ 22.95- 23.06] 。
+  [ 23.06- 23.59] 100
+  [ 23.59- 24.40] メ
+  [ 24.40- 24.57] ート
+  [ 24.57- 24.84] ル
+  [ 24.84- 25.11] 走
+  [ 25.11- 25.65] で
+  [ 25.65- 25.83] ト
+  [ 25.83- 26.19] ップ
+  [ 26.19- 26.46] で
+  [ 26.46- 26.73] ゴ
+  [ 26.73- 27.52] ール
+  [ 27.52- 27.57] イ
+  [ 27.57- 27.81] ン
+  [ 27.81- 28.34] した
+  [ 28.34- 28.82] 。
+  [ 28.82- 28.89] ゴ
+  [ 28.89- 30.00] ール
+  [ 30.00- 30.00] 。
+  [ 30.00- 30.50] 山
+  [ 30.50- 30.60] 本
+  [ 30.60- 30.75] 選
+  [ 30.75- 31.00] 手
+  [ 31.00- 31.82] は
+  [ 31.82- 32.04] 100
+  [ 32.04- 32.25] メ
+  [ 32.25- 32.75] ート
+  [ 32.75- 33.00] ル
+  [ 33.00- 33.25] 背
+  [ 33.25- 33.49] 泳
+  [ 33.49- 33.74] ぎ
+  [ 33.74- 33.98] で
+  [ 33.98- 34.44] 世界
+  [ 34.44- 34.74] 新
+  [ 34.74- 34.99] 記
+  [ 34.99- 35.23] 録
+  [ 35.23- 35.74] で
+  [ 35.74- 35.74] ゴ
+  [ 35.74- 36.21] ール
+  [ 36.21- 36.99] した
+  [ 36.99- 37.02] 。
+  [ 37.02- 37.24] パ
+  [ 37.24- 37.49] ス
+  [ 37.49- 37.61] 。
+  [ 37.61- 38.15] テ
+  [ 38.15- 38.49] スト
+  [ 38.49- 38.75] に
+  [ 38.75- 38.99] パ
+  [ 38.99- 39.23] ス
+  [ 39.23- 39.77] する
+  [ 39.77- 39.99] 。
+  [ 39.99- 40.09] ベ
+  [ 40.09- 40.82] スト
+  [ 40.82- 41.00] 。
+  [ 41.00- 41.74] この
+  [ 41.74- 41.88] 方
+  [ 41.88- 41.99] 法
+  [ 41.99- 42.24] は
+  [ 42.24- 42.48] ベ
+  [ 42.48- 43.12] スト
+  [ 43.12- 43.49] では
+  [ 43.49- 44.24] ない
+  [ 44.24- 44.36] が
+  [ 44.36- 44.74] かな
+  [ 44.74- 44.99] り
+  [ 44.99- 45.32] 効
+  [ 45.32- 45.53] 果
+  [ 45.53- 45.86] が
+  [ 45.86- 46.22] ある
+  [ 46.22- 46.49] 。
+  [ 46.49- 46.73] レ
+  [ 46.73- 47.20] ギ
+  [ 47.20- 47.25] ュ
+  [ 47.25- 47.47] ラ
+  [ 47.47- 47.97] ー
+  [ 47.97- 48.18] 。
+  [ 48.18- 48.42] チ
+  [ 48.42- 48.72] ーム
+  [ 48.72- 48.97] の
+  [ 48.97- 49.36] レ
+  [ 49.36- 49.46] ギ
+  [ 49.46- 49.71] ュ
+  [ 49.71- 49.96] ラ
+  [ 49.96- 50.21] ー
+  [ 50.21- 50.71] にな
+  [ 50.71- 51.20] れる
+  [ 51.20- 51.95] ように
+  [ 51.95- 52.20] 頑
+  [ 52.20- 52.95] 張
+  [ 52.95- 53.07] って
+  [ 53.07- 53.49] いる
+  [ 53.49- 53.71] 。
+  [ 53.71- 54.36] コ
+  [ 54.36- 54.40] ー�
+  [ 54.40- 54.69] �。
+  [ 54.69- 54.94] こ
+  [ 54.94- 55.60] この
+  [ 55.60- 55.83] 柔
+  [ 55.83- 55.93] 道
+  [ 55.93- 56.18] 部
+  [ 56.18- 56.43] の
+  [ 56.43- 56.68] コ
+  [ 56.68- 57.17] ー�
+  [ 57.17- 57.45] �は
+  [ 57.45- 57.66] 厳
+  [ 57.66- 58.28] しい
+  [ 58.28- 58.83] こと
+  [ 58.83- 58.91] で
+  [ 58.91- 59.16] 有
+  [ 59.16- 59.44] 名
+  [ 59.44- 60.00] だ
+  [ 60.00- 60.00] 。
+
+## Speech pieces (ffmpeg non-silence intervals; primary coverage units)
+  Piece 0: 0.606-1.056
+  Piece 1: 1.827-3.997
+  Piece 2: 5.745-6.229
+  Piece 3: 6.993-7.626
+  Piece 4: 8.133-10.070
+  Piece 5: 11.845-12.353
+  Piece 6: 13.109-13.891
+  Piece 7: 14.354-15.448
+  Piece 8: 17.205-17.669
+  Piece 9: 18.420-19.085
+  Piece 10: 19.360-21.314
+  Piece 11: 23.071-23.195
+  Piece 12: 23.497-23.590
+  Piece 13: 24.375-25.349
+  Piece 14: 25.839-27.065
+  Piece 15: 28.832-29.313
+  Piece 16: 30.090-31.036
+  Piece 17: 31.483-32.847
+  Piece 18: 33.339-35.203
+  Piece 19: 36.945-37.283
+  Piece 20: 38.048-39.256
+  Piece 21: 41.029-41.579
+  Piece 22: 42.340-44.221
+  Piece 23: 44.717-45.835
+  Piece 24: 47.569-48.218
+  Piece 25: 48.980-51.515
+  Piece 26: 53.275-53.733
+  Piece 27: 54.511-56.083
+  Piece 28: 56.537-58.034
+
+## Speech regions (same intervals, legacy label)
+  Region 0: 0.606-1.056
+  Region 1: 1.827-3.997
+  Region 2: 5.745-6.229
+  Region 3: 6.993-7.626
+  Region 4: 8.133-10.070
+  Region 5: 11.845-12.353
+  Region 6: 13.109-13.891
+  Region 7: 14.354-15.448
+  Region 8: 17.205-17.669
+  Region 9: 18.420-19.085
+  Region 10: 19.360-21.314
+  Region 11: 23.071-23.195
+  Region 12: 23.497-23.590
+  Region 13: 24.375-25.349
+  Region 14: 25.839-27.065
+  Region 15: 28.832-29.313
+  Region 16: 30.090-31.036
+  Region 17: 31.483-32.847
+  Region 18: 33.339-35.203
+  Region 19: 36.945-37.283
+  Region 20: 38.048-39.256
+  Region 21: 41.029-41.579
+  Region 22: 42.340-44.221
+  Region 23: 44.717-45.835
+  Region 24: 47.569-48.218
+  Region 25: 48.980-51.515
+  Region 26: 53.275-53.733
+  Region 27: 54.511-56.083
+  Region 28: 56.537-58.034
+
+## Silence boundaries (for cutting)
+  0.000 silence_start
+  0.606 silence_end
+  1.056 silence_start
+  1.827 silence_end
+  3.997 silence_start
+  5.745 silence_end
+  6.229 silence_start
+  6.993 silence_end
+  7.626 silence_start
+  8.133 silence_end
+  10.070 silence_start
+  11.845 silence_end
+  12.353 silence_start
+  13.109 silence_end
+  13.891 silence_start
+  14.354 silence_end
+  15.448 silence_start
+  17.205 silence_end
+  17.669 silence_start
+  18.420 silence_end
+  19.085 silence_start
+  19.360 silence_end
+  21.314 silence_start
+  23.071 silence_end
+  23.195 silence_start
+  23.497 silence_end
+  23.590 silence_start
+  24.375 silence_end
+  25.349 silence_start
+  25.839 silence_end
+  27.065 silence_start
+  28.832 silence_end
+  29.313 silence_start
+  30.090 silence_end
+  31.036 silence_start
+  31.483 silence_end
+  32.847 silence_start
+  33.339 silence_end
+  35.203 silence_start
+  36.945 silence_end
+  37.283 silence_start
+  38.048 silence_end
+  39.256 silence_start
+  41.029 silence_end
+  41.579 silence_start
+  42.340 silence_end
+  44.221 silence_start
+  44.717 silence_end
+  45.835 silence_start
+  47.569 silence_end
+  48.218 silence_start
+  48.980 silence_end
+  51.515 silence_start
+  53.275 silence_end
+  53.733 silence_start
+  54.511 silence_end
+  56.083 silence_start
+  56.537 silence_end
+  58.034 silence_start
+  59.193 silence_end
+  59.202 silence_end
+  Track duration: 59.202
+
+## Expected vocabulary entries on this track
+  Index 488: リード (リード) — ① A国は経済で世界をリードしている。
+  Index 489: トップ (トップ) — ① 100メートル走でトップでゴールインした。
+  Index 490: ゴール (ゴール) — ① 山本選手は、100メートル背泳ぎで世界新記録でゴールした。
+
+## Instructions
+Match each Whisper segment and each speech piece to the correct vocabulary entry as either 'word' or 'sentence'.
+Rules:
+1. Each entry typically has a word segment (headword spoken alone, usually < 2s) and a sentence segment (full example sentence).
+2. If a sentence spans multiple Whisper segments (speaker paused mid-sentence), combine them.
+3. Treat ffmpeg speech pieces as the primary coverage units. Every piece in the chosen window must be accounted for.
+4. Prefer assigning whole speech pieces to an item. Do not leave trailing closures like った or って unassigned.
+5. Prefer real silence edges for cut boundaries when they reasonably fit the intended item.
+6. If silence detection failed and one speech piece bridges two adjacent items, you may split inside that piece, but mark the affected clip with flag `bridge_split` and preserve the exact split timestamp.
+7. Whisper often misrecognizes Japanese characters (e.g., 大声→応勢, 弟→お父). Match by context and sentence structure, not exact text.
+8. If a piece seems odd or very short, bias toward attaching it to the beginning or end of an adjacent item and mention the uncertainty in `note`.
+
+Output a JSON array with this structure:
+[{"index": N, "word": {"start": X, "end": Y, "piece_ids": [P0], "flags": []}, "sentence": {"start": X, "end": Y, "piece_ids": [P1, P2], "flags": []}, "flags": [], "note": ""}, ...]
+
+If a bridge split is required, include `bridge_split` in the affected clip flags and preserve the exact timestamp for the split boundary.
+If an entry's word or sentence cannot be identified, omit that field, but do not leave any speech piece unaccounted for in the selected window.
+================================================================================

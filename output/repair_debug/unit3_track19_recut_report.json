@@ -1,0 +1,47 @@
+[
+  {
+    "index": 253,
+    "word_span": [
+      56.995442,
+      57.960794
+    ],
+    "sentence_span": [
+      58.640952,
+      63.486735
+    ],
+    "word_clip": "output\\clips\\unit03\\word253.mp3",
+    "sentence_clip": "output\\clips\\unit03\\sentence253.mp3",
+    "backup_dir": "output\\repair_debug\\unit3_track19_backup_pre_recut",
+    "note": "Recut 2026-04-18 from 0.25s silence pieces: word=23 sentence=24-26; repaired prior merged window."
+  },
+  {
+    "index": 254,
+    "word_span": [
+      65.222608,
+      65.824943
+    ],
+    "sentence_span": [
+      66.542018,
+      68.513243
+    ],
+    "word_clip": "output\\clips\\unit03\\word254.mp3",
+    "sentence_clip": "output\\clips\\unit03\\sentence254.mp3",
+    "backup_dir": "output\\repair_debug\\unit3_track19_backup_pre_recut",
+    "note": "Recut 2026-04-18 from 0.25s silence pieces: word=27 sentence=28; repaired shifted mapping."
+  },
+  {
+    "index": 255,
+    "word_span": [
+      70.177755,
+      70.979909
+    ],
+    "sentence_span": [
+      71.721723,
+      73.571361
+    ],
+    "word_clip": "output\\clips\\unit03\\word255.mp3",
+    "sentence_clip": "output\\clips\\unit03\\sentence255.mp3",
+    "backup_dir": "output\\repair_debug\\unit3_track19_backup_pre_recut",
+    "note": "Recut 2026-04-18 from 0.25s silence pieces: word=29 sentence=30; split former merged word+sentence clip."
+  }
+]

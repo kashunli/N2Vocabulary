@@ -1,0 +1,929 @@
+[
+  {
+    "index": 412,
+    "unit_number": 4,
+    "headword": "差し込む",
+    "reading": "さしこむ",
+    "expected_sentence": "日の光が部屋いっぱいに差し込んでいる。",
+    "track_name": "31 1-31.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\31 1-31.mp3",
+    "word_clip": "output\\clips\\unit04\\word412.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence412.mp3",
+    "word_start": 0.581565,
+    "word_end": 1.335329,
+    "sentence_start": 2.116213,
+    "sentence_end": 5.012766,
+    "word_transcript": "差 し 込 む",
+    "sentence_transcript": "日 の 光 が 部 屋 い っぱ い に 差 し 込 んで いる 。",
+    "word_score": 0.667,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      0
+    ],
+    "sentence_piece_ids": [
+      1
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 413,
+    "unit_number": 4,
+    "headword": "染み込む",
+    "reading": "しみこむ",
+    "expected_sentence": "雨が土にしみ込む。",
+    "track_name": "31 1-31.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\31 1-31.mp3",
+    "word_clip": "output\\clips\\unit04\\word413.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence413.mp3",
+    "word_start": 6.791293,
+    "word_end": 7.530136,
+    "sentence_start": 8.28254,
+    "sentence_end": 10.007982,
+    "word_transcript": "染 み 込 む",
+    "sentence_transcript": "雨 が 土 に 染 み 込 む",
+    "word_score": 0.667,
+    "sentence_score": 0.889,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      2
+    ],
+    "sentence_piece_ids": [
+      3
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 414,
+    "unit_number": 4,
+    "headword": "引っ込む",
+    "reading": "ひっこむ",
+    "expected_sentence": "秘書は客を応接室に通すと、奥へ引っ込んだ。",
+    "track_name": "31 1-31.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\31 1-31.mp3",
+    "word_clip": "output\\clips\\unit04\\word414.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence414.mp3",
+    "word_start": 10.5,
+    "word_end": 12.338,
+    "sentence_start": 13.000363,
+    "sentence_end": 16.840159,
+    "word_transcript": "引 っ 込 む",
+    "sentence_transcript": "秘 書 は 客 を 応 接 室 に 通 す と 奥 へ 引 っ 込 んだ",
+    "word_score": 0.667,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "Word lead-in is missed by 0.25s silence detection; preserve exact span across the micro-gap before piece 5.",
+    "flags": [
+      "bridge_split"
+    ],
+    "word_flags": [
+      "bridge_split"
+    ],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      4,
+      5
+    ],
+    "sentence_piece_ids": [
+      6
+    ],
+    "word_boundary_policy": {
+      "start": "bridge_split",
+      "end": "bridge_split"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 415,
+    "unit_number": 4,
+    "headword": "詰め込む",
+    "reading": "つめこむ",
+    "expected_sentence": "かばんに荷物を詰め込む。",
+    "track_name": "31 1-31.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\31 1-31.mp3",
+    "word_clip": "output\\clips\\unit04\\word415.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence415.mp3",
+    "word_start": 18.511293,
+    "word_end": 19.217415,
+    "sentence_start": 19.981406,
+    "sentence_end": 21.8322,
+    "word_transcript": "詰 め 込 む",
+    "sentence_transcript": "カ バ ン に 荷 物 を 詰 め 込 む 。",
+    "word_score": 0.667,
+    "sentence_score": 0.571,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      7
+    ],
+    "sentence_piece_ids": [
+      8
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 416,
+    "unit_number": 4,
+    "headword": "飲み込む",
+    "reading": "のみこむ",
+    "expected_sentence": "食べ物をかまずに飲み込む。",
+    "track_name": "31 1-31.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\31 1-31.mp3",
+    "word_clip": "output\\clips\\unit04\\word416.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence416.mp3",
+    "word_start": 23.583923,
+    "word_end": 24.213764,
+    "sentence_start": 24.889524,
+    "sentence_end": 26.865465,
+    "word_transcript": "飲 み 込 む",
+    "sentence_transcript": "食べ 物 を 噛 まず に 飲 み 込 む 。",
+    "word_score": 0.667,
+    "sentence_score": 0.933,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      9
+    ],
+    "sentence_piece_ids": [
+      10
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 417,
+    "unit_number": 4,
+    "headword": "運び込む",
+    "reading": "はこびこむ",
+    "expected_sentence": "引っ越しの荷物を部屋に運び込む。",
+    "track_name": "31 1-31.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\31 1-31.mp3",
+    "word_clip": "output\\clips\\unit04\\word417.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence417.mp3",
+    "word_start": 28.621995,
+    "word_end": 29.364422,
+    "sentence_start": 30.032449,
+    "sentence_end": 32.592834,
+    "word_transcript": "運 び 込 む",
+    "sentence_transcript": "引 っ 越 し の 荷 物 を 部 屋 に 運 び 込 む 。",
+    "word_score": 0.571,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      11
+    ],
+    "sentence_piece_ids": [
+      12
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 418,
+    "unit_number": 4,
+    "headword": "／ヲ打ち込む",
+    "reading": "／をうちこむ",
+    "expected_sentence": "パソコンにデータを打ち込む。",
+    "track_name": "31 1-31.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\31 1-31.mp3",
+    "word_clip": "output\\clips\\unit04\\word418.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence418.mp3",
+    "word_start": 34.354376,
+    "word_end": 34.943583,
+    "sentence_start": 35.65644,
+    "sentence_end": 37.614082,
+    "word_transcript": "打 ち 込 む",
+    "sentence_transcript": "パ ソ コ ン に デ ー タ を 打 ち 込 む 。",
+    "word_score": 0.571,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      13
+    ],
+    "sentence_piece_ids": [
+      14
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 419,
+    "unit_number": 4,
+    "headword": "／ヲ注ぎ込む",
+    "reading": "／をそそぎこむ",
+    "expected_sentence": "子どもに愛情を注ぎ込む。",
+    "track_name": "31 1-31.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\31 1-31.mp3",
+    "word_clip": "output\\clips\\unit04\\word419.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence419.mp3",
+    "word_start": 39.368231,
+    "word_end": 40.220454,
+    "sentence_start": 41.006553,
+    "sentence_end": 43.070045,
+    "word_transcript": "注 ぎ 込 む",
+    "sentence_transcript": "子 供 に 愛 情 を 注 ぎ 込 む 。",
+    "word_score": 0.5,
+    "sentence_score": 0.8,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      15
+    ],
+    "sentence_piece_ids": [
+      16
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 420,
+    "unit_number": 4,
+    "headword": "引き込む",
+    "reading": "ひきこむ",
+    "expected_sentence": "友人を悪の道に引き込む。",
+    "track_name": "31 1-31.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\31 1-31.mp3",
+    "word_clip": "output\\clips\\unit04\\word420.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence420.mp3",
+    "word_start": 44.892676,
+    "word_end": 45.491678,
+    "sentence_start": 46.257914,
+    "sentence_end": 48.527188,
+    "word_transcript": "引 き 込 む",
+    "sentence_transcript": "友 人 を 悪 の 道 に 引 き 込 む 。",
+    "word_score": 0.667,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      17
+    ],
+    "sentence_piece_ids": [
+      18
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 421,
+    "unit_number": 4,
+    "headword": "書き込む",
+    "reading": "かきこむ",
+    "expected_sentence": "ノートに感想を書き込む。",
+    "track_name": "31 1-31.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\31 1-31.mp3",
+    "word_clip": "output\\clips\\unit04\\word421.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence421.mp3",
+    "word_start": 50.280907,
+    "word_end": 50.962948,
+    "sentence_start": 51.677914,
+    "sentence_end": 53.635351,
+    "word_transcript": "書 き 込 む",
+    "sentence_transcript": "ノ ート に 感 想 を 書 き 込 む 。",
+    "word_score": 0.667,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      19
+    ],
+    "sentence_piece_ids": [
+      20
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 422,
+    "unit_number": 4,
+    "headword": "巻き込む",
+    "reading": "まきこむ",
+    "expected_sentence": "事故に巻き込まれてけがをした。",
+    "track_name": "31 1-31.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\31 1-31.mp3",
+    "word_clip": "output\\clips\\unit04\\word422.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence422.mp3",
+    "word_start": 55.358073,
+    "word_end": 56.011814,
+    "sentence_start": 56.800839,
+    "sentence_end": 59.059274,
+    "word_transcript": "巻 き 込 む",
+    "sentence_transcript": "事 故 に 巻 き 込 ま れて 怪 我 を した",
+    "word_score": 0.667,
+    "sentence_score": 0.889,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      21
+    ],
+    "sentence_piece_ids": [
+      22
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 423,
+    "unit_number": 4,
+    "headword": "追い込む",
+    "reading": "おいこむ",
+    "expected_sentence": "羊の群れを囲いに追い込む。",
+    "track_name": "31 1-31.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\31 1-31.mp3",
+    "word_clip": "output\\clips\\unit04\\word423.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence423.mp3",
+    "word_start": 60.815238,
+    "word_end": 61.404354,
+    "sentence_start": 62.109637,
+    "sentence_end": 64.384286,
+    "word_transcript": "追 い 込 む",
+    "sentence_transcript": "羊 の 群 れ を 囲 い に 追 い 込 む 。",
+    "word_score": 0.667,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      23
+    ],
+    "sentence_piece_ids": [
+      24
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 424,
+    "unit_number": 4,
+    "headword": "呼び込む",
+    "reading": "よびこむ",
+    "expected_sentence": "ある国では、赤は運を呼び込む色だと言われている。",
+    "track_name": "31 1-31.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\31 1-31.mp3",
+    "word_clip": "output\\clips\\unit04\\word424.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence424.mp3",
+    "word_start": 66.167143,
+    "word_end": 66.84127,
+    "sentence_start": 67.629524,
+    "sentence_end": 71.794943,
+    "word_transcript": "呼 び 込 む",
+    "sentence_transcript": "ある 国 では 赤 は 運 を 呼 び 込 む 色 だ と 言 わ れて いる 。",
+    "word_score": 0.667,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "Sentence spans the lead-in clause and the main clause.",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      25
+    ],
+    "sentence_piece_ids": [
+      26,
+      27
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 425,
+    "unit_number": 4,
+    "headword": "座り込む",
+    "reading": "すわりこむ",
+    "expected_sentence": "疲れていすに座り込む。",
+    "track_name": "31 1-31.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\31 1-31.mp3",
+    "word_clip": "output\\clips\\unit04\\word425.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence425.mp3",
+    "word_start": 73.553651,
+    "word_end": 74.421927,
+    "sentence_start": 75.121519,
+    "sentence_end": 77.024354,
+    "word_transcript": "座 り 込 む",
+    "sentence_transcript": "疲 れて 椅 子 に 座 り 込 む 。",
+    "word_score": 0.571,
+    "sentence_score": 0.833,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      28
+    ],
+    "sentence_piece_ids": [
+      29
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 426,
+    "unit_number": 4,
+    "headword": "寝込む",
+    "reading": "ねこむ",
+    "expected_sentence": "病気で1週間寝込んだ。",
+    "track_name": "31 1-31.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\31 1-31.mp3",
+    "word_clip": "output\\clips\\unit04\\word426.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence426.mp3",
+    "word_start": 78.73424,
+    "word_end": 79.283379,
+    "sentence_start": 79.936621,
+    "sentence_end": 81.931973,
+    "word_transcript": "寝 込 む",
+    "sentence_transcript": "病 気 で 1 週 間 寝 込 んだ",
+    "word_score": 0.5,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      30
+    ],
+    "sentence_piece_ids": [
+      31
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 427,
+    "unit_number": 4,
+    "headword": "話し込む",
+    "reading": "はなしこむ",
+    "expected_sentence": "友人と電話で3時間も話し込んだ。",
+    "track_name": "31 1-31.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\31 1-31.mp3",
+    "word_clip": "output\\clips\\unit04\\word427.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence427.mp3",
+    "word_start": 83.751519,
+    "word_end": 84.501179,
+    "sentence_start": 85.222018,
+    "sentence_end": 88.079751,
+    "word_transcript": "話 し 込 む",
+    "sentence_transcript": "友 人 と 電 話 で 3 時間 も 話 し 込 んだ 。",
+    "word_score": 0.571,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      32
+    ],
+    "sentence_piece_ids": [
+      33
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 428,
+    "unit_number": 4,
+    "headword": "黙り込む",
+    "reading": "だまりこむ",
+    "expected_sentence": "母は不機嫌になると黙り込む。",
+    "track_name": "31 1-31.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\31 1-31.mp3",
+    "word_clip": "output\\clips\\unit04\\word428.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence428.mp3",
+    "word_start": 89.778163,
+    "word_end": 90.643084,
+    "sentence_start": 91.340567,
+    "sentence_end": 93.705624,
+    "word_transcript": "黙 り 込 む",
+    "sentence_transcript": "母 は 不 機 嫌 にな る と 黙 り 込 む 。",
+    "word_score": 0.571,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      34
+    ],
+    "sentence_piece_ids": [
+      35
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 429,
+    "unit_number": 4,
+    "headword": "泊まり込む",
+    "reading": "とまりこむ",
+    "expected_sentence": "病院に泊まり込んで看病する。",
+    "track_name": "31 1-31.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\31 1-31.mp3",
+    "word_clip": "output\\clips\\unit04\\word429.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence429.mp3",
+    "word_start": 95.461927,
+    "word_end": 96.206825,
+    "sentence_start": 96.994943,
+    "sentence_end": 99.434014,
+    "word_transcript": "止 まり 込 む",
+    "sentence_transcript": "病 院 に 泊 まり 込 んで 看 病 する",
+    "word_score": 0.75,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      36
+    ],
+    "sentence_piece_ids": [
+      37
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 430,
+    "unit_number": 4,
+    "headword": "住み込む",
+    "reading": "すみこむ",
+    "expected_sentence": "弟子になって、師匠の家に住み込む。",
+    "track_name": "31 1-31.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\31 1-31.mp3",
+    "word_clip": "output\\clips\\unit04\\word430.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence430.mp3",
+    "word_start": 101.190476,
+    "word_end": 101.893401,
+    "sentence_start": 102.649841,
+    "sentence_end": 105.849388,
+    "word_transcript": "住 み 込 む",
+    "sentence_transcript": "弟 子 にな って 師 匠 の 家 に 住 み 込 む 。",
+    "word_score": 0.667,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "Sentence spans two pieces split at the clause boundary.",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      38
+    ],
+    "sentence_piece_ids": [
+      39,
+      40
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 431,
+    "unit_number": 4,
+    "headword": "煮込む",
+    "reading": "にこむ",
+    "expected_sentence": "弱火で煮込む。",
+    "track_name": "31 1-31.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\31 1-31.mp3",
+    "word_clip": "output\\clips\\unit04\\word431.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence431.mp3",
+    "word_start": 107.601927,
+    "word_end": 108.197075,
+    "sentence_start": 108.915261,
+    "sentence_end": 110.08093,
+    "word_transcript": "煮 込 む",
+    "sentence_transcript": "弱 火 で 煮 込 む 。",
+    "word_score": 0.5,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      41
+    ],
+    "sentence_piece_ids": [
+      42
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 432,
+    "unit_number": 4,
+    "headword": "売り込む",
+    "reading": "うりこむ",
+    "expected_sentence": "新製品を売り込む。",
+    "track_name": "31 1-31.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\31 1-31.mp3",
+    "word_clip": "output\\clips\\unit04\\word432.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence432.mp3",
+    "word_start": 111.852834,
+    "word_end": 112.46839,
+    "sentence_start": 113.210522,
+    "sentence_end": 114.93415,
+    "word_transcript": "売 り 込 む",
+    "sentence_transcript": "新 製 品 を 売 り 込 む",
+    "word_score": 0.667,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      43
+    ],
+    "sentence_piece_ids": [
+      44
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 433,
+    "unit_number": 4,
+    "headword": "頼み込む",
+    "reading": "たのみこむ",
+    "expected_sentence": "頭を下げて先輩に頼み込んだ。",
+    "track_name": "31 1-31.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\31 1-31.mp3",
+    "word_clip": "output\\clips\\unit04\\word433.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence433.mp3",
+    "word_start": 116.688073,
+    "word_end": 117.463379,
+    "sentence_start": 118.195351,
+    "sentence_end": 120.886871,
+    "word_transcript": "頼 み 込 む",
+    "sentence_transcript": "頭 を 下 げ て 先 輩 に 頼 み 込 んだ 。",
+    "word_score": 0.571,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      45
+    ],
+    "sentence_piece_ids": [
+      46
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 434,
+    "unit_number": 4,
+    "headword": "教え込む",
+    "reading": "おしえこむ",
+    "expected_sentence": "動物に根気よく芸を教え込んだ。",
+    "track_name": "31 1-31.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\31 1-31.mp3",
+    "word_clip": "output\\clips\\unit04\\word434.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence434.mp3",
+    "word_start": 122.697302,
+    "word_end": 123.479161,
+    "sentence_start": 124.097302,
+    "sentence_end": 126.983923,
+    "word_transcript": "教 え 込 む",
+    "sentence_transcript": "動 物 に 根 気 よ く 芸 を 教 え 込 んだ",
+    "word_score": 0.571,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      47
+    ],
+    "sentence_piece_ids": [
+      48
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  }
+]

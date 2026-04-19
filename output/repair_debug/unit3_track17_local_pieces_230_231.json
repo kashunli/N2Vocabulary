@@ -1,0 +1,95 @@
+{
+  "track_name": "17 1-17.mp3",
+  "track_path": "audio\\Unit3 形容詞A\\17 1-17.mp3",
+  "silence_noise": "-32dB",
+  "silence_duration": 0.25,
+  "window_time": {
+    "start": 61.342,
+    "end": 74.93
+  },
+  "window_piece_ids": [
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32
+  ],
+  "pieces": [
+    {
+      "ordinal": 0,
+      "piece_id": 24,
+      "start": 58.69381,
+      "end": 59.594671,
+      "text": "かわいそうになった。",
+      "hira": "かわいそうになった。"
+    },
+    {
+      "ordinal": 1,
+      "piece_id": 25,
+      "start": 61.34229,
+      "end": 62.253084,
+      "text": "気の毒な",
+      "hira": "きのどくな"
+    },
+    {
+      "ordinal": 2,
+      "piece_id": 26,
+      "start": 63.047324,
+      "end": 63.56068,
+      "text": "彼女を",
+      "hira": "かのじょを"
+    },
+    {
+      "ordinal": 3,
+      "piece_id": 27,
+      "start": 64.069864,
+      "end": 66.907619,
+      "text": "先日、お父さんを事故で亡くされたそうだよ。",
+      "hira": "せんじつおちちさんをじこでなくされたそうだよ。"
+    },
+    {
+      "ordinal": 4,
+      "piece_id": 28,
+      "start": 67.997982,
+      "end": 69.058277,
+      "text": "お気の毒に",
+      "hira": "おきのどくに"
+    },
+    {
+      "ordinal": 5,
+      "piece_id": 29,
+      "start": 70.794172,
+      "end": 71.653741,
+      "text": "貧しい",
+      "hira": "まずしい"
+    },
+    {
+      "ordinal": 6,
+      "piece_id": 30,
+      "start": 72.453764,
+      "end": 73.050567,
+      "text": "私は",
+      "hira": "わたくしは"
+    },
+    {
+      "ordinal": 7,
+      "piece_id": 31,
+      "start": 73.492086,
+      "end": 74.929932,
+      "text": "貧しい家に育った。",
+      "hira": "まずしいいえにそだった。"
+    },
+    {
+      "ordinal": 8,
+      "piece_id": 32,
+      "start": 76.728481,
+      "end": 77.364467,
+      "text": "惜しい",
+      "hira": "おしい"
+    }
+  ]
+}

@@ -1,0 +1,848 @@
+[
+  {
+    "index": 435,
+    "unit_number": 4,
+    "headword": "話し合う",
+    "reading": "はなしあう",
+    "expected_sentence": "「暴力はいけない。話し合って解決しよう」",
+    "track_name": "32 1-32.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\32 1-32.mp3",
+    "word_clip": "output\\clips\\unit04\\word435.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence435.mp3",
+    "word_start": 0.625533,
+    "word_end": 1.407098,
+    "sentence_start": 2.092993,
+    "sentence_end": 5.111429,
+    "word_transcript": "話 し 合 う",
+    "sentence_transcript": "暴 力 はい け ない 話 し 合 って 解 決 し よう",
+    "word_score": 0.571,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "Sentence spans the quoted lead-in and the resolution clause.",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      0
+    ],
+    "sentence_piece_ids": [
+      1,
+      2
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 436,
+    "unit_number": 4,
+    "headword": "言い合う",
+    "reading": "いいあう",
+    "expected_sentence": "言いたいことを言い合って、最後に仲直りした。",
+    "track_name": "32 1-32.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\32 1-32.mp3",
+    "word_clip": "output\\clips\\unit04\\word436.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence436.mp3",
+    "word_start": 6.872358,
+    "word_end": 7.438798,
+    "sentence_start": 8.219002,
+    "sentence_end": 11.527392,
+    "word_transcript": "言 い 合 う",
+    "sentence_transcript": "言 いた い こと を 言 い 合 って 最後 に 仲 直 り した 。",
+    "word_score": 0.667,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      3
+    ],
+    "sentence_piece_ids": [
+      4
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 437,
+    "unit_number": 4,
+    "headword": "語り合う",
+    "reading": "かたりあう",
+    "expected_sentence": "久しぶりに会った友人と深夜まで語り合った。",
+    "track_name": "32 1-32.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\32 1-32.mp3",
+    "word_clip": "output\\clips\\unit04\\word437.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence437.mp3",
+    "word_start": 13.215465,
+    "word_end": 14.024376,
+    "sentence_start": 14.710159,
+    "sentence_end": 18.189569,
+    "word_transcript": "語 り 合 う 。",
+    "sentence_transcript": "久 し ぶ り に 会 った 友 人 と 深 夜 まで 語 り 合 った 。",
+    "word_score": 0.571,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      5
+    ],
+    "sentence_piece_ids": [
+      6
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 438,
+    "unit_number": 4,
+    "headword": "見つめ合う",
+    "reading": "みつめあう",
+    "expected_sentence": "二人は互いの目を見つめ合った。",
+    "track_name": "32 1-32.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\32 1-32.mp3",
+    "word_clip": "output\\clips\\unit04\\word438.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence438.mp3",
+    "word_start": 19.985918,
+    "word_end": 20.799569,
+    "sentence_start": 21.474422,
+    "sentence_end": 23.781111,
+    "word_transcript": "見 つ め 合 う",
+    "sentence_transcript": "二 人 は 互 い の 目 を 見 つ め 合 った 。",
+    "word_score": 0.75,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      7
+    ],
+    "sentence_piece_ids": [
+      8
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 439,
+    "unit_number": 4,
+    "headword": "向かい合う",
+    "reading": "むかいあう",
+    "expected_sentence": "相手と向かい合って座る。",
+    "track_name": "32 1-32.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\32 1-32.mp3",
+    "word_clip": "output\\clips\\unit04\\word439.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence439.mp3",
+    "word_start": 25.607075,
+    "word_end": 26.384785,
+    "sentence_start": 27.086576,
+    "sentence_end": 28.88619,
+    "word_transcript": "向 か い 合 う",
+    "sentence_transcript": "相 手 と 向 か い 合 って 座 る 。",
+    "word_score": 0.75,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      9
+    ],
+    "sentence_piece_ids": [
+      10
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 440,
+    "unit_number": 4,
+    "headword": "助け合う",
+    "reading": "たすけあう",
+    "expected_sentence": "「困ったときは助け合おう」",
+    "track_name": "32 1-32.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\32 1-32.mp3",
+    "word_clip": "output\\clips\\unit04\\word440.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence440.mp3",
+    "word_start": 30.64449,
+    "word_end": 31.419751,
+    "sentence_start": 32.138299,
+    "sentence_end": 33.974195,
+    "word_transcript": "助 け 合 う",
+    "sentence_transcript": "困 った 時 は 助 け 合 お う 。",
+    "word_score": 0.571,
+    "sentence_score": 0.857,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      11
+    ],
+    "sentence_piece_ids": [
+      12
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 441,
+    "unit_number": 4,
+    "headword": "分け合う",
+    "reading": "わけあう",
+    "expected_sentence": "一つのパンをみんなで分け合って食べた。",
+    "track_name": "32 1-32.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\32 1-32.mp3",
+    "word_clip": "output\\clips\\unit04\\word441.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence441.mp3",
+    "word_start": 35.725261,
+    "word_end": 36.391701,
+    "sentence_start": 37.097868,
+    "sentence_end": 39.78483,
+    "word_transcript": "わ け や る",
+    "sentence_transcript": "一 つ の パ ン を み んな で 分 け 合 って 食べ た 。",
+    "word_score": 0.5,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      13
+    ],
+    "sentence_piece_ids": [
+      14
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 442,
+    "unit_number": 4,
+    "headword": "出し合う",
+    "reading": "だしあう",
+    "expected_sentence": "兄弟でお金を出し合って、両親にプレゼントをした。",
+    "track_name": "32 1-32.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\32 1-32.mp3",
+    "word_clip": "output\\clips\\unit04\\word442.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence442.mp3",
+    "word_start": 41.543333,
+    "word_end": 42.265238,
+    "sentence_start": 42.914694,
+    "sentence_end": 46.997007,
+    "word_transcript": "出 し 合 う",
+    "sentence_transcript": "兄 弟 で お 金 を 出 し 合 って 両 親 に プ レ ゼ ント を した 。",
+    "word_score": 0.667,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "Sentence spans the money clause and the present-giving clause.",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      15
+    ],
+    "sentence_piece_ids": [
+      16,
+      17
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 443,
+    "unit_number": 4,
+    "headword": "申し合わせる",
+    "reading": "もうしあわせる",
+    "expected_sentence": "会議の内容は外部には言わないことを申し合わせた。",
+    "track_name": "32 1-32.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\32 1-32.mp3",
+    "word_clip": "output\\clips\\unit04\\word443.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence443.mp3",
+    "word_start": 48.750431,
+    "word_end": 49.753084,
+    "sentence_start": 50.506893,
+    "sentence_end": 54.562018,
+    "word_transcript": "申 し 合 わ せ る",
+    "sentence_transcript": "会 議 の 内 容 は 外 部 には 言 わ ない こと を 申 し 合 わ せ た 。",
+    "word_score": 0.727,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "Sentence spans the topic lead-in and the agreement clause.",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      18
+    ],
+    "sentence_piece_ids": [
+      19,
+      20
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 444,
+    "unit_number": 4,
+    "headword": "誘い合わせる",
+    "reading": "さそいあわせる",
+    "expected_sentence": "クラスメートたちと誘い合わせて富士山に行った。",
+    "track_name": "32 1-32.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\32 1-32.mp3",
+    "word_clip": "output\\clips\\unit04\\word444.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence444.mp3",
+    "word_start": 56.348118,
+    "word_end": 57.447664,
+    "sentence_start": 58.18102,
+    "sentence_end": 61.340363,
+    "word_transcript": "誘 い 合 わ せ る",
+    "sentence_transcript": "ク ラ ス メ イ ト た ち と 誘 い 合 わ せて 富 士 山 に 行 った 。",
+    "word_score": 0.727,
+    "sentence_score": 0.938,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      21
+    ],
+    "sentence_piece_ids": [
+      22
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 445,
+    "unit_number": 4,
+    "headword": "隣り合わせる",
+    "reading": "となりあわせる",
+    "expected_sentence": "新幹線でたまたま隣り合わせた人と友だちになった。",
+    "track_name": "32 1-32.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\32 1-32.mp3",
+    "word_clip": "output\\clips\\unit04\\word445.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence445.mp3",
+    "word_start": 63.499932,
+    "word_end": 64.481043,
+    "sentence_start": 65.196735,
+    "sentence_end": 69.329592,
+    "word_transcript": "隣 り 合 わ せ る",
+    "sentence_transcript": "新 幹 線 で た また ま 隣 り 合 わ せ た 人 と 友 達 にな った 。",
+    "word_score": 0.727,
+    "sentence_score": 0.933,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "Ignored stray garbage piece 23 between entries 444 and 445 because it does not belong to any target item.",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      24
+    ],
+    "sentence_piece_ids": [
+      25
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 446,
+    "unit_number": 4,
+    "headword": "組み合わせる",
+    "reading": "くみあわせる",
+    "expected_sentence": "部品を組み合わせてプラモデルを作る。",
+    "track_name": "32 1-32.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\32 1-32.mp3",
+    "word_clip": "output\\clips\\unit04\\word446.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence446.mp3",
+    "word_start": 71.01805,
+    "word_end": 71.892426,
+    "sentence_start": 72.653311,
+    "sentence_end": 75.458617,
+    "word_transcript": "組 み 合 わ せ る",
+    "sentence_transcript": "部 品 を 組 み 合 わ せて プ ラ モ デ ル を 作 る 。",
+    "word_score": 0.8,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      26
+    ],
+    "sentence_piece_ids": [
+      27
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 447,
+    "unit_number": 4,
+    "headword": "詰め合わせる",
+    "reading": "つめあわせる",
+    "expected_sentence": "一箱にいろいろなお菓子が詰め合わせてある。",
+    "track_name": "32 1-32.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\32 1-32.mp3",
+    "word_clip": "output\\clips\\unit04\\word447.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence447.mp3",
+    "word_start": 77.208685,
+    "word_end": 78.211474,
+    "sentence_start": 78.940295,
+    "sentence_end": 82.058503,
+    "word_transcript": "詰 め 合 わ せ る",
+    "sentence_transcript": "一 箱 に い ろ い ろ な お 菓 子 が 詰 め 合 わ せて ある 。",
+    "word_score": 0.8,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      28
+    ],
+    "sentence_piece_ids": [
+      29
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 448,
+    "unit_number": 4,
+    "headword": "重ね合わせる",
+    "reading": "かさねあわせる",
+    "expected_sentence": "二つの事件を重ね合わせて考えてみると、共通点が浮かび上がった。",
+    "track_name": "32 1-32.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\32 1-32.mp3",
+    "word_clip": "output\\clips\\unit04\\word448.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence448.mp3",
+    "word_start": 83.821088,
+    "word_end": 84.871406,
+    "sentence_start": 85.588027,
+    "sentence_end": 90.976009,
+    "word_transcript": "重 ね 合 わ せ る 。",
+    "sentence_transcript": "2 つ の 事 件 を 重 ね 合 わ せて 考 えて み る と 共 通 点 が 浮 か び 上 が った 。",
+    "word_score": 0.727,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "Sentence spans the thought setup and the shared-point conclusion.",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      30
+    ],
+    "sentence_piece_ids": [
+      31,
+      32
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 449,
+    "unit_number": 4,
+    "headword": "居合わせる",
+    "reading": "いあわせる",
+    "expected_sentence": "犯人は居合わせた客を人質に取って逃走した。",
+    "track_name": "32 1-32.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\32 1-32.mp3",
+    "word_clip": "output\\clips\\unit04\\word449.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence449.mp3",
+    "word_start": 92.626893,
+    "word_end": 93.351315,
+    "sentence_start": 93.971655,
+    "sentence_end": 97.779524,
+    "word_transcript": "居 合 わ せ る",
+    "sentence_transcript": "犯 人 は 居 合 わ せ た 客 を 人 質 に と って 逃 走 した 。",
+    "word_score": 0.75,
+    "sentence_score": 0.952,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      33
+    ],
+    "sentence_piece_ids": [
+      34
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 450,
+    "unit_number": 4,
+    "headword": "乗り合わせる",
+    "reading": "のりあわせる",
+    "expected_sentence": "バスで小銭がなくて困っていたら、乗り合わせていた人が200円貸してくれた。",
+    "track_name": "32 1-32.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\32 1-32.mp3",
+    "word_clip": "output\\clips\\unit04\\word450.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence450.mp3",
+    "word_start": 99.506553,
+    "word_end": 100.416304,
+    "sentence_start": 101.099342,
+    "sentence_end": 106.851814,
+    "word_transcript": "乗 り 合 わ せ る",
+    "sentence_transcript": "バ ス で 小 銭 が なく て 困 って いた ら 乗 り 合 わ せて いた 人 が 200 円 貸 して く れた 。",
+    "word_score": 0.8,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "Sentence spans the problem setup and the help received.",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      35
+    ],
+    "sentence_piece_ids": [
+      36,
+      37
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 451,
+    "unit_number": 4,
+    "headword": "持ち合わせる",
+    "reading": "もちあわせる",
+    "expected_sentence": "「すみません、今日は名刺を持ち合わせておりませんで」",
+    "track_name": "32 1-32.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\32 1-32.mp3",
+    "word_clip": "output\\clips\\unit04\\word451.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence451.mp3",
+    "word_start": 108.489773,
+    "word_end": 109.389615,
+    "sentence_start": 110.0678,
+    "sentence_end": 113.720794,
+    "word_transcript": "落 ち 合 わ せ る",
+    "sentence_transcript": "す み ません 、 今日は 名 刺 を 持 ち 合 わ せて お り ません で 。",
+    "word_score": 0.8,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      38
+    ],
+    "sentence_piece_ids": [
+      39
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 452,
+    "unit_number": 4,
+    "headword": "問い合わせる",
+    "reading": "といあわせる",
+    "expected_sentence": "住民登録について、区役所に問い合わせた。",
+    "track_name": "32 1-32.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\32 1-32.mp3",
+    "word_clip": "output\\clips\\unit04\\word452.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence452.mp3",
+    "word_start": 115.484195,
+    "word_end": 116.329524,
+    "sentence_start": 117.002653,
+    "sentence_end": 120.409524,
+    "word_transcript": "問 い 合 わ せ る",
+    "sentence_transcript": "住 民 登録 に つ いて 区 役 所 に 問 い 合 わ せ た",
+    "word_score": 0.8,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      40
+    ],
+    "sentence_piece_ids": [
+      41
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 453,
+    "unit_number": 4,
+    "headword": "照らし合わせる",
+    "reading": "てらしあわせる",
+    "expected_sentence": "過去の同様のケースと照らし合わせて考える。",
+    "track_name": "32 1-32.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\32 1-32.mp3",
+    "word_clip": "output\\clips\\unit04\\word453.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence453.mp3",
+    "word_start": 122.16381,
+    "word_end": 123.141746,
+    "sentence_start": 123.931519,
+    "sentence_end": 127.106032,
+    "word_transcript": "照 ら し 合 わ せ る",
+    "sentence_transcript": "過去 の 同 様 の ケ ー ス と 照 ら し 合 わ せて 考 える 。",
+    "word_score": 0.833,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      42
+    ],
+    "sentence_piece_ids": [
+      43
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 454,
+    "unit_number": 4,
+    "headword": "聞き直す",
+    "reading": "ききなおす",
+    "expected_sentence": "聞こえなかったので聞き直した。",
+    "track_name": "32 1-32.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\32 1-32.mp3",
+    "word_clip": "output\\clips\\unit04\\word454.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence454.mp3",
+    "word_start": 128.829569,
+    "word_end": 129.653968,
+    "sentence_start": 130.374354,
+    "sentence_end": 132.622472,
+    "word_transcript": "聞 き 直 す 。",
+    "sentence_transcript": "聞 こ え な かった ので 聞 き 直 した 。",
+    "word_score": 0.571,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      44
+    ],
+    "sentence_piece_ids": [
+      45
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 455,
+    "unit_number": 4,
+    "headword": "やり直す",
+    "reading": "やりなおす",
+    "expected_sentence": "実験がうまくいかなかったので、初めからやり直した。",
+    "track_name": "32 1-32.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\32 1-32.mp3",
+    "word_clip": "output\\clips\\unit04\\word455.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence455.mp3",
+    "word_start": 134.411111,
+    "word_end": 135.273741,
+    "sentence_start": 136.0339,
+    "sentence_end": 139.855669,
+    "word_transcript": "や り 直 す",
+    "sentence_transcript": "実 験 が う ま く い かな かった ので 、 初 め から や り 直 した 。",
+    "word_score": 0.75,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "Sentence spans the failed-experiment setup and the retry clause.",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      46
+    ],
+    "sentence_piece_ids": [
+      47,
+      48
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  }
+]

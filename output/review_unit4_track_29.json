@@ -1,0 +1,842 @@
+[
+  {
+    "index": 371,
+    "unit_number": 4,
+    "headword": "立ち上がる",
+    "reading": "たちあがる",
+    "expected_sentence": "いすから立ち上がる。",
+    "track_name": "29 1-29.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\29 1-29.mp3",
+    "word_clip": "output\\clips\\unit04\\word371.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence371.mp3",
+    "word_start": 0.610522,
+    "word_end": 1.355646,
+    "sentence_start": 2.103152,
+    "sentence_end": 3.492109,
+    "word_transcript": "立 ち 上 が る",
+    "sentence_transcript": "椅 子 から 立 ち 上 が る",
+    "word_score": 0.75,
+    "sentence_score": 0.833,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      0
+    ],
+    "sentence_piece_ids": [
+      1
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 372,
+    "unit_number": 4,
+    "headword": "飛び上がる",
+    "reading": "とびあがる",
+    "expected_sentence": "飛び上がって喜ぶ。",
+    "track_name": "29 1-29.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\29 1-29.mp3",
+    "word_clip": "output\\clips\\unit04\\word372.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence372.mp3",
+    "word_start": 5.180295,
+    "word_end": 5.870658,
+    "sentence_start": 6.627528,
+    "sentence_end": 8.077188,
+    "word_transcript": "飛 び 上 が る",
+    "sentence_transcript": "飛 び 上 が って 喜 ぶ 。",
+    "word_score": 0.75,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      2
+    ],
+    "sentence_piece_ids": [
+      3
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 373,
+    "unit_number": 4,
+    "headword": "浮かび上がる",
+    "reading": "うかびあがる",
+    "expected_sentence": "水面に浮かび上がる。",
+    "track_name": "29 1-29.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\29 1-29.mp3",
+    "word_clip": "output\\clips\\unit04\\word373.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence373.mp3",
+    "word_start": 9.847891,
+    "word_end": 10.716531,
+    "sentence_start": 11.387279,
+    "sentence_end": 12.993265,
+    "word_transcript": "浮 か び 上 が る",
+    "sentence_transcript": "水 面 に 浮 か び 上 が る",
+    "word_score": 0.8,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      4
+    ],
+    "sentence_piece_ids": [
+      5
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 374,
+    "unit_number": 4,
+    "headword": "舞い上がる",
+    "reading": "まいあがる",
+    "expected_sentence": "｛砂／ほこり …｝が舞い上がる。",
+    "track_name": "29 1-29.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\29 1-29.mp3",
+    "word_clip": "output\\clips\\unit04\\word374.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence374.mp3",
+    "word_start": 14.705918,
+    "word_end": 15.433946,
+    "sentence_start": 16.118481,
+    "sentence_end": 17.450045,
+    "word_transcript": "舞 い 上 が る",
+    "sentence_transcript": "砂 が 舞 い 上 が る",
+    "word_score": 0.75,
+    "sentence_score": 0.727,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      6
+    ],
+    "sentence_piece_ids": [
+      7
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 375,
+    "unit_number": 4,
+    "headword": "燃え上がる",
+    "reading": "もえあがる",
+    "expected_sentence": "｛火／闘志／恋心 …｝が燃え上がる。",
+    "track_name": "29 1-29.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\29 1-29.mp3",
+    "word_clip": "output\\clips\\unit04\\word375.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence375.mp3",
+    "word_start": 19.104104,
+    "word_end": 19.883401,
+    "sentence_start": 20.643719,
+    "sentence_end": 21.779909,
+    "word_transcript": "燃 え 上 が る",
+    "sentence_transcript": "火 が 燃 え 上 が る",
+    "word_score": 0.75,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      8
+    ],
+    "sentence_piece_ids": [
+      9
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 376,
+    "unit_number": 4,
+    "headword": "盛り上がる",
+    "reading": "もりあがる",
+    "expected_sentence": "筋肉が盛り上がっている。",
+    "track_name": "29 1-29.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\29 1-29.mp3",
+    "word_clip": "output\\clips\\unit04\\word376.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence376.mp3",
+    "word_start": 23.474671,
+    "word_end": 24.224943,
+    "sentence_start": 24.907596,
+    "sentence_end": 26.746168,
+    "word_transcript": "盛 り 上 が る",
+    "sentence_transcript": "筋 肉 が 盛 り 上 が って いる 。",
+    "word_score": 0.75,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      10
+    ],
+    "sentence_piece_ids": [
+      11
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 377,
+    "unit_number": 4,
+    "headword": "沸き上がる",
+    "reading": "わきあがる",
+    "expected_sentence": "歓声が沸き上がる。",
+    "track_name": "29 1-29.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\29 1-29.mp3",
+    "word_clip": "output\\clips\\unit04\\word377.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence377.mp3",
+    "word_start": 28.507256,
+    "word_end": 29.249864,
+    "sentence_start": 29.954989,
+    "sentence_end": 31.450408,
+    "word_transcript": "沸 き 上 が る",
+    "sentence_transcript": "歓 声 が 沸 き 上 が る 。",
+    "word_score": 0.75,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      12
+    ],
+    "sentence_piece_ids": [
+      13
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 378,
+    "unit_number": 4,
+    "headword": "晴れ上がる",
+    "reading": "はれあがる",
+    "expected_sentence": "晴れ上がった秋空",
+    "track_name": "29 1-29.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\29 1-29.mp3",
+    "word_clip": "output\\clips\\unit04\\word378.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence378.mp3",
+    "word_start": 33.21449,
+    "word_end": 33.976032,
+    "sentence_start": 34.722789,
+    "sentence_end": 36.24161,
+    "word_transcript": "晴 れ 上 が る",
+    "sentence_transcript": "晴 れ 上 が った 秋 空",
+    "word_score": 0.75,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      14
+    ],
+    "sentence_piece_ids": [
+      15
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 379,
+    "unit_number": 4,
+    "headword": "震え上がる",
+    "reading": "ふるえあがる",
+    "expected_sentence": "｛寒さ／恐怖 …｝に震え上がる。",
+    "track_name": "29 1-29.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\29 1-29.mp3",
+    "word_clip": "output\\clips\\unit04\\word379.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence379.mp3",
+    "word_start": 38.032313,
+    "word_end": 38.921156,
+    "sentence_start": 39.695397,
+    "sentence_end": 41.27288,
+    "word_transcript": "震 え 上 が る",
+    "sentence_transcript": "寒 さ に 震 え 上 が る",
+    "word_score": 0.667,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      16
+    ],
+    "sentence_piece_ids": [
+      17
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 380,
+    "unit_number": 4,
+    "headword": "縮み上がる",
+    "reading": "ちぢみあがる",
+    "expected_sentence": "｛寒さ／恐怖 …｝に縮み上がる。",
+    "track_name": "29 1-29.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\29 1-29.mp3",
+    "word_clip": "output\\clips\\unit04\\word380.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence380.mp3",
+    "word_start": 42.963492,
+    "word_end": 43.918549,
+    "sentence_start": 44.598549,
+    "sentence_end": 46.238481,
+    "word_transcript": "縮 み 上 が る",
+    "sentence_transcript": "寒 さ に 縮 み 上 が る",
+    "word_score": 0.667,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      18
+    ],
+    "sentence_piece_ids": [
+      19
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 381,
+    "unit_number": 4,
+    "headword": "干上がる",
+    "reading": "ひあがる",
+    "expected_sentence": "｛池／湖／川 …｝が干上がる。",
+    "track_name": "29 1-29.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\29 1-29.mp3",
+    "word_clip": "output\\clips\\unit04\\word381.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence381.mp3",
+    "word_start": 47.974172,
+    "word_end": 48.588866,
+    "sentence_start": 49.343719,
+    "sentence_end": 50.528912,
+    "word_transcript": "き あ が る",
+    "sentence_transcript": "池 が 干 上 が る 。",
+    "word_score": 0.75,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      20
+    ],
+    "sentence_piece_ids": [
+      21
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 382,
+    "unit_number": 4,
+    "headword": "でき上がる",
+    "reading": "できあがる",
+    "expected_sentence": "料理ができ上がった。",
+    "track_name": "29 1-29.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\29 1-29.mp3",
+    "word_clip": "output\\clips\\unit04\\word382.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence382.mp3",
+    "word_start": 52.286644,
+    "word_end": 53.099138,
+    "sentence_start": 53.868617,
+    "sentence_end": 55.434286,
+    "word_transcript": "出来 上 が る 。",
+    "sentence_transcript": "料 理 が 出来 上 が った 。",
+    "word_score": 0.571,
+    "sentence_score": 0.8,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      22
+    ],
+    "sentence_piece_ids": [
+      23
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 383,
+    "unit_number": 4,
+    "headword": "持ち上げる",
+    "reading": "もちあげる",
+    "expected_sentence": "荷物を持ち上げる。",
+    "track_name": "29 1-29.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\29 1-29.mp3",
+    "word_clip": "output\\clips\\unit04\\word383.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence383.mp3",
+    "word_start": 57.198322,
+    "word_end": 58.022132,
+    "sentence_start": 58.774875,
+    "sentence_end": 60.290045,
+    "word_transcript": "持 ち 上 げ る",
+    "sentence_transcript": "荷 物 を 持 ち 上 げ る 。",
+    "word_score": 0.75,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      24
+    ],
+    "sentence_piece_ids": [
+      25
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 384,
+    "unit_number": 4,
+    "headword": "見上げる",
+    "reading": "みあげる",
+    "expected_sentence": "空を見上げる。",
+    "track_name": "29 1-29.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\29 1-29.mp3",
+    "word_clip": "output\\clips\\unit04\\word384.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence384.mp3",
+    "word_start": 62.06585,
+    "word_end": 62.722766,
+    "sentence_start": 63.443651,
+    "sentence_end": 64.682472,
+    "word_transcript": "見 上 げ る",
+    "sentence_transcript": "空 を 見 上 げ る",
+    "word_score": 0.667,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      26
+    ],
+    "sentence_piece_ids": [
+      27
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 385,
+    "unit_number": 4,
+    "headword": "積み上げる",
+    "reading": "つみあげる",
+    "expected_sentence": "資料を積み上げる。",
+    "track_name": "29 1-29.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\29 1-29.mp3",
+    "word_clip": "output\\clips\\unit04\\word385.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence385.mp3",
+    "word_start": 66.442404,
+    "word_end": 67.295941,
+    "sentence_start": 68.07449,
+    "sentence_end": 69.642676,
+    "word_transcript": "積 み 上 げ る",
+    "sentence_transcript": "資 料 を 積 み 上 げ る 。",
+    "word_score": 0.75,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      28
+    ],
+    "sentence_piece_ids": [
+      29
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 386,
+    "unit_number": 4,
+    "headword": "打ち上げる",
+    "reading": "うちあげる",
+    "expected_sentence": "｛ロケット／花火｝を打ち上げる。",
+    "track_name": "29 1-29.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\29 1-29.mp3",
+    "word_clip": "output\\clips\\unit04\\word386.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence386.mp3",
+    "word_start": 71.397392,
+    "word_end": 72.164331,
+    "sentence_start": 72.828685,
+    "sentence_end": 74.522177,
+    "word_transcript": "打 ち 上 げ る",
+    "sentence_transcript": "ロ ケ ット を 打 ち 上 げ る 。",
+    "word_score": 0.75,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      30
+    ],
+    "sentence_piece_ids": [
+      31
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 387,
+    "unit_number": 4,
+    "headword": "立ち上げる",
+    "reading": "たちあげる",
+    "expected_sentence": "コンピューターを立ち上げる。",
+    "track_name": "29 1-29.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\29 1-29.mp3",
+    "word_clip": "output\\clips\\unit04\\word387.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence387.mp3",
+    "word_start": 76.276735,
+    "word_end": 77.07483,
+    "sentence_start": 77.788141,
+    "sentence_end": 79.574558,
+    "word_transcript": "立 ち 上 げ る",
+    "sentence_transcript": "コ ン� �ュ ー ター を 立 ち 上 げ る 。",
+    "word_score": 0.75,
+    "sentence_score": 0.952,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      32
+    ],
+    "sentence_piece_ids": [
+      33
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 388,
+    "unit_number": 4,
+    "headword": "切り上げる",
+    "reading": "きりあげる",
+    "expected_sentence": "①・今日は仕事を５時で切り上げよう。",
+    "track_name": "29 1-29.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\29 1-29.mp3",
+    "word_clip": "output\\clips\\unit04\\word388.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence388.mp3",
+    "word_start": 81.336395,
+    "word_end": 82.144898,
+    "sentence_start": 82.903288,
+    "sentence_end": 85.190159,
+    "word_transcript": "切 り 上 げ る",
+    "sentence_transcript": "今日は 仕 事 を 5 時 で 切 り 上 げ よう",
+    "word_score": 0.75,
+    "sentence_score": 0.933,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      34
+    ],
+    "sentence_piece_ids": [
+      35
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 389,
+    "unit_number": 4,
+    "headword": "繰り上げる",
+    "reading": "くりあげる",
+    "expected_sentence": "｛時間／予定／順位 …｝を繰り上げる。",
+    "track_name": "29 1-29.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\29 1-29.mp3",
+    "word_clip": "output\\clips\\unit04\\word389.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence389.mp3",
+    "word_start": 86.945964,
+    "word_end": 87.742449,
+    "sentence_start": 88.422925,
+    "sentence_end": 89.851927,
+    "word_transcript": "ク リ ア ン エ ール",
+    "sentence_transcript": "時間 を 繰 り 上 げ る",
+    "word_score": 0.0,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      36
+    ],
+    "sentence_piece_ids": [
+      37
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 390,
+    "unit_number": 4,
+    "headword": "磨き上げる",
+    "reading": "みがきあげる",
+    "expected_sentence": "磨き上げた靴",
+    "track_name": "29 1-29.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\29 1-29.mp3",
+    "word_clip": "output\\clips\\unit04\\word390.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence390.mp3",
+    "word_start": 91.704218,
+    "word_end": 92.732834,
+    "sentence_start": 93.516236,
+    "sentence_end": 94.921814,
+    "word_transcript": "磨 き 上 げ る",
+    "sentence_transcript": "磨 き 上 げ た 靴",
+    "word_score": 0.667,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      38
+    ],
+    "sentence_piece_ids": [
+      39
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 391,
+    "unit_number": 4,
+    "headword": "鍛え上げる",
+    "reading": "きたえあげる",
+    "expected_sentence": "選手たちを鍛え上げる。",
+    "track_name": "29 1-29.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\29 1-29.mp3",
+    "word_clip": "output\\clips\\unit04\\word391.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence391.mp3",
+    "word_start": 96.588639,
+    "word_end": 97.504921,
+    "sentence_start": 98.237574,
+    "sentence_end": 100.083152,
+    "word_transcript": "鍛 え 上 げ る 。",
+    "sentence_transcript": "選 手 た ち を 鍛 え 上 げ る",
+    "word_score": 0.667,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      40
+    ],
+    "sentence_piece_ids": [
+      41
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  }
+]

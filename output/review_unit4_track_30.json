@@ -1,0 +1,803 @@
+[
+  {
+    "index": 392,
+    "unit_number": 4,
+    "headword": "書き上げる",
+    "reading": "かきあげる",
+    "expected_sentence": "レポートを書き上げた。",
+    "track_name": "30 1-30.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\30 1-30.mp3",
+    "word_clip": "output\\clips\\unit04\\word392.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence392.mp3",
+    "word_start": 0.613923,
+    "word_end": 1.44551,
+    "sentence_start": 2.214535,
+    "sentence_end": 3.831383,
+    "word_transcript": "書 き 上 げ る",
+    "sentence_transcript": "レ ポ ート を 書 き 上 げ た",
+    "word_score": 0.75,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      0
+    ],
+    "sentence_piece_ids": [
+      1
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 393,
+    "unit_number": 4,
+    "headword": "育て上げる",
+    "reading": "そだてあげる",
+    "expected_sentence": "子どもを育て上げる。",
+    "track_name": "30 1-30.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\30 1-30.mp3",
+    "word_clip": "output\\clips\\unit04\\word393.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence393.mp3",
+    "word_start": 5.59229,
+    "word_end": 6.554671,
+    "sentence_start": 7.263787,
+    "sentence_end": 8.731882,
+    "word_transcript": "育 て 上 げ る",
+    "sentence_transcript": "子 供 を 育 て 上 げ る 。",
+    "word_score": 0.667,
+    "sentence_score": 0.8,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      2
+    ],
+    "sentence_piece_ids": [
+      3
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 394,
+    "unit_number": 4,
+    "headword": "読み上げる",
+    "reading": "よみあげる",
+    "expected_sentence": "卒業生の名前を読み上げる。",
+    "track_name": "30 1-30.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\30 1-30.mp3",
+    "word_clip": "output\\clips\\unit04\\word394.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence394.mp3",
+    "word_start": 10.486871,
+    "word_end": 11.327755,
+    "sentence_start": 12.079841,
+    "sentence_end": 14.465442,
+    "word_transcript": "読 み 上 げ る",
+    "sentence_transcript": "卒 業 生 の 名 前 を 読 み 上 げ る",
+    "word_score": 0.75,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      4
+    ],
+    "sentence_piece_ids": [
+      5
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 395,
+    "unit_number": 4,
+    "headword": "数え上げる",
+    "reading": "かぞえあげる",
+    "expected_sentence": "欠点を数え上げる。",
+    "track_name": "30 1-30.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\30 1-30.mp3",
+    "word_clip": "output\\clips\\unit04\\word395.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence395.mp3",
+    "word_start": 16.238889,
+    "word_end": 17.171882,
+    "sentence_start": 17.898027,
+    "sentence_end": 19.575714,
+    "word_transcript": "数 え 上 げ る",
+    "sentence_transcript": "欠 点 を 数 え 上 げ る 。",
+    "word_score": 0.667,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      6
+    ],
+    "sentence_piece_ids": [
+      7
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 396,
+    "unit_number": 4,
+    "headword": "投げ出す",
+    "reading": "なげだす",
+    "expected_sentence": "①・足を投げ出して座る。",
+    "track_name": "30 1-30.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\30 1-30.mp3",
+    "word_clip": "output\\clips\\unit04\\word396.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence396.mp3",
+    "word_start": 21.339274,
+    "word_end": 22.027211,
+    "sentence_start": 22.812766,
+    "sentence_end": 24.566077,
+    "word_transcript": "投 げ 出 す",
+    "sentence_transcript": "足 を 投 げ 出 して 座 る 。",
+    "word_score": 0.667,
+    "sentence_score": 0.909,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      8
+    ],
+    "sentence_piece_ids": [
+      9
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 397,
+    "unit_number": 4,
+    "headword": "持ち出す",
+    "reading": "もちだす",
+    "expected_sentence": "この本は図書館から持ち出さないでください。",
+    "track_name": "30 1-30.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\30 1-30.mp3",
+    "word_clip": "output\\clips\\unit04\\word397.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence397.mp3",
+    "word_start": 26.335397,
+    "word_end": 27.092585,
+    "sentence_start": 27.839637,
+    "sentence_end": 31.024762,
+    "word_transcript": "持 ち 出 す",
+    "sentence_transcript": "この 本 は 図 書 館 から 持 ち 出 さ ない で ください 。",
+    "word_score": 0.667,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      10
+    ],
+    "sentence_piece_ids": [
+      11
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 398,
+    "unit_number": 4,
+    "headword": "追い出す",
+    "reading": "おいだす",
+    "expected_sentence": "入ってきた虫を追い出す。",
+    "track_name": "30 1-30.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\30 1-30.mp3",
+    "word_clip": "output\\clips\\unit04\\word398.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence398.mp3",
+    "word_start": 32.762336,
+    "word_end": 33.412812,
+    "sentence_start": 34.117029,
+    "sentence_end": 36.01542,
+    "word_transcript": "追 い 出 す",
+    "sentence_transcript": "入 って きた 虫 を 追 い 出 す 。",
+    "word_score": 0.667,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      12
+    ],
+    "sentence_piece_ids": [
+      13
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 399,
+    "unit_number": 4,
+    "headword": "放り出す",
+    "reading": "ほうりだす",
+    "expected_sentence": "子どもは学校から帰ってくると、かばんをほうり出して遊びに行った。",
+    "track_name": "30 1-30.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\30 1-30.mp3",
+    "word_clip": "output\\clips\\unit04\\word399.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence399.mp3",
+    "word_start": 37.723492,
+    "word_end": 38.443583,
+    "sentence_start": 39.151791,
+    "sentence_end": 43.90381,
+    "word_transcript": "お う り だ す 。",
+    "sentence_transcript": "子 供 は 学 校 から 帰 って く る と 、 カ バ ン を 放 り 出 して 遊 び に 行 った 。",
+    "word_score": 0.8,
+    "sentence_score": 0.762,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      14
+    ],
+    "sentence_piece_ids": [
+      15
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 400,
+    "unit_number": 4,
+    "headword": "貸し出す",
+    "reading": "かしだす",
+    "expected_sentence": "①・「この図書館では雑誌も貸し出ししていますか」",
+    "track_name": "30 1-30.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\30 1-30.mp3",
+    "word_clip": "output\\clips\\unit04\\word400.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence400.mp3",
+    "word_start": 45.7178,
+    "word_end": 46.445374,
+    "sentence_start": 47.201134,
+    "sentence_end": 50.362653,
+    "word_transcript": "貸 し 出 す",
+    "sentence_transcript": "この 図 書 館 では 雑 誌 も 貸 し 出 して います か ?",
+    "word_score": 0.667,
+    "sentence_score": 0.923,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "Sentence spans the lead-in clause and the question tail.",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      16
+    ],
+    "sentence_piece_ids": [
+      17,
+      18
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 401,
+    "unit_number": 4,
+    "headword": "聞き出す",
+    "reading": "ききだす",
+    "expected_sentence": "相手から情報を聞き出す。",
+    "track_name": "30 1-30.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\30 1-30.mp3",
+    "word_clip": "output\\clips\\unit04\\word401.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence401.mp3",
+    "word_start": 52.034694,
+    "word_end": 52.675261,
+    "sentence_start": 53.469138,
+    "sentence_end": 55.521633,
+    "word_transcript": "聞 き 出 す",
+    "sentence_transcript": "相 手 から 情 報 を 聞 き 出 す 。",
+    "word_score": 0.667,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      19
+    ],
+    "sentence_piece_ids": [
+      20
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 402,
+    "unit_number": 4,
+    "headword": "連れ出す",
+    "reading": "つれだす",
+    "expected_sentence": "嫌がる娘をむりやり連れ出して病院へ行った。",
+    "track_name": "30 1-30.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\30 1-30.mp3",
+    "word_clip": "output\\clips\\unit04\\word402.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence402.mp3",
+    "word_start": 57.230385,
+    "word_end": 57.950771,
+    "sentence_start": 58.714694,
+    "sentence_end": 62.213401,
+    "word_transcript": "連 れ 出 す",
+    "sentence_transcript": "嫌 が る 娘 を 無 理 や り 連 れ 出 して 病 院 へ 行 った 。",
+    "word_score": 0.667,
+    "sentence_score": 0.917,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      21
+    ],
+    "sentence_piece_ids": [
+      22
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 403,
+    "unit_number": 4,
+    "headword": "引っ張り出す",
+    "reading": "ひっぱりだす",
+    "expected_sentence": "押し入れの奥から古いアルバムを引っ張り出した。",
+    "track_name": "30 1-30.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\30 1-30.mp3",
+    "word_clip": "output\\clips\\unit04\\word403.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence403.mp3",
+    "word_start": 63.986304,
+    "word_end": 64.96127,
+    "sentence_start": 65.671882,
+    "sentence_end": 69.167619,
+    "word_transcript": "引 っ 張 り 出 す",
+    "sentence_transcript": "押 入 れ の 奥 から 古 い ア ル バ ム を 引 っ 張 り 出 した 。",
+    "word_score": 0.667,
+    "sentence_score": 0.966,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      23
+    ],
+    "sentence_piece_ids": [
+      24
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 404,
+    "unit_number": 4,
+    "headword": "逃げ出す",
+    "reading": "にげだす",
+    "expected_sentence": "燃えている家の中から逃げ出す。",
+    "track_name": "30 1-30.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\30 1-30.mp3",
+    "word_clip": "output\\clips\\unit04\\word404.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence404.mp3",
+    "word_start": 70.918027,
+    "word_end": 71.671927,
+    "sentence_start": 72.444195,
+    "sentence_end": 74.698753,
+    "word_transcript": "逃 げ 出 す 。",
+    "sentence_transcript": "燃 えて いる 家 の 中 から 逃 げ 出 す 。",
+    "word_score": 0.667,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      25
+    ],
+    "sentence_piece_ids": [
+      26
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 405,
+    "unit_number": 4,
+    "headword": "飛び出す",
+    "reading": "とびだす",
+    "expected_sentence": "①・箱を開けるとカエルが飛び出した。",
+    "track_name": "30 1-30.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\30 1-30.mp3",
+    "word_clip": "output\\clips\\unit04\\word405.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence405.mp3",
+    "word_start": 76.449841,
+    "word_end": 77.121633,
+    "sentence_start": 77.890227,
+    "sentence_end": 80.266122,
+    "word_transcript": "飛 び 出 す",
+    "sentence_transcript": "箱 を 開 ける と カ エ ル が 飛 び 出 した 。",
+    "word_score": 0.667,
+    "sentence_score": 0.957,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      27
+    ],
+    "sentence_piece_ids": [
+      28
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 406,
+    "unit_number": 4,
+    "headword": "見つけ出す",
+    "reading": "みつけだす",
+    "expected_sentence": "図書館の本棚から、探していた本を見つけ出した。",
+    "track_name": "30 1-30.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\30 1-30.mp3",
+    "word_clip": "output\\clips\\unit04\\word406.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence406.mp3",
+    "word_start": 82.026236,
+    "word_end": 82.900567,
+    "sentence_start": 83.619705,
+    "sentence_end": 87.370794,
+    "word_transcript": "見 つ け 出 す",
+    "sentence_transcript": "図 書 館 の 本 棚 から 探 して いた 本 を 見 つ け 出 した 。",
+    "word_score": 0.75,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      29
+    ],
+    "sentence_piece_ids": [
+      30
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 407,
+    "unit_number": 4,
+    "headword": "探し出す",
+    "reading": "さがしだす",
+    "expected_sentence": "行方不明になっていたペットを探し出した。",
+    "track_name": "30 1-30.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\30 1-30.mp3",
+    "word_clip": "output\\clips\\unit04\\word407.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence407.mp3",
+    "word_start": 89.039683,
+    "word_end": 89.947642,
+    "sentence_start": 90.67483,
+    "sentence_end": 93.653923,
+    "word_transcript": "探 し 出 す",
+    "sentence_transcript": "行 方 不 明 にな って いた ペ ット を 探 し 出 した",
+    "word_score": 0.571,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      31
+    ],
+    "sentence_piece_ids": [
+      32
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 408,
+    "unit_number": 4,
+    "headword": "書き出す",
+    "reading": "かきだす",
+    "expected_sentence": "今日の予定をノートに書き出した。",
+    "track_name": "30 1-30.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\30 1-30.mp3",
+    "word_clip": "output\\clips\\unit04\\word408.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence408.mp3",
+    "word_start": 95.40678,
+    "word_end": 96.128322,
+    "sentence_start": 96.954807,
+    "sentence_end": 99.308073,
+    "word_transcript": "書 き 出 す",
+    "sentence_transcript": "今日 の 予 定 を ノ ート に 書 き 出 した",
+    "word_score": 0.667,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      33
+    ],
+    "sentence_piece_ids": [
+      34
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 409,
+    "unit_number": 4,
+    "headword": "飛び込む",
+    "reading": "とびこむ",
+    "expected_sentence": "プールに飛び込む。",
+    "track_name": "30 1-30.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\30 1-30.mp3",
+    "word_clip": "output\\clips\\unit04\\word409.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence409.mp3",
+    "word_start": 101.093719,
+    "word_end": 101.748685,
+    "sentence_start": 102.524558,
+    "sentence_end": 103.718231,
+    "word_transcript": "飛 び 込 む 。",
+    "sentence_transcript": "プ ール に 飛 び 込 む 。",
+    "word_score": 0.667,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      35
+    ],
+    "sentence_piece_ids": [
+      36
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 410,
+    "unit_number": 4,
+    "headword": "駆け込む",
+    "reading": "かけこむ",
+    "expected_sentence": "大急ぎで教室に駆け込んだ。",
+    "track_name": "30 1-30.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\30 1-30.mp3",
+    "word_clip": "output\\clips\\unit04\\word410.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence410.mp3",
+    "word_start": 105.405714,
+    "word_end": 106.061361,
+    "sentence_start": 106.724014,
+    "sentence_end": 109.049161,
+    "word_transcript": "駆 け 込 む",
+    "sentence_transcript": "大 急 ぎ で 教 室 に 駆 け 込 んだ 。",
+    "word_score": 0.667,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      37
+    ],
+    "sentence_piece_ids": [
+      38
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  },
+  {
+    "index": 411,
+    "unit_number": 4,
+    "headword": "割り込む",
+    "reading": "わりこむ",
+    "expected_sentence": "列に割り込む。",
+    "track_name": "30 1-30.mp3",
+    "track_path": "audio\\Unit4.5 まとめ1複合動詞\\30 1-30.mp3",
+    "word_clip": "output\\clips\\unit04\\word411.mp3",
+    "sentence_clip": "output\\clips\\unit04\\sentence411.mp3",
+    "word_start": 110.763379,
+    "word_end": 111.396984,
+    "sentence_start": 112.111293,
+    "sentence_end": 113.301361,
+    "word_transcript": "割 り 込 む",
+    "sentence_transcript": "列 に 割 り 込 む 。",
+    "word_score": 0.667,
+    "sentence_score": 1.0,
+    "match_method": "llm_whisper_silence",
+    "whisper_confidence": null,
+    "chunk_count": 0,
+    "note": "",
+    "flags": [],
+    "word_flags": [],
+    "sentence_flags": [],
+    "word_piece_ids": [
+      39
+    ],
+    "sentence_piece_ids": [
+      40
+    ],
+    "word_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    },
+    "sentence_boundary_policy": {
+      "start": "silence_snap",
+      "end": "silence_snap"
+    }
+  }
+]

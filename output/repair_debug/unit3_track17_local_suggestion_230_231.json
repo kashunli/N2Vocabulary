@@ -1,0 +1,1246 @@
+{
+  "track_name": "17 1-17.mp3",
+  "track_path": "audio\\Unit3 形容詞A\\17 1-17.mp3",
+  "backend": "whisper_cpp_large-v3-turbo",
+  "score_total": 3.954,
+  "settings": {
+    "silence_noise": "-32dB",
+    "silence_duration": 0.25,
+    "piece_pad": 1,
+    "max_word_pieces": 2,
+    "max_sentence_pieces": 5,
+    "top_k": 8
+  },
+  "indexes": [
+    230,
+    231
+  ],
+  "assignments": [
+    {
+      "index": 230,
+      "headword": "気の毒な",
+      "reading": "きのどくな",
+      "expected_sentence": "彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……",
+      "current_review": {
+        "index": 230,
+        "note": "ASR: 木の毒な→気の毒な, 眠れて→恵まれて",
+        "word_start": 61.34229,
+        "word_end": 62.253084,
+        "sentence_start": 63.047324,
+        "sentence_end": 66.907619,
+        "word_piece_ids": [
+          25
+        ],
+        "sentence_piece_ids": [
+          26,
+          27
+        ]
+      },
+      "word": {
+        "entry_index": 230,
+        "kind": "word",
+        "start_ordinal": 1,
+        "end_ordinal": 1,
+        "start_piece_id": 25,
+        "end_piece_id": 25,
+        "start_time": 61.34229,
+        "end_time": 62.253084,
+        "piece_ids": [
+          25
+        ],
+        "transcript_text": "気の毒な",
+        "transcript_hira": "きのどくな",
+        "expected_text": "きのどくな",
+        "expected_options": [
+          "きのどくな"
+        ],
+        "phonetic_similarity": 1.0,
+        "length_score": 1.0,
+        "final_score": 1.0,
+        "notes": [
+          "matched_word=きのどくな"
+        ]
+      },
+      "sentence": {
+        "entry_index": 230,
+        "kind": "sentence",
+        "start_ordinal": 2,
+        "end_ordinal": 4,
+        "start_piece_id": 26,
+        "end_piece_id": 28,
+        "start_time": 63.047324,
+        "end_time": 69.058277,
+        "piece_ids": [
+          26,
+          27,
+          28
+        ],
+        "transcript_text": "彼女を先日、お父さんを事故で亡くされたそうだよ。お気の毒に",
+        "transcript_hira": "かのじょをせんじつおちちさんをじこでなくされたそうだよ。おきのどくに",
+        "expected_text": "彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……",
+        "expected_options": [
+          "彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……"
+        ],
+        "phonetic_similarity": 0.97,
+        "length_score": 1.0,
+        "final_score": 0.974,
+        "notes": [
+          "matched_sentence=彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……"
+        ]
+      },
+      "current_word_rank": 1,
+      "current_sentence_rank": 5,
+      "top_word_candidates": [
+        {
+          "entry_index": 230,
+          "kind": "word",
+          "start_ordinal": 1,
+          "end_ordinal": 1,
+          "start_piece_id": 25,
+          "end_piece_id": 25,
+          "start_time": 61.34229,
+          "end_time": 62.253084,
+          "piece_ids": [
+            25
+          ],
+          "transcript_text": "気の毒な",
+          "transcript_hira": "きのどくな",
+          "expected_text": "きのどくな",
+          "expected_options": [
+            "きのどくな"
+          ],
+          "phonetic_similarity": 1.0,
+          "length_score": 1.0,
+          "final_score": 1.0,
+          "notes": [
+            "matched_word=きのどくな"
+          ]
+        },
+        {
+          "entry_index": 230,
+          "kind": "word",
+          "start_ordinal": 4,
+          "end_ordinal": 4,
+          "start_piece_id": 28,
+          "end_piece_id": 28,
+          "start_time": 67.997982,
+          "end_time": 69.058277,
+          "piece_ids": [
+            28
+          ],
+          "transcript_text": "お気の毒に",
+          "transcript_hira": "おきのどくに",
+          "expected_text": "きのどくな",
+          "expected_options": [
+            "きのどくな"
+          ],
+          "phonetic_similarity": 0.727,
+          "length_score": 1.0,
+          "final_score": 0.795,
+          "notes": [
+            "matched_word=きのどくな"
+          ]
+        },
+        {
+          "entry_index": 230,
+          "kind": "word",
+          "start_ordinal": 1,
+          "end_ordinal": 2,
+          "start_piece_id": 25,
+          "end_piece_id": 26,
+          "start_time": 61.34229,
+          "end_time": 63.56068,
+          "piece_ids": [
+            25,
+            26
+          ],
+          "transcript_text": "気の毒な彼女を",
+          "transcript_hira": "きのどくなかのじょを",
+          "expected_text": "きのどくな",
+          "expected_options": [
+            "きのどくな"
+          ],
+          "phonetic_similarity": 0.667,
+          "length_score": 0.0,
+          "final_score": 0.42,
+          "notes": [
+            "word_span_penalty_2_pieces",
+            "matched_word=きのどくな"
+          ]
+        },
+        {
+          "entry_index": 230,
+          "kind": "word",
+          "start_ordinal": 2,
+          "end_ordinal": 2,
+          "start_piece_id": 26,
+          "end_piece_id": 26,
+          "start_time": 63.047324,
+          "end_time": 63.56068,
+          "piece_ids": [
+            26
+          ],
+          "transcript_text": "彼女を",
+          "transcript_hira": "かのじょを",
+          "expected_text": "きのどくな",
+          "expected_options": [
+            "きのどくな"
+          ],
+          "phonetic_similarity": 0.2,
+          "length_score": 1.0,
+          "final_score": 0.4,
+          "notes": [
+            "matched_word=きのどくな"
+          ]
+        },
+        {
+          "entry_index": 230,
+          "kind": "word",
+          "start_ordinal": 6,
+          "end_ordinal": 6,
+          "start_piece_id": 30,
+          "end_piece_id": 30,
+          "start_time": 72.453764,
+          "end_time": 73.050567,
+          "piece_ids": [
+            30
+          ],
+          "transcript_text": "私は",
+          "transcript_hira": "わたくしは",
+          "expected_text": "きのどくな",
+          "expected_options": [
+            "きのどくな"
+          ],
+          "phonetic_similarity": 0.2,
+          "length_score": 1.0,
+          "final_score": 0.4,
+          "notes": [
+            "matched_word=きのどくな"
+          ]
+        },
+        {
+          "entry_index": 230,
+          "kind": "word",
+          "start_ordinal": 4,
+          "end_ordinal": 5,
+          "start_piece_id": 28,
+          "end_piece_id": 29,
+          "start_time": 67.997982,
+          "end_time": 71.653741,
+          "piece_ids": [
+            28,
+            29
+          ],
+          "transcript_text": "お気の毒に貧しい",
+          "transcript_hira": "おきのどくにまずしい",
+          "expected_text": "きのどくな",
+          "expected_options": [
+            "きのどくな"
+          ],
+          "phonetic_similarity": 0.533,
+          "length_score": 0.0,
+          "final_score": 0.32,
+          "notes": [
+            "word_span_penalty_2_pieces",
+            "matched_word=きのどくな"
+          ]
+        },
+        {
+          "entry_index": 230,
+          "kind": "word",
+          "start_ordinal": 5,
+          "end_ordinal": 5,
+          "start_piece_id": 29,
+          "end_piece_id": 29,
+          "start_time": 70.794172,
+          "end_time": 71.653741,
+          "piece_ids": [
+            29
+          ],
+          "transcript_text": "貧しい",
+          "transcript_hira": "まずしい",
+          "expected_text": "きのどくな",
+          "expected_options": [
+            "きのどくな"
+          ],
+          "phonetic_similarity": 0.0,
+          "length_score": 1.0,
+          "final_score": 0.25,
+          "notes": [
+            "matched_word=きのどくな"
+          ]
+        },
+        {
+          "entry_index": 230,
+          "kind": "word",
+          "start_ordinal": 0,
+          "end_ordinal": 1,
+          "start_piece_id": 24,
+          "end_piece_id": 25,
+          "start_time": 58.69381,
+          "end_time": 62.253084,
+          "piece_ids": [
+            24,
+            25
+          ],
+          "transcript_text": "かわいそうになった。気の毒な",
+          "transcript_hira": "かわいそうになった。きのどくな",
+          "expected_text": "きのどくな",
+          "expected_options": [
+            "きのどくな"
+          ],
+          "phonetic_similarity": 0.5,
+          "length_score": 0.0,
+          "final_score": 0.095,
+          "notes": [
+            "word_span_penalty_2_pieces",
+            "word_candidate_too_long",
+            "matched_word=きのどくな"
+          ]
+        }
+      ],
+      "top_sentence_candidates": [
+        {
+          "entry_index": 230,
+          "kind": "sentence",
+          "start_ordinal": 2,
+          "end_ordinal": 4,
+          "start_piece_id": 26,
+          "end_piece_id": 28,
+          "start_time": 63.047324,
+          "end_time": 69.058277,
+          "piece_ids": [
+            26,
+            27,
+            28
+          ],
+          "transcript_text": "彼女を先日、お父さんを事故で亡くされたそうだよ。お気の毒に",
+          "transcript_hira": "かのじょをせんじつおちちさんをじこでなくされたそうだよ。おきのどくに",
+          "expected_text": "彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……",
+          "expected_options": [
+            "彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……"
+          ],
+          "phonetic_similarity": 0.97,
+          "length_score": 1.0,
+          "final_score": 0.974,
+          "notes": [
+            "matched_sentence=彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……"
+          ]
+        },
+        {
+          "entry_index": 230,
+          "kind": "sentence",
+          "start_ordinal": 3,
+          "end_ordinal": 4,
+          "start_piece_id": 27,
+          "end_piece_id": 28,
+          "start_time": 64.069864,
+          "end_time": 69.058277,
+          "piece_ids": [
+            27,
+            28
+          ],
+          "transcript_text": "先日、お父さんを事故で亡くされたそうだよ。お気の毒に",
+          "transcript_hira": "せんじつおちちさんをじこでなくされたそうだよ。おきのどくに",
+          "expected_text": "彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……",
+          "expected_options": [
+            "彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……"
+          ],
+          "phonetic_similarity": 0.918,
+          "length_score": 1.0,
+          "final_score": 0.93,
+          "notes": [
+            "matched_sentence=彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……"
+          ]
+        },
+        {
+          "entry_index": 230,
+          "kind": "sentence",
+          "start_ordinal": 2,
+          "end_ordinal": 5,
+          "start_piece_id": 26,
+          "end_piece_id": 29,
+          "start_time": 63.047324,
+          "end_time": 71.653741,
+          "piece_ids": [
+            26,
+            27,
+            28,
+            29
+          ],
+          "transcript_text": "彼女を先日、お父さんを事故で亡くされたそうだよ。お気の毒に貧しい",
+          "transcript_hira": "かのじょをせんじつおちちさんをじこでなくされたそうだよ。おきのどくにまずしい",
+          "expected_text": "彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……",
+          "expected_options": [
+            "彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……"
+          ],
+          "phonetic_similarity": 0.914,
+          "length_score": 1.0,
+          "final_score": 0.927,
+          "notes": [
+            "matched_sentence=彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……"
+          ]
+        },
+        {
+          "entry_index": 230,
+          "kind": "sentence",
+          "start_ordinal": 1,
+          "end_ordinal": 4,
+          "start_piece_id": 25,
+          "end_piece_id": 28,
+          "start_time": 61.34229,
+          "end_time": 69.058277,
+          "piece_ids": [
+            25,
+            26,
+            27,
+            28
+          ],
+          "transcript_text": "気の毒な彼女を先日、お父さんを事故で亡くされたそうだよ。お気の毒に",
+          "transcript_hira": "きのどくなかのじょをせんじつおちちさんをじこでなくされたそうだよ。おきのどくに",
+          "expected_text": "彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……",
+          "expected_options": [
+            "彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……"
+          ],
+          "phonetic_similarity": 0.901,
+          "length_score": 1.0,
+          "final_score": 0.916,
+          "notes": [
+            "matched_sentence=彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……"
+          ]
+        },
+        {
+          "entry_index": 230,
+          "kind": "sentence",
+          "start_ordinal": 2,
+          "end_ordinal": 3,
+          "start_piece_id": 26,
+          "end_piece_id": 27,
+          "start_time": 63.047324,
+          "end_time": 66.907619,
+          "piece_ids": [
+            26,
+            27
+          ],
+          "transcript_text": "彼女を先日、お父さんを事故で亡くされたそうだよ。",
+          "transcript_hira": "かのじょをせんじつおちちさんをじこでなくされたそうだよ。",
+          "expected_text": "彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……",
+          "expected_options": [
+            "彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……"
+          ],
+          "phonetic_similarity": 0.867,
+          "length_score": 1.0,
+          "final_score": 0.887,
+          "notes": [
+            "matched_sentence=彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……"
+          ]
+        },
+        {
+          "entry_index": 230,
+          "kind": "sentence",
+          "start_ordinal": 3,
+          "end_ordinal": 5,
+          "start_piece_id": 27,
+          "end_piece_id": 29,
+          "start_time": 64.069864,
+          "end_time": 71.653741,
+          "piece_ids": [
+            27,
+            28,
+            29
+          ],
+          "transcript_text": "先日、お父さんを事故で亡くされたそうだよ。お気の毒に貧しい",
+          "transcript_hira": "せんじつおちちさんをじこでなくされたそうだよ。おきのどくにまずしい",
+          "expected_text": "彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……",
+          "expected_options": [
+            "彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……"
+          ],
+          "phonetic_similarity": 0.862,
+          "length_score": 1.0,
+          "final_score": 0.882,
+          "notes": [
+            "matched_sentence=彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……"
+          ]
+        },
+        {
+          "entry_index": 230,
+          "kind": "sentence",
+          "start_ordinal": 1,
+          "end_ordinal": 3,
+          "start_piece_id": 25,
+          "end_piece_id": 27,
+          "start_time": 61.34229,
+          "end_time": 66.907619,
+          "piece_ids": [
+            25,
+            26,
+            27
+          ],
+          "transcript_text": "気の毒な彼女を先日、お父さんを事故で亡くされたそうだよ。",
+          "transcript_hira": "きのどくなかのじょをせんじつおちちさんをじこでなくされたそうだよ。",
+          "expected_text": "彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……",
+          "expected_options": [
+            "彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……"
+          ],
+          "phonetic_similarity": 0.8,
+          "length_score": 1.0,
+          "final_score": 0.83,
+          "notes": [
+            "matched_sentence=彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……"
+          ]
+        },
+        {
+          "entry_index": 230,
+          "kind": "sentence",
+          "start_ordinal": 3,
+          "end_ordinal": 6,
+          "start_piece_id": 27,
+          "end_piece_id": 30,
+          "start_time": 64.069864,
+          "end_time": 73.050567,
+          "piece_ids": [
+            27,
+            28,
+            29,
+            30
+          ],
+          "transcript_text": "先日、お父さんを事故で亡くされたそうだよ。お気の毒に貧しい私は",
+          "transcript_hira": "せんじつおちちさんをじこでなくされたそうだよ。おきのどくにまずしいわたくしは",
+          "expected_text": "彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……",
+          "expected_options": [
+            "彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……"
+          ],
+          "phonetic_similarity": 0.8,
+          "length_score": 1.0,
+          "final_score": 0.83,
+          "notes": [
+            "matched_sentence=彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……"
+          ]
+        }
+      ],
+      "word_alternatives": [
+        {
+          "entry_index": 230,
+          "kind": "word",
+          "start_ordinal": 4,
+          "end_ordinal": 4,
+          "start_piece_id": 28,
+          "end_piece_id": 28,
+          "start_time": 67.997982,
+          "end_time": 69.058277,
+          "piece_ids": [
+            28
+          ],
+          "transcript_text": "お気の毒に",
+          "transcript_hira": "おきのどくに",
+          "expected_text": "きのどくな",
+          "expected_options": [
+            "きのどくな"
+          ],
+          "phonetic_similarity": 0.727,
+          "length_score": 1.0,
+          "final_score": 0.795,
+          "notes": [
+            "matched_word=きのどくな"
+          ]
+        },
+        {
+          "entry_index": 230,
+          "kind": "word",
+          "start_ordinal": 1,
+          "end_ordinal": 2,
+          "start_piece_id": 25,
+          "end_piece_id": 26,
+          "start_time": 61.34229,
+          "end_time": 63.56068,
+          "piece_ids": [
+            25,
+            26
+          ],
+          "transcript_text": "気の毒な彼女を",
+          "transcript_hira": "きのどくなかのじょを",
+          "expected_text": "きのどくな",
+          "expected_options": [
+            "きのどくな"
+          ],
+          "phonetic_similarity": 0.667,
+          "length_score": 0.0,
+          "final_score": 0.42,
+          "notes": [
+            "word_span_penalty_2_pieces",
+            "matched_word=きのどくな"
+          ]
+        }
+      ],
+      "sentence_alternatives": [
+        {
+          "entry_index": 230,
+          "kind": "sentence",
+          "start_ordinal": 3,
+          "end_ordinal": 4,
+          "start_piece_id": 27,
+          "end_piece_id": 28,
+          "start_time": 64.069864,
+          "end_time": 69.058277,
+          "piece_ids": [
+            27,
+            28
+          ],
+          "transcript_text": "先日、お父さんを事故で亡くされたそうだよ。お気の毒に",
+          "transcript_hira": "せんじつおちちさんをじこでなくされたそうだよ。おきのどくに",
+          "expected_text": "彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……",
+          "expected_options": [
+            "彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……"
+          ],
+          "phonetic_similarity": 0.918,
+          "length_score": 1.0,
+          "final_score": 0.93,
+          "notes": [
+            "matched_sentence=彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……"
+          ]
+        },
+        {
+          "entry_index": 230,
+          "kind": "sentence",
+          "start_ordinal": 2,
+          "end_ordinal": 5,
+          "start_piece_id": 26,
+          "end_piece_id": 29,
+          "start_time": 63.047324,
+          "end_time": 71.653741,
+          "piece_ids": [
+            26,
+            27,
+            28,
+            29
+          ],
+          "transcript_text": "彼女を先日、お父さんを事故で亡くされたそうだよ。お気の毒に貧しい",
+          "transcript_hira": "かのじょをせんじつおちちさんをじこでなくされたそうだよ。おきのどくにまずしい",
+          "expected_text": "彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……",
+          "expected_options": [
+            "彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……"
+          ],
+          "phonetic_similarity": 0.914,
+          "length_score": 1.0,
+          "final_score": 0.927,
+          "notes": [
+            "matched_sentence=彼女、先日お父さんを事故で亡くされたそうだよ」「お気の毒に……"
+          ]
+        }
+      ]
+    },
+    {
+      "index": 231,
+      "headword": "貧しい",
+      "reading": "まずしい",
+      "expected_sentence": "私は貧しい家に育った。",
+      "current_review": {
+        "index": 231,
+        "note": "Word segment merged with next word boundary, ASR: お気の毒にまずしい",
+        "word_start": 67.997982,
+        "word_end": 71.653741,
+        "sentence_start": 72.453764,
+        "sentence_end": 74.929932,
+        "word_piece_ids": [
+          28,
+          29
+        ],
+        "sentence_piece_ids": [
+          30,
+          31
+        ]
+      },
+      "word": {
+        "entry_index": 231,
+        "kind": "word",
+        "start_ordinal": 5,
+        "end_ordinal": 5,
+        "start_piece_id": 29,
+        "end_piece_id": 29,
+        "start_time": 70.794172,
+        "end_time": 71.653741,
+        "piece_ids": [
+          29
+        ],
+        "transcript_text": "貧しい",
+        "transcript_hira": "まずしい",
+        "expected_text": "まずしい",
+        "expected_options": [
+          "まずしい"
+        ],
+        "phonetic_similarity": 1.0,
+        "length_score": 1.0,
+        "final_score": 1.0,
+        "notes": [
+          "matched_word=まずしい"
+        ]
+      },
+      "sentence": {
+        "entry_index": 231,
+        "kind": "sentence",
+        "start_ordinal": 6,
+        "end_ordinal": 7,
+        "start_piece_id": 30,
+        "end_piece_id": 31,
+        "start_time": 72.453764,
+        "end_time": 74.929932,
+        "piece_ids": [
+          30,
+          31
+        ],
+        "transcript_text": "私は貧しい家に育った。",
+        "transcript_hira": "わたくしはまずしいいえにそだった。",
+        "expected_text": "私は貧しい家に育った。",
+        "expected_options": [
+          "私は貧しい家に育った。"
+        ],
+        "phonetic_similarity": 1.0,
+        "length_score": 1.0,
+        "final_score": 1.0,
+        "notes": [
+          "matched_sentence=私は貧しい家に育った。"
+        ]
+      },
+      "current_word_rank": 7,
+      "current_sentence_rank": 1,
+      "top_word_candidates": [
+        {
+          "entry_index": 231,
+          "kind": "word",
+          "start_ordinal": 5,
+          "end_ordinal": 5,
+          "start_piece_id": 29,
+          "end_piece_id": 29,
+          "start_time": 70.794172,
+          "end_time": 71.653741,
+          "piece_ids": [
+            29
+          ],
+          "transcript_text": "貧しい",
+          "transcript_hira": "まずしい",
+          "expected_text": "まずしい",
+          "expected_options": [
+            "まずしい"
+          ],
+          "phonetic_similarity": 1.0,
+          "length_score": 1.0,
+          "final_score": 1.0,
+          "notes": [
+            "matched_word=まずしい"
+          ]
+        },
+        {
+          "entry_index": 231,
+          "kind": "word",
+          "start_ordinal": 8,
+          "end_ordinal": 8,
+          "start_piece_id": 32,
+          "end_piece_id": 32,
+          "start_time": 76.728481,
+          "end_time": 77.364467,
+          "piece_ids": [
+            32
+          ],
+          "transcript_text": "惜しい",
+          "transcript_hira": "おしい",
+          "expected_text": "まずしい",
+          "expected_options": [
+            "まずしい"
+          ],
+          "phonetic_similarity": 0.571,
+          "length_score": 0.667,
+          "final_score": 0.595,
+          "notes": [
+            "matched_word=まずしい"
+          ]
+        },
+        {
+          "entry_index": 231,
+          "kind": "word",
+          "start_ordinal": 5,
+          "end_ordinal": 6,
+          "start_piece_id": 29,
+          "end_piece_id": 30,
+          "start_time": 70.794172,
+          "end_time": 73.050567,
+          "piece_ids": [
+            29,
+            30
+          ],
+          "transcript_text": "貧しい私は",
+          "transcript_hira": "まずしいわたくしは",
+          "expected_text": "まずしい",
+          "expected_options": [
+            "まずしい"
+          ],
+          "phonetic_similarity": 0.615,
+          "length_score": 0.0,
+          "final_score": 0.382,
+          "notes": [
+            "word_span_penalty_2_pieces",
+            "matched_word=まずしい"
+          ]
+        },
+        {
+          "entry_index": 231,
+          "kind": "word",
+          "start_ordinal": 1,
+          "end_ordinal": 1,
+          "start_piece_id": 25,
+          "end_piece_id": 25,
+          "start_time": 61.34229,
+          "end_time": 62.253084,
+          "piece_ids": [
+            25
+          ],
+          "transcript_text": "気の毒な",
+          "transcript_hira": "きのどくな",
+          "expected_text": "まずしい",
+          "expected_options": [
+            "まずしい"
+          ],
+          "phonetic_similarity": 0.0,
+          "length_score": 1.0,
+          "final_score": 0.25,
+          "notes": [
+            "matched_word=まずしい"
+          ]
+        },
+        {
+          "entry_index": 231,
+          "kind": "word",
+          "start_ordinal": 2,
+          "end_ordinal": 2,
+          "start_piece_id": 26,
+          "end_piece_id": 26,
+          "start_time": 63.047324,
+          "end_time": 63.56068,
+          "piece_ids": [
+            26
+          ],
+          "transcript_text": "彼女を",
+          "transcript_hira": "かのじょを",
+          "expected_text": "まずしい",
+          "expected_options": [
+            "まずしい"
+          ],
+          "phonetic_similarity": 0.0,
+          "length_score": 1.0,
+          "final_score": 0.25,
+          "notes": [
+            "matched_word=まずしい"
+          ]
+        },
+        {
+          "entry_index": 231,
+          "kind": "word",
+          "start_ordinal": 6,
+          "end_ordinal": 6,
+          "start_piece_id": 30,
+          "end_piece_id": 30,
+          "start_time": 72.453764,
+          "end_time": 73.050567,
+          "piece_ids": [
+            30
+          ],
+          "transcript_text": "私は",
+          "transcript_hira": "わたくしは",
+          "expected_text": "まずしい",
+          "expected_options": [
+            "まずしい"
+          ],
+          "phonetic_similarity": 0.222,
+          "length_score": 1.0,
+          "final_score": 0.217,
+          "notes": [
+            "word_candidate_looks_more_like_sentence",
+            "matched_word=まずしい"
+          ]
+        },
+        {
+          "entry_index": 231,
+          "kind": "word",
+          "start_ordinal": 4,
+          "end_ordinal": 5,
+          "start_piece_id": 28,
+          "end_piece_id": 29,
+          "start_time": 67.997982,
+          "end_time": 71.653741,
+          "piece_ids": [
+            28,
+            29
+          ],
+          "transcript_text": "お気の毒に貧しい",
+          "transcript_hira": "おきのどくにまずしい",
+          "expected_text": "まずしい",
+          "expected_options": [
+            "まずしい"
+          ],
+          "phonetic_similarity": 0.571,
+          "length_score": 0.0,
+          "final_score": 0.149,
+          "notes": [
+            "word_span_penalty_2_pieces",
+            "word_candidate_too_long",
+            "matched_word=まずしい"
+          ]
+        },
+        {
+          "entry_index": 231,
+          "kind": "word",
+          "start_ordinal": 7,
+          "end_ordinal": 7,
+          "start_piece_id": 31,
+          "end_piece_id": 31,
+          "start_time": 73.492086,
+          "end_time": 74.929932,
+          "piece_ids": [
+            31
+          ],
+          "transcript_text": "貧しい家に育った。",
+          "transcript_hira": "まずしいいえにそだった。",
+          "expected_text": "まずしい",
+          "expected_options": [
+            "まずしい"
+          ],
+          "phonetic_similarity": 0.5,
+          "length_score": 0.0,
+          "final_score": 0.0,
+          "notes": [
+            "word_candidate_looks_more_like_sentence",
+            "word_candidate_too_long",
+            "matched_word=まずしい"
+          ]
+        }
+      ],
+      "top_sentence_candidates": [
+        {
+          "entry_index": 231,
+          "kind": "sentence",
+          "start_ordinal": 6,
+          "end_ordinal": 7,
+          "start_piece_id": 30,
+          "end_piece_id": 31,
+          "start_time": 72.453764,
+          "end_time": 74.929932,
+          "piece_ids": [
+            30,
+            31
+          ],
+          "transcript_text": "私は貧しい家に育った。",
+          "transcript_hira": "わたくしはまずしいいえにそだった。",
+          "expected_text": "私は貧しい家に育った。",
+          "expected_options": [
+            "私は貧しい家に育った。"
+          ],
+          "phonetic_similarity": 1.0,
+          "length_score": 1.0,
+          "final_score": 1.0,
+          "notes": [
+            "matched_sentence=私は貧しい家に育った。"
+          ]
+        },
+        {
+          "entry_index": 231,
+          "kind": "sentence",
+          "start_ordinal": 6,
+          "end_ordinal": 8,
+          "start_piece_id": 30,
+          "end_piece_id": 32,
+          "start_time": 72.453764,
+          "end_time": 77.364467,
+          "piece_ids": [
+            30,
+            31,
+            32
+          ],
+          "transcript_text": "私は貧しい家に育った。惜しい",
+          "transcript_hira": "わたくしはまずしいいえにそだった。おしい",
+          "expected_text": "私は貧しい家に育った。",
+          "expected_options": [
+            "私は貧しい家に育った。"
+          ],
+          "phonetic_similarity": 0.919,
+          "length_score": 1.0,
+          "final_score": 0.931,
+          "notes": [
+            "matched_sentence=私は貧しい家に育った。"
+          ]
+        },
+        {
+          "entry_index": 231,
+          "kind": "sentence",
+          "start_ordinal": 5,
+          "end_ordinal": 7,
+          "start_piece_id": 29,
+          "end_piece_id": 31,
+          "start_time": 70.794172,
+          "end_time": 74.929932,
+          "piece_ids": [
+            29,
+            30,
+            31
+          ],
+          "transcript_text": "貧しい私は貧しい家に育った。",
+          "transcript_hira": "まずしいわたくしはまずしいいえにそだった。",
+          "expected_text": "私は貧しい家に育った。",
+          "expected_options": [
+            "私は貧しい家に育った。"
+          ],
+          "phonetic_similarity": 0.895,
+          "length_score": 1.0,
+          "final_score": 0.911,
+          "notes": [
+            "matched_sentence=私は貧しい家に育った。"
+          ]
+        },
+        {
+          "entry_index": 231,
+          "kind": "sentence",
+          "start_ordinal": 7,
+          "end_ordinal": 8,
+          "start_piece_id": 31,
+          "end_piece_id": 32,
+          "start_time": 73.492086,
+          "end_time": 77.364467,
+          "piece_ids": [
+            31,
+            32
+          ],
+          "transcript_text": "貧しい家に育った。惜しい",
+          "transcript_hira": "まずしいいえにそだった。おしい",
+          "expected_text": "私は貧しい家に育った。",
+          "expected_options": [
+            "私は貧しい家に育った。"
+          ],
+          "phonetic_similarity": 0.75,
+          "length_score": 1.0,
+          "final_score": 0.787,
+          "notes": [
+            "matched_sentence=私は貧しい家に育った。"
+          ]
+        },
+        {
+          "entry_index": 231,
+          "kind": "sentence",
+          "start_ordinal": 5,
+          "end_ordinal": 8,
+          "start_piece_id": 29,
+          "end_piece_id": 32,
+          "start_time": 70.794172,
+          "end_time": 77.364467,
+          "piece_ids": [
+            29,
+            30,
+            31,
+            32
+          ],
+          "transcript_text": "貧しい私は貧しい家に育った。惜しい",
+          "transcript_hira": "まずしいわたくしはまずしいいえにそだった。おしい",
+          "expected_text": "私は貧しい家に育った。",
+          "expected_options": [
+            "私は貧しい家に育った。"
+          ],
+          "phonetic_similarity": 0.829,
+          "length_score": 0.389,
+          "final_score": 0.763,
+          "notes": [
+            "matched_sentence=私は貧しい家に育った。"
+          ]
+        },
+        {
+          "entry_index": 231,
+          "kind": "sentence",
+          "start_ordinal": 7,
+          "end_ordinal": 7,
+          "start_piece_id": 31,
+          "end_piece_id": 31,
+          "start_time": 73.492086,
+          "end_time": 74.929932,
+          "piece_ids": [
+            31
+          ],
+          "transcript_text": "貧しい家に育った。",
+          "transcript_hira": "まずしいいえにそだった。",
+          "expected_text": "私は貧しい家に育った。",
+          "expected_options": [
+            "私は貧しい家に育った。"
+          ],
+          "phonetic_similarity": 0.828,
+          "length_score": 0.373,
+          "final_score": 0.759,
+          "notes": [
+            "matched_sentence=私は貧しい家に育った。"
+          ]
+        },
+        {
+          "entry_index": 231,
+          "kind": "sentence",
+          "start_ordinal": 4,
+          "end_ordinal": 7,
+          "start_piece_id": 28,
+          "end_piece_id": 31,
+          "start_time": 67.997982,
+          "end_time": 74.929932,
+          "piece_ids": [
+            28,
+            29,
+            30,
+            31
+          ],
+          "transcript_text": "お気の毒に貧しい私は貧しい家に育った。",
+          "transcript_hira": "おきのどくにまずしいわたくしはまずしいいえにそだった。",
+          "expected_text": "私は貧しい家に育った。",
+          "expected_options": [
+            "私は貧しい家に育った。"
+          ],
+          "phonetic_similarity": 0.773,
+          "length_score": 0.0,
+          "final_score": 0.657,
+          "notes": [
+            "matched_sentence=私は貧しい家に育った。"
+          ]
+        },
+        {
+          "entry_index": 231,
+          "kind": "sentence",
+          "start_ordinal": 4,
+          "end_ordinal": 8,
+          "start_piece_id": 28,
+          "end_piece_id": 32,
+          "start_time": 67.997982,
+          "end_time": 77.364467,
+          "piece_ids": [
+            28,
+            29,
+            30,
+            31,
+            32
+          ],
+          "transcript_text": "お気の毒に貧しい私は貧しい家に育った。惜しい",
+          "transcript_hira": "おきのどくにまずしいわたくしはまずしいいえにそだった。おしい",
+          "expected_text": "私は貧しい家に育った。",
+          "expected_options": [
+            "私は貧しい家に育った。"
+          ],
+          "phonetic_similarity": 0.723,
+          "length_score": 0.0,
+          "final_score": 0.615,
+          "notes": [
+            "matched_sentence=私は貧しい家に育った。"
+          ]
+        }
+      ],
+      "word_alternatives": [
+        {
+          "entry_index": 231,
+          "kind": "word",
+          "start_ordinal": 8,
+          "end_ordinal": 8,
+          "start_piece_id": 32,
+          "end_piece_id": 32,
+          "start_time": 76.728481,
+          "end_time": 77.364467,
+          "piece_ids": [
+            32
+          ],
+          "transcript_text": "惜しい",
+          "transcript_hira": "おしい",
+          "expected_text": "まずしい",
+          "expected_options": [
+            "まずしい"
+          ],
+          "phonetic_similarity": 0.571,
+          "length_score": 0.667,
+          "final_score": 0.595,
+          "notes": [
+            "matched_word=まずしい"
+          ]
+        },
+        {
+          "entry_index": 231,
+          "kind": "word",
+          "start_ordinal": 5,
+          "end_ordinal": 6,
+          "start_piece_id": 29,
+          "end_piece_id": 30,
+          "start_time": 70.794172,
+          "end_time": 73.050567,
+          "piece_ids": [
+            29,
+            30
+          ],
+          "transcript_text": "貧しい私は",
+          "transcript_hira": "まずしいわたくしは",
+          "expected_text": "まずしい",
+          "expected_options": [
+            "まずしい"
+          ],
+          "phonetic_similarity": 0.615,
+          "length_score": 0.0,
+          "final_score": 0.382,
+          "notes": [
+            "word_span_penalty_2_pieces",
+            "matched_word=まずしい"
+          ]
+        }
+      ],
+      "sentence_alternatives": [
+        {
+          "entry_index": 231,
+          "kind": "sentence",
+          "start_ordinal": 6,
+          "end_ordinal": 8,
+          "start_piece_id": 30,
+          "end_piece_id": 32,
+          "start_time": 72.453764,
+          "end_time": 77.364467,
+          "piece_ids": [
+            30,
+            31,
+            32
+          ],
+          "transcript_text": "私は貧しい家に育った。惜しい",
+          "transcript_hira": "わたくしはまずしいいえにそだった。おしい",
+          "expected_text": "私は貧しい家に育った。",
+          "expected_options": [
+            "私は貧しい家に育った。"
+          ],
+          "phonetic_similarity": 0.919,
+          "length_score": 1.0,
+          "final_score": 0.931,
+          "notes": [
+            "matched_sentence=私は貧しい家に育った。"
+          ]
+        },
+        {
+          "entry_index": 231,
+          "kind": "sentence",
+          "start_ordinal": 5,
+          "end_ordinal": 7,
+          "start_piece_id": 29,
+          "end_piece_id": 31,
+          "start_time": 70.794172,
+          "end_time": 74.929932,
+          "piece_ids": [
+            29,
+            30,
+            31
+          ],
+          "transcript_text": "貧しい私は貧しい家に育った。",
+          "transcript_hira": "まずしいわたくしはまずしいいえにそだった。",
+          "expected_text": "私は貧しい家に育った。",
+          "expected_options": [
+            "私は貧しい家に育った。"
+          ],
+          "phonetic_similarity": 0.895,
+          "length_score": 1.0,
+          "final_score": 0.911,
+          "notes": [
+            "matched_sentence=私は貧しい家に育った。"
+          ]
+        }
+      ]
+    }
+  ]
+}
