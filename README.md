@@ -20,7 +20,7 @@ The current project truth is:
 - `vocabulary.json` - current canonical vocabulary data used by HTML and card workflows.
 - `clips/` - current cut audio clips, arranged by logical unit/track folders.
 - `cutTwice/` - current pair-first audio cutter and transcriber skill.
-- `makeAnkiCards/` - project-local Anki skill entry point; implementation still needs promotion from `legacy/parse-scripts/`.
+- `makeAnkiCards/` - current Anki deck workflow and scripts.
 - `wordsAndExerciseInHtml/` - static HTML words and exercises.
 - `output/` - current historical/working output bucket; see `docs/ARCHITECTURE.md` for the target split.
 - `legacy/` - old scripts, old skills, backups, and preserved parser history.

@@ -37,7 +37,14 @@ This reads OCR exercise JSON from `json/` and writes under `wordsAndExerciseInHt
 
 ## Anki Decks
 
-The built decks currently live under `output/` and have also been deployed to `D:\n2Prepare\ankiCardsToBuilt\` in prior runs. The Anki build logic is still mostly in `legacy/parse-scripts/`; promote it into a current workflow folder before major new Anki changes.
+The built decks currently live under `output/` and have also been deployed to `D:\n2Prepare\ankiCardsToBuilt\` in prior runs. The active Anki build scripts live under `makeAnkiCards/scripts/`.
+
+```bash
+python makeAnkiCards/scripts/make_anki.py
+python makeAnkiCards/scripts/make_anki_listening.py
+```
+
+Both commands read `vocabulary.json` and `clips/` by default, then write `output/N2Words.apkg` and `output/N2Words_listening.apkg`.
 
 ## Git Checkpoints
 

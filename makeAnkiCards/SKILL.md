@@ -9,32 +9,47 @@ This is the project-local Anki workflow folder. It exists so future Anki work ha
 
 ## Current Status
 
-This workflow is not fully promoted yet. The older working implementation lives in `legacy/parse-scripts/`, especially:
+The current Anki scripts live here:
 
-- `make_anki.py`
-- `make_anki_listening.py`
-- `make_clean_db.py`
-- `merge_explanations.py`
+- `scripts/make_anki.py` - builds `output/N2Words.apkg`
+- `scripts/make_anki_listening.py` - builds `output/N2Words_listening.apkg`
+- `scripts/make_clean_db.py` - optional converter from old combined DB shape into `vocabulary.json`
+- `scripts/merge_explanations.py` - optional explanation batch merge helper
 
-Use those files as reference material when promoting code into this folder. Do not add new Anki logic as loose root scripts.
+Do not add new Anki logic as loose root scripts. Keep Anki deck code inside this folder.
 
 ## Folder Contract
 
-- **Input vocabulary DB**: `vocabulary.json`
-- **Input audio clips**: `clips/`
+- **Input vocabulary DB**: `../vocabulary.json` from this folder, or `vocabulary.json` from repo root
+- **Input audio clips**: `../clips/` from this folder, or `clips/` from repo root
 - **Durable outputs now**: `output/N2Words.apkg`, `output/N2Words_listening.apkg`
 - **Target durable outputs later**: `dist/anki/N2Words.apkg`, `dist/anki/N2Words_listening.apkg`
 - **Work/review outputs**: `work/anki/` after the target layout exists
 - **Cache/scratch**: `cache/anki/` after the target layout exists
 
-## Promotion Plan
+## Build Commands
 
-1. Copy only the still-needed Anki builder logic from `legacy/parse-scripts/`.
-2. Put deterministic helpers under `makeAnkiCards/scripts/`.
-3. Keep this `SKILL.md` short: commands, inputs, outputs, validation, and traps only.
-4. Validate decks by checking note count, media references, model fields, and a small exported preview JSON.
-5. Preserve card GUID/model behavior when updating existing decks so study progress survives.
+Run from repo root:
+
+```powershell
+python -u .\makeAnkiCards\scripts\make_anki.py
+python -u .\makeAnkiCards\scripts\make_anki_listening.py
+```
+
+Optional explicit form:
+
+```powershell
+python -u .\makeAnkiCards\scripts\make_anki.py --vocab vocabulary.json --clips clips --out output/N2Words.apkg
+python -u .\makeAnkiCards\scripts\make_anki_listening.py --db vocabulary.json --clips clips --out output/N2Words_listening.apkg
+```
+
+## Validation
+
+- Check note count printed by both builders.
+- Check media count and missing audio counts.
+- Preserve stable deck IDs, model IDs, and `genanki.guid_for(...)` formulas unless the user explicitly wants a new deck identity.
+- Clip fields in `vocabulary.json` are authoritative. Filename search is only a fallback for old data.
 
 ## Current Rule
 
-If asked to change Anki behavior before promotion is complete, first inspect the legacy scripts, then either make a narrow legacy-compatible fix or promote the needed script into `makeAnkiCards/scripts/` as part of the change.
+If asked to change Anki behavior, make the change in `makeAnkiCards/scripts/` and keep `vocabulary.json` plus `clips/` as the default inputs.

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Generate N2Words.apkg — Anki deck for all N2 vocabulary entries.
+"""Generate N2Words.apkg - Anki deck for all N2 vocabulary entries.
 
 Usage:
-    python -u parse/scripts/make_anki.py [--out output/N2Words.apkg]
+    python -u makeAnkiCards/scripts/make_anki.py [--out output/N2Words.apkg]
 
-Resolves audio clips from disk even if vocabulary_combined.json does not yet
-have clip paths (handles deduced / assigned clips transparently).
+Reads the current project-level vocabulary.json and packages clips from clips/.
+Stable deck/model/note IDs are preserved so Anki can update existing notes.
 """
 from __future__ import annotations
 
@@ -19,6 +19,8 @@ from pathlib import Path
 import html as html_mod
 
 import genanki
+
+ROOT = Path(__file__).resolve().parents[2]
 
 # ── IDs (stable — do not change once deck exists) ─────────────────────────────
 DECK_ID   = 1_234_567_890
@@ -265,25 +267,33 @@ hr.divider {
 """
 
 
+def _resolve_declared_clip(entry: dict, field: str) -> Path | None:
+    clip = entry.get(field)
+    if not clip:
+        return None
+    p = Path(clip)
+    if not p.is_absolute():
+        p = ROOT / p
+    return p if p.exists() else None
+
+
+def _find_clip_by_name(clips_root: Path, idx: int, kind: str) -> Path | None:
+    for name in (f"{kind}{idx:03d}.mp3", f"{kind}{idx}.mp3", f"{kind}{idx:03d}-deduced.mp3", f"{kind}{idx}-deduced.mp3"):
+        matches = sorted(clips_root.rglob(name))
+        if matches:
+            return matches[0]
+    return None
+
+
 def resolve_clips(entry: dict, clips_root: Path) -> tuple[Path | None, Path | None]:
     """Find word and sentence clip paths on disk for an entry.
 
-    Checks standard names first, then -deduced variants.
+    Trusts explicit vocabulary.json clip paths first, then searches by filename.
     Returns (word_path, sentence_path) as absolute Paths or None.
     """
-    idx  = entry["index"]
-    unit = entry["unit"]["number"]
-    d    = clips_root / f"unit{unit:02d}"
-
-    def first_existing(*names):
-        for n in names:
-            p = d / n
-            if p.exists():
-                return p
-        return None
-
-    word = first_existing(f"word{idx}.mp3", f"word{idx}-deduced.mp3")
-    sent = first_existing(f"sentence{idx}.mp3", f"sentence{idx}-deduced.mp3")
+    idx = entry["index"]
+    word = _resolve_declared_clip(entry, "word_clip") or _find_clip_by_name(clips_root, idx, "word")
+    sent = _resolve_declared_clip(entry, "sentence_clip") or _find_clip_by_name(clips_root, idx, "sentence")
     return word, sent
 
 
@@ -346,9 +356,9 @@ def build_notes(data: list[dict], clips_root: Path) -> tuple[list[genanki.Note],
             s = v or ""
             return html_mod.escape(str(s))
 
-        examples_all = e.get("examples_all") or []
-        sentence     = examples_all[0] if examples_all else e.get("sentence_text", "")
-        more_html    = "".join(f"<p>{html_mod.escape(ex)}</p>" for ex in examples_all[1:]) if len(examples_all) > 1 else ""
+        examples_all = e.get("examples_all") or e.get("examples") or []
+        sentence     = e.get("sentence") or e.get("sentence_text") or (examples_all[0] if examples_all else "")
+        more_html    = "".join(f"<p>{html_mod.escape(ex)}</p>" for ex in examples_all)
 
         note = genanki.Note(
             model=model,
@@ -378,12 +388,12 @@ def build_notes(data: list[dict], clips_root: Path) -> tuple[list[genanki.Note],
 def main() -> None:
     ap = argparse.ArgumentParser(description="Generate N2Words.apkg")
     ap.add_argument("--out", default="output/N2Words.apkg")
-    ap.add_argument("--vocab", default="output/vocabulary_combined.json")
-    ap.add_argument("--clips", default="output/clips")
+    ap.add_argument("--vocab", default="vocabulary.json")
+    ap.add_argument("--clips", default="clips")
     args = ap.parse_args()
 
-    clips_root = Path(args.clips)
-    data = json.loads(Path(args.vocab).read_text(encoding="utf-8"))
+    clips_root = ROOT / args.clips
+    data = json.loads((ROOT / args.vocab).read_text(encoding="utf-8"))
     data.sort(key=lambda e: e["index"])
 
     print(f"Building notes for {len(data)} entries…")
@@ -397,6 +407,9 @@ def main() -> None:
     package.media_files = [str(p) for p in media]
 
     out = Path(args.out)
+    if not out.is_absolute():
+        out = ROOT / out
+    out.parent.mkdir(parents=True, exist_ok=True)
     package.write_to_file(str(out))
 
     no_word = sum(1 for e in data if resolve_clips(e, clips_root)[0] is None)

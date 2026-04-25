@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Step 3: Build output/N2Words_listening.apkg — sentence-listening Anki deck.
+"""Build output/N2Words_listening.apkg - sentence-listening Anki deck.
 
 Usage:
-    python -u parse/scripts/make_anki_listening.py [--out output/N2Words_listening.apkg]
+    python -u makeAnkiCards/scripts/make_anki_listening.py [--out output/N2Words_listening.apkg]
 
-Front: sentence audio auto-plays — pure listening comprehension.
+Front: sentence audio auto-plays - pure listening comprehension.
 Back:  sentence text + vocabulary headword + meanings + AI explanation.
 """
 from __future__ import annotations
@@ -437,7 +437,9 @@ def build_deck(db: list[dict], clips_root: Path):
     def add_audio(clip_rel: str | None) -> str:
         if not clip_rel:
             return ""
-        p = ROOT / clip_rel.replace("/", "\\")
+        p = Path(clip_rel)
+        if not p.is_absolute():
+            p = ROOT / clip_rel.replace("/", "\\")
         if not p.exists():
             return ""
         key = p.name
@@ -489,11 +491,20 @@ def build_deck(db: list[dict], clips_root: Path):
     return deck, media
 
 
+def clip_exists(clip_rel: str | None) -> bool:
+    if not clip_rel:
+        return False
+    p = Path(clip_rel)
+    if not p.is_absolute():
+        p = ROOT / clip_rel.replace("/", "\\")
+    return p.exists()
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--db",  default="output/vocabulary_db.json")
+    ap.add_argument("--db",  default="vocabulary.json")
     ap.add_argument("--out", default="output/N2Words_listening.apkg")
-    ap.add_argument("--clips", default="output/clips")
+    ap.add_argument("--clips", default="clips")
     args = ap.parse_args()
 
     db_path    = ROOT / args.db
@@ -513,10 +524,11 @@ def main() -> None:
     pkg.media_files = media
 
     out = ROOT / args.out
+    out.parent.mkdir(parents=True, exist_ok=True)
     pkg.write_to_file(str(out))
 
     explained = sum(1 for e in db if e.get("explanation"))
-    no_audio  = sum(1 for e in db if not e.get("sentence_clip"))
+    no_audio  = sum(1 for e in db if not clip_exists(e.get("sentence_clip")))
     print(f"Written: {out}  ({out.stat().st_size // 1024 // 1024} MB)")
     print(f"  Notes      : {len(db)}")
     print(f"  Media      : {len(media)} files")

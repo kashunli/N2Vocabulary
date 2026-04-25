@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Step 1: Produce output/vocabulary_db.json — the clean, human-editable database.
+"""Produce a clean, human-editable vocabulary database.
 
 Usage:
-    python -u parse/scripts/make_clean_db.py [--out output/vocabulary_db.json]
+    python -u makeAnkiCards/scripts/make_clean_db.py --src output/vocabulary_combined.json --out vocabulary.json
 
 What it does:
 - Strips all alignment metadata (timestamps, confidence, transcripts)
@@ -20,17 +20,16 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def resolve_clips(idx: int, unit: int, clips_root: Path) -> tuple[str | None, str | None]:
-    d = clips_root / f"unit{unit:02d}"
-
     def first(names):
         for n in names:
-            p = d / n
-            if p.exists():
+            matches = sorted(clips_root.rglob(n))
+            if matches:
+                p = matches[0]
                 return str(p.relative_to(ROOT)).replace("\\", "/")
         return None
 
-    word = first([f"word{idx}.mp3", f"word{idx}-deduced.mp3"])
-    sent = first([f"sentence{idx}.mp3", f"sentence{idx}-deduced.mp3"])
+    word = first([f"word{idx:03d}.mp3", f"word{idx}.mp3", f"word{idx:03d}-deduced.mp3", f"word{idx}-deduced.mp3"])
+    sent = first([f"sentence{idx:03d}.mp3", f"sentence{idx}.mp3", f"sentence{idx:03d}-deduced.mp3", f"sentence{idx}-deduced.mp3"])
     return word, sent
 
 
@@ -63,8 +62,8 @@ def clean_entry(e: dict, clips_root: Path) -> dict:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--src", default="output/vocabulary_combined.json")
-    ap.add_argument("--out", default="output/vocabulary_db.json")
-    ap.add_argument("--clips", default="output/clips")
+    ap.add_argument("--out", default="vocabulary.json")
+    ap.add_argument("--clips", default="clips")
     args = ap.parse_args()
 
     src_path   = ROOT / args.src

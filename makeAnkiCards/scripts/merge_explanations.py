@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Step 2b: Merge a batch of explanations (JSON array) into vocabulary_db.json.
+"""Merge a batch of explanations (JSON array) into vocabulary.json.
 
 Usage:
-    python parse/scripts/merge_explanations.py <explanations.json>
+    python makeAnkiCards/scripts/merge_explanations.py <explanations.json>
 
 The input JSON should be an array of {"index": N, "explanation": "..."} objects.
 Entries whose index is not found in the DB are reported as warnings.
@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[2]
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("input", help="JSON file with [{index, explanation}, ...] array")
-    ap.add_argument("--db", default="output/vocabulary_db.json")
+    ap.add_argument("--db", default="vocabulary.json")
     args = ap.parse_args()
 
     db_path = ROOT / args.db
