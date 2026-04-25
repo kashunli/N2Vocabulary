@@ -70,6 +70,32 @@ python cutTwice/cut_by_silence.py \
 
 Use one output folder per logical source track. The folder name should be stable enough to reference from `vocabulary.json`, for example `clips/unit7_track47` or `clips/unit7_5_track03`.
 
+## Optional experiment — Cut by longest silences
+
+The normal `cut_by_silence.py` workflow is still the stable/default pair cutter. If a future repair needs a more direct strategy, use `cut_by_longest_silences.py` as an experimental alternative. It detects many candidate silence intervals once, ranks internal intervals by duration, selects `expected - 1` longest separators, then cuts exactly `expected` pair clips.
+
+```bash
+python cutTwice/cut_by_longest_silences.py \
+    --track      "audio/unit1/track01.mp3" \
+    --expected   10 \
+    --start-index 1 \
+    --output-dir "clips/unit1_track01_longest" \
+    [--detect-duration 0.5] \
+    [--noise-db -35] \
+    [--edge-margin 0.25] \
+    [--dry-run]
+```
+
+**What it does:**
+1. Runs ffmpeg `silencedetect` with a low candidate threshold such as `noise=-35dB:d=0.5`.
+2. Stores all detected silence intervals that match that threshold.
+3. Ignores leading/trailing edge silences when choosing separators.
+4. Selects the `expected - 1` longest internal intervals as pair boundaries.
+5. Sorts those selected separators back into time order and cuts the spans between them.
+6. Writes `<output-dir>/pairs.json` with `mode: "longest_silences"`, `silence_intervals`, `selected_separator_intervals`, and normal `pairs` records.
+
+This can be useful when the real word-pair separators are the longest pauses, while shorter pauses separate the word from its example sentence. Review with `--dry-run` first: section headers, narrator pauses, or unusually long sentence pauses can still be selected by mistake.
+
 ## Step 2 — Transcribe pairs for review
 
 In just-cut mode, transcribe whole pairs before splitting words. Review whether each `pairNNN.mp3` contains exactly one word plus one sentence that contains that word. If the pair transcript looks reasonable, continue to word/sentence splitting. If not, keep the manifest: the timestamps and silence intervals make later manual repair easier.
