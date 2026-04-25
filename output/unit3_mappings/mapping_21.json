@@ -1,8 +1,0 @@
-[
-  {"index": 265, "word": {"start": 0.595, "end": 1.420}, "sentence": {"start": 2.238, "end": 5.885}, "word_segment_idx": 0, "sentence_segment_indices": [1,2], "note": "ASR: ガンコナ→頑固な, sentence split across regions"},
-  {"index": 266, "word": {"start": 7.649, "end": 8.394}, "sentence": {"start": 9.120, "end": 11.826}, "word_segment_idx": 3, "sentence_segment_indices": [4,5], "note": "ASR: 家常な→過剰な, sentence split across regions"},
-  {"index": 267, "word": {"start": 13.618, "end": 14.508}, "sentence": {"start": 15.321, "end": 18.706}, "word_segment_idx": 6, "sentence_segment_indices": [7,8], "note": "ASR: 生地の混乱→政治の混乱, 主将→首相, sentence split"},
-  {"index": 268, "word": {"start": 20.483, "end": 21.379}, "sentence": {"start": 22.102, "end": 24.924}, "word_segment_idx": 9, "sentence_segment_indices": [10], "note": "ASR: 新国な→深刻な, 申書によって→猛暑によって, 水不足→不足"},
-  {"index": 269, "word": {"start": 26.713, "end": 27.387}, "sentence": {"start": 28.263, "end": 32.274}, "word_segment_idx": 11, "sentence_segment_indices": [12,13], "note": "ASR: きらく→気楽, 両に住む→寮に住む, sentence split"},
-  {"index": 270, "word": {"start": 34.078, "end": 34.774}, "sentence": {"start": 35.543, "end": 39.013}, "word_segment_idx": 14, "sentence_segment_indices": [15,16], "note": "ASR: 愛いな→安易な, sentence split"}
-]

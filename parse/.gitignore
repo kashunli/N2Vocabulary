@@ -1,0 +1,6 @@
+/ocr
+__pycache__/
+*.py[cod]
+/sample
+/pages_8_15_schema
+N2語彙トレーニング.pdf

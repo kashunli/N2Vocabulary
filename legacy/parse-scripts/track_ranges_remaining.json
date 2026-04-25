@@ -1,0 +1,58 @@
+[
+  {"note": "Part1: same-track gap idx 200",
+   "track": "audio/Unit2 動詞A/14 1-14.mp3",           "start": 200, "end": 200},
+
+  {"note": "Part1: same-track gap idx 963-965",
+   "track": "audio/Unit11 名詞D/27 Track 27.mp3",       "start": 963, "end": 965},
+
+  {"note": "idx 94-95: tail of Unit1 last track",
+   "track": "audio/Unit1 名詞A/07 1-07.mp3",            "start": 88,  "end": 95},
+
+  {"note": "idx 256: tail of Unit3 track 19",
+   "track": "audio/Unit3 形容詞A/19 1-19.mp3",          "start": 245, "end": 256},
+
+  {"note": "idx 284: tail of Unit4 track 22",
+   "track": "audio/Unit4 名詞B/22 1-21.mp3",            "start": 271, "end": 284},
+
+  {"note": "idx 299: tail of Unit4 track 23",
+   "track": "audio/Unit4 名詞B/23 1-22.mp3",            "start": 285, "end": 299},
+
+  {"note": "idx 539: tail of Unit6 track 40",
+   "track": "audio/Unit6 副詞A＋接続詞/40 1-40.mp3",    "start": 525, "end": 539},
+
+  {"note": "idx 627: tail of Unit7 track 46",
+   "track": "audio/Unit7 名詞C/46 1-46.mp3",            "start": 614, "end": 627},
+
+  {"note": "idx 630-631: tail of Unit7 track 47",
+   "track": "audio/Unit7 名詞C/47 1-47.mp3",            "start": 628, "end": 631},
+
+  {"note": "idx 656-660,668-669,676-680: tail of Unit7 final track (49 2-2)",
+   "track": "audio/Unit7 名詞C/49 2-2.mp3",             "start": 648, "end": 680},
+
+  {"note": "idx 681-684: head of Unit8 first track (05 Track 5)",
+   "track": "audio/Unit8 動詞B/05 Track 5.mp3",         "start": 681, "end": 691},
+
+  {"note": "idx 888-890: tail of Unit10 track 21",
+   "track": "audio/Unit10 形容詞B/21 Track 21.mp3",     "start": 881, "end": 890},
+
+  {"note": "idx 905: tail of Unit11 track 22",
+   "track": "audio/Unit11 名詞D/22 Track 22.mp3",       "start": 891, "end": 905},
+
+  {"note": "idx 934: tail of Unit11 track 24",
+   "track": "audio/Unit11 名詞D/24 Track 24.mp3",       "start": 919, "end": 934},
+
+  {"note": "idx 974: tail of Unit11 track 28",
+   "track": "audio/Unit11 名詞D/28 Track 28.mp3",       "start": 972, "end": 974},
+
+  {"note": "idx 988: tail of Unit11 track 29",
+   "track": "audio/Unit11 名詞D/29 Track 29.mp3",       "start": 983, "end": 988},
+
+  {"note": "idx 1054-1062: tail of Unit12 track 35",
+   "track": "audio/Unit12 動詞C/35 Track 35.mp3",       "start": 1041, "end": 1062},
+
+  {"note": "idx 1066-1067: tail of Unit12 track 36",
+   "track": "audio/Unit12 動詞C/36 Track 36.mp3",       "start": 1063, "end": 1067},
+
+  {"note": "idx 1077-1078: tail of Unit12 track 37",
+   "track": "audio/Unit12 動詞C/37 Track 37.mp3",       "start": 1068, "end": 1078}
+]

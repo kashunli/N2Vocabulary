@@ -1,6 +1,6 @@
 # Project Resume — N2Vocabulary Audio Repair
 
-Last updated: 2026-04-18
+Last updated: 2026-04-20
 
 ## Where We Are
 
@@ -23,7 +23,7 @@ The important shift is that we no longer trust one ASR pass or old mapping notes
 4. Recut touched tracks.
 5. Re-audit the output clips.
 
-## What Changed Today
+## What Changed
 
 ### Code / workflow changes
 
@@ -41,6 +41,14 @@ The important shift is that we no longer trust one ASR pass or old mapping notes
   - This removed a false suspect on Unit 2 entry `131`
   - Clip transcript cache keys now include file size + mtime
   - This prevents a recut clip from reusing a stale transcript cache entry at the same path
+
+### New Skill: full-unit-cutter
+
+- Created `full-unit-cutter/SKILL.md` — self-contained end-to-end guide for cutting word + sentence audio clips for all tracks in a unit. No pre-job research needed.
+- Created `full-unit-cutter/references/mapping-schema.md` — detailed JSON schema for mapping entries with all flag definitions.
+- Key mapping rule added: when ffmpeg silence detection fails to separate word from sentence (fused in one piece), use full-track Whisper segment timestamps (`output/whisper_cache/<track>_segments.json`) to find the word/sentence boundary and cut mid-piece with `"bridge_split"` flag.
+- Documents the 5-phase workflow: prepare entries → process each track → merge → verify → rebuild Anki.
+- Includes entry extraction command, exact CLI commands for Unit 6 tracks 39-43, mapping schema, prompt template, ASR error table.
 
 ### Unit 1 status
 
@@ -88,6 +96,15 @@ Current full Unit 2 audit result:
 - `6 asr_noise`
 - `7 suspect`
 
+### Unit 6 status
+
+Unit 6 (entries 511-580, tracks 39-43) is fully processed:
+
+- All mapping files saved in `output/unit6_mappings/mapping_39.json` through `mapping_43.json`
+- All review JSONs generated in `output/review_unit6_track_39.json` through `review_unit6_track_43.json`
+- Index progression: Track 39 (511-524), Track 40 (525-539), Track 41 (540-556), Track 42 (557-572), Track 43 (573-580)
+- Ready for Phase 3 merge into vocabulary DB
+
 ## Unit 2: What The Audit Actually Means
 
 The original plan assumed tracks `11` and `12` would be the first repair wave because their mapping notes looked scary. The new large-backend audit changed that:
@@ -100,31 +117,18 @@ The recut wave on tracks `13`, `14`, and `16` is now done.
 
 Confirmed good after recut + fresh audit cache:
 
-- Track `13`
-  - `174`
-  - `181`
-- Track `16`
-  - `214`
-  - `216`
-- Track `13`
-  - `177`
+- Track `13`: `174`, `177`, `181`
+- Track `16`: `214`, `216`
 
 These were false holdovers from a stale clip transcript cache, not surviving structural defects.
 
 ### Remaining backlog
 
-- Track `09`
-  - `118`
-  - `125`
-  - `128`
-- Track `10`
-  - `134`
-  - `146`
-- Track `13`
-- Track `15`
-  - `210`
-- Track `14`
-  - `193`
+- Track `09`: `118`, `125`, `128`
+- Track `10`: `134`, `146`
+- Track `13`: (unspecified)
+- Track `14`: `193`
+- Track `15`: `210`
 
 Current read on these:
 
@@ -142,7 +146,7 @@ Current read on these:
 - `131` was a false suspect because the sentence lived only in `note`
 - The audit script now handles this case properly
 
-## Important Evidence From Today
+## Important Evidence
 
 ### Recut was necessary, but the first re-audit was still misleading
 
@@ -166,9 +170,15 @@ Large track cache around the region shows:
 - the recut word clip remains difficult for isolated ASR, even when locally tightened
 - this currently looks more like a clip-level ASR hallucination than a confirmed boundary leak
 
-## Kick Start Next Session
+### Bridge_split from full-track segments: limitation discovered
 
-Start exactly here:
+When ffmpeg silence detection fuses word+sentence into one piece, the intended approach is to use full-track Whisper segment timestamps for the boundary cut point. However, during investigation of Unit 6 entry 519 (たっぷり):
+
+- Full-track segments suffered **context drift** — Whisper misrecognized the 57-60s region completely, so the word didn't appear in the segments at all.
+- Isolated piece transcription produced correct text but as a single segment with no internal per-word boundaries, even though `segment_count` metadata showed 8 segments internally (the pipeline doesn't save individual segment timestamps to cache).
+- Conclusion: the `bridge_split` from full-track segments approach works when Whisper gets it right on the full track, but falls back to `word_in_sentence_no_separate_piece` when context drift obscures the word. The pipeline could be improved to save per-word segment timestamps from piece-level transcriptions.
+
+## Kick Start Next Session
 
 ### 1. If you re-audit after any future recut, use a fresh cache file or rely on the new cache-key behavior
 
@@ -196,11 +206,16 @@ Focus on:
 
 These do **not** currently look like the same kind of structural break that the stale `174/181/214/216` group had.
 
-### 4. If Unit 2 is good enough for now, move on to the next unit and keep the docs aligned
+### 4. Unit 6: Phase 3 merge
+
+Run `merge_assigned_clips.py` on all 5 review JSONs to merge clips into `output/vocabulary_db.json`, then verify with the status check script from `full-unit-cutter/SKILL.md`.
+
+### 5. If Unit 2 is good enough for now, move on to the next unit and keep the docs aligned
 
 Already updated:
 
-- `jlpt-audio-cutter/SKILL.md`
+- `full-unit-cutter/SKILL.md`
+- `full-unit-cutter/references/mapping-schema.md`
 - this `RESUME.md`
 
 ## Commands To Reuse
@@ -230,6 +245,29 @@ python parse/scripts/audit_unit_clips.py \
   --unit 2
 ```
 
+### Unit 6 merge (Phase 3)
+
+```bash
+for f in output/review_unit6_track_*.json; do
+  python parse/scripts/merge_assigned_clips.py "$f"
+done
+```
+
+### Unit 6 verify
+
+```bash
+python3 -c "
+import json
+db = json.load(open('output/vocabulary_db.json', encoding='utf-8'))
+unit6 = [e for e in db if e.get('unit_number') == 6]
+has_clips = [e for e in unit6 if e.get('word_clip') and e.get('sentence_clip')]
+no_clips = [e for e in unit6 if not e.get('word_clip') or not e.get('sentence_clip')]
+print(f'Unit 6: {len(has_clips)}/{len(unit6)} entries have clips')
+if no_clips:
+    print(f'Missing clips for indices: {[e[\"index\"] for e in no_clips]}')
+"
+```
+
 ## Do Not Forget
 
 - Use `python` on this machine
@@ -237,5 +275,7 @@ python parse/scripts/audit_unit_clips.py \
 - Save caches before changing mappings
 - Recut from current mapping before assuming a mapping is still wrong
 - Treat Unit 2 tracks `11` and `12` as **currently okay**
-- Treat Unit 2 indices `174`, `181`, `193`, `214`, `216` as the next concrete repair targets
 - Treat Unit 2 index `171` as intentionally missing, not a data integrity problem
+- Treat Unit 2 index `193` as the only unresolved verification outlier
+- The `bridge_split` from full-track segments approach works when Whisper gets it right, but falls back gracefully when context drift occurs
+- `full-unit-cutter/SKILL.md` is the self-contained reference for future unit processing — no pre-job research needed
