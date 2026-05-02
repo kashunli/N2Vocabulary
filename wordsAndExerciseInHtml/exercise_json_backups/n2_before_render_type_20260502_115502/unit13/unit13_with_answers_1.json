@@ -1,0 +1,63 @@
+{
+  "_unit": 13,
+  "_unit_title": "副詞 B + 連体詞",
+  "_range": "1091–1160",
+  "_set": 1,
+  "_source_pages": [
+    251,
+    252
+  ],
+  "_description": "副詞 B + 連体詞 1091–1160 — set 1",
+  "exercises": [
+    {
+      "id": "I",
+      "instruction": "\"する\"が付く言葉に○を付けなさい。",
+      "words": [
+        "あっさり",
+        "いきいき",
+        "いちいち",
+        "思い切り",
+        "さっと",
+        "すっと",
+        "さっぱり",
+        "すっきり",
+        "しんと",
+        "なんだか",
+        "なんとか",
+        "なんとも",
+        "ほんやり"
+      ],
+      "questions": [],
+      "answer_key": [
+        "あっきり",
+        "いきいき",
+        "すっと",
+        "さっぱり",
+        "すっきり",
+        "しんと",
+        "なんとか",
+        "ほんやり"
+      ]
+    },
+    {
+      "id": "II",
+      "instruction": "意味が近い言葉を下から選んで書きなさい。",
+      "questions": []
+    },
+    {
+      "id": "III",
+      "instruction": "",
+      "questions": []
+    },
+    {
+      "id": "IV",
+      "instruction": "Choose the correct word from the parentheses to complete each sentence.",
+      "questions": []
+    },
+    {
+      "id": "V",
+      "instruction": "Fill in the blank with the appropriate word/phrase from the given options below.",
+      "questions": []
+    }
+  ]
+}

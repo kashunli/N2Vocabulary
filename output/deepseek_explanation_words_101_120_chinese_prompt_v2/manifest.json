@@ -1,0 +1,16 @@
+{
+  "input": "vocabulary.json",
+  "model": "deepseek-v4-flash",
+  "thinking": "enabled",
+  "selected_records": 20,
+  "batch_size": 20,
+  "completed_batches": 1,
+  "completed_explanations": 20,
+  "usage": {
+    "prompt_tokens": 2060,
+    "completion_tokens": 2092,
+    "total_tokens": 4152,
+    "prompt_cache_hit_tokens": 512,
+    "prompt_cache_miss_tokens": 1548
+  }
+}

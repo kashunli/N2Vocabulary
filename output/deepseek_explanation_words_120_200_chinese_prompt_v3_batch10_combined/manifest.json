@@ -1,0 +1,12 @@
+{
+  "input": "vocabulary.json",
+  "model": "deepseek-v4-flash",
+  "thinking": "enabled",
+  "selected_records": 80,
+  "batch_size": 10,
+  "completed_explanations": 80,
+  "source_runs": [
+    "output/deepseek_explanation_words_120_200_chinese_prompt_v3_batch10",
+    "output/deepseek_explanation_words_151_200_chinese_prompt_v3_batch10_retry2"
+  ]
+}

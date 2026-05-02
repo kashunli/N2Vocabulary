@@ -1,0 +1,4 @@
+interface:
+  display_name: "Batch Japanese Sentence Explanations"
+  short_description: "Batch Japanese sentence explanations"
+  default_prompt: "Use $batch-japanese-sentence-explanations to generate concise explanations for Japanese example sentences."

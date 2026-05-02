@@ -1,0 +1,33 @@
+{
+  "_unit": 2,
+  "_unit_title": "動詞 A",
+  "_range": "101–220",
+  "_set": 3,
+  "_source_pages": [
+    49,
+    50
+  ],
+  "_description": "動詞 A 101–220 — set 3",
+  "exercises": [
+    {
+      "id": "I",
+      "instruction": "( ) に入れるのに最もよいものを、a・b・c・d から一つ選びなさい。(Choose the best word for ( ))",
+      "questions": []
+    },
+    {
+      "id": "II",
+      "instruction": "( ) に入れるのに最もよいものを、a・b・c・d から一つ選びなさい。(Choose the best word for ( ))",
+      "questions": []
+    },
+    {
+      "id": "III",
+      "instruction": "______の言葉に意味が最も近いものを、a・b・c・d から一つ選びなさい。(Choose the word with the closest meaning to the underlined word)",
+      "questions": []
+    },
+    {
+      "id": "IV",
+      "instruction": "次の言葉の使い方として最もよいものを、a・b・c・d から一つ選びなさい。(Choose the best usage of the word)",
+      "questions": []
+    }
+  ]
+}

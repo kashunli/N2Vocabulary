@@ -1,0 +1,52 @@
+[
+  {
+    "index": 1,
+    "sentence": "幸せな人生を送る。",
+    "explanation": "**Live a happy life.**\n\n---\n\n- **幸せ（しあわせ）** - happiness; well-being [JLPT N4]\n- **人生（じんせい）** - (human) life [JLPT N4]\n- **送る（おくる）** - to spend (time), to pass (life); 他動詞 [JLPT N4]"
+  },
+  {
+    "index": 2,
+    "sentence": "人間は皆、平等である。",
+    "explanation": "**All human beings are equal.**\n\n---\n\n- **人間（にんげん）** - human being; person [JLPT N4]\n- **皆（みな）** - all; everyone [JLPT N4]\n- **平等（びょうどう）** - equality [JLPT N3]\n- **~である** - formal/literary copula, equivalent to だ/です [JLPT N4]"
+  },
+  {
+    "index": 3,
+    "sentence": "佐藤さんという人から電話がありましたよ",
+    "explanation": "**There was a phone call from a person named Sato.**\n\n---\n\n- **佐藤（さとう）** - common Japanese surname\n- **~という** - called; named; indicating name/description [JLPT N4]\n- **人（ひと）** - person\n- **~から** - from (source)\n- **電話（でんわ）** - telephone call\n- **ありました** - ある (to exist, to happen) in polite past; here *there was* [JLPT N5]\n- **~よ** - sentence-final particle for emphasis/information [JLPT N5]"
+  },
+  {
+    "index": 4,
+    "sentence": "人類の祖先は、アフリカで発生したと考えられている。",
+    "explanation": "**It is thought that human ancestors originated in Africa.**\n\n---\n\n- **人類（じんるい）** - humankind; humanity [JLPT N3]\n- **祖先（そせん）** - ancestor; forefather [JLPT N3]\n- **アフリカ** - Africa\n- **発生（はっせい）** - origin; occurrence; する verb [JLPT N3]\n- **~した** - past tense of する\n- **~と考えられている** - *is thought to have ~*; passive of 考える (to think) + ている (state) => *it is considered that* [JLPT N3]"
+  },
+  {
+    "index": 5,
+    "sentence": "うちの親戚はみな近くに住んでいる。",
+    "explanation": "**All my relatives live nearby.**\n\n---\n\n- **うち** - my; our (family/group) [JLPT N4]\n- **親戚（しんせき）** - relative; relation [JLPT N3]\n- **みな** - all [JLPT N4]\n- **近く（ちかく）** - nearby; vicinity [JLPT N4]\n- **住んでいる（すんでいる）** - 住む (to live) + ている (state) => *live* [JLPT N5]"
+  },
+  {
+    "index": 6,
+    "sentence": "小林さん夫婦はいつも仲がいい。",
+    "explanation": "**The Kobayashis (married couple) are always on good terms.**\n\n---\n\n- **小林（こばやし）** - common Japanese surname\n- **夫婦（ふうふ）** - married couple [JLPT N4]\n- **いつも** - always [JLPT N5]\n- **仲（なか）** - relationship; terms (between people) [JLPT N3]\n- **仲がいい** - *relationship is good* => get along well [JLPT N3]"
+  },
+  {
+    "index": 7,
+    "sentence": "日本では、長男は大事にされる傾向があった。",
+    "explanation": "**In Japan, there was a tendency for the eldest son to be treated importantly.**\n\n---\n\n- **日本（にほん）** - Japan\n- **~では** - in; regarding [JLPT N5]\n- **長男（ちょうなん）** - eldest son [JLPT N3]\n- **大事（だいじ）** - important; precious [JLPT N4]\n- **大事にされる** - passive of 大事にする (to treat as important) => *be treated importantly* [JLPT N3]\n- **傾向（けいこう）** - tendency; trend [JLPT N3]\n- **~があった** - *there was a tendency to ~* [JLPT N3]"
+  },
+  {
+    "index": 8,
+    "sentence": "あのそば屋の主人はまだ若いが、腕はいい。",
+    "explanation": "**The master of that soba shop is still young, but he is skilled.**\n\n---\n\n- **そば屋（そばや）** - soba (buckwheat noodle) shop [JLPT N3]\n- **主人（しゅじん）** - master; proprietor; husband [JLPT N3]\n- **まだ** - still; yet [JLPT N5]\n- **若い（わかい）** - young [JLPT N5]\n- **が** - but (contrastive conjunction) [JLPT N5]\n- **腕（うで）** - arm; skill, ability (metaphorical) [JLPT N3]\n- **腕はいい** - *arm is good* => skilled; talented [JLPT N3]"
+  },
+  {
+    "index": 9,
+    "sentence": "私には双子の弟がいます。",
+    "explanation": "**I have a twin brother.**\n\n---\n\n- **私（わたし）** - I\n- **~には** - *for me*; topic marker indicating possession/relation [JLPT N5]\n- **双子（ふたご）** - twins [JLPT N3]\n- **弟（おとうと）** - younger brother [JLPT N5]\n- **がいます** - いる (to exist, animate) => *there is* [JLPT N5]"
+  },
+  {
+    "index": 10,
+    "sentence": "(アナウンス)「迷子のお知らせをいたします」",
+    "explanation": "**(Announcement) \"We will make an announcement regarding a lost child.\"**\n\n---\n\n- **迷子（まいご）** - lost child; lost person [JLPT N3]\n- **お知らせ（おしらせ）** - notice; announcement (polite form of 知らせ) [JLPT N3]\n- **~をいたします** - humble form of する (to do) => *we will do* [JLPT N3]\n- **迷子のお知らせをいたします** - *we will do a notice of a lost child* => standard public announcement phrase [JLPT N3]"
+  }
+]

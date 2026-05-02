@@ -1,0 +1,384 @@
+{
+  "_unit": 2,
+  "_unit_title": "動詞 A",
+  "_range": "161–220",
+  "_set": 2,
+  "_source_pages": [
+    47,
+    48
+  ],
+  "_description": "動詞 A 161–220 — set 2",
+  "exercises": [
+    {
+      "id": "I",
+      "instruction": "( ) に助詞を書きなさい。(Fill in the particles)",
+      "questions": [
+        {
+          "id": 1,
+          "text": "机 ( ) 机 ( ) くっつける。",
+          "answer": ""
+        },
+        {
+          "id": 2,
+          "text": "船が海 ( ) 沈む。",
+          "answer": ""
+        },
+        {
+          "id": 3,
+          "text": "目 ( / ) 涙 ( ) あふれる。",
+          "answer": ""
+        },
+        {
+          "id": 4,
+          "text": "敵 ( ) 戦う。",
+          "answer": ""
+        },
+        {
+          "id": 5,
+          "text": "感動 ( / ) 胸が震えた。",
+          "answer": ""
+        },
+        {
+          "id": 6,
+          "text": "研究 ( ) 情熱 ( ) 傾ける。",
+          "answer": ""
+        },
+        {
+          "id": 7,
+          "text": "穴 ( ) はまる。",
+          "answer": ""
+        },
+        {
+          "id": 8,
+          "text": "相手チーム ( ) 敗れる。",
+          "answer": ""
+        },
+        {
+          "id": 9,
+          "text": "家 ( ) 戻る。／ 旅行 ( ) 戻る。／ 意識 ( ) 戻る。",
+          "answer": ""
+        },
+        {
+          "id": 10,
+          "text": "優勝 ( ) 目指す。",
+          "answer": ""
+        },
+        {
+          "id": 11,
+          "text": "人生 ( ) 旅 ( ) 例える。",
+          "answer": ""
+        },
+        {
+          "id": 12,
+          "text": "命 ( ) 関わる病気",
+          "answer": ""
+        },
+        {
+          "id": 13,
+          "text": "彼女は男性 ( ) もてる。",
+          "answer": ""
+        },
+        {
+          "id": 14,
+          "text": "解決 ( ) 努める。",
+          "answer": ""
+        },
+        {
+          "id": 15,
+          "text": "議長 ( ) 務める。",
+          "answer": ""
+        },
+        {
+          "id": 16,
+          "text": "子ども ( ) 呼びかける。",
+          "answer": ""
+        },
+        {
+          "id": 17,
+          "text": "子ども ( ) 電話で呼び出す。",
+          "answer": ""
+        },
+        {
+          "id": 2,
+          "text": "〔 絵 札 バッグ 頭 手 〕 をさげる。(3)",
+          "answer": ""
+        },
+        {
+          "id": 3,
+          "text": "〔 時間 会社 おなか 空き缶 チャンス 天気 〕 をつぶす。(4)",
+          "answer": ""
+        }
+      ]
+    },
+    {
+      "id": "II",
+      "instruction": "下の表を完成させなさい。(Complete the table below)",
+      "questions": []
+    },
+    {
+      "id": "III",
+      "instruction": "「ます形」が名詞になる言葉に○を付けなさい。(Mark words whose 'masu-form' can become a noun)",
+      "words": [
+        "扱う",
+        "傷む",
+        "ほどける",
+        "固まる",
+        "傾く",
+        "輝く",
+        "目立つ",
+        "つかまる",
+        "戦う",
+        "はまる",
+        "目指す",
+        "裏返す",
+        "呼び出す",
+        "へこむ",
+        "務める"
+      ],
+      "questions": [],
+      "answer_key": []
+    },
+    {
+      "id": "IV",
+      "instruction": "______の言葉と反対の意味の言葉を書きなさい。(Write the word with the opposite meaning to the underlined word)",
+      "questions": [
+        {
+          "id": 1,
+          "word": "縮む",
+          "answer": ""
+        },
+        {
+          "id": 2,
+          "word": "終える",
+          "answer": ""
+        },
+        {
+          "id": 3,
+          "word": "敗れる",
+          "answer": ""
+        },
+        {
+          "id": 4,
+          "word": "ひもをほどく",
+          "answer": ""
+        },
+        {
+          "id": 5,
+          "word": "水に沈む",
+          "answer": ""
+        },
+        {
+          "id": 6,
+          "word": "太陽が沈む",
+          "answer": ""
+        },
+        {
+          "id": 7,
+          "word": "道が乾いている",
+          "answer": ""
+        },
+        {
+          "id": 8,
+          "word": "空気が乾いている",
+          "answer": ""
+        }
+      ]
+    },
+    {
+      "id": "V",
+      "instruction": "いっしょに使う言葉を選びなさい。( ( )の数字は選ぶ数です。)(Select the words used together. The number in ( ) is the number to select)",
+      "section": "A",
+      "questions": [
+        {
+          "id": 1,
+          "phrase": "〔  〕 が固まる。(3)",
+          "options": [
+            "空気",
+            "液体",
+            "決心",
+            "基礎",
+            "緊張"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VI",
+      "instruction": "いっしょに使う言葉を下から選びなさい。(Choose words from below that are used together)",
+      "questions": [
+        {
+          "id": 1,
+          "text": "( ) が転がる。",
+          "answer": ""
+        },
+        {
+          "id": 2,
+          "text": "( ) が凍る。",
+          "answer": ""
+        },
+        {
+          "id": 3,
+          "text": "( ) が枯れる。",
+          "answer": ""
+        },
+        {
+          "id": 4,
+          "text": "( ) が輝く。",
+          "answer": ""
+        },
+        {
+          "id": 5,
+          "text": "( ) を細かく刻む。",
+          "answer": ""
+        },
+        {
+          "id": 6,
+          "text": "地震で ( ) が傾く。",
+          "answer": ""
+        },
+        {
+          "id": 7,
+          "text": "( ) を取り消す。",
+          "answer": ""
+        },
+        {
+          "id": 8,
+          "text": "試験が易しいと ( ) が余る。",
+          "answer": ""
+        },
+        {
+          "id": 9,
+          "text": "( ) を呼びかける。",
+          "answer": ""
+        },
+        {
+          "id": 10,
+          "text": "( ) が傷む。",
+          "answer": ""
+        }
+      ]
+    },
+    {
+      "id": "VII",
+      "instruction": "正しい言葉を〔 〕の中から一つ選びなさい。(Choose the correct word from [ ])",
+      "section": "A",
+      "questions": [
+        {
+          "id": 1,
+          "phrase": "1 位と 2 位の差が 〔  〕。",
+          "options": [
+            "縮めた",
+            "縮まった",
+            "縮んだ"
+          ]
+        },
+        {
+          "id": 2,
+          "phrase": "ズボンの丈を 〔  〕。",
+          "options": [
+            "縮めた",
+            "縮まった",
+            "縮んだ"
+          ]
+        },
+        {
+          "id": 3,
+          "phrase": "机の上がいつも 〔  〕 いる。",
+          "options": [
+            "散らかって",
+            "散らばって",
+            "散らかして"
+          ]
+        },
+        {
+          "id": 4,
+          "phrase": "財布が落ち、小銭があちこちに 〔  〕 しまった。",
+          "options": [
+            "散らかって",
+            "散らばって",
+            "散らかして"
+          ]
+        },
+        {
+          "id": 5,
+          "phrase": "節約に 〔  〕。",
+          "options": [
+            "勤める",
+            "務める",
+            "努める"
+          ]
+        },
+        {
+          "id": 6,
+          "phrase": "「本日司会を 〔  〕 新井と申します」",
+          "options": [
+            "勤めます",
+            "務めます",
+            "努めます"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VIII",
+      "instruction": "( ) に入る言葉を下から選び、適当な形にして書きなさい。(Choose words from below and write in the appropriate form)",
+      "questions": [
+        {
+          "id": 1,
+          "text": "ドアに指を ( ) しまった。痛い。",
+          "answer": ""
+        },
+        {
+          "id": 2,
+          "text": "パーティーでは友だちどうしで ( ) で、大勢の人と話しましょう。",
+          "answer": ""
+        },
+        {
+          "id": 3,
+          "text": "中の空気が抜けて、ボールが ( ) しまった。",
+          "answer": ""
+        },
+        {
+          "id": 4,
+          "text": "妹は ( ) のが嫌いで、いつもおとなしくしている。",
+          "answer": ""
+        },
+        {
+          "id": 5,
+          "text": "「絶対に勝ちます」と、井上選手は自信に ( ) 態度で言った。",
+          "answer": ""
+        },
+        {
+          "id": 6,
+          "text": "屋上から ( ) と、車がおもちゃのように見えた。",
+          "answer": ""
+        },
+        {
+          "id": 7,
+          "text": "「苦しいからといって、( ) はだめだよ」",
+          "answer": ""
+        },
+        {
+          "id": 8,
+          "text": "「あまり乱暴に ( ) と、壊れてしまいますよ」",
+          "answer": ""
+        },
+        {
+          "id": 9,
+          "text": "東京を 1 時に ( ) ば、京都には 3 時半ごろ着く。",
+          "answer": ""
+        },
+        {
+          "id": 10,
+          "text": "ペットの犬は、いつもしっぽを振って私を ( ) くれる。",
+          "answer": ""
+        },
+        {
+          "id": 11,
+          "text": "私は美術教師として、子どもを型に ( ) ように注意している。",
+          "answer": ""
+        }
+      ]
+    }
+  ]
+}

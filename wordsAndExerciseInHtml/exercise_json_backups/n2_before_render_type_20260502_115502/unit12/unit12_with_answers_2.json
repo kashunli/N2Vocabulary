@@ -1,0 +1,43 @@
+{
+  "_unit": 12,
+  "_unit_title": "動詞 C",
+  "_range": "1041–1090",
+  "_set": 2,
+  "_source_pages": [
+    237,
+    238
+  ],
+  "_description": "動詞 C 1041–1090 — set 2",
+  "exercises": [
+    {
+      "id": "I",
+      "instruction": "（ ）に助詞を書きなさい。",
+      "questions": []
+    },
+    {
+      "id": "II",
+      "instruction": "下の表を完成させなさい。",
+      "questions": []
+    },
+    {
+      "id": "III",
+      "instruction": "\"ます形\"が名詞になる言葉に○を付けなさい。例: 打消す→打ち消し",
+      "questions": []
+    },
+    {
+      "id": "IV",
+      "instruction": "下のA、Bから、近い意味になる言葉を一つずつ選んで（ ）に書きなさい。",
+      "questions": []
+    },
+    {
+      "id": "A",
+      "instruction": "Fill in the blanks with appropriate words from the provided list.",
+      "questions": []
+    },
+    {
+      "id": "B",
+      "instruction": "Fill in the blanks with appropriate verbs from the provided list.",
+      "questions": []
+    }
+  ]
+}

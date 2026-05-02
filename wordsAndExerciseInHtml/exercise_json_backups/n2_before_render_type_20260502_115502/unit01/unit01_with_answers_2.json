@@ -1,0 +1,216 @@
+{
+  "_unit": 1,
+  "_unit_title": "名詞 A",
+  "_range": "51–100",
+  "_set": 2,
+  "_source_pages": [
+    23,
+    24
+  ],
+  "_description": "名詞 A 51–100 — set 2",
+  "exercises": [
+    {
+      "id": "I",
+      "instruction": "( ) に助詞を書きなさい。(Fill in the particles)",
+      "questions": [
+        {
+          "id": 1,
+          "text": "石 ( ) つまずく。",
+          "answer": "に"
+        },
+        {
+          "id": 2,
+          "text": "現金 ( ) 払う。",
+          "answer": "で"
+        },
+        {
+          "id": 3,
+          "text": "針 ( ) 糸 ( ) 通す。",
+          "answer": "に、を"
+        },
+        {
+          "id": 4,
+          "text": "日帰り ( ) 温泉に行った。",
+          "answer": "で"
+        },
+        {
+          "id": 5,
+          "text": "くつのひも ( ) 結ぶ。／ 荷物 ( ) ひも ( ) しばる。",
+          "answer": "を、を、で"
+        }
+      ]
+    },
+    {
+      "id": "II",
+      "instruction": "「する」が付く言葉に○を付けなさい。(Mark words used with \"suru\")",
+      "words": [
+        "徒歩",
+        "駐車",
+        "娯楽",
+        "歓迎",
+        "費用",
+        "おまけ",
+        "勘定",
+        "赤字",
+        "割引",
+        "募金"
+      ],
+      "questions": [],
+      "answer_key": [
+        "駐車",
+        "歓迎",
+        "おまけ",
+        "勘定",
+        "割引",
+        "募金"
+      ]
+    },
+    {
+      "id": "III",
+      "instruction": "正しい言葉を〔 〕の中から一つ選びなさい。(Select the correct word)",
+      "section": "A",
+      "questions": [
+        {
+          "id": 1,
+          "phrase": "日程が 〔  〕。",
+          "options": [
+            "忙しい",
+            "こんでいる",
+            "つまっている"
+          ]
+        },
+        {
+          "id": 2,
+          "phrase": "費用が 〔  〕。",
+          "options": [
+            "かかる",
+            "下がる",
+            "払う"
+          ]
+        },
+        {
+          "id": 3,
+          "phrase": "予算を 〔  〕。",
+          "options": [
+            "数える",
+            "立てる",
+            "作る"
+          ]
+        },
+        {
+          "id": 4,
+          "phrase": "支出を 〔  〕。",
+          "options": [
+            "おさえる",
+            "下げる",
+            "出す"
+          ]
+        },
+        {
+          "id": 5,
+          "phrase": "宣伝に経費を 〔  〕。",
+          "options": [
+            "かける",
+            "する",
+            "払う"
+          ]
+        },
+        {
+          "id": 6,
+          "phrase": "勘定が 〔  〕。",
+          "options": [
+            "合わない",
+            "かからない",
+            "決まらない"
+          ]
+        },
+        {
+          "id": 7,
+          "phrase": "利益が 〔  〕。",
+          "options": [
+            "得ない",
+            "立たない",
+            "出ない"
+          ]
+        },
+        {
+          "id": 8,
+          "phrase": "価値が 〔  〕。",
+          "options": [
+            "大変だ",
+            "高い",
+            "激しい"
+          ]
+        }
+      ],
+      "answer_key": {
+        "A": [
+          "つまっている",
+          "かかる",
+          "立てる",
+          "おさえる",
+          "かける",
+          "合わない",
+          "出ない",
+          "高い"
+        ]
+      }
+    },
+    {
+      "id": "IV",
+      "instruction": "( ) に下から選んだ語を書いて、一つの言葉にしなさい。(Combine words)",
+      "questions": []
+    },
+    {
+      "id": "V",
+      "instruction": "反対の意味の言葉を書きなさい。(Write the antonyms)",
+      "questions": [
+        {
+          "id": 1,
+          "word": "支出",
+          "answer": ""
+        },
+        {
+          "id": 2,
+          "word": "無料",
+          "answer": ""
+        },
+        {
+          "id": 3,
+          "word": "赤字",
+          "answer": ""
+        },
+        {
+          "id": 4,
+          "word": "夜間",
+          "answer": ""
+        },
+        {
+          "id": 5,
+          "word": "休日",
+          "answer": ""
+        },
+        {
+          "id": 6,
+          "word": "過去／未来",
+          "answer": ""
+        },
+        {
+          "id": 7,
+          "word": "不景気",
+          "answer": ""
+        },
+        {
+          "id": 8,
+          "word": "ひもを結ぶ ⇔ ひもを",
+          "answer": ""
+        }
+      ]
+    },
+    {
+      "id": "VI",
+      "instruction": "( ) に入る言葉を下から選んで書きなさい。(Fill in the blanks)",
+      "questions": []
+    }
+  ]
+}

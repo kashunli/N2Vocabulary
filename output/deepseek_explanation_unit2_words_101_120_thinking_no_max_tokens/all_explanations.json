@@ -1,0 +1,102 @@
+[
+  {
+    "index": 101,
+    "sentence": "一般にお年寄りはあっさりした味を好む。",
+    "explanation": "**Generally, elderly people prefer light flavors.**\n\n---\n\n- **一般に（いっぱんに）** - generally [JLPT N3]\n- **お年寄り（おとしより）** - elderly people [JLPT N4]\n- **あっさりした** - light, simple (of taste); あっさり is an onomatopoeic adverb, used with した to modify nouns [JLPT N3]\n- **好む（このむ）** - to like, to prefer [JLPT N3]"
+  },
+  {
+    "index": 102,
+    "sentence": "彼女は彼を嫌っているようだ。",
+    "explanation": "**It seems she dislikes him.**\n\n---\n\n- **嫌っている（きらっている）** - present continuous of 嫌う (to dislike) [JLPT N3]\n- **ようだ** - seems like; evidential suffix indicating appearance or hearsay [JLPT N3]"
+  },
+  {
+    "index": 103,
+    "sentence": "世界平和を願う。",
+    "explanation": "**I wish for world peace.**\n\n---\n\n- **世界平和（せかいへいわ）** - world peace; 漢語: 平和 = peace, same as Chinese but with Japanese reading [JLPT N3]\n- **願う（ねがう）** - to wish, to pray [JLPT N3]"
+  },
+  {
+    "index": 104,
+    "sentence": "子どもが母親に甘える。",
+    "explanation": "**The child acts spoiled toward his mother.**\n\n---\n\n- **甘える（あまえる）** - to behave like a spoiled child, to presume upon another's kindness; 和語: literally \"to be sweet\" => semantic drift to acting dependent [JLPT N3]\n- **に** - target marker: indicates the person toward whom the action is directed"
+  },
+  {
+    "index": 105,
+    "sentence": "息子は妹をとてもかわいがっている。",
+    "explanation": "**The son dotes on his younger sister.**\n\n---\n\n- **かわいがっている** - present continuous of かわいがる (to love, to treat with affection); derived from かわいい (cute) + 〜がる (showing signs of) [JLPT N2]\n- **息子（むすこ）** - son [N5]\n- **妹（いもうと）** - younger sister [N5]"
+  },
+  {
+    "index": 106,
+    "sentence": "犯人は刑事に気付いて逃げてしまった。",
+    "explanation": "**The criminal noticed the detective and ran away.**\n\n---\n\n- **犯人（はんにん）** - criminal [JLPT N3]\n- **刑事（けいじ）** - detective [JLPT N2]\n- **気付いて（きづいて）** - to notice; 気付く (きづく) [JLPT N3]\n- **逃げてしまった** - 逃げる (to run away) + 〜てしまう (regretful completion of an action); implies regret or unintended consequence [JLPT N3]"
+  },
+  {
+    "index": 107,
+    "sentence": "警察は私を犯人ではないかと疑っているらしい。",
+    "explanation": "**It seems the police suspect that I might be the criminal.**\n\n---\n\n- **警察（けいさつ）** - police [JLPT N4]\n- **犯人（はんにん）** - criminal\n- **〜ではないかと疑う（うたがう）** - suspect that ~ might be; pattern: 〜ではないか + と疑う [JLPT N2]\n- **らしい** - it seems; hearsay/evidential marker; 注意: not meaning \"typical\" here [JLPT N3]"
+  },
+  {
+    "index": 108,
+    "sentence": "学校でいじめられて苦しんでいる子どもが大勢いる。",
+    "explanation": "**There are many children suffering from bullying at school.**\n\n---\n\n- **いじめられて** - passive form of いじめる (to bully); 迷惑の受身? 被动态表示受害者 [JLPT N3]\n- **苦しんでいる（くるしんでいる）** - suffering; 苦しむ (to suffer) [JLPT N3]\n- **大勢（おおぜい）** - many (people) [JLPT N4]"
+  },
+  {
+    "index": 109,
+    "sentence": "娘はペットの死を悲しんで、1 日中泣いていた。",
+    "explanation": "**My daughter was sad about her pet's death and cried all day.**\n\n---\n\n- **悲しんで（かなしんで）** - 悲しむ (to be sad) [JLPT N3]\n- **1日中（いちにちじゅう）** - all day; 中 indicates duration [JLPT N3]\n- **泣いていた** - was crying; past progressive [N5]"
+  },
+  {
+    "index": 110,
+    "sentence": "試験に落ちて、がっかりした。",
+    "explanation": "**I failed the exam and was disappointed.**\n\n---\n\n- **試験に落ちて（おちて）** - to fail an exam; 落ちる literally \"to fall\" [JLPT N3]\n- **がっかりした** - to be disappointed; がっかりする [JLPT N3]"
+  },
+  {
+    "index": 111,
+    "sentence": "受験に失敗した友人を励ました。",
+    "explanation": "**I encouraged my friend who failed the entrance exam.**\n\n---\n\n- **受験（じゅけん）** - entrance exam [JLPT N3]\n- **失敗（しっぱい）** - failure; 漢語: same as Chinese, but note usage in Japanese [JLPT N3]\n- **励ました（はげました）** - past of 励ます (to encourage) [JLPT N3]"
+  },
+  {
+    "index": 112,
+    "sentence": "祖父は何も言わずにうなずいた。",
+    "explanation": "**My grandfather nodded without saying anything.**\n\n---\n\n- **うなずいた** - past of うなずく (to nod) [JLPT N3]\n- **何も言わずに（なにもいわずに）** - without saying anything; 言わず = 言わないで (ず form is literary) [JLPT N3]"
+  },
+  {
+    "index": 113,
+    "sentence": "入社第一日目、娘は張り切って出勤した。",
+    "explanation": "**On the first day at work, my daughter went to work enthusiastically.**\n\n---\n\n- **入社第一日目（にゅうしゃ だいいちにちめ）** - the first day at a company; 入社 = joining a company, 第一日目 = first day [JLPT N3]\n- **張り切って（はりきって）** - enthusiastically, eagerly; from 張り切る (to be in high spirits) [JLPT N2]\n- **出勤（しゅっきん）** - going to work [JLPT N3]"
+  },
+  {
+    "index": 114,
+    "sentence": "自分ができるからといって、すぐにいばる人は嫌われる。",
+    "explanation": "**People who boast immediately just because they can do something are disliked.**\n\n---\n\n- **できるからといって** - just because one can; pattern: からといって (even though, just because) [JLPT N2]\n- **いばる** - to boast, to be arrogant; 和語 [JLPT N2]\n- **嫌われる（きらわれる）** - passive of 嫌う; are disliked [JLPT N3]"
+  },
+  {
+    "index": 115,
+    "sentence": "「そんなに大声でどならなくても聞こえますよ」",
+    "explanation": "**\"You don't have to shout so loudly; I can hear you.\"**\n\n---\n\n- **どならなくても** - even without shouting; どなる (to shout) [JLPT N2] + 〜なくても (even without)\n- **聞こえます（きこえます）** - can hear; potential of 聞く, but a separate verb [JLPT N4]"
+  },
+  {
+    "index": 116,
+    "sentence": "弟は気が短く、子どものころはすぐに暴れて、よく物を壊したものだ。",
+    "explanation": "**My younger brother is short-tempered; when he was a child, he would quickly get violent and often broke things.**\n\n---\n\n- **気が短い（きがみじかい）** - short-tempered [JLPT N3]\n- **暴れて（あばれて）** - to get violent, to rampage; 暴れる [JLPT N2]\n- **よく** - often [N5]\n- **壊したものだ** - 壊す (to break) + ものだ (used for reminiscing about past habitual actions) [JLPT N3]"
+  },
+  {
+    "index": 117,
+    "sentence": "子どもが道にしゃがんで地面の虫を見ている。",
+    "explanation": "**A child is squatting on the road looking at a bug on the ground.**\n\n---\n\n- **しゃがんで** - squatting; しゃがむ [JLPT N2]\n- **地面（じめん）** - ground [JLPT N4]\n- **虫（むし）** - insect [N5]"
+  },
+  {
+    "index": 118,
+    "sentence": "「ちょっとそこをどいてください」",
+    "explanation": "**\"Please move over a bit.\"**\n\n---\n\n- **どいて** - imperative of どく (to move aside, intransitive) [JLPT N2]\n- **ちょっと** - a little [N5]"
+  },
+  {
+    "index": 119,
+    "sentence": "「通行のじゃまになるので、自転車を歩道からどけてください」",
+    "explanation": "**\"Please move your bicycle off the sidewalk because it's obstructing passage.\"**\n\n---\n\n- **通行のじゃまになる（つうこうのじゃまになる）** - to obstruct passage; じゃま = obstruction [JLPT N3]\n- **自転車（じてんしゃ）** - bicycle [N5]\n- **歩道（ほどう）** - sidewalk [JLPT N3]\n- **どけて** - imperative of どける (to remove something, transitive) ↔ どく (intransitive) [JLPT N2]"
+  },
+  {
+    "index": 120,
+    "sentence": "帽子をかぶる。",
+    "explanation": "**To wear a hat.**\n\n---\n\n- **かぶる** - to put on (a hat, etc.); 和語 [N5]"
+  }
+]
