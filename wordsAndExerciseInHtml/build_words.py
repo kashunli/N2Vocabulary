@@ -18,7 +18,6 @@ Or from this directory:
 """
 
 import html
-import json
 import re
 import sys
 from collections import OrderedDict, defaultdict
@@ -28,8 +27,11 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).parent.resolve()
 PROJECT_ROOT = SCRIPT_DIR.parent
-VOCAB_JSON = PROJECT_ROOT / "vocabulary.json"
 OUT_ROOT = SCRIPT_DIR  # wordsAndExerciseInHtml/
+
+# Read entries from SQLite (DB is the source of truth; vocabulary.json kept as backup).
+sys.path.insert(0, str(PROJECT_ROOT))
+from db import DB_PATH, load_entries  # noqa: E402
 
 # ── CSS ────────────────────────────────────────────────────────────────────────
 
@@ -331,7 +333,7 @@ def render_entry(e: dict) -> str:
     word_clip = e.get("word_clip")
     sentence_clip = e.get("sentence_clip")
 
-    parts = ['<article class="entry">']
+    parts = [f'<article class="entry" id="w{idx}">']
 
     parts.append('  <div class="entry-top">')
     parts.append('    <div class="entry-main">')
@@ -437,6 +439,9 @@ def render_words_index(unit_info: list) -> str:
         '      <div class="hero-meta">\n'
         f'        <span class="meta-pill">{len(unit_info)} units</span>\n'
         f'        <span class="meta-pill">{total} words total</span>\n'
+        '        <span class="meta-pill">·</span>\n'
+        '        <a class="meta-pill" href="cards/index.html" style="color: var(--ink); text-decoration: underline;">'
+        'Card view (with known / flagged marks) →</a>\n'
         "      </div>\n"
         "    </section>"
     )
@@ -484,12 +489,14 @@ def render_landing(total: int, num_units: int) -> str:
 
 
 def main():
-    if not VOCAB_JSON.exists():
-        print(f"ERROR: {VOCAB_JSON} not found. Run from project root or adjust VOCAB_JSON path.")
+    if not DB_PATH.exists():
+        print(
+            f"ERROR: {DB_PATH} not found. Run `python db/import_vocabulary.py` first.",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
-    with open(VOCAB_JSON, encoding="utf-8") as f:
-        data = json.load(f)
+    data = load_entries(book_code="N2")
 
     by_unit: dict[int, list] = defaultdict(list)
     for e in data:
