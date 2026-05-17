@@ -20,8 +20,8 @@ Do not add new Anki logic as loose root scripts. Keep Anki deck code inside this
 
 ## Folder Contract
 
-- **Input vocabulary DB**: `../vocabulary.json` from this folder, or `vocabulary.json` from repo root
-- **Input audio clips**: `../clips/` from this folder, or `clips/` from repo root
+- **Input vocabulary DB**: `../../vocabulary.json` from this folder, or `vocabulary.json` from repo root
+- **Input audio clips**: `../../clips/` from this folder, or `clips/` from repo root
 - **Durable outputs now**: `output/N2Words.apkg`, `output/N2Words_listening.apkg`
 - **Target durable outputs later**: `dist/anki/N2Words.apkg`, `dist/anki/N2Words_listening.apkg`
 - **Work/review outputs**: `work/anki/` after the target layout exists
@@ -32,15 +32,15 @@ Do not add new Anki logic as loose root scripts. Keep Anki deck code inside this
 Run from repo root:
 
 ```powershell
-python -u .\makeAnkiCards\scripts\make_anki.py
-python -u .\makeAnkiCards\scripts\make_anki_listening.py
+python -u .\skills\makeAnkiCards\scripts\make_anki.py
+python -u .\skills\makeAnkiCards\scripts\make_anki_listening.py
 ```
 
 Optional explicit form:
 
 ```powershell
-python -u .\makeAnkiCards\scripts\make_anki.py --vocab vocabulary.json --clips clips --out output/N2Words.apkg
-python -u .\makeAnkiCards\scripts\make_anki_listening.py --db vocabulary.json --clips clips --out output/N2Words_listening.apkg
+python -u .\skills\makeAnkiCards\scripts\make_anki.py --vocab vocabulary.json --clips clips --out output/N2Words.apkg
+python -u .\skills\makeAnkiCards\scripts\make_anki_listening.py --db vocabulary.json --clips clips --out output/N2Words_listening.apkg
 ```
 
 ## Validation
@@ -52,4 +52,4 @@ python -u .\makeAnkiCards\scripts\make_anki_listening.py --db vocabulary.json --
 
 ## Current Rule
 
-If asked to change Anki behavior, make the change in `makeAnkiCards/scripts/` and keep `vocabulary.json` plus `clips/` as the default inputs.
+If asked to change Anki behavior, make the change in `skills/makeAnkiCards/scripts/` and keep `vocabulary.json` plus `clips/` as the default inputs.

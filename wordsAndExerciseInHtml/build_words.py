@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-build_html.py — Rebuild static HTML vocabulary pages for the N2 book.
+build_words.py — Rebuild static HTML vocabulary pages for the N2 book.
 
-Reads:  ../vocabulary.json          (project root)
+Reads:  ../output/n2vocab.sqlite    (project root)
 Audio:  ../clips/unitXX/wordN.mp3   (project root clips/)
 Writes: wordsAndExerciseInHtml/
           index.html
@@ -12,9 +12,9 @@ Writes: wordsAndExerciseInHtml/
               unit_01.html … unit_13.html
 
 Run from project root:
-    python wordsAndExerciseInHtml/build_html.py
+    python wordsAndExerciseInHtml/build_words.py
 Or from this directory:
-    python build_html.py
+    python build_words.py
 """
 
 import html
@@ -29,7 +29,7 @@ SCRIPT_DIR = Path(__file__).parent.resolve()
 PROJECT_ROOT = SCRIPT_DIR.parent
 OUT_ROOT = SCRIPT_DIR  # wordsAndExerciseInHtml/
 
-# Read entries from SQLite (DB is the source of truth; vocabulary.json kept as backup).
+# Read entries from SQLite. The old vocabulary.json source has been retired.
 sys.path.insert(0, str(PROJECT_ROOT))
 from db import DB_PATH, load_entries  # noqa: E402
 
@@ -92,11 +92,6 @@ SHARED_CSS = """
       font-family: "Iowan Old Style", "Baskerville", "Hiragino Mincho ProN", "Yu Mincho", serif;
       font-size: 1.82rem; line-height: 1.15; font-weight: 600;
     }
-    .entry-type {
-      margin-top: 6px; font-size: 0.96rem;
-      font-weight: 600; color: var(--muted); letter-spacing: 0.01em;
-    }
-    .type-token { display: inline-block; margin-right: 0.18em; }
     .entry-glosses { display: grid; gap: 4px; padding-top: 3px; }
     .meaning-en { font-weight: 600; }
     .meaning-zh { color: var(--muted); font-size: 0.96rem; }
@@ -114,6 +109,13 @@ SHARED_CSS = """
     }
     .example-text { font-size: 1.03rem; }
     .example-body { display: grid; gap: 4px; }
+    .example-translation {
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+    .example-translation .en { color: var(--ink); font-weight: 500; }
+    .example-translation .zh { color: var(--muted); }
     .entry-explanation .explanation {
       font-size: 0.88rem;
       line-height: 1.65;
@@ -303,10 +305,10 @@ def explanation_html(text: str) -> str:
 
 def clip_rel_path(clip_path: str) -> str:
     """
-    Convert a clip path from vocabulary.json to a URL relative to
+    Convert a project-root clip path from SQLite to a URL relative to
     wordsAndExerciseInHtml/words/by_unit/.
 
-    vocabulary.json stores:  output\\clips\\unit01\\word1.mp3
+    Historical rows may store: output\\clips\\unit01\\word1.mp3
     Actual files live at:    <project_root>/clips/unit01/word1.mp3
     Relative from by_unit/:  ../../../clips/unit01/word1.mp3
     """
@@ -324,11 +326,13 @@ def render_entry(e: dict) -> str:
     idx = e["index"]
     kanji = e.get("headword_text") or e.get("kanji", "")
     reading = e.get("reading", "")
-    verb_pattern = e.get("verb_pattern")
     meaning_en = e.get("meaning_en", "")
     meaning_zh = e.get("meaning_zh", "")
     sentence = e.get("sentence", "")
+    sentence_translation_en = e.get("sentence_translation_en", "")
+    sentence_translation_zh = e.get("sentence_translation_zh", "")
     examples = e.get("examples") or []
+    example_items = e.get("example_items") or []
     explanation = e.get("explanation", "")
     word_clip = e.get("word_clip")
     sentence_clip = e.get("sentence_clip")
@@ -339,9 +343,6 @@ def render_entry(e: dict) -> str:
     parts.append('    <div class="entry-main">')
     parts.append(f'      <div class="entry-id">{idx:03d}</div>')
     parts.append(f'      <h3 class="entry-kanji">{headword_html(kanji, reading)}</h3>')
-    if verb_pattern:
-        vp = html.escape(verb_pattern)
-        parts.append(f'      <div class="entry-type"><span class="type-token">{vp}</span></div>')
     parts.append("    </div>")
     parts.append('    <div class="entry-glosses">')
     if meaning_en:
@@ -351,16 +352,42 @@ def render_entry(e: dict) -> str:
     parts.append("    </div>")
     parts.append("  </div>")
 
-    all_sentences = ([sentence] if sentence else []) + list(examples)
+    if example_items:
+        all_examples = example_items
+    else:
+        all_examples = []
+        if sentence:
+            all_examples.append({
+                "text": sentence,
+                "translation_en": sentence_translation_en,
+                "translation_zh": sentence_translation_zh,
+            })
+        all_examples.extend({"text": text} for text in examples)
+
+    all_sentences = [item for item in all_examples if item.get("text")]
     if all_sentences:
         parts.append('  <section class="entry-block entry-examples">')
         parts.append('    <ul class="example-list">')
-        for sent in all_sentences:
-            s = html.escape(sent)
+        for item in all_sentences:
+            s = html.escape(item.get("text") or "")
+            tr_en = item.get("translation_en") or ""
+            tr_zh = item.get("translation_zh") or ""
+            tr_parts = []
+            if tr_en:
+                tr_parts.append(f'<span class="en">{html.escape(tr_en)}</span>')
+            if tr_zh:
+                tr_parts.append(f'<span class="zh">{html.escape(tr_zh)}</span>')
+            tr_html = (
+                '<span class="example-translation">'
+                + " / ".join(tr_parts)
+                + "</span>"
+                if tr_parts else ""
+            )
             parts.append(
                 '      <li class="example-line no-marker">'
                 '<span class="example-body">'
                 f'<span class="example-text">{s}</span>'
+                f"{tr_html}"
                 "</span></li>"
             )
         parts.append("    </ul>")

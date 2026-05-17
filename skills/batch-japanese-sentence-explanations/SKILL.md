@@ -12,7 +12,7 @@ Use this skill to generate compact Markdown explanations for Japanese sentences 
 Run the bundled script from the repo root:
 
 ```powershell
-python .\batch-japanese-sentence-explanations\scripts\batch_explain_deepseek.py `
+python .\skills\batch-japanese-sentence-explanations\scripts\batch_explain_deepseek.py `
   --input .\vocabulary.json `
   --output-dir .\output\deepseek_explanation_batches `
   --skip-existing `

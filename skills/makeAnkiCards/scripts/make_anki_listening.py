@@ -2,7 +2,7 @@
 """Build output/N2Words_listening.apkg - sentence-listening Anki deck.
 
 Usage:
-    python -u makeAnkiCards/scripts/make_anki_listening.py [--out output/N2Words_listening.apkg]
+    python -u skills/makeAnkiCards/scripts/make_anki_listening.py [--out output/N2Words_listening.apkg]
 
 Front: sentence audio auto-plays - pure listening comprehension.
 Back:  sentence text + vocabulary headword + meanings + AI explanation.
@@ -17,7 +17,7 @@ from pathlib import Path
 
 import genanki
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 
 # ── Markdown → HTML for explanations ──────────────────────────────────────────
 

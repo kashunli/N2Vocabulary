@@ -42,9 +42,13 @@ CREATE TABLE IF NOT EXISTS entries (
 CREATE INDEX IF NOT EXISTS idx_entries_unit ON entries(book_code, unit_number, position);
 
 CREATE TABLE IF NOT EXISTS entry_examples (
-  entry_id  INTEGER NOT NULL REFERENCES entries(entry_id) ON DELETE CASCADE,
-  position  INTEGER NOT NULL,              -- 0-based
-  text      TEXT    NOT NULL,
+  entry_id       INTEGER NOT NULL REFERENCES entries(entry_id) ON DELETE CASCADE,
+  position       INTEGER NOT NULL,          -- 0 = main sentence; 1+ = extra examples
+  text           TEXT    NOT NULL,
+  translation_en TEXT,
+  translation_zh TEXT,
+  explanation_md TEXT,                      -- explanation for this example, if generated
+  audio_clip     TEXT,                      -- project-root-relative clip path, if available
   PRIMARY KEY (entry_id, position)
 );
 

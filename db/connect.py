@@ -8,6 +8,7 @@ list-of-dicts, so existing builders only need to swap their data source.
 from __future__ import annotations
 
 import sqlite3
+from urllib.parse import quote
 from collections import defaultdict
 from pathlib import Path
 
@@ -15,13 +16,26 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DB_PATH = PROJECT_ROOT / "output" / "n2vocab.sqlite"
 
 
-def connect(db_path: Path | str | None = None) -> sqlite3.Connection:
+def connect(
+    db_path: Path | str | None = None,
+    *,
+    read_only: bool = False,
+    immutable: bool = False,
+) -> sqlite3.Connection:
     path = Path(db_path) if db_path else DB_PATH
-    path.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(str(path))
+    if read_only:
+        uri = f"file:{quote(str(path.resolve()))}?mode=ro"
+        if immutable:
+            # The project often lives on a Windows-mounted drive. Immutable
+            # reads avoid fragile WAL sidecar access while still reading the
+            # checked SQLite file directly.
+            uri += "&immutable=1"
+        conn = sqlite3.connect(uri, uri=True)
+    else:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        conn = sqlite3.connect(str(path), timeout=30)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
-    conn.execute("PRAGMA journal_mode = WAL")
     return conn
 
 
@@ -32,10 +46,14 @@ def load_entries(book_code: str = "N2", db_path: Path | str | None = None) -> li
        meaning_en, meaning_zh, sentence, examples, word_clip, sentence_clip,
        explanation, uuid, book_code}
 
+    The normalized source for the main example sentence is
+    entry_examples.position = 0. Older entries.sentence / sentence_clip /
+    explanation_md fields are retained as fallback compatibility data.
+
     `index` is the per-book source_index (1..N within the book). The DB's
     surrogate entry_id is also exposed as `entry_id` for callers that need it.
     """
-    conn = connect(db_path)
+    conn = connect(db_path, read_only=True, immutable=True)
     try:
         rows = conn.execute(
             """
@@ -55,7 +73,8 @@ def load_entries(book_code: str = "N2", db_path: Path | str | None = None) -> li
 
         ex_rows = conn.execute(
             """
-            SELECT x.entry_id, x.text
+            SELECT x.entry_id, x.position, x.text, x.translation_en,
+                   x.translation_zh, x.explanation_md, x.audio_clip
               FROM entry_examples x
               JOIN entries e ON e.entry_id = x.entry_id
              WHERE e.book_code = ?
@@ -66,12 +85,25 @@ def load_entries(book_code: str = "N2", db_path: Path | str | None = None) -> li
     finally:
         conn.close()
 
-    examples_by_entry: dict[int, list[str]] = defaultdict(list)
+    examples_by_entry: dict[int, list[dict]] = defaultdict(list)
     for r in ex_rows:
-        examples_by_entry[r["entry_id"]].append(r["text"])
+        examples_by_entry[r["entry_id"]].append({
+            "position": r["position"],
+            "text": r["text"] or "",
+            "translation_en": r["translation_en"] or "",
+            "translation_zh": r["translation_zh"] or "",
+            "explanation": r["explanation_md"] or "",
+            "audio_clip": r["audio_clip"],
+        })
 
     out: list[dict] = []
     for r in rows:
+        example_items = examples_by_entry.get(r["entry_id"], [])
+        main_example = next((x for x in example_items if x["position"] == 0), None)
+        extra_examples = [x for x in example_items if x["position"] != 0]
+        sentence = (main_example or {}).get("text") or r["sentence"] or ""
+        sentence_clip = (main_example or {}).get("audio_clip") or r["sentence_clip"]
+        explanation = (main_example or {}).get("explanation") or r["explanation_md"] or ""
         out.append({
             "index": r["source_index"],
             "entry_id": r["entry_id"],
@@ -84,10 +116,14 @@ def load_entries(book_code: str = "N2", db_path: Path | str | None = None) -> li
             "verb_pattern": r["verb_pattern"],
             "meaning_en": r["meaning_en"] or "",
             "meaning_zh": r["meaning_zh"] or "",
-            "sentence": r["sentence"] or "",
-            "examples": examples_by_entry.get(r["entry_id"], []),
-            "explanation": r["explanation_md"] or "",
+            "sentence": sentence,
+            "sentence_translation_en": (main_example or {}).get("translation_en", ""),
+            "sentence_translation_zh": (main_example or {}).get("translation_zh", ""),
+            "examples": [x["text"] for x in extra_examples],
+            "example_items": example_items,
+            "examples_detailed": extra_examples,
+            "explanation": explanation,
             "word_clip": r["word_clip"],
-            "sentence_clip": r["sentence_clip"],
+            "sentence_clip": sentence_clip,
         })
     return out

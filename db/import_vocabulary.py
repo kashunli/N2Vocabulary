@@ -157,12 +157,49 @@ def import_book(
                 (book_code, source_index),
             ).fetchone()["entry_id"]
 
-            # Replace examples for this entry (cheap + simple).
+            # Replace examples for this entry (cheap + simple). Position 0 is
+            # reserved for the main sentence and carries sentence-specific
+            # metadata; positions 1+ are the book's additional examples.
             conn.execute("DELETE FROM entry_examples WHERE entry_id = ?", (row_id,))
-            for i, ex_text in enumerate(e.get("examples") or []):
+            if e.get("sentence"):
                 conn.execute(
-                    "INSERT INTO entry_examples (entry_id, position, text) VALUES (?,?,?)",
-                    (row_id, i, ex_text),
+                    """
+                    INSERT INTO entry_examples (
+                      entry_id, position, text, translation_en, translation_zh,
+                      explanation_md, audio_clip
+                    ) VALUES (?,?,?,?,?,?,?)
+                    """,
+                    (
+                        row_id,
+                        0,
+                        e.get("sentence") or "",
+                        e.get("sentence_translation_en") or e.get("translation_en") or "",
+                        e.get("sentence_translation_zh") or e.get("translation_zh") or "",
+                        e.get("explanation") or "",
+                        e.get("sentence_clip"),
+                    ),
+                )
+            for i, ex_text in enumerate(e.get("examples") or [], start=1):
+                if isinstance(ex_text, dict):
+                    text = ex_text.get("text") or ""
+                    translation_en = ex_text.get("translation_en") or ""
+                    translation_zh = ex_text.get("translation_zh") or ""
+                    explanation_md = ex_text.get("explanation") or ex_text.get("explanation_md") or ""
+                    audio_clip = ex_text.get("audio_clip")
+                else:
+                    text = str(ex_text)
+                    translation_en = ""
+                    translation_zh = ""
+                    explanation_md = ""
+                    audio_clip = None
+                conn.execute(
+                    """
+                    INSERT INTO entry_examples (
+                      entry_id, position, text, translation_en, translation_zh,
+                      explanation_md, audio_clip
+                    ) VALUES (?,?,?,?,?,?,?)
+                    """,
+                    (row_id, i, text, translation_en, translation_zh, explanation_md, audio_clip),
                 )
 
         conn.execute("COMMIT")

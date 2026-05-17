@@ -9,9 +9,9 @@ run_track() {
     local file="$1"
     local out_dir="$2"
     echo "=== Cutting: $out_dir ==="
-    python3 cutTwice/cut_by_silence.py --track "$file" --just-cut --output-dir "$out_dir"
-    python3 cutTwice/transcribe_pairs.py --pairs-json "$out_dir/pairs.json" --wcpp-binary "$WCPP_BIN" --wcpp-model "$WCPP_MODEL" --language ja
-    python3 cutTwice/cut_word.py --pairs-json "$out_dir/pairs.json" --wcpp-binary "$WCPP_BIN" --wcpp-model "$WCPP_MODEL" --language ja
+    python3 skills/cutTwice/cut_by_silence.py --track "$file" --just-cut --output-dir "$out_dir"
+    python3 skills/cutTwice/transcribe_pairs.py --pairs-json "$out_dir/pairs.json" --wcpp-binary "$WCPP_BIN" --wcpp-model "$WCPP_MODEL" --language ja
+    python3 skills/cutTwice/cut_word.py --pairs-json "$out_dir/pairs.json" --wcpp-binary "$WCPP_BIN" --wcpp-model "$WCPP_MODEL" --language ja
     echo "=== DONE: $out_dir ==="
 }
 

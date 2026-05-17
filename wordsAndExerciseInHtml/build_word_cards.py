@@ -2,14 +2,14 @@
 """
 build_word_cards.py — Generate compact card-grid HTML pages for N2 vocabulary.
 
-Reads:  ../vocabulary.json
+Reads:  ../output/n2vocab.sqlite
 Writes: words/cards/
           index.html
           unit_01.html .. unit_13.html
 
 Each card shows kanji+ruby, glosses, the `sentence` field, two play buttons
 (word + sentence audio), and two toggle buttons (known / flagged).
-State is persisted to output/word_marks.json via marks_server.py, with a
+State is persisted to output/n2vocab.sqlite via marks_server.py, with a
 localStorage fallback if the server is offline.
 
 Run from any cwd:
@@ -155,12 +155,8 @@ main { padding: 1.2rem 1.2rem 3rem; }
 .card.hide { display: none; }
 
 .card-top {
-  display: flex; justify-content: space-between; align-items: flex-start;
+  display: flex; justify-content: flex-end; align-items: flex-start;
   gap: 8px;
-}
-.card-meta {
-  font-size: 0.7rem; letter-spacing: 0.06em; color: var(--muted2);
-  text-transform: uppercase; font-weight: 600;
 }
 .card-actions { display: flex; gap: 4px; }
 .icon-btn {
@@ -178,7 +174,6 @@ main { padding: 1.2rem 1.2rem 3rem; }
   font-family: "Iowan Old Style", "Hiragino Mincho ProN", "Yu Mincho", serif;
   font-size: 1.5rem; line-height: 1.15; font-weight: 600;
 }
-.card-verb { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
 .card-meaning { font-size: 0.85rem; color: var(--muted); }
 .card-meaning .en { color: var(--ink); font-weight: 500; }
 .card-meaning .zh { color: var(--muted2); }
@@ -187,6 +182,14 @@ main { padding: 1.2rem 1.2rem 3rem; }
   font-size: 1rem; padding: 6px 0; color: var(--ink);
   border-top: 1px dashed var(--line);
 }
+.card-sentence-translation {
+  margin-top: -4px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+.card-sentence-translation .en { color: var(--ink); font-weight: 500; }
+.card-sentence-translation .zh { color: var(--muted2); }
 .card-bottom {
   display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
   margin-top: auto;
@@ -207,6 +210,13 @@ main { padding: 1.2rem 1.2rem 3rem; }
   text-decoration: none;
 }
 .details-link:hover { color: var(--accent); text-decoration: underline; }
+.card-index {
+  color: var(--muted2);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding-left: 4px;
+}
 
 /* ── Modal ── */
 .modal-backdrop {
@@ -264,10 +274,13 @@ main { padding: 1.2rem 1.2rem 3rem; }
   font-family: "Iowan Old Style", "Hiragino Mincho ProN", "Yu Mincho", serif;
   font-size: 1.02rem; padding: 8px 12px;
   background: #fff; border: 1px solid var(--line); border-radius: 6px;
-  display: flex; align-items: center; gap: 10px;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
 }
 .sentence-row.main { background: color-mix(in srgb, var(--accent) 5%, #fff); border-color: color-mix(in srgb, var(--accent) 25%, var(--line)); }
 .sentence-row .badge { font-size: 0.65rem; letter-spacing: 0.06em; color: var(--accent); font-weight: 700; text-transform: uppercase; }
+.sentence-row .sentence-translation { color: var(--muted); font-size: 0.86rem; line-height: 1.4; }
+.sentence-row .sentence-translation .en { color: var(--ink); font-weight: 500; }
+.sentence-row .sentence-translation .zh { color: var(--muted); }
 .explanation {
   background: color-mix(in srgb, var(--muted) 6%, var(--paper));
   border-radius: 8px; padding: 12px 14px; font-size: 0.88rem;
@@ -410,6 +423,21 @@ function escapeHTML(s) {
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
   }[c]));
 }
+function sentenceRow(item, isMain=false) {
+  const text = item && item.text ? item.text : "";
+  const en = item && item.translation_en ? item.translation_en : "";
+  const zh = item && item.translation_zh ? item.translation_zh : "";
+  let trans = "";
+  if (en || zh) {
+    const parts = [];
+    if (en) parts.push(`<span class="en">${escapeHTML(en)}</span>`);
+    if (zh) parts.push(`<span class="zh">${escapeHTML(zh)}</span>`);
+    trans = `<span class="sentence-translation">${parts.join(" / ")}</span>`;
+  }
+  const badge = isMain ? '<span class="badge">main</span>' : "";
+  const cls = isMain ? "sentence-row main" : "sentence-row";
+  return `<div class="${cls}">${badge}<span>${escapeHTML(text)}</span>${trans}</div>`;
+}
 
 function openDetail(id) {
   const e = entryData[id];
@@ -420,21 +448,23 @@ function openDetail(id) {
   document.getElementById("modal-meta").textContent = `#${pad} · Unit ${unitPad}`;
   document.getElementById("modal-title").innerHTML = rubyOrPlain(e.kanji, e.reading);
 
-  const verb = document.getElementById("modal-verb");
-  if (e.verb_pattern) { verb.textContent = e.verb_pattern; verb.style.display = ""; }
-  else verb.style.display = "none";
-
   let mh = "";
   if (e.meaning_en) mh += `<div class="en">${escapeHTML(e.meaning_en)}</div>`;
   if (e.meaning_zh) mh += `<div class="zh">${escapeHTML(e.meaning_zh)}</div>`;
   document.getElementById("modal-meaning").innerHTML = mh;
 
   let rows = "";
-  if (e.sentence) {
-    rows += `<div class="sentence-row main"><span class="badge">main</span><span>${escapeHTML(e.sentence)}</span></div>`;
-  }
-  for (const ex of (e.examples || [])) {
-    rows += `<div class="sentence-row"><span>${escapeHTML(ex)}</span></div>`;
+  if (e.example_items && e.example_items.length) {
+    for (const item of e.example_items) {
+      rows += sentenceRow(item, item.position === 0);
+    }
+  } else {
+    if (e.sentence) {
+      rows += sentenceRow({text: e.sentence, translation_en: e.sentence_translation_en, translation_zh: e.sentence_translation_zh}, true);
+    }
+    for (const ex of (e.examples || [])) {
+      rows += sentenceRow({text: ex}, false);
+    }
   }
   document.getElementById("modal-sentences").innerHTML = rows;
 
@@ -639,6 +669,8 @@ def search_blob(entry: dict) -> str:
         entry.get("meaning_en") or "",
         entry.get("meaning_zh") or "",
         entry.get("sentence") or "",
+        entry.get("sentence_translation_en") or "",
+        entry.get("sentence_translation_zh") or "",
     ]
     return " ".join(parts).lower()
 
@@ -649,8 +681,9 @@ def render_card(e: dict, unit_num: int) -> str:
     reading = e.get("reading", "")
     meaning_en = e.get("meaning_en", "")
     meaning_zh = e.get("meaning_zh", "")
-    verb_pattern = e.get("verb_pattern")
     sentence = e.get("sentence", "")
+    sentence_translation_en = e.get("sentence_translation_en", "")
+    sentence_translation_zh = e.get("sentence_translation_zh", "")
     word_clip = clip_url(e.get("word_clip") or "")
     sent_clip = clip_url(e.get("sentence_clip") or "")
     search = html.escape(search_blob(e), quote=True)
@@ -669,10 +702,14 @@ def render_card(e: dict, unit_num: int) -> str:
         f'<div class="card-sentence">{html.escape(sentence)}</div>'
         if sentence else ""
     )
-
-    verb_html = (
-        f'<div class="card-verb">{html.escape(verb_pattern)}</div>'
-        if verb_pattern else ""
+    sentence_translation_parts = []
+    if sentence_translation_en:
+        sentence_translation_parts.append(f'<span class="en">{html.escape(sentence_translation_en)}</span>')
+    if sentence_translation_zh:
+        sentence_translation_parts.append(f'<span class="zh">{html.escape(sentence_translation_zh)}</span>')
+    sentence_translation_html = (
+        f'<div class="card-sentence-translation">{" / ".join(sentence_translation_parts)}</div>'
+        if sentence_translation_parts else ""
     )
 
     word_btn = (
@@ -691,20 +728,20 @@ def render_card(e: dict, unit_num: int) -> str:
     return (
         f'<article class="card" data-id="{idx}" data-unit="{unit_num}" data-search="{search}">'
         f'  <div class="card-top">'
-        f'    <span class="card-meta">#{idx:03d} · Unit {unit_num:02d}</span>'
         f'    <span class="card-actions">'
         f'      <button class="icon-btn known"   title="Mark as known">✓</button>'
         f'      <button class="icon-btn flagged" title="Flag for review">⚑</button>'
         f'    </span>'
         f'  </div>'
         f'  <div class="card-kanji">{headword_html(kanji, reading)}</div>'
-        f'  {verb_html}'
         f'  {meaning_html}'
         f'  {sentence_html}'
+        f'  {sentence_translation_html}'
         f'  <div class="card-bottom">'
         f'    {word_btn}'
         f'    {sent_btn}'
         f'    <button class="details-link" type="button">details →</button>'
+        f'    <span class="card-index">#{idx:03d}</span>'
         f'  </div>'
         f'</article>'
     )
@@ -737,7 +774,6 @@ MODAL_HTML = """
       <div>
         <div class="meta" id="modal-meta"></div>
         <div class="kanji" id="modal-title"></div>
-        <div class="verb" id="modal-verb" style="display:none"></div>
       </div>
       <button type="button" class="modal-close" aria-label="Close">×</button>
     </div>
@@ -771,11 +807,13 @@ def entry_detail_payload(e: dict) -> dict:
     return {
         "kanji": e.get("headword_text") or e.get("kanji", ""),
         "reading": e.get("reading", "") or "",
-        "verb_pattern": e.get("verb_pattern") or "",
         "meaning_en": e.get("meaning_en", "") or "",
         "meaning_zh": e.get("meaning_zh", "") or "",
         "sentence": e.get("sentence", "") or "",
+        "sentence_translation_en": e.get("sentence_translation_en", "") or "",
+        "sentence_translation_zh": e.get("sentence_translation_zh", "") or "",
         "examples": list(e.get("examples") or []),
+        "example_items": list(e.get("example_items") or []),
         "explanation_html": _md_explanation_html(e.get("explanation", "") or ""),
     }
 
@@ -836,7 +874,7 @@ def render_index(unit_info: list) -> str:
 <main>
   <p style="color:var(--muted); font-size:0.88rem; margin-bottom:1rem;">
     Compact grid with known/flagged marks. Run <code>python marks_server.py</code>
-    in the project root to persist marks to <code>output/word_marks.json</code>;
+    in the project root to persist marks to <code>output/n2vocab.sqlite</code>;
     otherwise marks are saved in this browser only.
   </p>
   <div class="grid index-grid">

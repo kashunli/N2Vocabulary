@@ -2,7 +2,7 @@
 """Generate N2Words.apkg - Anki deck for all N2 vocabulary entries.
 
 Usage:
-    python -u makeAnkiCards/scripts/make_anki.py [--out output/N2Words.apkg]
+    python -u skills/makeAnkiCards/scripts/make_anki.py [--out output/N2Words.apkg]
 
 Reads the current project-level vocabulary.json and packages clips from clips/.
 Stable deck/model/note IDs are preserved so Anki can update existing notes.
@@ -20,7 +20,7 @@ import html as html_mod
 
 import genanki
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 
 # ── IDs (stable — do not change once deck exists) ─────────────────────────────
 DECK_ID   = 1_234_567_890

@@ -7,9 +7,11 @@ This repository turns an OCR'd JLPT N2 vocabulary book plus its audio tracks int
 
 The current project truth is:
 
-- `cutTwice/` is the current audio-cutting workflow.
+- `skills/cutTwice/` is the current audio-cutting workflow.
+- `skills/makeAnkiCards/` is the current Anki deck workflow.
+- `skills/batch-japanese-sentence-explanations/` is the current batch sentence-explanation workflow.
+- `skills/japanese-sentence-explanation-skill/` and `skills/japanese-sentence-explanation.skill` preserve the reusable single-sentence explanation skill for later review.
 - `wordsAndExerciseInHtml/` is the current HTML build workflow.
-- Anki building is still reference/legacy-backed and should be promoted into its own clean workflow before major new work.
 - `legacy/` is a reference archive, not the default place to run code from.
 
 ## Folder Map
@@ -17,18 +19,19 @@ The current project truth is:
 - `audio/` - source MP3 tracks from the book audio.
 - `json/` - OCR/page JSON used by vocabulary and exercise workflows.
 - `parse/` - OCR parser docs and parser project files, now flattened into this root repo.
-- `vocabulary.json` - current canonical vocabulary data used by HTML and card workflows.
+- `output/n2vocab.sqlite` - current canonical vocabulary data used by the word runtime and HTML snapshots.
+- `vocabulary.json.db` - retired JSON vocabulary snapshot kept only for reference/history.
 - `clips/` - current cut audio clips, arranged by logical unit/track folders.
-- `cutTwice/` - current pair-first audio cutter and transcriber skill.
-- `makeAnkiCards/` - current Anki deck workflow and scripts.
+- `skills/` - reusable project-local skills and workflow folders for later review.
 - `wordsAndExerciseInHtml/` - static HTML words and exercises.
 - `output/` - current historical/working output bucket; see `docs/ARCHITECTURE.md` for the target split.
 - `legacy/` - old scripts, old skills, backups, and preserved parser history.
 - `updates/` - dated change records and cleanup notes.
 - `docs/` - compact current architecture, runbook, and decisions.
+- `AGENTS.md` - project memory and AI-maintainable coding principles for future agents.
 
 ## Maintenance Rule
 
-Keep current workflows boring and explicit. Put reusable current code in named workflow folders, put historical material in `legacy/`, and put narrative history in `updates/`. Avoid adding one-off scripts at the repository root.
+Keep current workflows boring and explicit. Put reusable current code in `skills/<name>/`, put historical material in `legacy/`, and put narrative history in `updates/`. Avoid adding one-off scripts at the repository root.
 
 This repo is AI-operated first: prefer small concrete skill folders with `SKILL.md` plus nearby scripts, because future work will usually be performed by an AI agent reading the repo rather than by a human remembering command history.

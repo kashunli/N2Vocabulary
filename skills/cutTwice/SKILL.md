@@ -27,7 +27,7 @@ There are two pair-cutting modes:
 ## Step 1 — Cut by silence
 
 ```bash
-python cutTwice/cut_by_silence.py \
+python skills/cutTwice/cut_by_silence.py \
     --track      "audio/unit1/track01.mp3" \
     --expected   10 \
     [--start-index 1] \
@@ -40,7 +40,7 @@ python cutTwice/cut_by_silence.py \
 For unknown pair counts:
 
 ```bash
-python cutTwice/cut_by_silence.py \
+python skills/cutTwice/cut_by_silence.py \
     --track      "audio/unit1/full_unit.mp3" \
     --just-cut \
     --start-index 1 \
@@ -75,7 +75,7 @@ Use one output folder per logical source track. The folder name should be stable
 The normal `cut_by_silence.py` workflow is still the stable/default pair cutter. If a future repair needs a more direct strategy, use `cut_by_longest_silences.py` as an experimental alternative. It detects many candidate silence intervals once, ranks internal intervals by duration, selects `expected - 1` longest separators, then cuts exactly `expected` pair clips.
 
 ```bash
-python cutTwice/cut_by_longest_silences.py \
+python skills/cutTwice/cut_by_longest_silences.py \
     --track      "audio/unit1/track01.mp3" \
     --expected   10 \
     --start-index 1 \
@@ -101,7 +101,7 @@ This can be useful when the real word-pair separators are the longest pauses, wh
 In just-cut mode, transcribe whole pairs before splitting words. Review whether each `pairNNN.mp3` contains exactly one word plus one sentence that contains that word. If the pair transcript looks reasonable, continue to word/sentence splitting. If not, keep the manifest: the timestamps and silence intervals make later manual repair easier.
 
 ```bash
-python cutTwice/transcribe_pairs.py \
+python skills/cutTwice/transcribe_pairs.py \
     --pairs-json  "clips/unit1_auto/pairs.json" \
     --wcpp-binary "tools/whispercpp-windows/whisper-cli.exe" \
     --wcpp-model  "tools/whispercpp-windows/ggml-large-v3-turbo.bin" \
@@ -114,7 +114,7 @@ python cutTwice/transcribe_pairs.py \
 ## Step 3 — Split each pair into word + sentence
 
 ```bash
-python cutTwice/cut_word.py \
+python skills/cutTwice/cut_word.py \
     --pairs-json  "clips/unit1_track01/pairs.json" \
     --wcpp-binary "tools/whispercpp-windows/whisper-cli.exe" \
     --wcpp-model  "tools/whispercpp-windows/ggml-large-v3-turbo.bin" \
@@ -141,7 +141,7 @@ If a pair cannot be split or transcribed, `cut_word.py` records `split_error`, `
 This is the same command used in Step 2. Use it without `cut_word.py` when you only want pair-level review.
 
 ```bash
-python cutTwice/transcribe_pairs.py \
+python skills/cutTwice/transcribe_pairs.py \
     --pairs-json  "clips/unit1_track01/pairs.json" \
     --wcpp-binary "tools/whispercpp-windows/whisper-cli.exe" \
     --wcpp-model  "tools/whispercpp-windows/ggml-large-v3-turbo.bin" \
@@ -196,7 +196,7 @@ export WHISPER_CPP_MODEL=tools/whispercpp-windows/ggml-large-v3-turbo.bin
 
 ```bash
 # 1. Dry run first to inspect piece detection
-python cutTwice/cut_by_silence.py \
+python skills/cutTwice/cut_by_silence.py \
     --track audio/unit1/track01.mp3 \
     --expected 10 \
     --start-index 1 \
@@ -204,14 +204,14 @@ python cutTwice/cut_by_silence.py \
     --dry-run
 
 # 2. Cut for real
-python cutTwice/cut_by_silence.py \
+python skills/cutTwice/cut_by_silence.py \
     --track audio/unit1/track01.mp3 \
     --expected 10 \
     --start-index 1 \
     --output-dir clips/unit1_track01
 
 # 3. Split each pair into word/sentence clips and transcribe them
-python cutTwice/cut_word.py \
+python skills/cutTwice/cut_word.py \
     --pairs-json clips/unit1_track01/pairs.json \
     --wcpp-binary tools/whispercpp-windows/whisper-cli.exe \
     --wcpp-model tools/whispercpp-windows/ggml-large-v3-turbo.bin \
@@ -224,16 +224,16 @@ Track filenames in `audio/Unit7 名詞C` do not exactly match the logical track 
 
 ```bash
 # track47: words 628-630, 3 pairs
-python cutTwice/cut_by_silence.py --track "audio/Unit7 名詞C/47 1-47.mp3" --expected 3 --start-index 628 --output-dir "clips/unit7_track47"
-python cutTwice/cut_word.py --pairs-json "clips/unit7_track47/pairs.json" --wcpp-binary "tools/whispercpp-windows/whisper-cli.exe" --wcpp-model "tools/whispercpp-windows/ggml-large-v3-turbo.bin" --overwrite
+python skills/cutTwice/cut_by_silence.py --track "audio/Unit7 名詞C/47 1-47.mp3" --expected 3 --start-index 628 --output-dir "clips/unit7_track47"
+python skills/cutTwice/cut_word.py --pairs-json "clips/unit7_track47/pairs.json" --wcpp-binary "tools/whispercpp-windows/whisper-cli.exe" --wcpp-model "tools/whispercpp-windows/ggml-large-v3-turbo.bin" --overwrite
 
 # track48: words 631-647, 17 pairs
-python cutTwice/cut_by_silence.py --track "audio/Unit7 名詞C/48 2-1.mp3" --expected 17 --start-index 631 --output-dir "clips/unit7_track48"
-python cutTwice/cut_word.py --pairs-json "clips/unit7_track48/pairs.json" --wcpp-binary "tools/whispercpp-windows/whisper-cli.exe" --wcpp-model "tools/whispercpp-windows/ggml-large-v3-turbo.bin" --overwrite
+python skills/cutTwice/cut_by_silence.py --track "audio/Unit7 名詞C/48 2-1.mp3" --expected 17 --start-index 631 --output-dir "clips/unit7_track48"
+python skills/cutTwice/cut_word.py --pairs-json "clips/unit7_track48/pairs.json" --wcpp-binary "tools/whispercpp-windows/whisper-cli.exe" --wcpp-model "tools/whispercpp-windows/ggml-large-v3-turbo.bin" --overwrite
 
 # track49: words 648-655, 8 pairs
-python cutTwice/cut_by_silence.py --track "audio/Unit7 名詞C/49 2-2.mp3" --expected 8 --start-index 648 --output-dir "clips/unit7_track49"
-python cutTwice/cut_word.py --pairs-json "clips/unit7_track49/pairs.json" --wcpp-binary "tools/whispercpp-windows/whisper-cli.exe" --wcpp-model "tools/whispercpp-windows/ggml-large-v3-turbo.bin" --overwrite
+python skills/cutTwice/cut_by_silence.py --track "audio/Unit7 名詞C/49 2-2.mp3" --expected 8 --start-index 648 --output-dir "clips/unit7_track49"
+python skills/cutTwice/cut_word.py --pairs-json "clips/unit7_track49/pairs.json" --wcpp-binary "tools/whispercpp-windows/whisper-cli.exe" --wcpp-model "tools/whispercpp-windows/ggml-large-v3-turbo.bin" --overwrite
 ```
 
 ## Unit7.5+ CD2 filename convention
@@ -248,9 +248,9 @@ Examples:
 When the expected pair count is unknown, use just-cut mode first, then transcribe pairs for review, then split words:
 
 ```bash
-python cutTwice/cut_by_silence.py --track "audio/Unit7.5 まとめ2同じ漢字を含む名詞/03 Track 3.mp3" --just-cut --output-dir "clips/unit7_5_track03"
-python cutTwice/transcribe_pairs.py --pairs-json "clips/unit7_5_track03/pairs.json" --wcpp-binary "tools/whispercpp-windows/whisper-cli.exe" --wcpp-model "tools/whispercpp-windows/ggml-large-v3-turbo.bin" --overwrite
-python cutTwice/cut_word.py --pairs-json "clips/unit7_5_track03/pairs.json" --wcpp-binary "tools/whispercpp-windows/whisper-cli.exe" --wcpp-model "tools/whispercpp-windows/ggml-large-v3-turbo.bin" --overwrite
+python skills/cutTwice/cut_by_silence.py --track "audio/Unit7.5 まとめ2同じ漢字を含む名詞/03 Track 3.mp3" --just-cut --output-dir "clips/unit7_5_track03"
+python skills/cutTwice/transcribe_pairs.py --pairs-json "clips/unit7_5_track03/pairs.json" --wcpp-binary "tools/whispercpp-windows/whisper-cli.exe" --wcpp-model "tools/whispercpp-windows/ggml-large-v3-turbo.bin" --overwrite
+python skills/cutTwice/cut_word.py --pairs-json "clips/unit7_5_track03/pairs.json" --wcpp-binary "tools/whispercpp-windows/whisper-cli.exe" --wcpp-model "tools/whispercpp-windows/ggml-large-v3-turbo.bin" --overwrite
 ```
 
 ## Troubleshooting

@@ -2,7 +2,7 @@
 """Merge a batch of explanations (JSON array) into vocabulary.json.
 
 Usage:
-    python makeAnkiCards/scripts/merge_explanations.py <explanations.json>
+    python skills/makeAnkiCards/scripts/merge_explanations.py <explanations.json>
 
 The input JSON should be an array of {"index": N, "explanation": "..."} objects.
 Entries whose index is not found in the DB are reported as warnings.
@@ -14,7 +14,7 @@ import json
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 
 
 def main() -> None:

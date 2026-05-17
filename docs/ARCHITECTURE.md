@@ -5,7 +5,7 @@
 Use artifact level as the organizing principle:
 
 - **Source**: human/source material that is expensive or impossible to regenerate, such as `audio/`, `json/`, and the PDF/OCR inputs under `parse/`.
-- **Canonical data**: cleaned project state that downstream products read, especially `vocabulary.json`.
+- **Canonical data**: cleaned project state that downstream products read, especially `output/n2vocab.sqlite`.
 - **Work artifacts**: review files, mappings, audits, and repair manifests that explain how a result was produced.
 - **Cache**: Whisper transcripts, temporary ASR folders, and other speed aids that can be regenerated.
 - **Distribution**: final user-facing artifacts, such as HTML pages and `.apkg` decks.
@@ -22,9 +22,11 @@ The project still has a historical `output/` folder. Treat it as a compatibility
 
 The newer current workflows already live outside `output/`:
 
-- `clips/` - current cut clips from `cutTwice/`.
+- `clips/` - current cut clips from `skills/cutTwice/`.
 - `wordsAndExerciseInHtml/` - current HTML site.
-- `vocabulary.json` - current canonical vocabulary DB.
+- `skills/` - reusable project-local skill/workflow folders.
+- `output/n2vocab.sqlite` - current canonical vocabulary DB.
+- `vocabulary.json.db` - retired JSON snapshot kept for reference only.
 
 ## Target Layout
 
@@ -40,7 +42,7 @@ N2Vocabulary/
 ├── work/                   # mappings, audits, reviews, repair manifests
 ├── cache/                  # Whisper/temporary/regenerable files
 ├── dist/                   # final HTML exports and Anki decks
-├── cutTwice/               # audio cutting skill and scripts
+├── skills/                 # reusable workflow skills and scripts
 ├── wordsAndExerciseInHtml/ # HTML build workflow
 └── legacy/                 # old methods and archived history
 ```
@@ -76,6 +78,6 @@ workflowName/
 └── assets/           # optional templates or static resources
 ```
 
-Keep each skill concrete. `cutTwice/` should only cut/transcribe audio clips. `makeAnkiCards/` should only build/check/export Anki decks. HTML generation belongs in `wordsAndExerciseInHtml/`.
+In this repo, place those folders under `skills/`. Keep each skill concrete. `skills/cutTwice/` should only cut/transcribe audio clips. `skills/makeAnkiCards/` should only build/check/export Anki decks. HTML generation belongs in `wordsAndExerciseInHtml/`.
 
 When a skill grows too large, split it by product or decision surface. For example, audio cutting, clip audit, Anki building, and HTML rendering should be separate skills because they have different inputs, outputs, and validation checks.

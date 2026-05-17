@@ -18,7 +18,7 @@ future repair / experimentation tool.  It does not replace the existing
 cutTwice workflow.
 
 Example:
-  python cutTwice/cut_by_longest_silences.py \\
+  python skills/cutTwice/cut_by_longest_silences.py \\
       --track "audio/unit1/track01.mp3" \\
       --expected 10 \\
       --start-index 1 \\

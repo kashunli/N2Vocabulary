@@ -2,11 +2,11 @@
 
 Reference code archive. Not for direct invocation.
 
-`cutTwice/` at the project root is the current audio-cutting pipeline. Everything under this folder was part of an earlier approach and is kept as reference material — patterns and snippets to mine when authoring new skills, not working code.
+`skills/cutTwice/` at the project root is the current audio-cutting pipeline. Everything under this folder was part of an earlier approach and is kept as reference material — patterns and snippets to mine when authoring new skills, not working code.
 
 ## Contents
 
-- `scripts/` — root-level alignment scripts that preceded `cutTwice/`:
+- `scripts/` — root-level alignment scripts that preceded `skills/cutTwice/`:
   - `align_track_by_llm.py` — Whisper + LLM track aligner
   - `align/` — support module (artifacts, boundaries, cut, prompt, etc.)
   - `cut_units1to6.sh` — batch runner for Units 1–6

@@ -2,7 +2,7 @@
 """Produce a clean, human-editable vocabulary database.
 
 Usage:
-    python -u makeAnkiCards/scripts/make_clean_db.py --src output/vocabulary_combined.json --out vocabulary.json
+    python -u skills/makeAnkiCards/scripts/make_clean_db.py --src output/vocabulary_combined.json --out vocabulary.json
 
 What it does:
 - Strips all alignment metadata (timestamps, confidence, transcripts)
@@ -16,7 +16,7 @@ import argparse
 import json
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 
 
 def resolve_clips(idx: int, unit: int, clips_root: Path) -> tuple[str | None, str | None]:

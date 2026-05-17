@@ -38,6 +38,7 @@ tools/whispercpp-windows/*.bin
 tools/whispercpp-windows/whisper.cpp-src/
 node_modules/
 .venv/
+target/
 cache/
 output/whisper_cache/
 output/whisper_tmp/
