@@ -45,7 +45,7 @@ N2Vocabulary/
 │   ├── clips/                   ← older clip outputs (gitignored)
 │   ├── N2Words.apkg             ← word-centered Anki deck
 │   └── N2Words_listening.apkg   ← sentence-listening Anki deck
-├── wordsAndExerciseInHtml/      ← static HTML words and exercises
+├── wordService/                 ← current local SQLite-backed word service
 ├── legacy/                      ← archived code and data — reference only
 │   ├── scripts/                 ← align_track_by_llm.py + align/ module
 │   ├── skills/                  ← full-unit-cutter, gpt-track-piece-mapper
@@ -56,7 +56,6 @@ N2Vocabulary/
 ├── tools/whispercpp-windows/    ← whisper-cli.exe + DLLs + ggml models (Vulkan)
 ├── updates/                     ← dated change records and cleanup notes
 ├── dashboard.html               ← interactive vocabulary review dashboard
-├── marks_server.py              ← background word-marking server
 ├── AGENTS.md                    ← project memory for AI agents
 ├── RESUME.md                    ← project history and design decisions
 └── CLAUDE.md                    ← this file

@@ -22,8 +22,8 @@ The project still has a historical `output/` folder. Treat it as a compatibility
 
 The newer current workflows already live outside `output/`:
 
-- `clips/` - current cut clips from `skills/cutTwice/`.
-- `wordsAndExerciseInHtml/` - current HTML site.
+- `clips/` - current service-facing clips from `skills/cutTwice/`, flattened under `clips/words/` and `clips/sentences/`.
+- `wordService/rust/` - current local SQLite-backed study service.
 - `skills/` - reusable project-local skill/workflow folders.
 - `output/n2vocab.sqlite` - current canonical vocabulary DB.
 - `vocabulary.json.db` - retired JSON snapshot kept for reference only.
@@ -38,12 +38,12 @@ N2Vocabulary/
 ├── json/                   # source OCR JSON
 ├── parse/                  # parser docs/source project
 ├── data/                   # canonical and normalized JSON
-├── clips/                  # current cut audio clips
+├── clips/                  # current service-facing audio clips
 ├── work/                   # mappings, audits, reviews, repair manifests
 ├── cache/                  # Whisper/temporary/regenerable files
 ├── dist/                   # final HTML exports and Anki decks
 ├── skills/                 # reusable workflow skills and scripts
-├── wordsAndExerciseInHtml/ # HTML build workflow
+├── wordService/            # local word-study service
 └── legacy/                 # old methods and archived history
 ```
 
@@ -78,6 +78,6 @@ workflowName/
 └── assets/           # optional templates or static resources
 ```
 
-In this repo, place those folders under `skills/`. Keep each skill concrete. `skills/cutTwice/` should only cut/transcribe audio clips. `skills/makeAnkiCards/` should only build/check/export Anki decks. HTML generation belongs in `wordsAndExerciseInHtml/`.
+In this repo, place those folders under `skills/`. Keep each skill concrete. `skills/cutTwice/` should only cut/transcribe audio clips. `skills/makeAnkiCards/` should only build/check/export Anki decks. The local study runtime belongs in `wordService/rust/`.
 
 When a skill grows too large, split it by product or decision surface. For example, audio cutting, clip audit, Anki building, and HTML rendering should be separate skills because they have different inputs, outputs, and validation checks.

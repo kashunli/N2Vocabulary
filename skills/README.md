@@ -9,5 +9,6 @@ This folder gathers reusable workflow skills so they can be reviewed one by one 
 - `batch-japanese-sentence-explanations/` - monitored DeepSeek batch generation for `vocabulary.json` explanation fields.
 - `aliyun-openai-compatible-api/` - reusable notes for Aliyun Model Studio / DashScope OpenAI-compatible model calls.
 - `japanese-sentence-explanation-skill/` - reusable single-sentence explanation style contract.
+- `microsoft-edge-japanese-tts/` - free Microsoft Edge TTS generation for Japanese example-sentence MP3s.
 
-Keep new reusable workflows here as `skills/<workflow>/SKILL.md` plus nearby scripts/references. Finished products still belong in the normal project folders such as `clips/`, `output/`, `wordsAndExerciseInHtml/`, or future `dist/`.
+Keep new reusable workflows here as `skills/<workflow>/SKILL.md` plus nearby scripts/references. Finished products still belong in the normal project folders such as `clips/`, `output/`, `wordService/`, or future `dist/`.

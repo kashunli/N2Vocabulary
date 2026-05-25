@@ -19,36 +19,37 @@ python skills/cutTwice/transcribe_pairs.py --pairs-json "clips/unit7_5_track03/p
 python skills/cutTwice/cut_word.py --pairs-json "clips/unit7_5_track03/pairs.json" --wcpp-binary "tools/whispercpp-windows/whisper-cli.exe" --wcpp-model "tools/whispercpp-windows/ggml-large-v3-turbo.bin" --overwrite
 ```
 
+After cutting or repairing track folders, refresh the flat service aliases and
+SQLite audio paths:
+
+```bash
+python skills/cutTwice/flatten_audio_clips.py
+python skills/cutTwice/flatten_audio_clips.py --apply --migrate-db
+```
+
+The first command is an audit. The second copies `clips/words/wordNNN.mp3` and
+`clips/sentences/sentenceNNN.mp3`, then updates the DB if every source index is
+present and unambiguous.
+
 ## Study Words Runtime
 
 ```bash
-python marks_server.py
+cd wordService/rust
+cargo run
 ```
 
-This starts the local SQLite-backed word server at `http://127.0.0.1:8766/`.
-It renders word pages from `output/n2vocab.sqlite`, serves audio from `clips/`,
-and persists known/flagged card marks back into the same SQLite database.
+This starts the local SQLite-backed word service at `http://127.0.0.1:8767/`.
+It reads `output/n2vocab.sqlite`, serves audio from `clips/`, and persists
+known/flagged card marks back into the same SQLite database.
 
 Useful routes:
 
 ```text
-http://127.0.0.1:8766/words/index.html
-http://127.0.0.1:8766/words/cards/index.html
-http://127.0.0.1:8766/words/cards/unit_01.html
-http://127.0.0.1:8766/words/by_unit/unit_01.html
+http://127.0.0.1:8767/
+http://127.0.0.1:8767/api/summary
+http://127.0.0.1:8767/api/units
+http://127.0.0.1:8767/api/entries?unit=1
 ```
-
-`wordsAndExerciseInHtml/build_words.py` and
-`wordsAndExerciseInHtml/build_word_cards.py` are optional static snapshot
-builders. Use them only when you intentionally want generated HTML files.
-
-## Rebuild HTML Exercises
-
-```bash
-python wordsAndExerciseInHtml/build_exercises.py
-```
-
-This reads OCR exercise JSON from `json/` and writes under `wordsAndExerciseInHtml/exercises/`.
 
 ## Anki Decks
 
