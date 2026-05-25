@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Build output/N2Words_listening.apkg - sentence-listening Anki deck.
+r"""Build output/N2Words_listening.apkg - sentence-listening Anki deck.
 
 Usage:
-    python -u skills/makeAnkiCards/scripts/make_anki_listening.py [--out output/N2Words_listening.apkg]
+    python -u skills/makeAnkiCards/scripts/make_anki_listening.py [--out output\N2Words_listening.apkg]
 
 Front: sentence audio auto-plays - pure listening comprehension.
 Back:  sentence text + vocabulary headword + meanings + AI explanation.
@@ -11,13 +11,17 @@ from __future__ import annotations
 
 import argparse
 import html as html_mod
-import json
 import re
+import sys
 from pathlib import Path
 
 import genanki
 
-ROOT = Path(__file__).resolve().parents[3]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from db.connect import load_entries
 
 # ── Markdown → HTML for explanations ──────────────────────────────────────────
 
@@ -120,6 +124,7 @@ BACK_TMPL = """\
 <div class="card-back">
   <div class="sentence-block">
     <div class="sentence">{{Sentence}}</div>
+    {{#SentenceTranslationEN}}<div class="sentence-translation">{{SentenceTranslationEN}}</div>{{/SentenceTranslationEN}}
     <div class="audio-row sentence-replay">{{SentenceAudio}}</div>
   </div>
 
@@ -231,6 +236,13 @@ CSS = """\
   border-radius: var(--radius);
   border-left: 4px solid var(--accent);
   margin-bottom: 6px;
+}
+
+.sentence-translation {
+  font-size: 15px;
+  line-height: 1.5;
+  color: #aeb8d6;
+  padding: 0 18px 6px;
 }
 
 .sentence-replay {
@@ -380,16 +392,25 @@ hr.divider {
 }
 
 .examples-list {
-  font-family: 'Noto Sans JP', sans-serif;
   font-size: 14px;
-  line-height: 1.8;
+  line-height: 1.65;
   color: #9aa0be;
   padding-left: 12px;
   border-left: 2px solid var(--divider);
 }
 
-.examples-list p {
-  margin: 0 0 3px 0;
+.example-item {
+  margin: 0 0 10px 0;
+}
+
+.example-jp {
+  font-family: 'Noto Sans JP', sans-serif;
+  color: #d8def4;
+}
+
+.example-en {
+  color: #9ca8c8;
+  margin-top: 2px;
 }
 
 /* ── Index tag ─────────────────────────── */
@@ -419,6 +440,7 @@ def build_deck(db: list[dict], clips_root: Path):
             {"name": "MeaningZH"},
             {"name": "WordAudio"},
             {"name": "Sentence"},
+            {"name": "SentenceTranslationEN"},
             {"name": "SentenceAudio"},
             {"name": "MoreExamples"},
             {"name": "Explanation"},
@@ -439,7 +461,7 @@ def build_deck(db: list[dict], clips_root: Path):
             return ""
         p = Path(clip_rel)
         if not p.is_absolute():
-            p = ROOT / clip_rel.replace("/", "\\")
+            p = PROJECT_ROOT / clip_rel.replace("/", "\\")
         if not p.exists():
             return ""
         key = p.name
@@ -459,8 +481,29 @@ def build_deck(db: list[dict], clips_root: Path):
         word_audio = add_audio(e.get("word_clip"))
         sent_audio = add_audio(e.get("sentence_clip"))
 
+        # Anki templates cannot iterate over arbitrary DB rows. Pre-render
+        # extra examples into one field and cap visible sentence items at five:
+        # the main sentence plus up to four additional examples.
         examples = e.get("examples") or []
-        more_html = "".join(f"<p>{html_mod.escape(ex)}</p>" for ex in examples)
+        extra_items = [
+            x for x in e.get("example_items", [])
+            if x.get("position") != 0 and x.get("text")
+        ]
+        if not extra_items:
+            extra_items = [
+                {"position": i + 1, "text": text, "translation_en": ""}
+                for i, text in enumerate(examples)
+                if text
+            ]
+        more_parts = []
+        for item in extra_items[:4]:
+            jp = html_mod.escape(str(item.get("text") or ""))
+            en = html_mod.escape(str(item.get("translation_en") or ""))
+            en_html = f'<div class="example-en">{en}</div>' if en else ""
+            more_parts.append(
+                f'<div class="example-item"><div class="example-jp">{jp}</div>{en_html}</div>'
+            )
+        more_html = "".join(more_parts)
 
         # explanation: convert markdown to HTML for Anki display
         raw_exp = e.get("explanation") or ""
@@ -479,6 +522,7 @@ def build_deck(db: list[dict], clips_root: Path):
                 t(e.get("meaning_zh")),
                 word_audio,
                 t(e.get("sentence")),
+                t(e.get("sentence_translation_en")),
                 sent_audio,
                 more_html,
                 explanation,
@@ -496,25 +540,30 @@ def clip_exists(clip_rel: str | None) -> bool:
         return False
     p = Path(clip_rel)
     if not p.is_absolute():
-        p = ROOT / clip_rel.replace("/", "\\")
+        p = PROJECT_ROOT / clip_rel.replace("/", "\\")
     return p.exists()
 
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--db",  default="vocabulary.json")
+    ap.add_argument("--db",  default="output/n2vocab.sqlite")
     ap.add_argument("--out", default="output/N2Words_listening.apkg")
     ap.add_argument("--clips", default="clips")
+    ap.add_argument("--book", default="N2")
     args = ap.parse_args()
 
-    db_path    = ROOT / args.db
-    clips_root = ROOT / args.clips
+    db_path = Path(args.db)
+    if not db_path.is_absolute():
+        db_path = PROJECT_ROOT / db_path
+    clips_root = Path(args.clips)
+    if not clips_root.is_absolute():
+        clips_root = PROJECT_ROOT / clips_root
 
     if not db_path.exists():
-        print(f"ERROR: {db_path} not found. Run make_clean_db.py first.")
+        print(f"ERROR: {db_path} not found. Rebuild or restore output/n2vocab.sqlite first.")
         return
 
-    db = json.loads(db_path.read_text(encoding="utf-8"))
+    db = load_entries(book_code=args.book, db_path=db_path)
     db.sort(key=lambda e: e["index"])
 
     print(f"Building listening deck for {len(db)} entries…")
@@ -523,7 +572,9 @@ def main() -> None:
     pkg = genanki.Package(deck)
     pkg.media_files = media
 
-    out = ROOT / args.out
+    out = Path(args.out)
+    if not out.is_absolute():
+        out = PROJECT_ROOT / out
     out.parent.mkdir(parents=True, exist_ok=True)
     pkg.write_to_file(str(out))
 

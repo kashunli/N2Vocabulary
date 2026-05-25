@@ -97,7 +97,7 @@ Batch AI sentence explanations live in `skills/batch-japanese-sentence-explanati
 ## Status (2026-05-17)
 
 - 1142/1142 entries have AI explanations (100%).
-- Both Anki decks built and deployed to `D:\n2Prepare\ankiCardsToBuilt\`.
+- Both Anki decks build under `output/` from the current SQLite-backed workflow.
 - Audio alignment in progress — `output/alignment/review/` holds per-track results.
 - Project directory reorganized: legacy code archived, output/ grouped by purpose.
 

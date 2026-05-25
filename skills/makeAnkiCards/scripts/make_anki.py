@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
-"""Generate N2Words.apkg - Anki deck for all N2 vocabulary entries.
+r"""Generate N2Words.apkg - Anki deck for all N2 vocabulary entries.
 
-Usage:
-    python -u skills/makeAnkiCards/scripts/make_anki.py [--out output/N2Words.apkg]
+Usage from D:\n2Prepare\N2Vocabulary:
+    python -u skills/makeAnkiCards/scripts/make_anki.py [--out output\N2Words.apkg]
 
-Reads the current project-level vocabulary.json and packages clips from clips/.
+Reads the current project-level SQLite database and packages clips from clips/.
 Stable deck/model/note IDs are preserved so Anki can update existing notes.
 """
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import re
 import sys
@@ -20,7 +19,12 @@ import html as html_mod
 
 import genanki
 
-ROOT = Path(__file__).resolve().parents[3]
+SKILL_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from db.connect import load_entries
 
 # ── IDs (stable — do not change once deck exists) ─────────────────────────────
 DECK_ID   = 1_234_567_890
@@ -80,10 +84,12 @@ BACK_TMPL = """\
   <div class="sentence-block">
     <div class="audio-row">{{SentenceAudio}}</div>
     <div class="sentence">{{Sentence}}</div>
+    {{#SentenceTranslationEN}}<div class="sentence-translation">{{SentenceTranslationEN}}</div>{{/SentenceTranslationEN}}
   </div>
 
   {{#MoreExamples}}
   <div class="more-examples">
+    <div class="examples-label">More examples</div>
     <div class="examples-list">{{MoreExamples}}</div>
   </div>
   {{/MoreExamples}}
@@ -235,23 +241,47 @@ hr.divider {
   border-left: 3px solid var(--accent);
 }
 
+.sentence-translation {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #aeb8d6;
+  padding: 0 14px 4px;
+}
+
 /* More examples */
 .more-examples {
   width: 100%;
   margin-top: 4px;
 }
 
+.examples-label {
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
 .examples-list {
-  font-family: 'Noto Sans JP', sans-serif;
-  font-size: 15px;
-  line-height: 1.8;
+  font-size: 14px;
+  line-height: 1.65;
   color: #b0b8d0;
   padding: 6px 12px;
   border-left: 2px solid var(--divider);
 }
 
-.examples-list p {
-  margin: 0 0 4px 0;
+.example-item {
+  margin: 0 0 10px 0;
+}
+
+.example-jp {
+  font-family: 'Noto Sans JP', sans-serif;
+  color: #d8def4;
+}
+
+.example-en {
+  color: #9ca8c8;
+  margin-top: 2px;
 }
 
 /* Index tag */
@@ -273,7 +303,7 @@ def _resolve_declared_clip(entry: dict, field: str) -> Path | None:
         return None
     p = Path(clip)
     if not p.is_absolute():
-        p = ROOT / p
+        p = PROJECT_ROOT / p
     return p if p.exists() else None
 
 
@@ -318,6 +348,7 @@ def build_notes(data: list[dict], clips_root: Path) -> tuple[list[genanki.Note],
             {"name": "MeaningKO"},
             {"name": "WordAudio"},
             {"name": "Sentence"},
+            {"name": "SentenceTranslationEN"},
             {"name": "SentenceAudio"},
             {"name": "MoreExamples"},
         ],
@@ -356,9 +387,30 @@ def build_notes(data: list[dict], clips_root: Path) -> tuple[list[genanki.Note],
             s = v or ""
             return html_mod.escape(str(s))
 
+        example_items = e.get("example_items") or []
         examples_all = e.get("examples_all") or e.get("examples") or []
         sentence     = e.get("sentence") or e.get("sentence_text") or (examples_all[0] if examples_all else "")
-        more_html    = "".join(f"<p>{html_mod.escape(ex)}</p>" for ex in examples_all)
+        sentence_translation_en = e.get("sentence_translation_en") or ""
+
+        # Anki templates cannot iterate over database rows. Pre-render the
+        # extra examples into one HTML field and cap the total visible sentence
+        # items at five: one main sentence plus four additional examples.
+        extra_items = [x for x in example_items if x.get("position") != 0 and x.get("text")]
+        if not extra_items:
+            extra_items = [
+                {"position": i + 1, "text": text, "translation_en": ""}
+                for i, text in enumerate(examples_all)
+                if text
+            ]
+        more_parts = []
+        for item in extra_items[:4]:
+            jp = html_mod.escape(str(item.get("text") or ""))
+            en = html_mod.escape(str(item.get("translation_en") or ""))
+            en_html = f'<div class="example-en">{en}</div>' if en else ""
+            more_parts.append(
+                f'<div class="example-item"><div class="example-jp">{jp}</div>{en_html}</div>'
+            )
+        more_html = "".join(more_parts)
 
         note = genanki.Note(
             model=model,
@@ -374,6 +426,7 @@ def build_notes(data: list[dict], clips_root: Path) -> tuple[list[genanki.Note],
                 t(e.get("meaning_ko", "")),
                 word_audio,
                 t(sentence),
+                t(sentence_translation_en),
                 sent_audio,
                 more_html,
             ],
@@ -388,12 +441,19 @@ def build_notes(data: list[dict], clips_root: Path) -> tuple[list[genanki.Note],
 def main() -> None:
     ap = argparse.ArgumentParser(description="Generate N2Words.apkg")
     ap.add_argument("--out", default="output/N2Words.apkg")
-    ap.add_argument("--vocab", default="vocabulary.json")
+    ap.add_argument("--db", default="output/n2vocab.sqlite")
     ap.add_argument("--clips", default="clips")
+    ap.add_argument("--book", default="N2")
     args = ap.parse_args()
 
-    clips_root = ROOT / args.clips
-    data = json.loads((ROOT / args.vocab).read_text(encoding="utf-8"))
+    clips_root = Path(args.clips)
+    if not clips_root.is_absolute():
+        clips_root = PROJECT_ROOT / clips_root
+    db_path = Path(args.db)
+    if not db_path.is_absolute():
+        db_path = PROJECT_ROOT / db_path
+
+    data = load_entries(book_code=args.book, db_path=db_path)
     data.sort(key=lambda e: e["index"])
 
     print(f"Building notes for {len(data)} entries…")
@@ -408,7 +468,7 @@ def main() -> None:
 
     out = Path(args.out)
     if not out.is_absolute():
-        out = ROOT / out
+        out = PROJECT_ROOT / out
     out.parent.mkdir(parents=True, exist_ok=True)
     package.write_to_file(str(out))
 

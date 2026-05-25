@@ -52,17 +52,15 @@ This reads OCR exercise JSON from `json/` and writes under `wordsAndExerciseInHt
 
 ## Anki Decks
 
-The built decks currently live under `output/` and have also been deployed to `D:\n2Prepare\ankiCardsToBuilt\` in prior runs. The active Anki build scripts live under `skills/makeAnkiCards/scripts/`.
+The built decks live under `output/`. The active Anki build scripts live under `skills/makeAnkiCards/scripts/`.
 
 ```bash
 python skills/makeAnkiCards/scripts/make_anki.py
 python skills/makeAnkiCards/scripts/make_anki_listening.py
 ```
 
-These scripts historically read `vocabulary.json` and `clips/`, then wrote
-`output/N2Words.apkg` and `output/N2Words_listening.apkg`. Since
-`vocabulary.json` is now retired as `vocabulary.json.db`, refresh these Anki
-scripts to read `output/n2vocab.sqlite` before using them for a new deck build.
+These scripts read `output/n2vocab.sqlite` and `clips/`, then write
+`output/N2Words.apkg` and `output/N2Words_listening.apkg`.
 
 ## Git Checkpoints
 
