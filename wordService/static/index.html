@@ -31,7 +31,7 @@
       <button class="pill state-pill known" data-state="known">Known</button>
       <button class="pill state-pill flagged" data-state="flagged">Flagged</button>
     </div>
-    <button class="reset" id="reset-filters" type="button">reset</button>
+    <button class="cover-all" id="cover-all" type="button" aria-pressed="false">cover all</button>
     <span class="counter" id="counter"></span>
   </section>
 
@@ -54,8 +54,6 @@
         <div class="modal-actions">
           <button type="button" class="icon-btn known">Known</button>
           <button type="button" class="icon-btn flagged">Flag</button>
-          <button type="button" class="play-btn word-play">word</button>
-          <button type="button" class="play-btn sentence-play">sentence</button>
         </div>
         <div class="modal-meaning" id="modal-meaning"></div>
         <div>
@@ -73,7 +71,6 @@
   <template id="card-template">
     <article class="card">
       <div class="card-top">
-        <span class="card-index"></span>
         <span class="card-actions">
           <button class="icon-btn known" type="button" title="Mark as known">✓</button>
           <button class="icon-btn flagged" type="button" title="Flag for review">⚑</button>
@@ -84,9 +81,9 @@
       <div class="card-sentence"></div>
       <div class="card-sentence-translation"></div>
       <div class="card-bottom">
-        <button class="play-btn word-play" type="button">word</button>
-        <button class="play-btn sentence-play" type="button">sentence</button>
-        <button class="details-link" type="button">details</button>
+        <button class="cover-button" type="button">cover</button>
+        <button class="details-button" type="button">details</button>
+        <span class="card-index"></span>
       </div>
     </article>
   </template>

@@ -26,6 +26,71 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from db.connect import load_entries
 
+# ── Markdown → HTML for sentence explanations ────────────────────────────────
+
+_MD_BOLD = re.compile(r'\*\*(.+?)\*\*')
+_MD_ITALIC = re.compile(r'(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)')
+_MD_JLPT_TAG = re.compile(r'\[(JLPT\s*N\d+)\]')
+
+
+def _md_inline(text: str) -> str:
+    """Convert the small markdown subset used by generated explanations."""
+    text = _MD_BOLD.sub(r'<strong>\1</strong>', text)
+    text = _MD_ITALIC.sub(r'<em>\1</em>', text)
+    text = _MD_JLPT_TAG.sub(r'<span class="jlpt-tag">\1</span>', text)
+    return text
+
+
+def explanation_to_html(text: str) -> str:
+    """Render markdown explanation text into safe HTML for Anki fields."""
+    if not text:
+        return ""
+
+    sections = text.split("\n---\n")
+    rendered_sections = []
+
+    for section in sections:
+        lines = section.strip().split("\n")
+        items = []
+        in_list = False
+        current = []
+
+        for line in lines:
+            stripped = line.strip()
+            if stripped.startswith("- "):
+                if not in_list:
+                    if current:
+                        items.append(("<p>", current))
+                        current = []
+                    in_list = True
+                current.append(stripped[2:])
+            else:
+                if in_list:
+                    items.append(("<ul>", current))
+                    current = []
+                    in_list = False
+                current.append(line)
+
+        if in_list:
+            items.append(("<ul>", current))
+        elif current:
+            items.append(("<p>", current))
+
+        parts = []
+        for tag, lines_group in items:
+            if tag == "<ul>":
+                li_items = "".join(
+                    f"<li>{_md_inline(html_mod.escape(li))}</li>" for li in lines_group
+                )
+                parts.append(f"<ul>{li_items}</ul>")
+            elif tag == "<p>":
+                for line in lines_group:
+                    parts.append(_md_inline(html_mod.escape(line)))
+
+        rendered_sections.append("\n".join(parts))
+
+    return "\n".join(rendered_sections)
+
 # ── IDs (stable — do not change once deck exists) ─────────────────────────────
 DECK_ID   = 1_234_567_890
 MODEL_ID  = 9_876_543_210
@@ -284,6 +349,45 @@ hr.divider {
   margin-top: 2px;
 }
 
+.example-zh {
+  color: #9ca8c8;
+  margin-top: 2px;
+}
+
+.example-explanation {
+  color: #b8c4e0;
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: var(--surface);
+  border-radius: 8px;
+  border-left: 2px solid var(--accent);
+}
+
+.example-explanation strong { color: #fff; font-weight: 600; }
+.example-explanation em { font-style: italic; color: #a0aac4; }
+
+.example-explanation ul {
+  margin: 0.3em 0;
+  padding-left: 1.2em;
+}
+
+.example-explanation li {
+  margin-top: 0.25em;
+  line-height: 1.65;
+}
+
+.example-explanation .jlpt-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+  background: var(--surface2);
+  border-radius: 3px;
+  padding: 0 4px;
+  margin-left: 2px;
+}
+
 /* Index tag */
 .index-tag {
   font-size: 11px;
@@ -406,9 +510,13 @@ def build_notes(data: list[dict], clips_root: Path) -> tuple[list[genanki.Note],
         for item in extra_items[:4]:
             jp = html_mod.escape(str(item.get("text") or ""))
             en = html_mod.escape(str(item.get("translation_en") or ""))
+            zh = html_mod.escape(str(item.get("translation_zh") or ""))
+            exp = explanation_to_html(str(item.get("explanation") or ""))
             en_html = f'<div class="example-en">{en}</div>' if en else ""
+            zh_html = f'<div class="example-zh">{zh}</div>' if zh else ""
+            exp_html = f'<div class="example-explanation">{exp}</div>' if exp else ""
             more_parts.append(
-                f'<div class="example-item"><div class="example-jp">{jp}</div>{en_html}</div>'
+                f'<div class="example-item"><div class="example-jp">{jp}</div>{en_html}{zh_html}{exp_html}</div>'
             )
         more_html = "".join(more_parts)
 

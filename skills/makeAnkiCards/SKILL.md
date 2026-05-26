@@ -32,10 +32,11 @@ content.
   - The Anki template does not loop over database rows. The script pre-renders
     example HTML into one field and shows at most five sentence items total:
     the main sentence plus up to four extra examples, each with English
-    translation when available.
+    and Chinese translations plus rendered HTML explanations when available.
 - `scripts/make_anki_listening.py` builds the listening deck.
   - The back side shows the main sentence English translation and the same
-    pre-rendered translated extra examples, capped at five sentence items total.
+    pre-rendered translated/explained extra examples, capped at five sentence
+    items total.
 - `scripts/make_clean_db.py` and `scripts/merge_explanations.py` are legacy
   helpers kept only for archaeology unless the user explicitly asks to repair
   old JSON-era data.

@@ -154,14 +154,29 @@ rt { font-size: 0.46em; line-height: 1; color: var(--muted2); }
 .pill.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 .pill.known.active { background: var(--known); border-color: var(--known); }
 .pill.flagged.active { background: var(--flag); border-color: var(--flag); }
-.counter { margin-left: auto; font-size: 0.85rem; color: var(--muted); }
-.reset {
+.cover-all {
+  padding: 0.32rem 0.75rem;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--accent);
   font-size: 0.82rem;
-  color: var(--muted);
-  background: none;
-  border: none;
-  text-decoration: underline;
+  font-weight: 700;
 }
+.cover-all:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 8%, #fff);
+}
+.cover-all[aria-pressed="true"] {
+  background: var(--accent);
+  color: #fff;
+}
+.cover-all:disabled {
+  border-color: var(--line);
+  color: var(--muted2);
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+.counter { margin-left: auto; font-size: 0.85rem; color: var(--muted); }
 .status-banner {
   background: #fff3cd;
   border-bottom: 1px solid #f0d97a;
@@ -195,17 +210,20 @@ main { padding: 1.2rem 1.2rem 3rem; }
 .card.known.flagged { border-left-color: var(--flag); }
 .card-top {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: flex-start;
   gap: 8px;
+  min-height: 30px;
 }
 .card-actions { display: flex; gap: 4px; }
 .card-index {
+  margin-left: auto;
   color: var(--muted2);
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.04em;
-  padding-top: 6px;
+  align-self: center;
+  white-space: nowrap;
 }
 .icon-btn {
   min-width: 30px;
@@ -248,6 +266,23 @@ main { padding: 1.2rem 1.2rem 3rem; }
 }
 .card-sentence-translation .en { color: var(--ink); font-weight: 500; }
 .card-sentence-translation .zh { color: var(--muted2); }
+.audio-target {
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background 0.12s, color 0.12s, outline-color 0.12s;
+}
+.audio-target:hover {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+}
+.audio-target:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  outline-offset: 3px;
+}
+.audio-target.playing {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, #fff);
+}
 .card-bottom {
   display: flex;
   gap: 6px;
@@ -255,28 +290,43 @@ main { padding: 1.2rem 1.2rem 3rem; }
   flex-wrap: wrap;
   margin-top: auto;
 }
-.play-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 9px;
-  background: var(--paper2);
-  border: 1px solid var(--line);
+.details-button {
+  font-size: 0.78rem;
+  color: var(--accent);
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
   border-radius: 6px;
+  padding: 4px 10px;
+  font-weight: 600;
+}
+.details-button:hover {
+  background: color-mix(in srgb, var(--accent) 8%, #fff);
+  border-color: var(--accent);
+}
+.cover-button {
   font-size: 0.78rem;
   color: var(--ink);
-  font-weight: 500;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-weight: 600;
 }
-.play-btn:hover { background: #fff; border-color: var(--muted2); }
-.play-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-.play-btn.playing { background: var(--accent); color: #fff; border-color: var(--accent); }
-.details-link {
-  margin-left: auto;
-  font-size: 0.78rem;
-  color: var(--muted);
-  background: none;
-  border: none;
-  text-decoration: underline;
+.cover-button:hover {
+  background: var(--paper2);
+  border-color: var(--muted2);
+}
+.card.covered .cover-button {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.card.covered .card-meaning,
+.card.covered .card-sentence-translation {
+  display: none;
+}
+.card.covered .card-kanji {
+  color: var(--ink);
 }
 .empty {
   grid-column: 1 / -1;
@@ -346,7 +396,6 @@ main { padding: 1.2rem 1.2rem 3rem; }
 .modal-body { padding: 16px 22px 24px; display: flex; flex-direction: column; gap: 14px; }
 .modal-actions { display: flex; gap: 8px; flex-wrap: wrap; padding-top: 4px; }
 .modal-actions .icon-btn { width: auto; height: 32px; gap: 6px; font-size: 0.85rem; }
-.modal-actions .play-btn { height: 32px; padding: 0 12px; font-size: 0.85rem; }
 .modal-meaning { font-size: 0.95rem; }
 .modal-meaning .en { font-weight: 600; }
 .modal-meaning .zh { color: var(--muted); margin-top: 2px; }
@@ -375,6 +424,24 @@ main { padding: 1.2rem 1.2rem 3rem; }
   background: color-mix(in srgb, var(--accent) 5%, #fff);
   border-color: color-mix(in srgb, var(--accent) 25%, var(--line));
 }
+.sentence-row.generatable {
+  cursor: pointer;
+  border-style: dashed;
+  background: color-mix(in srgb, var(--paper) 70%, #fff);
+}
+.sentence-row.generatable:hover {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+}
+.sentence-row.generating {
+  cursor: wait;
+  opacity: 0.72;
+}
+.sentence-row.generating::after {
+  content: "generating audio...";
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 0.72rem;
+  color: var(--muted2);
+}
 .sentence-row .badge {
   font-size: 0.65rem;
   letter-spacing: 0.06em;
@@ -390,8 +457,49 @@ main { padding: 1.2rem 1.2rem 3rem; }
   padding: 12px 14px;
   font-size: 0.88rem;
   line-height: 1.65;
-  color: var(--muted);
-  white-space: pre-wrap;
+  color: var(--ink);
+}
+.explanation p + p,
+.explanation ul + p,
+.explanation p + ul {
+  margin-top: 0.65rem;
+}
+.explanation h1,
+.explanation h2,
+.explanation h3 {
+  color: var(--ink);
+  font-size: 0.95rem;
+  line-height: 1.35;
+  margin: 0.75rem 0 0.35rem;
+}
+.explanation h1:first-child,
+.explanation h2:first-child,
+.explanation h3:first-child {
+  margin-top: 0;
+}
+.explanation ul {
+  padding-left: 1.2rem;
+}
+.explanation ol {
+  padding-left: 1.35rem;
+}
+.explanation li + li {
+  margin-top: 0.35rem;
+}
+.explanation hr {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 0.7rem 0;
+}
+.explanation code {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0.05rem 0.22rem;
+  color: var(--accent);
+}
+.explanation strong {
+  color: var(--ink);
 }
 
 @media (max-width: 720px) {

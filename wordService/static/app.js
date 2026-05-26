@@ -4,7 +4,7 @@ const elements = {
   unitStrip: document.getElementById("unit-strip"),
   search: document.getElementById("search"),
   statePills: Array.from(document.querySelectorAll(".state-pill")),
-  reset: document.getElementById("reset-filters"),
+  coverAll: document.getElementById("cover-all"),
   counter: document.getElementById("counter"),
   banner: document.getElementById("status-banner"),
   grid: document.getElementById("card-grid"),
@@ -27,6 +27,8 @@ const state = {
   currentAudio: null,
   currentEntries: [],
   detailEntry: null,
+  coveredEntryIds: new Set(),
+  generatingAudioKeys: new Set(),
 };
 
 function escapeHTML(value) {
@@ -37,6 +39,84 @@ function escapeHTML(value) {
     '"': "&quot;",
     "'": "&#39;",
   }[char]));
+}
+
+function inlineMarkdown(value) {
+  // Keep Markdown rendering deliberately small and safe. We escape first, then
+  // add only the formatting patterns the generated explanations commonly use.
+  return escapeHTML(value)
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*([^*]+)\*/g, "<em>$1</em>");
+}
+
+function markdownToHTML(value) {
+  const blocks = [];
+  let paragraph = [];
+  let list = [];
+  let listTag = "ul";
+
+  function flushParagraph() {
+    if (!paragraph.length) return;
+    blocks.push(`<p>${paragraph.map(inlineMarkdown).join("<br>")}</p>`);
+    paragraph = [];
+  }
+
+  function flushList() {
+    if (!list.length) return;
+    blocks.push(`<${listTag}>${list.map(item => `<li>${inlineMarkdown(item)}</li>`).join("")}</${listTag}>`);
+    list = [];
+    listTag = "ul";
+  }
+
+  String(value || "").replace(/\r\n/g, "\n").split("\n").forEach(rawLine => {
+    const line = rawLine.trim();
+    if (!line) {
+      flushParagraph();
+      flushList();
+      return;
+    }
+
+    if (/^---+$/.test(line)) {
+      flushParagraph();
+      flushList();
+      blocks.push("<hr>");
+      return;
+    }
+
+    const heading = line.match(/^(#{1,3})\s+(.+)$/);
+    if (heading) {
+      flushParagraph();
+      flushList();
+      blocks.push(`<h${heading[1].length}>${inlineMarkdown(heading[2])}</h${heading[1].length}>`);
+      return;
+    }
+
+    const bullet = line.match(/^[-*]\s+(.+)$/);
+    if (bullet) {
+      flushParagraph();
+      if (listTag !== "ul") flushList();
+      listTag = "ul";
+      list.push(bullet[1]);
+      return;
+    }
+
+    const numbered = line.match(/^\d+[.)]\s+(.+)$/);
+    if (numbered) {
+      flushParagraph();
+      if (listTag !== "ol") flushList();
+      listTag = "ol";
+      list.push(numbered[1]);
+      return;
+    }
+
+    flushList();
+    paragraph.push(line);
+  });
+
+  flushParagraph();
+  flushList();
+  return blocks.join("");
 }
 
 function rubyOrPlain(kanji, reading) {
@@ -146,6 +226,33 @@ function applyMarkClasses(card, mark) {
   card.querySelector(".icon-btn.flagged").classList.toggle("on", !!mark.flagged);
 }
 
+function applyCoverState(card, entry, covered) {
+  // Covered cards keep the practice prompt visible, but hide the study answers:
+  // furigana/readings, word meaning, sentence translations, and explanation access.
+  card.classList.toggle("covered", covered);
+  card.querySelector(".cover-button").textContent = covered ? "uncover" : "cover";
+  card.querySelector(".card-kanji").innerHTML = covered
+    ? escapeHTML(entry.kanji)
+    : rubyOrPlain(entry.kanji, entry.reading);
+  card.querySelector(".card-meaning").hidden = covered;
+  card.querySelector(".card-sentence-translation").hidden = covered;
+
+  const detailsButton = card.querySelector(".details-button");
+  detailsButton.hidden = covered;
+  detailsButton.disabled = covered;
+}
+
+function updateCoverAllButton() {
+  const hasEntries = state.currentEntries.length > 0;
+  const allVisibleCovered = hasEntries && state.currentEntries.every(entry => (
+    state.coveredEntryIds.has(entry.entry_id)
+  ));
+
+  elements.coverAll.disabled = !hasEntries;
+  elements.coverAll.textContent = allVisibleCovered ? "uncover all" : "cover all";
+  elements.coverAll.setAttribute("aria-pressed", allVisibleCovered ? "true" : "false");
+}
+
 function renderCards() {
   elements.grid.innerHTML = "";
   if (!state.currentEntries.length) {
@@ -154,6 +261,7 @@ function renderCards() {
     empty.textContent = "No words match the current filters.";
     elements.grid.appendChild(empty);
     elements.counter.textContent = "showing 0";
+    updateCoverAllButton();
     return;
   }
 
@@ -167,10 +275,8 @@ function renderCards() {
     card.querySelector(".card-sentence").textContent = entry.sentence || "";
     card.querySelector(".card-sentence-translation").innerHTML = translationHTML(entry);
 
-    const wordPlay = card.querySelector(".word-play");
-    const sentencePlay = card.querySelector(".sentence-play");
-    wirePlayButton(wordPlay, entry.word_audio_url);
-    wirePlayButton(sentencePlay, entry.sentence_audio_url);
+    wireAudioTarget(card.querySelector(".card-kanji"), entry.word_audio_url, "Play word audio");
+    wireAudioTarget(card.querySelector(".card-sentence"), entry.sentence_audio_url, "Play sentence audio");
 
     card.querySelector(".icon-btn.known").addEventListener("click", event => {
       event.stopPropagation();
@@ -180,42 +286,77 @@ function renderCards() {
       event.stopPropagation();
       toggleMark(entry, "flagged", card).catch(showError);
     });
-    card.querySelector(".details-link").addEventListener("click", event => {
+    card.querySelector(".details-button").addEventListener("click", event => {
       event.stopPropagation();
       openDetail(entry.entry_id).catch(showError);
     });
+    card.querySelector(".cover-button").addEventListener("click", event => {
+      event.stopPropagation();
+      const covered = !state.coveredEntryIds.has(entry.entry_id);
+      if (covered) {
+        state.coveredEntryIds.add(entry.entry_id);
+      } else {
+        state.coveredEntryIds.delete(entry.entry_id);
+      }
+      applyCoverState(card, entry, covered);
+      updateCoverAllButton();
+    });
 
     applyMarkClasses(card, entry.mark || {});
+    applyCoverState(card, entry, state.coveredEntryIds.has(entry.entry_id));
     elements.grid.appendChild(fragment);
   });
   elements.counter.textContent = `showing ${state.currentEntries.length}`;
+  updateCoverAllButton();
 }
 
-function wirePlayButton(button, url) {
-  button.disabled = !url;
-  button.dataset.src = url || "";
-  button.addEventListener("click", event => {
+function wireAudioTarget(target, url, label) {
+  target.dataset.src = url || "";
+  target.classList.toggle("audio-target", !!url);
+  target.classList.remove("playing");
+
+  if (!url) {
+    target.removeAttribute("role");
+    target.removeAttribute("tabindex");
+    target.removeAttribute("aria-label");
+    target.onclick = null;
+    target.onkeydown = null;
+    return;
+  }
+
+  // The text itself is the control now, so keep it keyboard-friendly without
+  // reintroducing obvious play buttons into the card layout.
+  target.setAttribute("role", "button");
+  target.setAttribute("tabindex", "0");
+  target.setAttribute("aria-label", label);
+  target.onclick = event => {
     event.stopPropagation();
-    playClip(button);
-  });
+    playClip(target);
+  };
+  target.onkeydown = event => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    event.stopPropagation();
+    playClip(target);
+  };
 }
 
-function playClip(button) {
-  const src = button.dataset.src;
+function playClip(target) {
+  const src = target.dataset.src;
   if (!src) return;
   if (state.currentAudio) {
     state.currentAudio.pause();
-    if (state.currentAudio._button) state.currentAudio._button.classList.remove("playing");
+    if (state.currentAudio._target) state.currentAudio._target.classList.remove("playing");
   }
   const audio = new Audio(src);
-  audio._button = button;
-  button.classList.add("playing");
-  audio.addEventListener("ended", () => button.classList.remove("playing"));
+  audio._target = target;
+  target.classList.add("playing");
+  audio.addEventListener("ended", () => target.classList.remove("playing"));
   audio.addEventListener("error", () => {
-    button.classList.remove("playing");
+    target.classList.remove("playing");
     setBanner(`Audio not found: ${src}`);
   });
-  audio.play().catch(() => button.classList.remove("playing"));
+  audio.play().catch(() => target.classList.remove("playing"));
   state.currentAudio = audio;
 }
 
@@ -241,13 +382,16 @@ async function openDetail(entryId) {
   state.detailEntry = entry;
   elements.modalMeta.textContent = `#${String(entry.source_index).padStart(3, "0")} · Unit ${String(entry.unit.number).padStart(2, "0")}`;
   elements.modalTitle.innerHTML = rubyOrPlain(entry.kanji, entry.reading);
+  wireAudioTarget(elements.modalTitle, entry.word_audio_url, "Play word audio");
   elements.modalMeaning.innerHTML = meaningHTML(entry);
   elements.modalSentences.innerHTML = sentenceRowsHTML(entry);
+  wireModalSentenceRows(entry);
 
   if (entry.explanation_md) {
-    elements.modalExplanation.textContent = entry.explanation_md;
+    elements.modalExplanation.innerHTML = markdownToHTML(entry.explanation_md);
     elements.modalExplanationWrap.style.display = "";
   } else {
+    elements.modalExplanation.innerHTML = "";
     elements.modalExplanationWrap.style.display = "none";
   }
 
@@ -257,8 +401,6 @@ async function openDetail(entryId) {
   flaggedButton.classList.toggle("on", !!entry.mark.flagged);
   knownButton.onclick = () => toggleModalMark("known").catch(showError);
   flaggedButton.onclick = () => toggleModalMark("flagged").catch(showError);
-  wireModalPlay(".modal-actions .word-play", entry.word_audio_url);
-  wireModalPlay(".modal-actions .sentence-play", entry.sentence_audio_url);
 
   elements.backdrop.classList.add("open");
   elements.backdrop.setAttribute("aria-hidden", "false");
@@ -284,11 +426,66 @@ function sentenceRowsHTML(entry) {
   }).join("");
 }
 
-function wireModalPlay(selector, url) {
-  const button = document.querySelector(selector);
-  button.disabled = !url;
-  button.dataset.src = url || "";
-  button.onclick = () => playClip(button);
+function wireModalSentenceRows(entry) {
+  elements.modalSentences.querySelectorAll(".sentence-row").forEach((row, index) => {
+    const examples = entry.examples && entry.examples.length ? entry.examples : [];
+    const item = examples[index] || {
+      position: 0,
+      text: entry.sentence,
+      audio_url: entry.sentence_audio_url,
+    };
+    row.dataset.position = String(item.position);
+    row.dataset.src = item.audio_url || "";
+
+    if (item.audio_url) {
+      row.classList.remove("generatable", "generating");
+      wireAudioTarget(row, item.audio_url, "Play sentence audio");
+      return;
+    }
+
+    row.classList.add("generatable");
+    row.classList.remove("playing", "generating");
+    row.setAttribute("role", "button");
+    row.setAttribute("tabindex", "0");
+    row.setAttribute("aria-label", "Generate sentence audio");
+    row.onclick = event => {
+      event.stopPropagation();
+      generateSentenceAudio(entry, item, row).catch(showError);
+    };
+    row.onkeydown = event => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      event.stopPropagation();
+      generateSentenceAudio(entry, item, row).catch(showError);
+    };
+  });
+}
+
+async function generateSentenceAudio(entry, item, row) {
+  const key = `${entry.entry_id}:${item.position}`;
+  if (state.generatingAudioKeys.has(key)) return;
+  state.generatingAudioKeys.add(key);
+  row.classList.add("generating");
+  row.setAttribute("aria-busy", "true");
+  try {
+    const payload = await fetchJson(`/api/entries/${entry.entry_id}/examples/${item.position}/audio`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "{}",
+    });
+    item.audio_url = payload.audio_url;
+    if (item.position === 0) {
+      entry.sentence_audio_url = payload.audio_url;
+    }
+    row.classList.remove("generatable", "generating");
+    row.removeAttribute("aria-busy");
+    wireAudioTarget(row, payload.audio_url, "Play sentence audio");
+    playClip(row);
+  } finally {
+    state.generatingAudioKeys.delete(key);
+    row.classList.remove("generating");
+    row.removeAttribute("aria-busy");
+  }
 }
 
 async function toggleModalMark(key) {
@@ -315,7 +512,7 @@ function closeDetail() {
   elements.backdrop.setAttribute("aria-hidden", "true");
   if (state.currentAudio) {
     state.currentAudio.pause();
-    if (state.currentAudio._button) state.currentAudio._button.classList.remove("playing");
+    if (state.currentAudio._target) state.currentAudio._target.classList.remove("playing");
   }
 }
 
@@ -339,12 +536,16 @@ function wireControls() {
       loadEntries().catch(showError);
     });
   });
-  elements.reset.addEventListener("click", () => {
-    state.search = "";
-    state.filterState = "all";
-    elements.search.value = "";
-    elements.statePills.forEach(pill => pill.classList.toggle("active", pill.dataset.state === "all"));
-    loadEntries().catch(showError);
+  elements.coverAll.addEventListener("click", () => {
+    const shouldCover = state.currentEntries.some(entry => !state.coveredEntryIds.has(entry.entry_id));
+    state.currentEntries.forEach(entry => {
+      if (shouldCover) {
+        state.coveredEntryIds.add(entry.entry_id);
+      } else {
+        state.coveredEntryIds.delete(entry.entry_id);
+      }
+    });
+    renderCards();
   });
   elements.modalClose.addEventListener("click", closeDetail);
   elements.backdrop.addEventListener("click", event => {

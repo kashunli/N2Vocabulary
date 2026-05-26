@@ -1,6 +1,6 @@
 use crate::models::{
-    EntryExample, EntryListResponse, EntryPayload, MarkState, MarksResponse, Summary, UnitRef,
-    UnitSummary,
+    AudioGenerationResponse, EntryExample, EntryListResponse, EntryPayload, MarkState,
+    MarksResponse, Summary, UnitRef, UnitSummary,
 };
 use anyhow::{Context, Result, bail};
 use chrono::Utc;
@@ -14,6 +14,11 @@ use tempfile::TempDir;
 
 const STATE_VALUES: [&str; 4] = ["all", "known", "flagged", "unmarked"];
 
+/// Data-access layer for the word study service.
+///
+/// The HTTP layer should not know SQL details, SQLite path rules, or how audio
+/// paths are stored. Keeping those decisions here makes the API handlers small
+/// and gives tests a clean place to exercise workflow behavior directly.
 #[derive(Clone, Debug)]
 pub struct WordRepository {
     db_path: PathBuf,
@@ -22,6 +27,10 @@ pub struct WordRepository {
     write_lock: Arc<Mutex<()>>,
 }
 
+/// A raw joined row from the `entries` query.
+///
+/// This is intentionally not serialized. It mirrors the database shape first,
+/// then `serialize_entry` converts it into the browser-facing API shape.
 #[derive(Debug)]
 struct EntryRow {
     entry_id: i64,
@@ -46,6 +55,10 @@ struct EntryRow {
 }
 
 impl WordRepository {
+    /// Create a repository handle.
+    ///
+    /// `impl Into<PathBuf>` lets callers pass either `PathBuf` or string-like
+    /// path values without forcing every call site to spell out `.into()`.
     pub fn new(
         db_path: impl Into<PathBuf>,
         clips_dir: impl Into<PathBuf>,
@@ -72,6 +85,9 @@ impl WordRepository {
     }
 
     fn connect(&self) -> Result<Connection> {
+        // Open a fresh SQLite connection per operation. For a local study
+        // service this is simple, fast enough, and avoids sharing a Connection
+        // across request threads.
         let conn = Connection::open(&self.db_path)
             .with_context(|| format!("open SQLite database {}", self.db_path.display()))?;
         conn.execute_batch("PRAGMA foreign_keys = ON;")?;
@@ -94,6 +110,8 @@ impl WordRepository {
             ))
         })?;
 
+        // BTreeMap keeps JSON output stable by sorting entry IDs. That is nice
+        // for debugging and for future agents comparing responses.
         let mut marks = BTreeMap::new();
         for row in rows {
             let (entry_id, mark) = row?;
@@ -129,6 +147,8 @@ impl WordRepository {
             |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)),
         )?;
 
+        // "Unmarked" means neither known nor flagged, not just "missing row".
+        // That distinction matters because clearing a mark deletes its row.
         let marked_any = self.count_marked_any(&conn)?;
         Ok(Summary {
             entries,
@@ -234,6 +254,8 @@ impl WordRepository {
                 "#
                 .to_string(),
             );
+            // The same search text is bound to each LIKE placeholder. Binding
+            // instead of interpolating prevents user input from becoming SQL.
             for _ in 0..8 {
                 query_params.push(Value::Text(format!("%{trimmed_search}%")));
             }
@@ -261,6 +283,8 @@ impl WordRepository {
 
         let rows = self.query_entry_rows(&conn, &sql, query_params)?;
         let entry_ids = rows.iter().map(|row| row.entry_id).collect::<Vec<_>>();
+        // Load examples in one follow-up query instead of one query per entry.
+        // This keeps list rendering fast while still leaving the SQL readable.
         let examples = self.load_examples(&conn, &entry_ids)?;
         let items = rows
             .iter()
@@ -350,6 +374,8 @@ impl WordRepository {
         if entry_ids.is_empty() {
             return Ok(HashMap::new());
         }
+        // SQLite does not accept a Vec directly as one `IN (?)` parameter, so
+        // we build exactly one placeholder per already-known numeric entry ID.
         let placeholders = vec!["?"; entry_ids.len()].join(",");
         let sql = format!(
             r#"
@@ -391,6 +417,8 @@ impl WordRepository {
         examples: Option<&Vec<EntryExample>>,
         detail: bool,
     ) -> EntryPayload {
+        // Work with slices here so the rest of the function can treat "no
+        // examples" and "empty examples Vec" the same way without cloning.
         let examples_slice = examples.map(Vec::as_slice).unwrap_or(&[]);
         let main_example = examples_slice.iter().find(|example| example.position == 0);
 
@@ -450,20 +478,29 @@ impl WordRepository {
     }
 
     pub fn audio_url(&self, clip_path: Option<&str>) -> Option<String> {
+        // Returning Option is deliberate: bad or missing DB paths simply become
+        // absent audio URLs instead of crashing the whole entry response.
         let normalized = normalize_clip_path(clip_path?, true)?;
+        let resolved = self.resolve_audio_path(&normalized)?;
+        if !resolved.is_file() {
+            return None;
+        }
         Some(format!("/audio/{normalized}"))
     }
 
     pub fn resolve_audio_path(&self, request_path: &str) -> Option<PathBuf> {
         let normalized = normalize_clip_path(request_path, false)?;
+        // Stored paths start with `clips/...`; the configured clips_dir points
+        // at the `clips` folder itself, so joining from its parent preserves the
+        // stored relative path exactly.
         let clips_parent = self.clips_dir.parent().unwrap_or_else(|| Path::new("."));
         Some(clips_parent.join(normalized))
     }
 
     pub fn set_mark(&self, entry_id: i64, known: bool, flagged: bool) -> Result<()> {
-        // The Python service writes marks through a temporary DB copy because
-        // stale WAL sidecars on this Windows workspace have made direct writes
-        // fragile. The mutex makes that copy-mutate-copy-back sequence one-at-a-time.
+        // Mark writes go through a temporary DB copy because stale WAL sidecars
+        // on this Windows workspace have made direct writes fragile. The mutex
+        // makes that copy-mutate-copy-back sequence one-at-a-time.
         let _guard = self
             .write_lock
             .lock()
@@ -515,11 +552,146 @@ impl WordRepository {
         fs::copy(&temp_db, &self.db_path)?;
         Ok(())
     }
+
+    pub fn ensure_example_audio<F>(
+        &self,
+        entry_id: i64,
+        position: i64,
+        generated_dir: &str,
+        synthesize: F,
+    ) -> Result<AudioGenerationResponse>
+    where
+        F: FnOnce(&str) -> Result<Vec<u8>>,
+    {
+        let _guard = self
+            .write_lock
+            .lock()
+            .expect("audio write lock should not be poisoned");
+
+        let conn = self.connect()?;
+        let row: Option<(String, Option<String>)> = conn
+            .query_row(
+                r#"
+                SELECT ex.text, ex.audio_clip
+                FROM entry_examples ex
+                JOIN entries e ON e.entry_id = ex.entry_id
+                WHERE e.book_code = ? AND ex.entry_id = ? AND ex.position = ?
+                "#,
+                params![&self.book_code, entry_id, position],
+                |row| Ok((row.get(0)?, row.get(1)?)),
+            )
+            .optional()?;
+        drop(conn);
+
+        let Some((text, current_clip)) = row else {
+            bail!("unknown example");
+        };
+        let sentence = clean_sentence_text_for_tts(&text);
+        if sentence.is_empty() {
+            bail!("empty sentence");
+        }
+
+        if let Some(current) = current_clip.as_deref()
+            && let Some(existing_path) = self.resolve_audio_path(current)
+            && existing_path.exists()
+            && let Some(audio_url) = self.audio_url(Some(current))
+        {
+            // Reuse is important for cost and speed. If SQLite points at a real
+            // file, the endpoint returns it without calling TTS again.
+            return Ok(AudioGenerationResponse {
+                ok: true,
+                audio_url,
+                generated: false,
+            });
+        }
+
+        let generated_rel_path = generated_sentence_clip_path(generated_dir, entry_id, position)?;
+        let final_path = self
+            .resolve_audio_path(&generated_rel_path)
+            .context("generated audio path should resolve inside clips")?;
+        // Production passes the real Edge TTS synthesizer; tests pass a tiny
+        // fake closure. That keeps path and DB behavior testable without
+        // depending on the network.
+        let audio_bytes = synthesize(&sentence)?;
+        if audio_bytes.is_empty() {
+            bail!("TTS returned no audio bytes");
+        }
+        write_file_atomically(&final_path, &audio_bytes)?;
+        self.update_example_audio_clip(entry_id, position, &generated_rel_path, generated_dir)?;
+        let generated_url = self
+            .audio_url(Some(&generated_rel_path))
+            .context("generated audio path should be servable")?;
+
+        Ok(AudioGenerationResponse {
+            ok: true,
+            audio_url: generated_url,
+            generated: true,
+        })
+    }
+
+    fn update_example_audio_clip(
+        &self,
+        entry_id: i64,
+        position: i64,
+        clip_path: &str,
+        generated_dir: &str,
+    ) -> Result<()> {
+        let temp_dir = TempDir::with_prefix("n2_word_audio_")?;
+        let temp_db = temp_dir.path().join(
+            self.db_path
+                .file_name()
+                .context("database path should have a filename")?,
+        );
+        fs::copy(&self.db_path, &temp_db)?;
+
+        {
+            // Match set_mark's copy-mutate-copy-back pattern so audio metadata
+            // writes have the same Windows-safe behavior as mark writes.
+            let conn = Connection::open(&temp_db)?;
+            conn.execute_batch(
+                r#"
+                PRAGMA foreign_keys = ON;
+                PRAGMA journal_mode = DELETE;
+                CREATE TABLE IF NOT EXISTS word_service_settings (
+                  key TEXT PRIMARY KEY,
+                  value TEXT NOT NULL,
+                  updated_at TEXT NOT NULL
+                );
+                "#,
+            )?;
+            let changed = conn.execute(
+                r#"
+                UPDATE entry_examples
+                SET audio_clip = ?
+                WHERE entry_id = ? AND position = ?
+                "#,
+                params![clip_path, entry_id, position],
+            )?;
+            if changed != 1 {
+                bail!("unknown example");
+            }
+            conn.execute(
+                r#"
+                INSERT INTO word_service_settings(key, value, updated_at)
+                VALUES('generated_sentence_audio_dir', ?, ?)
+                ON CONFLICT(key) DO UPDATE SET
+                  value = excluded.value,
+                  updated_at = excluded.updated_at
+                "#,
+                params![normalize_generated_audio_dir(generated_dir)?, now_utc()],
+            )?;
+        }
+
+        fs::copy(&temp_db, &self.db_path)?;
+        Ok(())
+    }
 }
 
 fn collect_rows<T>(
     rows: rusqlite::MappedRows<'_, impl FnMut(&rusqlite::Row<'_>) -> rusqlite::Result<T>>,
 ) -> Result<Vec<T>> {
+    // rusqlite iterators yield Result<T> for each row. This helper converts
+    // "many row results" into the more common Result<Vec<T>> shape.
     let mut values = Vec::new();
     for row in rows {
         values.push(row?);
@@ -547,7 +719,305 @@ fn normalize_clip_path(value: &str, allow_legacy_output_prefix: bool) -> Option<
     Some(normalized)
 }
 
+fn normalize_generated_audio_dir(value: &str) -> Result<String> {
+    // Accept a friendly short value like `generated_sentences/edge_tts`, but
+    // normalize it to the same `clips/...` shape that the rest of the service
+    // stores and serves.
+    let mut normalized = value.replace('\\', "/").trim_matches('/').to_string();
+    if normalized.is_empty() {
+        bail!("generated audio directory cannot be empty");
+    }
+    if let Some(stripped) = normalized.strip_prefix("output/clips/") {
+        normalized = format!("clips/{stripped}");
+    } else if !normalized.starts_with("clips/") {
+        normalized = format!("clips/{normalized}");
+    }
+    normalize_clip_path(&normalized, false)
+        .filter(|path| !path.ends_with(".mp3"))
+        .context("generated audio directory must stay inside clips")
+}
+
+fn generated_sentence_clip_path(
+    generated_dir: &str,
+    entry_id: i64,
+    position: i64,
+) -> Result<String> {
+    // The deterministic filename makes regeneration idempotent and easy to
+    // audit by entry ID and sentence position.
+    let dir = normalize_generated_audio_dir(generated_dir)?;
+    Ok(format!("{dir}/word{entry_id}_sentence{position}.mp3"))
+}
+
+/// Normalize OCR/study notation into a sentence Edge TTS can read naturally.
+///
+/// The database often keeps textbook shorthand such as `｛な／の｝`, leading
+/// sense indexes like `②`, and furigana in parentheses. Those are useful for a
+/// human reader, but the TTS request should contain one plain pronounceable
+/// sentence. The rule is intentionally conservative and local: when the book
+/// offers alternatives, choose the first option instead of trying to invent a
+/// new sentence.
+pub fn clean_sentence_text_for_tts(raw: &str) -> String {
+    let mut text = raw
+        .replace('｛', "{")
+        .replace('｝', "}")
+        .replace('（', "(")
+        .replace('）', ")")
+        .replace('\u{3000}', " ");
+
+    text = strip_leading_noise(&text);
+    text = replace_choice_groups(&text, '{', '}', true);
+    text = strip_leading_noise(&text);
+    text = strip_leading_example_marker(&text);
+    text = replace_choice_groups(&text, '(', ')', false);
+    text = collapse_slash_ellipsis_lists(&text);
+    text = text
+        .replace("……", "")
+        .replace('…', "")
+        .replace("...", "")
+        .replace('※', "")
+        .replace("。 ・", "。")
+        .replace("」 ・", "」");
+    text = text.chars().filter(|ch| !is_circled_number(*ch)).collect();
+    text = collapse_sentence_spaces(&text);
+
+    // Some rows become empty after removing pure index markers. Keeping this as
+    // a final pass lets the normal empty-sentence guard report them cleanly.
+    strip_leading_noise(&text)
+}
+
+fn replace_choice_groups(text: &str, open: char, close: char, keep_plain_group: bool) -> String {
+    let mut output = String::new();
+    let mut rest = text;
+
+    while let Some(open_at) = rest.find(open) {
+        output.push_str(&rest[..open_at]);
+        let after_open = &rest[open_at + open.len_utf8()..];
+        let Some(close_at) = find_matching_close(after_open, open, close) else {
+            output.push(open);
+            rest = after_open;
+            continue;
+        };
+
+        let group = &after_open[..close_at];
+        let replacement = if group_has_choice(group) {
+            first_choice(group)
+        } else if keep_plain_group {
+            clean_choice_fragment(group)
+        } else {
+            String::new()
+        };
+        if !replacement.is_empty() && output.ends_with(char::is_whitespace) {
+            output.pop();
+        }
+        output.push_str(&replacement);
+        rest = &after_open[close_at + close.len_utf8()..];
+        if !replacement.is_empty() {
+            rest = rest.trim_start();
+        }
+    }
+
+    output.push_str(rest);
+    output
+}
+
+fn find_matching_close(text: &str, open: char, close: char) -> Option<usize> {
+    let mut depth = 0usize;
+    for (index, ch) in text.char_indices() {
+        if ch == open {
+            depth += 1;
+        } else if ch == close {
+            if depth == 0 {
+                return Some(index);
+            }
+            depth -= 1;
+        }
+    }
+    None
+}
+
+fn group_has_choice(value: &str) -> bool {
+    value.contains('/') || value.contains('／') || value.contains('…')
+}
+
+fn first_choice(value: &str) -> String {
+    let first = value
+        .split(|ch| ch == '/' || ch == '／')
+        .next()
+        .unwrap_or(value);
+    clean_choice_fragment(first)
+}
+
+fn clean_choice_fragment(value: &str) -> String {
+    value
+        .replace("……", "")
+        .replace('…', "")
+        .replace("...", "")
+        .trim()
+        .to_string()
+}
+
+fn collapse_slash_ellipsis_lists(text: &str) -> String {
+    let mut output = text.to_string();
+    for ellipsis in ["……", "…", "..."] {
+        while let Some(ellipsis_at) = output.find(ellipsis) {
+            let before = &output[..ellipsis_at];
+            let Some(slash_at) = before.rfind(|ch| ch == '/' || ch == '／') else {
+                break;
+            };
+            let list_start = find_choice_list_start(before, slash_at);
+            let remove_start = before[list_start..]
+                .find(|ch| ch == '/' || ch == '／')
+                .map(|offset| list_start + offset)
+                .unwrap_or(slash_at);
+            output.replace_range(remove_start..ellipsis_at + ellipsis.len(), "");
+        }
+    }
+    output
+}
+
+fn find_choice_list_start(text: &str, slash_at: usize) -> usize {
+    text[..slash_at]
+        .char_indices()
+        .rev()
+        .find(|(_, ch)| {
+            matches!(
+                ch,
+                '。' | '、' | '「' | '」' | ' ' | '\t' | '\n' | '・' | '(' | ')' | '[' | ']'
+            )
+        })
+        .map(|(index, ch)| index + ch.len_utf8())
+        .unwrap_or(0)
+}
+
+fn strip_leading_noise(raw: &str) -> String {
+    let mut text = raw.trim_start().to_string();
+
+    loop {
+        let before = text.clone();
+        text = strip_leading_square_metadata(&text);
+        text = strip_leading_label_colon(&text);
+        text = text
+            .trim_start_matches(|ch: char| {
+                ch.is_whitespace()
+                    || is_circled_number(ch)
+                    || matches!(ch, '・' | '･' | '-' | 'ー' | '※')
+            })
+            .trim_start()
+            .to_string();
+        if text == before {
+            break;
+        }
+    }
+
+    text.trim().to_string()
+}
+
+fn strip_leading_square_metadata(raw: &str) -> String {
+    let text = raw.trim_start();
+    if !text.starts_with('[') {
+        return text.to_string();
+    }
+
+    let metadata_end = text
+        .find('・')
+        .and_then(|bullet_at| text[..bullet_at].rfind(']'))
+        .or_else(|| text.find(']').filter(|end| *end <= 24));
+
+    match metadata_end {
+        Some(end) => text[end + 1..].trim_start().to_string(),
+        None => text.to_string(),
+    }
+}
+
+fn strip_leading_label_colon(raw: &str) -> String {
+    let text = raw.trim_start();
+    let Some(colon_at) = text.find(':') else {
+        return text.to_string();
+    };
+    if colon_at <= 18 {
+        return text[colon_at + 1..].trim_start().to_string();
+    }
+    text.to_string()
+}
+
+fn strip_leading_example_marker(raw: &str) -> String {
+    let text = raw.trim_start();
+    for marker in ["(例.", "(例:", "(例)"] {
+        if let Some(rest) = text.strip_prefix(marker) {
+            return rest.trim().trim_end_matches(')').trim().to_string();
+        }
+    }
+    text.to_string()
+}
+
+fn is_circled_number(ch: char) -> bool {
+    matches!(
+        ch,
+        '①' | '②'
+            | '③'
+            | '④'
+            | '⑤'
+            | '⑥'
+            | '⑦'
+            | '⑧'
+            | '⑨'
+            | '⑩'
+            | '⑪'
+            | '⑫'
+            | '⑬'
+            | '⑭'
+            | '⑮'
+            | '⑯'
+            | '⑰'
+            | '⑱'
+            | '⑲'
+            | '⑳'
+    )
+}
+
+fn collapse_sentence_spaces(raw: &str) -> String {
+    let mut text = raw.split_whitespace().collect::<Vec<_>>().join(" ");
+    for particle in [
+        "を", "が", "に", "の", "へ", "と", "で", "は", "も", "から", "まで", "より",
+    ] {
+        text = text.replace(&format!(" {particle}"), particle);
+    }
+    for punctuation in ["。", "、", "」", "』", "）", ")", "！", "？"] {
+        text = text.replace(&format!(" {punctuation}"), punctuation);
+    }
+    for punctuation in ["「", "『", "（", "("] {
+        text = text.replace(&format!("{punctuation} "), punctuation);
+    }
+    text.trim().to_string()
+}
+
+fn write_file_atomically(path: &Path, data: &[u8]) -> Result<()> {
+    let parent = path
+        .parent()
+        .context("generated audio path should have a parent directory")?;
+    fs::create_dir_all(parent)?;
+    let tmp_path = path.with_file_name(format!(
+        ".{}.tmp",
+        path.file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or("generated_sentence.mp3")
+    ));
+    if tmp_path.exists() {
+        fs::remove_file(&tmp_path)?;
+    }
+    // Write a sibling temp file first so an interrupted generation never leaves
+    // the final mp3 path pointing at a partial file.
+    fs::write(&tmp_path, data)?;
+    if path.exists() {
+        fs::remove_file(path)?;
+    }
+    fs::rename(&tmp_path, path)?;
+    Ok(())
+}
+
 fn short_title(header: &str) -> Option<String> {
+    // Headers look like "Unit 01 名詞 A & ...". The UI wants the compact left
+    // side, so this strips the leading Unit number and any secondary column.
     let mut parts = header.splitn(3, ' ');
     let first = parts.next()?;
     let second = parts.next();

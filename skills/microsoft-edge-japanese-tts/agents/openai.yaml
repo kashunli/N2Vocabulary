@@ -1,0 +1,4 @@
+interface:
+  display_name: "Microsoft Edge Japanese TTS"
+  short_description: "Generate Japanese sentence MP3s with Microsoft Edge TTS."
+  default_prompt: "Use $microsoft-edge-japanese-tts to generate Japanese example-sentence audio."

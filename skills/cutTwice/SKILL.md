@@ -19,6 +19,22 @@ Keep the skill's file contract explicit:
 
 Do not write new finished clips under `output/clips/`; root `clips/` is the current product location.
 
+## Flat service aliases
+
+Track folders remain the repair/audit source of truth, but the Rust study
+service should reference flat aliases by vocabulary index:
+
+```bash
+python skills/cutTwice/flatten_audio_clips.py
+python skills/cutTwice/flatten_audio_clips.py --apply --migrate-db
+```
+
+The first command is read-only. The second copies canonical files to
+`clips/words/wordNNN.mp3` and `clips/sentences/sentenceNNN.mp3`, then rewrites
+SQLite `entries.word_clip`, `entries.sentence_clip`, and the position-0
+`entry_examples.audio_clip` values to those flat paths. It refuses to apply if
+any index is missing or duplicated.
+
 There are two pair-cutting modes:
 
 - **Strict count mode**: pass `--expected N`; the cutter searches thresholds until it finds exactly `N` pairs.

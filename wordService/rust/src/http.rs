@@ -1,5 +1,6 @@
 use crate::config::AppConfig;
 use crate::repository::WordRepository;
+use crate::tts::TtsService;
 use anyhow::{Context, Result, anyhow};
 use serde::Serialize;
 use serde_json::json;
@@ -11,6 +12,11 @@ use std::thread;
 use tiny_http::{Header, Method, Request, Response, Server, StatusCode};
 use url::Url;
 
+/// Start the local HTTP server.
+///
+/// This service uses `tiny_http`, which is intentionally simple and blocking.
+/// Each accepted request gets a short-lived thread so slow file reads or TTS
+/// queue waits do not stop the server from accepting the next browser request.
 pub fn run_server(config: AppConfig) -> Result<()> {
     let repository = WordRepository::new(
         config.db_path.clone(),
@@ -18,6 +24,7 @@ pub fn run_server(config: AppConfig) -> Result<()> {
         &config.book_code,
     );
     repository.ensure_ready()?;
+    let tts_service = TtsService::new(&config.tts)?;
 
     let address = format!("{}:{}", config.host, config.port);
     let server = Server::http(&address).map_err(|error| anyhow!(error.to_string()))?;
@@ -27,12 +34,23 @@ pub fn run_server(config: AppConfig) -> Result<()> {
     );
     println!("  db: {}", config.db_path.display());
     println!("  clips: {}", config.clips_dir.display());
+    println!("  generated sentence audio: {}", config.tts.generated_dir);
 
     for request in server.incoming_requests() {
+        // The shared state types are cheap handles:
+        // - AppConfig clones strings/paths.
+        // - WordRepository clones an Arc-backed write lock plus paths.
+        // - TtsService clones the queue sender, not the worker.
         let request_config = config.clone();
         let request_repository = repository.clone();
+        let request_tts_service = tts_service.clone();
         thread::spawn(move || {
-            if let Err(error) = handle_request(request, request_config, request_repository) {
+            if let Err(error) = handle_request(
+                request,
+                request_config,
+                request_repository,
+                request_tts_service,
+            ) {
                 eprintln!("request failed: {error:#}");
             }
         });
@@ -41,11 +59,19 @@ pub fn run_server(config: AppConfig) -> Result<()> {
     Ok(())
 }
 
-fn handle_request(request: Request, config: AppConfig, repository: WordRepository) -> Result<()> {
+fn handle_request(
+    request: Request,
+    config: AppConfig,
+    repository: WordRepository,
+    tts_service: TtsService,
+) -> Result<()> {
+    // Keep method routing near the top so unsupported mutation methods fail
+    // before any path-specific logic runs.
     match request.method() {
         Method::Options => return send_options(request),
         Method::Get | Method::Head => {}
         Method::Put => return handle_put(request, repository),
+        Method::Post => return handle_post(request, config, repository, tts_service),
         _ => {
             return send_json(
                 request,
@@ -60,6 +86,9 @@ fn handle_request(request: Request, config: AppConfig, repository: WordRepositor
     let path = parsed.path().to_string();
     let params = query_map(&parsed);
 
+    // Static assets and read-only JSON endpoints are handled first because they
+    // are exact paths. Parameterized routes such as `/api/entries/{id}` come
+    // later.
     match path.as_str() {
         "/" | "/index.html" => {
             return send_file(
@@ -135,6 +164,74 @@ fn handle_request(request: Request, config: AppConfig, repository: WordRepositor
     send_json(request, StatusCode(404), &json!({"error": "not found"}))
 }
 
+fn handle_post(
+    request: Request,
+    config: AppConfig,
+    repository: WordRepository,
+    tts_service: TtsService,
+) -> Result<()> {
+    let parsed = parse_local_url(request.url())?;
+    let path = parsed.path().trim_end_matches('/').to_string();
+    let Some(rest) = path.strip_prefix("/api/entries/") else {
+        return send_json(request, StatusCode(404), &json!({"error": "not found"}));
+    };
+    // Expected shape:
+    // /api/entries/{entry_id}/examples/{position}/audio
+    // Splitting after the fixed prefix keeps parsing straightforward and makes
+    // invalid routes return 404 instead of accidentally matching a partial path.
+    let parts = rest.split('/').collect::<Vec<_>>();
+    if parts.len() != 4 || parts[1] != "examples" || parts[3] != "audio" {
+        return send_json(request, StatusCode(404), &json!({"error": "not found"}));
+    }
+    let entry_id = match parts[0].parse::<i64>() {
+        Ok(value) => value,
+        Err(_) => {
+            return send_json(
+                request,
+                StatusCode(400),
+                &json!({"error": "invalid entry id"}),
+            );
+        }
+    };
+    let position = match parts[2].parse::<i64>() {
+        Ok(value) => value,
+        Err(_) => {
+            return send_json(
+                request,
+                StatusCode(400),
+                &json!({"error": "invalid sentence index"}),
+            );
+        }
+    };
+
+    let result = repository.ensure_example_audio(
+        entry_id,
+        position,
+        &config.tts.generated_dir,
+        |sentence| tts_service.synthesize_sentence(sentence),
+    );
+    // The repository returns domain errors as anyhow messages. Mapping the
+    // known ones here keeps HTTP status choices in the HTTP layer.
+    match result {
+        Ok(payload) => send_json(request, StatusCode(200), &payload),
+        Err(error) if error.to_string().contains("unknown example") => send_json(
+            request,
+            StatusCode(404),
+            &json!({"error": "unknown example"}),
+        ),
+        Err(error) if error.to_string().contains("empty sentence") => send_json(
+            request,
+            StatusCode(400),
+            &json!({"error": "empty sentence"}),
+        ),
+        Err(error) => send_json(
+            request,
+            StatusCode(500),
+            &json!({"error": error.to_string()}),
+        ),
+    }
+}
+
 fn handle_put(mut request: Request, repository: WordRepository) -> Result<()> {
     let parsed = parse_local_url(request.url())?;
     let path = parsed.path().trim_end_matches('/').to_string();
@@ -154,6 +251,8 @@ fn handle_put(mut request: Request, repository: WordRepository) -> Result<()> {
 
     let mut body = String::new();
     request.as_reader().read_to_string(&mut body)?;
+    // An empty PUT body means "clear both flags". That matches the frontend's
+    // simple mark contract and avoids requiring `{}` for a no-state mark.
     let body: serde_json::Value =
         match serde_json::from_str(if body.trim().is_empty() { "{}" } else { &body }) {
             Ok(value) => value,
@@ -194,6 +293,8 @@ fn send_json<T: Serialize>(request: Request, status: StatusCode, payload: &T) ->
     headers.push(header("Cache-Control", "no-store"));
     headers.push(header("Content-Type", "application/json; charset=utf-8"));
 
+    // HEAD should return the same status/headers as GET without a response
+    // body. This helper centralizes that rule for every JSON endpoint.
     if request.method() == &Method::Head {
         request.respond(add_headers(Response::empty(status), headers))?;
     } else {
@@ -210,6 +311,8 @@ fn send_file(request: Request, path: &Path, content_type: &str) -> Result<()> {
         return send_json(request, StatusCode(404), &json!({"error": "not found"}));
     }
     let ctype = if content_type.is_empty() {
+        // Let mime_guess handle static assets where the type is obvious from
+        // the extension. Audio routes pass an explicit content type above.
         mime_guess::from_path(path)
             .first_or_octet_stream()
             .essence_str()
@@ -242,6 +345,9 @@ fn add_headers<R: Read>(mut response: Response<R>, headers: Vec<Header>) -> Resp
 }
 
 fn parse_local_url(raw: &str) -> Result<Url> {
+    // tiny_http exposes only the path/query part for normal requests. Prefixing
+    // a dummy host lets the `url` crate parse query strings with standard URL
+    // rules instead of hand-splitting on `?` and `&`.
     Url::parse(&format!("http://localhost{raw}")).context("parse request URL")
 }
 
@@ -254,7 +360,7 @@ fn query_map(url: &Url) -> HashMap<String, String> {
 fn cors_headers() -> Vec<Header> {
     vec![
         header("Access-Control-Allow-Origin", "*"),
-        header("Access-Control-Allow-Methods", "GET, PUT, OPTIONS"),
+        header("Access-Control-Allow-Methods", "GET, PUT, POST, OPTIONS"),
         header("Access-Control-Allow-Headers", "Content-Type"),
     ]
 }

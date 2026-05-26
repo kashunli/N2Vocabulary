@@ -413,6 +413,45 @@ hr.divider {
   margin-top: 2px;
 }
 
+.example-zh {
+  color: #9ca8c8;
+  margin-top: 2px;
+}
+
+.example-explanation {
+  color: #b8c4e0;
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: var(--surface);
+  border-radius: 8px;
+  border-left: 2px solid var(--accent2);
+}
+
+.example-explanation strong { color: #fff; font-weight: 600; }
+.example-explanation em { font-style: italic; color: #a0aac4; }
+
+.example-explanation ul {
+  margin: 0.3em 0;
+  padding-left: 1.2em;
+}
+
+.example-explanation li {
+  margin-top: 0.25em;
+  line-height: 1.65;
+}
+
+.example-explanation .jlpt-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+  background: var(--surface2);
+  border-radius: 3px;
+  padding: 0 4px;
+  margin-left: 2px;
+}
+
 /* ── Index tag ─────────────────────────── */
 
 .index-tag {
@@ -499,9 +538,13 @@ def build_deck(db: list[dict], clips_root: Path):
         for item in extra_items[:4]:
             jp = html_mod.escape(str(item.get("text") or ""))
             en = html_mod.escape(str(item.get("translation_en") or ""))
+            zh = html_mod.escape(str(item.get("translation_zh") or ""))
+            exp = explanation_to_html(str(item.get("explanation") or ""))
             en_html = f'<div class="example-en">{en}</div>' if en else ""
+            zh_html = f'<div class="example-zh">{zh}</div>' if zh else ""
+            exp_html = f'<div class="example-explanation">{exp}</div>' if exp else ""
             more_parts.append(
-                f'<div class="example-item"><div class="example-jp">{jp}</div>{en_html}</div>'
+                f'<div class="example-item"><div class="example-jp">{jp}</div>{en_html}{zh_html}{exp_html}</div>'
             )
         more_html = "".join(more_parts)
 

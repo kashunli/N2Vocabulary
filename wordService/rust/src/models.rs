@@ -1,6 +1,7 @@
 use serde::Serialize;
 use std::collections::BTreeMap;
 
+/// Counts shown in the top-level dashboard.
 #[derive(Debug, Serialize, PartialEq)]
 pub struct Summary {
     pub entries: i64,
@@ -10,6 +11,7 @@ pub struct Summary {
     pub unmarked: i64,
 }
 
+/// Per-unit counts used by the unit sidebar/list.
 #[derive(Debug, Serialize, PartialEq)]
 pub struct UnitSummary {
     pub number: i64,
@@ -21,6 +23,7 @@ pub struct UnitSummary {
     pub unmarked: i64,
 }
 
+/// A compact unit reference embedded inside an entry response.
 #[derive(Debug, Serialize, PartialEq)]
 pub struct UnitRef {
     pub number: i64,
@@ -28,6 +31,10 @@ pub struct UnitRef {
     pub title: String,
 }
 
+/// User study state for one vocabulary entry.
+///
+/// SQLite stores booleans as integers, but the API returns real JSON booleans
+/// because that is easier for the frontend to consume.
 #[derive(Debug, Serialize, PartialEq)]
 pub struct MarkState {
     pub known: bool,
@@ -35,6 +42,7 @@ pub struct MarkState {
     pub updated_at: Option<String>,
 }
 
+/// Full mark snapshot returned by `/api/marks`.
 #[derive(Debug, Serialize, PartialEq)]
 pub struct MarksResponse {
     pub version: i64,
@@ -42,6 +50,10 @@ pub struct MarksResponse {
     pub marks: BTreeMap<String, MarkState>,
 }
 
+/// One sentence/example attached to an entry.
+///
+/// Position `0` is special in this project: it is the main sentence. Positions
+/// `1+` are extra examples.
 #[derive(Clone, Debug, Serialize, PartialEq)]
 pub struct EntryExample {
     pub position: i64,
@@ -52,6 +64,11 @@ pub struct EntryExample {
     pub audio_url: Option<String>,
 }
 
+/// The main entry payload served to the browser.
+///
+/// List views and detail views share this shape. Detail-only fields are
+/// optional so the list endpoint can stay lightweight without inventing a
+/// second nearly-identical struct.
 #[derive(Debug, Serialize, PartialEq)]
 pub struct EntryPayload {
     pub entry_id: i64,
@@ -71,6 +88,8 @@ pub struct EntryPayload {
     pub sentence_audio_url: Option<String>,
     pub mark: MarkState,
 
+    // Serde skips absent detail fields entirely, so the frontend can distinguish
+    // "not loaded in this endpoint" from "loaded but empty".
     #[serde(skip_serializing_if = "Option::is_none")]
     pub examples: Option<Vec<EntryExample>>,
 
@@ -78,8 +97,21 @@ pub struct EntryPayload {
     pub explanation_md: Option<String>,
 }
 
+/// Pageless list response. `total` is still useful to the frontend even though
+/// this local service currently returns all matching entries.
 #[derive(Debug, Serialize, PartialEq)]
 pub struct EntryListResponse {
     pub items: Vec<EntryPayload>,
     pub total: usize,
+}
+
+/// Response for lazy sentence-audio generation.
+///
+/// `generated` tells the UI whether the backend reused an existing clip or made
+/// a new one during this request.
+#[derive(Debug, Serialize, PartialEq)]
+pub struct AudioGenerationResponse {
+    pub ok: bool,
+    pub audio_url: String,
+    pub generated: bool,
 }

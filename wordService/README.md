@@ -1,20 +1,28 @@
 # N2 wordService
 
-`wordService` is the v1 local card-study service for the N2 vocabulary repo.
-It keeps the frontend and backend separate while staying dependency-free.
+`wordService` is the local card-study service for the N2 vocabulary repo.
+
+The Rust implementation in `rust/` is now the only active source of truth. The
+old Python implementation has been moved to `legacy/python/` for archaeology
+only. Do not use the legacy Python files for new behavior, bug fixes, or
+workflow decisions unless the user explicitly asks to inspect history.
 
 ## Inputs
 
 - Vocabulary DB: `../output/n2vocab.sqlite`
-- Audio clips: `../clips/`
+- Audio clips: `../clips/`; Rust playback expects flat aliases in
+  `../clips/words/` and `../clips/sentences/`
+- Frontend assets: `static/`
 - Study marks: `word_marks` table in the same SQLite DB
+- Generated sentence audio: `../clips/generated_sentences/edge_tts/`
 
 ## Run
 
-Run from the project root:
+Run from the N2Vocabulary project root:
 
 ```powershell
-python wordService/run_word_service.py
+cd wordService/rust
+cargo run
 ```
 
 Then open:
@@ -31,6 +39,9 @@ Optional environment variables:
 - `N2_WORD_SERVICE_HOST`
 - `N2_WORD_SERVICE_PORT`
 - `N2_WORD_SERVICE_BOOK`
+- `N2_WORD_SERVICE_TTS_VOICE` defaults to `ja-JP-NanamiNeural`
+- `N2_WORD_SERVICE_TTS_RATE` defaults to `-10%`
+- `N2_WORD_SERVICE_TTS_DIR` defaults to `clips/generated_sentences/edge_tts`
 
 ## API
 
@@ -40,30 +51,41 @@ Optional environment variables:
 - `GET /api/entries/<entry_id>`
 - `GET /api/marks`
 - `PUT /api/marks/<entry_id>` with `{"known": true|false, "flagged": true|false}`
+- `POST /api/entries/<entry_id>/examples/<position>/audio`
 - `GET /audio/<clips/...>`
+
+The audio-generation endpoint queues Microsoft Edge TTS jobs so only one remote
+TTS request runs at a time. It stores generated MP3s under
+`../clips/generated_sentences/edge_tts/` and writes the relative path back to
+`entry_examples.audio_clip`.
+
+Canonical word and main-sentence audio paths are maintained with:
+
+```powershell
+cd ..
+python skills/cutTwice/flatten_audio_clips.py
+python skills/cutTwice/flatten_audio_clips.py --apply --migrate-db
+```
+
+The script keeps track folders as repair/audit artifacts, copies flat aliases
+by entry ID, and rewrites SQLite audio columns only after source clips are
+complete and unambiguous.
 
 ## Validate
 
 ```powershell
-python -m unittest discover -s wordService/tests -q
-```
-
-The tests build a temporary SQLite database and do not touch the real vocabulary
-DB. The service itself uses the same copy-mutate-copy-back mark write behavior
-as `marks_server.py`, because direct writes on this Windows-mounted workspace
-can be fragile when stale SQLite WAL sidecars exist.
-
-## Rust side-by-side version
-
-The Rust backend lives in `wordService/rust/`. It mirrors the Python service API
-while keeping the code split into small learning-oriented modules.
-
-```powershell
 cd wordService/rust
-cargo run
+cargo fmt --check
 cargo test
 ```
 
-It uses the same `N2_WORD_SERVICE_*` environment variables as the Python
-service. If the Python server is already running on `8767`, set
-`N2_WORD_SERVICE_PORT=8768` before `cargo run`.
+The Rust tests build a temporary SQLite database and do not touch the real
+vocabulary DB. The backend writes mutable SQLite state through a temporary copy
+and copies it back after commit; this keeps writes reliable on this Windows
+workspace when stale SQLite sidecar files exist.
+
+## Legacy Python
+
+The previous Python backend and its tests live in `legacy/python/`. They are
+kept only as a reference snapshot. The active frontend, API behavior, DB write
+rules, and TTS queue contract should be read from the Rust code and Rust tests.
