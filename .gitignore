@@ -47,6 +47,12 @@ output/alignment/audits/*_clip_transcript_cache*
 __pycache__/
 *.pyc
 
+# Local SQLite sidecars for the canonical wordService database.
+wordService/data/*.sqlite-wal
+wordService/data/*.sqlite-shm
+wordService/data/*.sqlite-journal
+wordService/data/*.sqlite-backup_.*
+*.json
 # Backup snapshots and preserved local internals
 *.bk
 *.bak

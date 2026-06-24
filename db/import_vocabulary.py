@@ -26,6 +26,10 @@ from connect import DB_PATH, connect  # type: ignore[import-not-found]
 from migrate import apply_all          # type: ignore[import-not-found]
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+TOOLS_DIR = PROJECT_ROOT / "tools"
+if str(TOOLS_DIR) not in sys.path:
+    sys.path.insert(0, str(TOOLS_DIR))
+from merge_gwb_duplicates import restore_provenance_examples  # noqa: E402
 DEFAULT_JSON = PROJECT_ROOT / "vocabulary.json"
 MARKS_JSON = PROJECT_ROOT / "output" / "word_marks.json"
 
@@ -202,8 +206,11 @@ def import_book(
                     (row_id, i, text, translation_en, translation_zh, explanation_md, audio_clip),
                 )
 
+        restored = restore_provenance_examples(conn, book_code)
         conn.execute("COMMIT")
         print(f"imported {len(data)} entries into book {book_code!r}.")
+        if restored["source_notes"]:
+            print(f"  restored merged GWB content: {restored}")
     except Exception:
         conn.execute("ROLLBACK")
         raise

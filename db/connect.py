@@ -59,7 +59,7 @@ def load_entries(book_code: str = "N2", db_path: Path | str | None = None) -> li
             """
             SELECT e.entry_id, e.uuid, e.book_code, e.source_index,
                    e.unit_number, u.header AS unit_header,
-                   e.kanji, e.reading, e.headword_text, e.verb_pattern,
+                   e.kanji, e.reading, e.kanji AS headword_text, e.verb_pattern,
                    e.meaning_en, e.meaning_zh, e.sentence, e.explanation_md,
                    e.word_clip, e.sentence_clip
               FROM entries e

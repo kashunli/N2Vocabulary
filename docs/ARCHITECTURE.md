@@ -5,7 +5,7 @@
 Use artifact level as the organizing principle:
 
 - **Source**: human/source material that is expensive or impossible to regenerate, such as `audio/`, `json/`, and the PDF/OCR inputs under `parse/`.
-- **Canonical data**: cleaned project state that downstream products read, especially `output/n2vocab.sqlite`.
+- **Canonical data**: cleaned project state that downstream products read, especially `wordService/data/n2vocab.sqlite`.
 - **Work artifacts**: review files, mappings, audits, and repair manifests that explain how a result was produced.
 - **Cache**: Whisper transcripts, temporary ASR folders, and other speed aids that can be regenerated.
 - **Distribution**: final user-facing artifacts, such as HTML pages and `.apkg` decks.
@@ -25,8 +25,39 @@ The newer current workflows already live outside `output/`:
 - `clips/` - current service-facing clips from `skills/cutTwice/`, flattened under `clips/words/` and `clips/sentences/`.
 - `wordService/rust/` - current local SQLite-backed study service.
 - `skills/` - reusable project-local skill/workflow folders.
-- `output/n2vocab.sqlite` - current canonical vocabulary DB.
+- `wordService/data/n2vocab.sqlite` - current canonical vocabulary DB.
 - `vocabulary.json.db` - retired JSON snapshot kept for reference only.
+
+## Vocabulary Data Flow
+
+`wordService/data/n2vocab.sqlite` is the canonical vocabulary data store for current
+runtime and deck workflows. The local service, Anki builders, and most repair
+scripts read the same SQLite rows instead of independent vocabulary JSON.
+
+```text
+wordService/data/n2vocab.sqlite
+  books, units
+  entries              # one row per vocabulary item
+    source_index       # global book/word number, e.g. word1025
+    unit_number        # unit shown in the study UI
+    position           # order inside that unit
+    kanji, reading, meanings, sentence, explanation_md
+    word_clip, sentence_clip
+  entry_examples       # position 0 is the main sentence; later rows are extras
+  word_marks           # known/flagged user state written by wordService
+  word_service_settings
+
+clips/
+  words/wordNNN.mp3
+  sentences/sentenceNNN.mp3
+  generated_sentences/edge_tts/wordNNN_sentenceP.mp3
+```
+
+The browser-facing word number maps to `entries.source_index`, not to a JSON
+array offset. When a word is wrong in the UI, inspect the matching `entries`
+row and its `entry_examples` first. If corrected example text had generated
+audio, clear that example's `audio_clip` so the service can regenerate audio
+from the corrected sentence.
 
 ## Target Layout
 

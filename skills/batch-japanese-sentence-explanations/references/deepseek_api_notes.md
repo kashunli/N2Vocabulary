@@ -8,7 +8,7 @@ Defaults for this skill:
 - Full URL: `https://api.deepseek.com/chat/completions`
 - Model: `deepseek-v4-flash`
 - API key env var: `DEEPSEEK_API_KEY`; read from current process env first, then Windows User env, then Windows Machine env.
-- Non-thinking mode: `"thinking": {"type": "disabled"}`
+- Thinking mode: `"thinking": {"type": "enabled"}`. The script sends no explicit thinking level by default, so DeepSeek uses its default level.
 - JSON mode: `"response_format": {"type": "json_object"}`
 
 Request body shape:
@@ -20,7 +20,7 @@ Request body shape:
     {"role": "system", "content": "..."},
     {"role": "user", "content": "..."}
   ],
-  "thinking": {"type": "disabled"},
+  "thinking": {"type": "enabled"},
   "response_format": {"type": "json_object"},
   "temperature": 0.2
 }

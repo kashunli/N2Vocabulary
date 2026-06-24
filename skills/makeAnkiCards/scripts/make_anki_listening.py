@@ -18,10 +18,14 @@ from pathlib import Path
 import genanki
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
+SCRIPT_ROOT = Path(__file__).resolve().parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+if str(SCRIPT_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_ROOT))
 
 from db.connect import load_entries
+from anki_render import render_japanese_sentence_html
 
 # ── Markdown → HTML for explanations ──────────────────────────────────────────
 
@@ -149,13 +153,19 @@ BACK_TMPL = """\
   <div class="explanation">{{Explanation}}</div>
   {{/Explanation}}
 
-  {{#MoreExamples}}
+  {{#MoreExample1}}
   <hr class="divider">
   <div class="more-examples">
     <div class="more-label">More examples</div>
-    <div class="examples-list">{{MoreExamples}}</div>
+    <div class="examples-list">
+      {{#MoreExample1}}<div class="example-item">{{MoreExample1}}</div>{{/MoreExample1}}
+      {{#MoreExample2}}<div class="example-item">{{MoreExample2}}</div>{{/MoreExample2}}
+      {{#MoreExample3}}<div class="example-item">{{MoreExample3}}</div>{{/MoreExample3}}
+      {{#MoreExample4}}<div class="example-item">{{MoreExample4}}</div>{{/MoreExample4}}
+      {{#MoreExample5}}<div class="example-item">{{MoreExample5}}</div>{{/MoreExample5}}
+    </div>
   </div>
-  {{/MoreExamples}}
+  {{/MoreExample1}}
 
   <div class="index-tag">#{{Index}}</div>
 </div>
@@ -236,6 +246,20 @@ CSS = """\
   border-radius: var(--radius);
   border-left: 4px solid var(--accent);
   margin-bottom: 6px;
+}
+
+.sentence ruby,
+.example-jp ruby {
+  ruby-position: over;
+  ruby-align: center;
+}
+
+.sentence rt,
+.example-jp rt {
+  color: var(--accent);
+  font-size: 0.58em;
+  font-weight: 500;
+  line-height: 1;
 }
 
 .sentence-translation {
@@ -392,6 +416,9 @@ hr.divider {
 }
 
 .examples-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   font-size: 14px;
   line-height: 1.65;
   color: #9aa0be;
@@ -400,7 +427,7 @@ hr.divider {
 }
 
 .example-item {
-  margin: 0 0 10px 0;
+  min-width: 0;
 }
 
 .example-jp {
@@ -483,12 +510,17 @@ def build_deck(db: list[dict], clips_root: Path):
             {"name": "SentenceAudio"},
             {"name": "MoreExamples"},
             {"name": "Explanation"},
+            {"name": "MoreExample1"},
+            {"name": "MoreExample2"},
+            {"name": "MoreExample3"},
+            {"name": "MoreExample4"},
+            {"name": "MoreExample5"},
         ],
         templates=[{"name": "Listening Card", "qfmt": FRONT_TMPL, "afmt": BACK_TMPL}],
         css=CSS,
     )
 
-    deck   = genanki.Deck(DECK_ID, "N2Words::Listening")
+    deck   = genanki.Deck(DECK_ID, "耳から覚える::N2WordsSentences")
     media:  list[str]  = []
     media_set: set[str] = set()
 
@@ -513,8 +545,7 @@ def build_deck(db: list[dict], clips_root: Path):
         idx      = e["index"]
         unit_num = e["unit"]["number"]
         unit_hdr = e["unit"].get("header", f"Unit {unit_num:02d}")
-        parts    = unit_hdr.split()
-        unit_label = " ".join(parts[:1] + parts[2:]) if len(parts) >= 3 else unit_hdr
+        unit_label = unit_hdr
         unit_color = UNIT_COLORS.get(unit_num, "#666")
 
         word_audio = add_audio(e.get("word_clip"))
@@ -534,19 +565,20 @@ def build_deck(db: list[dict], clips_root: Path):
                 for i, text in enumerate(examples)
                 if text
             ]
-        more_parts = []
-        for item in extra_items[:4]:
-            jp = html_mod.escape(str(item.get("text") or ""))
+        def render_more_example(item: dict) -> str:
+            jp = render_japanese_sentence_html(item.get("text") or "")
             en = html_mod.escape(str(item.get("translation_en") or ""))
             zh = html_mod.escape(str(item.get("translation_zh") or ""))
             exp = explanation_to_html(str(item.get("explanation") or ""))
             en_html = f'<div class="example-en">{en}</div>' if en else ""
             zh_html = f'<div class="example-zh">{zh}</div>' if zh else ""
             exp_html = f'<div class="example-explanation">{exp}</div>' if exp else ""
-            more_parts.append(
-                f'<div class="example-item"><div class="example-jp">{jp}</div>{en_html}{zh_html}{exp_html}</div>'
-            )
-        more_html = "".join(more_parts)
+            return f'<div class="example-jp">{jp}</div>{en_html}{zh_html}{exp_html}'
+
+        # Keep each extra example in its own Anki field/column. The template
+        # renders these in source order and intentionally omits item 6+.
+        more_example_fields = [render_more_example(item) for item in extra_items[:5]]
+        more_example_fields.extend([""] * (5 - len(more_example_fields)))
 
         # explanation: convert markdown to HTML for Anki display
         raw_exp = e.get("explanation") or ""
@@ -564,11 +596,12 @@ def build_deck(db: list[dict], clips_root: Path):
                 t(e.get("meaning_en")),
                 t(e.get("meaning_zh")),
                 word_audio,
-                t(e.get("sentence")),
+                render_japanese_sentence_html(e.get("sentence")),
                 t(e.get("sentence_translation_en")),
                 sent_audio,
-                more_html,
+                "",
                 explanation,
+                *more_example_fields,
             ],
             guid=genanki.guid_for(f"n2listening_{idx}"),
             tags=[f"unit{unit_num:02d}", "N2", "listening"],

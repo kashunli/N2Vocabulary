@@ -19,7 +19,7 @@ The current project truth is:
 - `audio/` - source MP3 tracks from the book audio.
 - `json/` - OCR/page JSON used by vocabulary and exercise workflows.
 - `parse/` - OCR parser docs and parser project files, now flattened into this root repo.
-- `output/n2vocab.sqlite` - current canonical vocabulary data used by the word runtime and Anki builders.
+- `wordService/data/n2vocab.sqlite` - current canonical vocabulary data used by the word runtime and Anki builders.
 - `vocabulary.json.db` - retired JSON vocabulary snapshot kept only for reference/history.
 - `clips/` - current service-facing audio clips, especially `clips/words/` and `clips/sentences/`.
 - `skills/` - reusable project-local skills and workflow folders for later review.
@@ -35,3 +35,23 @@ The current project truth is:
 Keep current workflows boring and explicit. Put reusable current code in `skills/<name>/`, put historical material in `legacy/`, and put narrative history in `updates/`. Avoid adding one-off scripts at the repository root.
 
 This repo is AI-operated first: prefer small concrete skill folders with `SKILL.md` plus nearby scripts, because future work will usually be performed by an AI agent reading the repo rather than by a human remembering command history.
+
+## Canonical Vocabulary Flow
+
+The study service and Anki builders do not read a separate JSON vocabulary file
+at runtime. The current word data is `wordService/data/n2vocab.sqlite`.
+
+For a bad word shown in the browser, start from the SQLite row:
+
+- `entries.source_index` is the book/global word number shown as `wordNNN`.
+- `entries.unit_number` and `entries.position` place the word in a unit.
+- `entries.kanji`, `entries.reading`, `entries.headword_text`, meanings,
+  `entries.sentence`, and `entries.explanation_md` feed the main card.
+- `entry_examples` stores the main sentence at `position = 0` and extra example
+  rows at later positions.
+- `entries.word_clip`, `entries.sentence_clip`, and `entry_examples.audio_clip`
+  point into `clips/`.
+
+Operational debugging steps live in `docs/RUNBOOK.md`; service-specific API and
+configuration details live in `wordService/README.md` and
+`wordService/rust/README.md`.

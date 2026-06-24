@@ -29,14 +29,19 @@ content.
 ## Scripts
 
 - `scripts/make_anki.py` builds the word-centered deck.
+  - Deck name: `耳から覚える::N2Words`.
   - The Anki template does not loop over database rows. The script pre-renders
-    example HTML into one field and shows at most five sentence items total:
-    the main sentence plus up to four extra examples, each with English
-    and Chinese translations plus rendered HTML explanations when available.
+    extra examples into five ordered fields: `MoreExample1` through
+    `MoreExample5`. Extra example 6+ is intentionally omitted.
+  - Japanese sentence fields are rendered through `scripts/anki_render.py`, so
+    kanji-bearing tokens get `<ruby><rt>...</rt></ruby>` furigana.
 - `scripts/make_anki_listening.py` builds the listening deck.
+  - Deck name: `耳から覚える::N2WordsSentences`.
   - The back side shows the main sentence English translation and the same
-    pre-rendered translated/explained extra examples, capped at five sentence
-    items total.
+    pre-rendered translated/explained extra examples in `MoreExample1` through
+    `MoreExample5`.
+  - It uses the same furigana renderer for the main sentence and extra example
+    sentences.
 - `scripts/make_clean_db.py` and `scripts/merge_explanations.py` are legacy
   helpers kept only for archaeology unless the user explicitly asks to repair
   old JSON-era data.
