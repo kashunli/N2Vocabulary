@@ -2,10 +2,20 @@
 
 `wordService` is the local card-study service for the N2 vocabulary repo.
 
-The Rust implementation in `rust/` is now the only active source of truth. The
+The Rust implementation in this folder is the only active source of truth. The
 old Python implementation has been moved to `legacy/python/` for archaeology
 only. Do not use the legacy Python files for new behavior, bug fixes, or
 workflow decisions unless the user explicitly asks to inspect history.
+
+The code is intentionally split into a few small learning-oriented modules:
+
+- `src/config.rs` reads runtime paths and environment variables.
+- `src/repository.rs` is the SQLite boundary and contains most business logic.
+- `src/http.rs` is the tiny HTTP server and route table.
+- `src/models.rs` contains JSON response structs.
+- `src/tts.rs` owns the single-worker Microsoft Edge TTS queue.
+- `tests/repository_tests.rs` exercises repository behavior with a temporary
+  SQLite database.
 
 ## Inputs
 
@@ -13,31 +23,31 @@ workflow decisions unless the user explicitly asks to inspect history.
 - Audio clips: `../clips/`; Rust playback expects flat aliases in
   `../clips/words/` and `../clips/sentences/`
 - Frontend assets: `static/`
-- Study marks: `word_marks` table in the same SQLite DB
+- Study marks: `item_marks` table in the same SQLite DB
 - Generated sentence audio: `../clips/generated_sentences/edge_tts/`
 
 ## Vocabulary Data Flow
 
 At runtime the service reads vocabulary directly from SQLite, not from a JSON
-file. The default DB path is resolved in `rust/src/config.rs`: from
-`wordService/rust`, it points to `../data/n2vocab.sqlite`, shown here as
-`data/n2vocab.sqlite` relative to this `wordService/` folder.
+file. The default DB path is resolved in `src/config.rs` from this
+`wordService/` folder as `data/n2vocab.sqlite`.
 
 Important tables:
 
 - `units`: unit headers and titles.
-- `entries`: one row per vocabulary item. `source_index` is the global
-  word/book number used by audio filenames like `word1025.mp3`; `unit_number`
-  and `position` place it in the UI. `kanji` is the display headword, including
-  kana-only words.
-- `entry_examples`: example sentences. `position = 0` is the main sentence
-  shown on the card and should match `entries.sentence`; later positions are
-  extra examples.
-- `entry_source_notes`: word-level meanings and notes preserved from a merged
+- `vocabulary_items`: one row per shared learnable item. `kanji` is the
+  display headword, including kana-only words.
+- `book_entries`: one row per book appearance. `source_index` is the
+  word/book number used by book views; `unit_number` and `position` place it
+  in the UI. `entry_id` remains the API compatibility placement ID.
+- `item_examples`: sentence/example/term rows. `kind` names the role
+  (`main_sentence`, `example_sentence`, `related_term`), while `position` is
+  display order.
+- `item_source_notes`: word-level meanings and notes preserved from a merged
   source book row.
-- `entry_example_sources`: provenance linking a normal example row back to its
+- `item_example_sources`: provenance linking a normal example row back to its
   merged source record.
-- `word_marks`: known/flagged state written by the study UI.
+- `item_marks`: shared known/flagged state written by the study UI.
 
 Exact GWB duplicates are merged into N2/N3 with a dry-run-first command:
 
@@ -51,9 +61,10 @@ and examples with provenance, removes only matched GWB rows, and runs SQLite
 integrity checks. GWB and destination importers also reconcile this preserved
 content so a rebuild does not silently discard it.
 
-When a displayed word is wrong, inspect `entries` and `entry_examples` first.
+When a displayed word is wrong, inspect `book_entries`, `vocabulary_items`, and
+`item_examples` first.
 For example, a browser issue like "word no.1025 in unit12 is wrong" should map
-to `entries.unit_number = 12` and `entries.source_index = 1025`. See
+to `book_entries.unit_number = 12` and `book_entries.source_index = 1025`. See
 `../docs/RUNBOOK.md` for copy-paste SQLite inspection and backup commands.
 
 ## Run
@@ -61,7 +72,7 @@ to `entries.unit_number = 12` and `entries.source_index = 1025`. See
 Run from the N2Vocabulary project root:
 
 ```powershell
-cd wordService/rust
+cd wordService
 cargo run
 ```
 
@@ -123,7 +134,7 @@ complete and unambiguous.
 ## Validate
 
 ```powershell
-cd wordService/rust
+cd wordService
 cargo fmt --check
 cargo test
 ```

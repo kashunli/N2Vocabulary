@@ -23,7 +23,7 @@ The project still has a historical `output/` folder. Treat it as a compatibility
 The newer current workflows already live outside `output/`:
 
 - `clips/` - current service-facing clips from `skills/cutTwice/`, flattened under `clips/words/` and `clips/sentences/`.
-- `wordService/rust/` - current local SQLite-backed study service.
+- `wordService/` - current local SQLite-backed study service.
 - `skills/` - reusable project-local skill/workflow folders.
 - `wordService/data/n2vocab.sqlite` - current canonical vocabulary DB.
 - `vocabulary.json.db` - retired JSON snapshot kept for reference only.
@@ -37,14 +37,19 @@ scripts read the same SQLite rows instead of independent vocabulary JSON.
 ```text
 wordService/data/n2vocab.sqlite
   books, units
-  entries              # one row per vocabulary item
+  vocabulary_items     # one row per shared learnable vocabulary item
+    item_id            # canonical item ID shared across books
+    kanji, reading, meanings
+    word_clip
+  book_entries         # one row per item appearance in a source book
+    entry_id           # compatibility/API placement ID
     source_index       # global book/word number, e.g. word1025
     unit_number        # unit shown in the study UI
     position           # order inside that unit
-    kanji, reading, meanings, sentence, explanation_md
-    word_clip, sentence_clip
-  entry_examples       # position 0 is the main sentence; later rows are extras
-  word_marks           # known/flagged user state written by wordService
+    sentence, explanation_md, sentence_clip compatibility fields
+  item_examples        # kind names the row role; position is display order
+  item_marks           # shared known/flagged state written by wordService
+  item_source_notes, item_example_sources
   word_service_settings
 
 clips/
@@ -53,11 +58,13 @@ clips/
   generated_sentences/edge_tts/wordNNN_sentenceP.mp3
 ```
 
-The browser-facing word number maps to `entries.source_index`, not to a JSON
-array offset. When a word is wrong in the UI, inspect the matching `entries`
-row and its `entry_examples` first. If corrected example text had generated
-audio, clear that example's `audio_clip` so the service can regenerate audio
-from the corrected sentence.
+The browser-facing word number maps to `book_entries.source_index`, not to a
+JSON array offset. When a word is wrong in the UI, inspect the matching
+`book_entries` placement, its `vocabulary_items` row, and its `item_examples`
+first. `item_examples.kind = 'main_sentence'` is the authoritative main
+sentence row; the older placement sentence fields are compatibility data. If
+corrected example text had generated audio, clear that example's `audio_clip`
+so the service can regenerate audio from the corrected sentence.
 
 ## Target Layout
 
@@ -109,6 +116,6 @@ workflowName/
 └── assets/           # optional templates or static resources
 ```
 
-In this repo, place those folders under `skills/`. Keep each skill concrete. `skills/cutTwice/` should only cut/transcribe audio clips. `skills/makeAnkiCards/` should only build/check/export Anki decks. The local study runtime belongs in `wordService/rust/`.
+In this repo, place those folders under `skills/`. Keep each skill concrete. `skills/cutTwice/` should only cut/transcribe audio clips. `skills/makeAnkiCards/` should only build/check/export Anki decks. The local study runtime belongs in `wordService/`.
 
 When a skill grows too large, split it by product or decision surface. For example, audio cutting, clip audit, Anki building, and HTML rendering should be separate skills because they have different inputs, outputs, and validation checks.

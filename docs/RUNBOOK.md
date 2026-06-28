@@ -34,7 +34,7 @@ present and unambiguous.
 ## Study Words Runtime
 
 ```bash
-cd wordService/rust
+cd wordService
 cargo run
 ```
 
@@ -55,8 +55,9 @@ http://127.0.0.1:8767/api/entries?unit=1
 
 When the browser shows a wrong word, reading, sentence, or example, treat
 `wordService/data/n2vocab.sqlite` as the first source to inspect. The UI word number
-usually maps to `entries.source_index`, and the main sentence is duplicated in
-`entries.sentence` and `entry_examples.position = 0`.
+usually maps to `book_entries.source_index`, and sentence/example text is
+authoritative in `item_examples`, where `kind` names the row role and
+`position` is display order.
 
 This command prints the entry and all examples for a specific word. Replace the
 unit and source index values as needed:
@@ -74,11 +75,13 @@ conn = sqlite3.connect(db)
 conn.row_factory = sqlite3.Row
 entry = conn.execute(
     """
-    SELECT entry_id, source_index, unit_number, position,
-           kanji, reading, verb_pattern,
-           meaning_en, meaning_zh, sentence, word_clip, sentence_clip
-    FROM entries
-    WHERE book_code = 'N2' AND unit_number = ? AND source_index = ?
+    SELECT be.entry_id, be.item_id, be.source_index, be.unit_number,
+           be.position, v.kanji, v.reading, v.verb_pattern,
+           v.meaning_en, v.meaning_zh, be.sentence, v.word_clip,
+           be.sentence_clip
+    FROM book_entries be
+    JOIN vocabulary_items v ON v.item_id = be.item_id
+    WHERE be.book_code = 'N2' AND be.unit_number = ? AND be.source_index = ?
     """,
     (unit_number, source_index),
 ).fetchone()
@@ -87,12 +90,12 @@ print(dict(entry) if entry else "No matching entry")
 if entry:
     for row in conn.execute(
         """
-        SELECT position, text, translation_en, translation_zh, audio_clip
-        FROM entry_examples
-        WHERE entry_id = ?
+        SELECT position, kind, text, translation_en, translation_zh, audio_clip
+        FROM item_examples
+        WHERE item_id = ?
         ORDER BY position
         """,
-        (entry["entry_id"],),
+        (entry["item_id"],),
     ):
         print(dict(row))
 '@ | python -
@@ -115,13 +118,14 @@ print(backup)
 
 Correction checklist:
 
-- Update `entries.kanji`, `entries.reading`, meanings, `entries.sentence`,
-  and `entries.explanation_md` together when the headword itself is wrong.
-- Keep `entry_examples.position = 0` aligned with `entries.sentence`.
-- Put screenshot/book example sentences in later `entry_examples` positions.
-- Clear `entry_examples.audio_clip` for any changed generated example so lazy
+- Update `vocabulary_items.kanji`, `vocabulary_items.reading`, meanings, and
+  the matching `item_examples` row when the headword itself is wrong.
+- Keep `item_examples.kind = 'main_sentence'` aligned with compatibility
+  placement sentence fields while those remain.
+- Put screenshot/book example sentences in later `item_examples` positions.
+- Clear `item_examples.audio_clip` for any changed generated example so lazy
   TTS can regenerate from the corrected text.
-- Run `cd wordService/rust` then `cargo test` after changing data that the
+- Run `cd wordService` then `cargo test` after changing data that the
   service depends on.
 
 ## Anki Decks

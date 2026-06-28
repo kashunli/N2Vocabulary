@@ -11,7 +11,7 @@ The current project truth is:
 - `skills/makeAnkiCards/` is the current Anki deck workflow.
 - `skills/batch-japanese-sentence-explanations/` is the current batch sentence-explanation workflow.
 - `skills/japanese-sentence-explanation-skill/` and `skills/japanese-sentence-explanation.skill` preserve the reusable single-sentence explanation skill for later review.
-- `wordService/rust/` is the current local study service.
+- `wordService/` is the current local study service.
 - `legacy/` is a reference archive, not the default place to run code from.
 
 ## Folder Map
@@ -43,15 +43,18 @@ at runtime. The current word data is `wordService/data/n2vocab.sqlite`.
 
 For a bad word shown in the browser, start from the SQLite row:
 
-- `entries.source_index` is the book/global word number shown as `wordNNN`.
-- `entries.unit_number` and `entries.position` place the word in a unit.
-- `entries.kanji`, `entries.reading`, `entries.headword_text`, meanings,
-  `entries.sentence`, and `entries.explanation_md` feed the main card.
-- `entry_examples` stores the main sentence at `position = 0` and extra example
-  rows at later positions.
-- `entries.word_clip`, `entries.sentence_clip`, and `entry_examples.audio_clip`
-  point into `clips/`.
+- `vocabulary_items` is the canonical shared learnable item.
+- `book_entries.source_index` is the book/global word number shown as
+  `wordNNN`.
+- `book_entries.unit_number` and `book_entries.position` place the item in a
+  unit/book view.
+- `vocabulary_items.kanji`, `vocabulary_items.reading`, meanings, and
+  `book_entries` compatibility sentence fields feed the main card.
+- `item_examples.kind` is the content role (`main_sentence`,
+  `example_sentence`, or `related_term`); `position` is display order.
+- `item_examples` is authoritative for sentence/example text and audio.
+- `vocabulary_items.word_clip`, `book_entries.sentence_clip`, and
+  `item_examples.audio_clip` point into `clips/`.
 
 Operational debugging steps live in `docs/RUNBOOK.md`; service-specific API and
-configuration details live in `wordService/README.md` and
-`wordService/rust/README.md`.
+configuration details live in `wordService/README.md`.

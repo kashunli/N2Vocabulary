@@ -98,7 +98,11 @@ def status(db_path: Path | str | None = None) -> None:
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--status", action="store_true", help="show migration status only")
-    ap.add_argument("--db", default=None, help="override DB path (default: output/n2vocab.sqlite)")
+    ap.add_argument(
+        "--db",
+        default=None,
+        help="override DB path (default: wordService/data/n2vocab.sqlite)",
+    )
     args = ap.parse_args()
     print(f"db: {Path(args.db).resolve() if args.db else DB_PATH}")
     if args.status:

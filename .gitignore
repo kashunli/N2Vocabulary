@@ -51,7 +51,7 @@ __pycache__/
 wordService/data/*.sqlite-wal
 wordService/data/*.sqlite-shm
 wordService/data/*.sqlite-journal
-wordService/data/*.sqlite-backup_.*
+wordService/data/*.sqlite.backup*
 *.json
 # Backup snapshots and preserved local internals
 *.bk
@@ -76,3 +76,4 @@ credentials/
 .claude/
 .cursor/
 .vscode/
+*.sqlite.backup*

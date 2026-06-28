@@ -1,6 +1,6 @@
 -- 002_entry_example_metadata.sql — normalize sentence metadata into examples.
 -- The data move is intentionally handled by the dated updates/ script so it
--- can write review artifacts and a backup before touching output/n2vocab.sqlite.
+-- can write review artifacts and a backup before touching the canonical DB.
 
 PRAGMA foreign_keys = ON;
 

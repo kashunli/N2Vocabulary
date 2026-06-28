@@ -4,7 +4,7 @@ from __future__ import annotations
 import html
 import re
 
-_KANJI_RE = re.compile(r"[一-龯々〆ヵヶ]")
+from furigana import _KANJI_RE, katakana_to_hiragana, to_ruby_html
 
 try:
     import unidic_lite
@@ -13,18 +13,6 @@ try:
     _TAGGER = Tagger(f'-d "{unidic_lite.DICDIR}"')
 except Exception:
     _TAGGER = None
-
-
-def _katakana_to_hiragana(text: str) -> str:
-    """Convert katakana readings from UniDic into hiragana for furigana."""
-    out = []
-    for ch in text:
-        code = ord(ch)
-        if 0x30A1 <= code <= 0x30F6:
-            out.append(chr(code - 0x60))
-        else:
-            out.append(ch)
-    return "".join(out)
 
 
 def render_japanese_sentence_html(text: str) -> str:
@@ -47,16 +35,11 @@ def render_japanese_sentence_html(text: str) -> str:
             parts.append(html.escape(surface))
             continue
 
-        reading = getattr(token.feature, "kana", "") or getattr(token.feature, "pron", "")
-        reading = _katakana_to_hiragana(reading)
+        reading = getattr(token.feature, "kana", "") or getattr(token.feature, "pron", "") or ""
+        reading = katakana_to_hiragana(reading)
         if not reading:
             parts.append(html.escape(surface))
             continue
 
-        parts.append(
-            "<ruby>"
-            f"<rb>{html.escape(surface)}</rb>"
-            f"<rt>{html.escape(reading)}</rt>"
-            "</ruby>"
-        )
+        parts.append(to_ruby_html(surface, reading))
     return "".join(parts)

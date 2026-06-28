@@ -1,0 +1,698 @@
+use n2_word_service_rust::repository::{WordRepository, clean_sentence_text_for_tts};
+use rusqlite::Connection;
+use serde_json::Value as JsonValue;
+use std::fs;
+use std::path::PathBuf;
+use tempfile::TempDir;
+
+/// Small integration-test fixture.
+///
+/// The temp directory owns both SQLite and fake clip files, so each test starts
+/// isolated and can freely mutate marks/audio metadata without touching the
+/// real study database.
+struct Fixture {
+    _tempdir: TempDir,
+    repo: WordRepository,
+    db_path: PathBuf,
+    clips_dir: PathBuf,
+}
+
+impl Fixture {
+    fn new() -> Self {
+        let tempdir = TempDir::new().expect("create tempdir");
+        let root = tempdir.path();
+        let db_path = root.join("n2vocab.sqlite");
+        let clips_dir = root.join("clips");
+        fs::create_dir_all(clips_dir.join("words")).expect("create word clip folder");
+        fs::create_dir_all(clips_dir.join("sentences")).expect("create sentence clip folder");
+        fs::create_dir_all(clips_dir.join("unit07")).expect("create legacy clip folder");
+        fs::write(clips_dir.join("words").join("word1.mp3"), b"word").unwrap();
+        fs::write(
+            clips_dir.join("sentences").join("sentence1.mp3"),
+            b"sentence",
+        )
+        .unwrap();
+        fs::write(clips_dir.join("unit07").join("word003.mp3"), b"legacy word").unwrap();
+
+        create_test_db(&db_path);
+
+        Self {
+            repo: WordRepository::new(db_path.clone(), clips_dir.clone(), "N2"),
+            _tempdir: tempdir,
+            db_path,
+            clips_dir,
+        }
+    }
+}
+
+#[test]
+fn summary_and_units_include_mark_counts() {
+    let fixture = Fixture::new();
+
+    let summary = fixture.repo.get_summary().unwrap();
+    assert_eq!(summary.entries, 4);
+    assert_eq!(summary.units, 2);
+    assert_eq!(summary.known, 1);
+    assert_eq!(summary.flagged, 0);
+    assert_eq!(summary.unmarked, 3);
+
+    let unit = fixture.repo.list_units().unwrap().remove(0);
+    assert_eq!(unit.entry_count, 2);
+    assert_eq!(unit.known, 1);
+}
+
+#[test]
+fn entry_listing_search_and_state_filters() {
+    let fixture = Fixture::new();
+
+    let known = fixture.repo.list_entries(Some(1), "known", "").unwrap();
+    assert_eq!(known.items[0].entry_id, 1);
+
+    let unmarked = fixture.repo.list_entries(Some(1), "unmarked", "").unwrap();
+    assert_eq!(unmarked.items[0].entry_id, 2);
+
+    let searched = fixture.repo.list_entries(Some(1), "all", "happy").unwrap();
+    assert_eq!(searched.items[0].entry_id, 1);
+
+    fixture.repo.set_mark(4, false, true).unwrap();
+
+    let global_known = fixture.repo.list_entries(None, "known", "").unwrap();
+    assert_eq!(
+        global_known
+            .items
+            .iter()
+            .map(|entry| entry.entry_id)
+            .collect::<Vec<_>>(),
+        vec![1]
+    );
+
+    let global_flagged = fixture.repo.list_entries(None, "flagged", "").unwrap();
+    assert_eq!(
+        global_flagged
+            .items
+            .iter()
+            .map(|entry| entry.entry_id)
+            .collect::<Vec<_>>(),
+        vec![4]
+    );
+
+    let global_unmarked = fixture.repo.list_entries(None, "unmarked", "").unwrap();
+    assert_eq!(
+        global_unmarked
+            .items
+            .iter()
+            .map(|entry| entry.entry_id)
+            .collect::<Vec<_>>(),
+        vec![2, 3]
+    );
+}
+
+#[test]
+fn entry_listing_can_search_current_unit_or_all_units() {
+    let fixture = Fixture::new();
+
+    let unit_scoped = fixture.repo.list_entries(Some(1), "all", "覆う").unwrap();
+    assert_eq!(
+        unit_scoped
+            .items
+            .iter()
+            .map(|entry| entry.entry_id)
+            .collect::<Vec<_>>(),
+        vec![1]
+    );
+
+    let global = fixture.repo.list_entries(None, "all", "覆う").unwrap();
+    assert_eq!(
+        global
+            .items
+            .iter()
+            .map(|entry| entry.entry_id)
+            .collect::<Vec<_>>(),
+        vec![1, 3, 4]
+    );
+
+    let entry_one_matches = global.items[0]
+        .search_matches
+        .as_ref()
+        .expect("entry one should include matching examples");
+    assert_eq!(entry_one_matches.len(), 1);
+    assert_eq!(entry_one_matches[0].position, 2);
+    assert_eq!(entry_one_matches[0].text, "不安が人生を覆う。");
+
+    let entry_three_matches = global.items[1]
+        .search_matches
+        .as_ref()
+        .expect("inflected example should match the searched verb stem");
+    assert_eq!(entry_three_matches.len(), 1);
+    assert_eq!(entry_three_matches[0].text, "山頂は雪で覆われていた。");
+
+    let no_search = fixture.repo.list_entries(None, "all", "").unwrap();
+    assert!(
+        no_search
+            .items
+            .iter()
+            .all(|entry| entry.search_matches.is_none())
+    );
+    let serialized = serde_json::to_value(&no_search.items[0]).unwrap();
+    assert_eq!(serialized.get("search_matches"), None::<&JsonValue>);
+
+    let list_examples = no_search.items[0]
+        .examples
+        .as_ref()
+        .expect("card list payload should include extra examples");
+    assert_eq!(
+        list_examples
+            .iter()
+            .map(|example| example.position)
+            .collect::<Vec<_>>(),
+        vec![1, 2]
+    );
+    assert_eq!(list_examples[0].text, "人生経験が豊富だ。");
+}
+
+#[test]
+fn detail_includes_examples_and_audio_urls() {
+    let fixture = Fixture::new();
+
+    let entry = fixture.repo.get_entry(1).unwrap().expect("entry exists");
+    let examples = entry.examples.unwrap();
+    assert_eq!(examples.len(), 3);
+    assert!(examples.iter().all(|example| !example.starred));
+    assert_eq!(
+        entry.word_audio_url.as_deref(),
+        Some("/audio/clips/words/word1.mp3")
+    );
+    assert_eq!(
+        entry.sentence_audio_url.as_deref(),
+        Some("/audio/clips/sentences/sentence1.mp3")
+    );
+}
+
+#[test]
+fn detail_includes_merged_source_notes_and_example_provenance() {
+    let fixture = Fixture::new();
+    let conn = Connection::open(&fixture.db_path).unwrap();
+    conn.execute(
+        "INSERT INTO item_source_notes(item_id,source_book_code,source_entry_uuid,source_index,source_reading,source_meaning_zh,source_explanation_md,source_sentence) VALUES(1,'GWB_N2','gwb-uuid',42,'じんせい','人生；生涯','source notes','GWB例文。')",
+        [],
+    ).unwrap();
+    conn.execute(
+        "INSERT INTO item_example_sources(item_id,position,source_book_code,source_index) VALUES(1,1,'GWB_N2',42)",
+        [],
+    ).unwrap();
+    drop(conn);
+
+    let entry = fixture.repo.get_entry(1).unwrap().expect("entry exists");
+    let notes = entry.source_notes.expect("detail source notes");
+    assert_eq!(notes[0].source_book_code, "GWB_N2");
+    assert_eq!(notes[0].source_index, 42);
+    let examples = entry.examples.expect("detail examples");
+    assert_eq!(examples[1].source_book_code.as_deref(), Some("GWB_N2"));
+    assert_eq!(examples[1].source_index, Some(42));
+}
+
+#[test]
+fn sentence_stars_can_be_listed_filtered_and_cleared() {
+    let fixture = Fixture::new();
+
+    fixture.repo.set_sentence_star(1, 2, true).unwrap();
+    fixture.repo.set_sentence_star(3, 0, true).unwrap();
+
+    let global = fixture.repo.list_starred_sentences(None).unwrap();
+    assert_eq!(global.total, 2);
+    assert_eq!(global.items[0].entry_id, 1);
+    assert_eq!(global.items[0].position, 2);
+    assert_eq!(global.items[0].word, "人生");
+    assert_eq!(global.items[0].text, "不安が人生を覆う。");
+    assert_eq!(global.items[1].unit.number, 2);
+
+    let unit_one = fixture.repo.list_starred_sentences(Some(1)).unwrap();
+    assert_eq!(unit_one.total, 1);
+    assert_eq!(unit_one.items[0].entry_id, 1);
+
+    let entry = fixture.repo.get_entry(1).unwrap().expect("entry exists");
+    let starred_example = entry
+        .examples
+        .unwrap()
+        .into_iter()
+        .find(|example| example.position == 2)
+        .expect("position 2 example exists");
+    assert!(starred_example.starred);
+
+    fixture.repo.set_sentence_star(1, 2, false).unwrap();
+    let global = fixture.repo.list_starred_sentences(None).unwrap();
+    assert_eq!(
+        global
+            .items
+            .iter()
+            .map(|item| item.entry_id)
+            .collect::<Vec<_>>(),
+        vec![3]
+    );
+}
+
+#[test]
+fn sentence_star_rejects_unknown_example() {
+    let fixture = Fixture::new();
+
+    let error = fixture.repo.set_sentence_star(1, 99, true).unwrap_err();
+    assert!(error.to_string().contains("unknown example"));
+}
+
+#[test]
+fn mark_upsert_delete_and_unknown_entry() {
+    let fixture = Fixture::new();
+
+    fixture.repo.set_mark(2, false, true).unwrap();
+    let row = fixture.repo.get_entry(2).unwrap().expect("entry exists");
+    assert!(row.mark.flagged);
+
+    fixture.repo.set_mark(2, false, false).unwrap();
+    let row = fixture.repo.get_entry(2).unwrap().expect("entry exists");
+    assert!(!row.mark.known);
+    assert!(!row.mark.flagged);
+
+    assert!(fixture.repo.set_mark(999, true, false).is_err());
+}
+
+#[test]
+fn audio_resolution_stays_inside_clips() {
+    let fixture = Fixture::new();
+
+    let valid = fixture.repo.resolve_audio_path("clips/words/word1.mp3");
+    assert!(valid.is_some());
+    assert!(
+        fixture
+            .repo
+            .resolve_audio_path("../output/n2vocab.sqlite")
+            .is_none()
+    );
+    assert!(
+        fixture
+            .repo
+            .resolve_audio_path("output/clips/unit1_track02/word001.mp3")
+            .is_none()
+    );
+    assert!(
+        fixture
+            .repo
+            .resolve_audio_path("clips/../output/n2vocab.sqlite")
+            .is_none()
+    );
+}
+
+#[test]
+fn audio_urls_require_existing_files_and_normalize_legacy_db_prefixes() {
+    let fixture = Fixture::new();
+
+    assert_eq!(
+        fixture
+            .repo
+            .audio_url(Some("output\\clips\\unit07\\word003.mp3")),
+        Some("/audio/clips/unit07/word003.mp3".to_string())
+    );
+    assert_eq!(
+        fixture
+            .repo
+            .audio_url(Some("output\\clips\\unit07\\word999.mp3")),
+        None
+    );
+    assert_eq!(
+        fixture.repo.audio_url(Some("clips/words/missing.mp3")),
+        None
+    );
+}
+
+#[test]
+fn entry_omits_missing_audio_urls() {
+    let fixture = Fixture::new();
+    fs::remove_file(fixture.clips_dir.join("words").join("word1.mp3")).unwrap();
+
+    let entry = fixture.repo.get_entry(1).unwrap().expect("entry exists");
+    assert_eq!(entry.word_audio_url, None);
+    assert_eq!(
+        entry.sentence_audio_url.as_deref(),
+        Some("/audio/clips/sentences/sentence1.mp3")
+    );
+}
+
+#[test]
+fn missing_example_audio_is_generated_and_stored() {
+    let fixture = Fixture::new();
+
+    // The repository accepts a synthesis closure. In production that closure
+    // calls Edge TTS; in tests it returns fixed bytes so we can verify file and
+    // database behavior without network access.
+    let response = fixture
+        .repo
+        .ensure_example_audio(1, 1, "clips/generated_sentences/edge_tts", |sentence| {
+            assert_eq!(sentence, "人生経験が豊富だ。");
+            Ok(b"generated sentence audio".to_vec())
+        })
+        .unwrap();
+
+    assert!(response.generated);
+    assert_eq!(
+        response.audio_url,
+        "/audio/clips/generated_sentences/edge_tts/word1_sentence1.mp3"
+    );
+    assert_eq!(
+        fs::read(
+            fixture
+                .clips_dir
+                .join("generated_sentences")
+                .join("edge_tts")
+                .join("word1_sentence1.mp3")
+        )
+        .unwrap(),
+        b"generated sentence audio"
+    );
+
+    let conn = Connection::open(&fixture.db_path).unwrap();
+    let stored: String = conn
+        .query_row(
+            "SELECT audio_clip FROM item_examples WHERE item_id = 1 AND position = 1",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap();
+    assert_eq!(
+        stored,
+        "clips/generated_sentences/edge_tts/word1_sentence1.mp3"
+    );
+}
+
+#[test]
+fn missing_word_audio_is_generated_and_stored() {
+    let fixture = Fixture::new();
+    fs::remove_file(fixture.clips_dir.join("words").join("word1.mp3")).unwrap();
+
+    let response = fixture
+        .repo
+        .ensure_word_audio(1, "clips/generated_sentences/edge_tts", |word| {
+            assert_eq!(word, "人生");
+            Ok(b"generated word audio".to_vec())
+        })
+        .unwrap();
+
+    assert!(response.generated);
+    assert_eq!(
+        response.audio_url,
+        "/audio/clips/generated_sentences/edge_tts/word1.mp3"
+    );
+    assert_eq!(
+        fs::read(
+            fixture
+                .clips_dir
+                .join("generated_sentences")
+                .join("edge_tts")
+                .join("word1.mp3")
+        )
+        .unwrap(),
+        b"generated word audio"
+    );
+
+    let conn = Connection::open(&fixture.db_path).unwrap();
+    let stored: String = conn
+        .query_row(
+            "SELECT word_clip FROM vocabulary_items WHERE item_id = 1",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap();
+    assert_eq!(stored, "clips/generated_sentences/edge_tts/word1.mp3");
+}
+
+#[test]
+fn existing_word_audio_is_reused_without_tts() {
+    let fixture = Fixture::new();
+
+    let response = fixture
+        .repo
+        .ensure_word_audio(1, "clips/generated_sentences/edge_tts", |_word| {
+            panic!("existing word audio should not synthesize")
+        })
+        .unwrap();
+
+    assert!(!response.generated);
+    assert_eq!(response.audio_url, "/audio/clips/words/word1.mp3");
+}
+
+#[test]
+fn missing_example_audio_uses_clean_sentence_text_for_tts() {
+    let fixture = Fixture::new();
+    let conn = Connection::open(&fixture.db_path).unwrap();
+    conn.execute(
+        "INSERT INTO item_examples(item_id, position, kind, text) VALUES(2, 1, 'example_sentence', ?)",
+        ["今期は相当｛な／の｝赤字になりそうだ。"],
+    )
+    .unwrap();
+    drop(conn);
+
+    fixture
+        .repo
+        .ensure_example_audio(2, 1, "clips/generated_sentences/edge_tts", |sentence| {
+            assert_eq!(sentence, "今期は相当な赤字になりそうだ。");
+            Ok(b"generated sentence audio".to_vec())
+        })
+        .unwrap();
+}
+
+#[test]
+fn sentence_cleaner_removes_textbook_markers() {
+    assert_eq!(
+        clean_sentence_text_for_tts("②・彼は神経(しんけい)が鋭くて、すぐに気づく。"),
+        "彼は神経が鋭くて、すぐに気づく。"
+    );
+    assert_eq!(
+        clean_sentence_text_for_tts("｛砂／ほこり …｝が舞い上がる。"),
+        "砂が舞い上がる。"
+    );
+    assert_eq!(
+        clean_sentence_text_for_tts("時計／注射／ホチキス …… の針"),
+        "時計の針"
+    );
+    assert_eq!(
+        clean_sentence_text_for_tts("（友(とも)だちに）「あ、おいしそうなケーキ」"),
+        "「あ、おいしそうなケーキ」"
+    );
+}
+
+#[test]
+fn existing_example_audio_is_reused_without_tts() {
+    let fixture = Fixture::new();
+
+    let response = fixture
+        .repo
+        .ensure_example_audio(1, 0, "clips/generated_sentences/edge_tts", |_sentence| {
+            panic!("existing audio should not synthesize")
+        })
+        .unwrap();
+
+    assert!(!response.generated);
+    assert_eq!(response.audio_url, "/audio/clips/sentences/sentence1.mp3");
+}
+
+#[test]
+fn example_audio_rejects_unknown_and_empty_examples() {
+    let fixture = Fixture::new();
+
+    assert!(
+        fixture
+            .repo
+            .ensure_example_audio(999, 0, "clips/generated_sentences/edge_tts", |_| Ok(vec![
+                1
+            ]))
+            .unwrap_err()
+            .to_string()
+            .contains("unknown example")
+    );
+
+    let conn = Connection::open(&fixture.db_path).unwrap();
+    conn.execute(
+        "INSERT INTO item_examples(item_id, position, kind, text) VALUES(2, 1, 'example_sentence', '')",
+        [],
+    )
+    .unwrap();
+    drop(conn);
+
+    assert!(
+        fixture
+            .repo
+            .ensure_example_audio(2, 1, "clips/generated_sentences/edge_tts", |_| Ok(vec![1]))
+            .unwrap_err()
+            .to_string()
+            .contains("empty sentence")
+    );
+}
+
+#[test]
+fn generated_audio_directory_stays_inside_clips() {
+    let fixture = Fixture::new();
+
+    let error = fixture
+        .repo
+        .ensure_example_audio(1, 1, "../output", |_| Ok(vec![1]))
+        .unwrap_err();
+    assert!(
+        error
+            .to_string()
+            .contains("generated audio directory must stay inside clips")
+    );
+}
+
+#[test]
+fn flagged_audio_export_rejects_empty_unit() {
+    let fixture = Fixture::new();
+
+    let error = fixture.repo.export_unit_flagged_audio(1).unwrap_err();
+    assert!(error.to_string().contains("no flagged words in this unit"));
+}
+
+#[test]
+fn flagged_audio_export_reports_missing_clips_before_ffmpeg() {
+    let fixture = Fixture::new();
+    fixture.repo.set_mark(2, false, true).unwrap();
+
+    let error = fixture.repo.export_unit_flagged_audio(1).unwrap_err();
+    let message = error.to_string();
+    assert!(message.contains("missing audio clips"));
+    assert!(message.contains("word #2 word audio"));
+    assert!(message.contains("word #2 sentence audio"));
+}
+
+fn create_test_db(db_path: &PathBuf) {
+    let conn = Connection::open(db_path).expect("open test db");
+    // Keep the schema close to the production tables used by repository.rs.
+    // These tests are most valuable when they exercise real SQL assumptions,
+    // not a heavily mocked shape.
+    conn.execute_batch(
+        r#"
+        PRAGMA foreign_keys = ON;
+
+        CREATE TABLE books (
+          code TEXT PRIMARY KEY,
+          title TEXT NOT NULL,
+          notes TEXT
+        );
+        CREATE TABLE units (
+          book_code TEXT NOT NULL REFERENCES books(code),
+          number INTEGER NOT NULL,
+          header TEXT NOT NULL,
+          title TEXT NOT NULL,
+          PRIMARY KEY(book_code, number)
+        );
+        CREATE TABLE entries (
+          entry_id INTEGER PRIMARY KEY,
+          uuid TEXT NOT NULL UNIQUE,
+          book_code TEXT NOT NULL,
+          unit_number INTEGER NOT NULL,
+          source_index INTEGER NOT NULL,
+          position INTEGER NOT NULL,
+          kanji TEXT NOT NULL,
+          reading TEXT,
+          verb_pattern TEXT,
+          meaning_en TEXT,
+          meaning_zh TEXT,
+          sentence TEXT,
+          explanation_md TEXT,
+          word_clip TEXT,
+          sentence_clip TEXT,
+          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(book_code, source_index),
+          FOREIGN KEY(book_code, unit_number) REFERENCES units(book_code, number)
+        );
+        CREATE TABLE entry_examples (
+          entry_id INTEGER NOT NULL REFERENCES entries(entry_id),
+          position INTEGER NOT NULL,
+          kind TEXT NOT NULL DEFAULT 'example_sentence',
+          text TEXT NOT NULL,
+          reading TEXT,
+          translation_en TEXT,
+          translation_zh TEXT,
+          explanation_md TEXT,
+          audio_clip TEXT,
+          category TEXT,
+          PRIMARY KEY(entry_id, position)
+        );
+        CREATE TABLE sentence_stars (
+          entry_id INTEGER NOT NULL,
+          position INTEGER NOT NULL,
+          updated_at TEXT NOT NULL,
+          PRIMARY KEY(entry_id, position),
+          FOREIGN KEY(entry_id, position)
+            REFERENCES entry_examples(entry_id, position)
+            ON DELETE CASCADE
+        );
+        CREATE TABLE entry_source_notes (
+          entry_id INTEGER NOT NULL REFERENCES entries(entry_id) ON DELETE CASCADE,
+          source_book_code TEXT NOT NULL,
+          source_entry_uuid TEXT NOT NULL,
+          source_index INTEGER NOT NULL,
+          source_reading TEXT,
+          source_meaning_en TEXT,
+          source_meaning_zh TEXT,
+          source_explanation_md TEXT,
+          source_sentence TEXT,
+          source_translation_en TEXT,
+          source_translation_zh TEXT,
+          source_word_clip TEXT,
+          source_sentence_clip TEXT,
+          PRIMARY KEY(entry_id,source_book_code,source_index)
+        );
+        CREATE TABLE entry_example_sources (
+          entry_id INTEGER NOT NULL,
+          position INTEGER NOT NULL,
+          source_book_code TEXT NOT NULL,
+          source_index INTEGER NOT NULL,
+          PRIMARY KEY(entry_id,position,source_book_code,source_index),
+          FOREIGN KEY(entry_id,position) REFERENCES entry_examples(entry_id,position) ON DELETE CASCADE,
+          FOREIGN KEY(entry_id,source_book_code,source_index)
+            REFERENCES entry_source_notes(entry_id,source_book_code,source_index) ON DELETE CASCADE
+        );
+        CREATE TABLE word_marks (
+          entry_id INTEGER PRIMARY KEY REFERENCES entries(entry_id),
+          known INTEGER NOT NULL DEFAULT 0 CHECK(known IN (0,1)),
+          flagged INTEGER NOT NULL DEFAULT 0 CHECK(flagged IN (0,1)),
+          updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+
+        INSERT INTO books(code, title) VALUES('N2', 'N2');
+        INSERT INTO units(book_code, number, header, title)
+        VALUES
+          ('N2', 1, 'Unit 01 名詞 A', '名詞 A'),
+          ('N2', 2, 'Unit 02 動詞 A', '動詞 A');
+        INSERT INTO entries(
+          entry_id, uuid, book_code, unit_number, source_index, position,
+          kanji, reading, meaning_en, meaning_zh,
+          sentence, explanation_md, word_clip, sentence_clip
+        )
+        VALUES
+          (1, 'uuid-1', 'N2', 1, 1, 1, '人生', 'じんせい',
+           'life', '人生', '幸せな人生を送る。', 'explain one',
+           'clips/words/word1.mp3', 'clips/sentences/sentence1.mp3'),
+          (2, 'uuid-2', 'N2', 1, 2, 2, '男性', 'だんせい',
+           'man', '男性', '男性の友人。', NULL, NULL, NULL),
+          (3, 'uuid-3', 'N2', 2, 3, 1, '覆う', 'おおう',
+           'cover', '覆盖', '山頂は雪で覆われていた。', NULL, NULL, NULL),
+          (4, 'uuid-4', 'N2', 2, 4, 2, 'カバー', 'カバー',
+           'cover', '罩子', 'ソファーをカバーで覆う。', NULL, NULL, NULL);
+        INSERT INTO entry_examples(
+          entry_id, position, kind, text, translation_en, translation_zh, explanation_md, audio_clip
+        )
+        VALUES
+          (1, 0, 'main_sentence', '幸せな人生を送る。', 'Live a happy life.', '度过幸福的人生。',
+           'main explanation', 'clips/sentences/sentence1.mp3'),
+          (1, 1, 'example_sentence', '人生経験が豊富だ。', 'Has rich life experience.', '人生经验丰富。', NULL, NULL),
+          (1, 2, 'example_sentence', '不安が人生を覆う。', 'Anxiety covers life.', '不安笼罩人生。', NULL, NULL),
+          (3, 0, 'main_sentence', '山頂は雪で覆われていた。', 'The summit was covered with snow.', '山顶被雪覆盖。', NULL, NULL),
+          (4, 0, 'main_sentence', 'ソファーをカバーで覆う。', 'Cover the sofa with a cover.', '用罩子盖住沙发。', NULL, NULL);
+        INSERT INTO word_marks(entry_id, known, flagged)
+        VALUES(1, 1, 0);
+        "#,
+    )
+    .expect("create schema");
+    conn.execute_batch(include_str!("../../db/migrations/007_vocabulary_items.sql"))
+        .expect("create canonical item schema");
+}

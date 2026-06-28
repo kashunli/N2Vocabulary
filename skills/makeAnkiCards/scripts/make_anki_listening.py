@@ -128,7 +128,8 @@ BACK_TMPL = """\
 <div class="card-back">
   <div class="sentence-block">
     <div class="sentence">{{Sentence}}</div>
-    {{#SentenceTranslationEN}}<div class="sentence-translation">{{SentenceTranslationEN}}</div>{{/SentenceTranslationEN}}
+    {{#SentenceTranslationEN}}<div class="sentence-translation en">{{SentenceTranslationEN}}</div>{{/SentenceTranslationEN}}
+    {{#SentenceTranslationZH}}<div class="sentence-translation zh">{{SentenceTranslationZH}}</div>{{/SentenceTranslationZH}}
     <div class="audio-row sentence-replay">{{SentenceAudio}}</div>
   </div>
 
@@ -267,6 +268,10 @@ CSS = """\
   line-height: 1.5;
   color: #aeb8d6;
   padding: 0 18px 6px;
+}
+
+.sentence-translation.zh {
+  color: #9ca8c8;
 }
 
 .sentence-replay {
@@ -430,6 +435,12 @@ hr.divider {
   min-width: 0;
 }
 
+.example-meta {
+  color: var(--text-dim);
+  font-size: 12px;
+  margin-bottom: 2px;
+}
+
 .example-jp {
   font-family: 'Noto Sans JP', sans-serif;
   color: #d8def4;
@@ -507,6 +518,7 @@ def build_deck(db: list[dict], clips_root: Path):
             {"name": "WordAudio"},
             {"name": "Sentence"},
             {"name": "SentenceTranslationEN"},
+            {"name": "SentenceTranslationZH"},
             {"name": "SentenceAudio"},
             {"name": "MoreExamples"},
             {"name": "Explanation"},
@@ -570,10 +582,12 @@ def build_deck(db: list[dict], clips_root: Path):
             en = html_mod.escape(str(item.get("translation_en") or ""))
             zh = html_mod.escape(str(item.get("translation_zh") or ""))
             exp = explanation_to_html(str(item.get("explanation") or ""))
+            meta_parts = [str(v).strip() for v in (item.get("category"), item.get("reading")) if str(v or "").strip()]
+            meta_html = f'<div class="example-meta">{html_mod.escape(" / ".join(meta_parts))}</div>' if meta_parts else ""
             en_html = f'<div class="example-en">{en}</div>' if en else ""
             zh_html = f'<div class="example-zh">{zh}</div>' if zh else ""
             exp_html = f'<div class="example-explanation">{exp}</div>' if exp else ""
-            return f'<div class="example-jp">{jp}</div>{en_html}{zh_html}{exp_html}'
+            return f'{meta_html}<div class="example-jp">{jp}</div>{en_html}{zh_html}{exp_html}'
 
         # Keep each extra example in its own Anki field/column. The template
         # renders these in source order and intentionally omits item 6+.
@@ -590,7 +604,7 @@ def build_deck(db: list[dict], clips_root: Path):
                 str(idx),
                 unit_label,
                 unit_color,
-                t(e.get("headword_text")),
+                t(e.get("kanji")),
                 t(e.get("reading")),
                 t(e.get("verb_pattern")),
                 t(e.get("meaning_en")),
@@ -598,6 +612,7 @@ def build_deck(db: list[dict], clips_root: Path):
                 word_audio,
                 render_japanese_sentence_html(e.get("sentence")),
                 t(e.get("sentence_translation_en")),
+                t(e.get("sentence_translation_zh")),
                 sent_audio,
                 "",
                 explanation,
@@ -622,7 +637,7 @@ def clip_exists(clip_rel: str | None) -> bool:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--db",  default="output/n2vocab.sqlite")
+    ap.add_argument("--db",  default="wordService/data/n2vocab.sqlite")
     ap.add_argument("--out", default="output/N2Words_listening.apkg")
     ap.add_argument("--clips", default="clips")
     ap.add_argument("--book", default="N2")
@@ -636,7 +651,7 @@ def main() -> None:
         clips_root = PROJECT_ROOT / clips_root
 
     if not db_path.exists():
-        print(f"ERROR: {db_path} not found. Rebuild or restore output/n2vocab.sqlite first.")
+        print(f"ERROR: {db_path} not found. Move or restore wordService/data/n2vocab.sqlite first.")
         return
 
     db = load_entries(book_code=args.book, db_path=db_path)

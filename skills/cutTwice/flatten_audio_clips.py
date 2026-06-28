@@ -291,7 +291,7 @@ def fail_if_blocked(issues: dict[str, list[str]]) -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--db", default="output/n2vocab.sqlite", help="SQLite DB path from repo root")
+    parser.add_argument("--db", default="wordService/data/n2vocab.sqlite", help="SQLite DB path from repo root")
     parser.add_argument("--clips", default="clips", help="Clip root from repo root")
     parser.add_argument("--apply", action="store_true", help="Copy flat word/sentence files")
     parser.add_argument("--migrate-db", action="store_true", help="Update DB paths after copying flat files")

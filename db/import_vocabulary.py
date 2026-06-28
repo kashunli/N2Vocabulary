@@ -169,13 +169,14 @@ def import_book(
                 conn.execute(
                     """
                     INSERT INTO entry_examples (
-                      entry_id, position, text, translation_en, translation_zh,
+                      entry_id, position, kind, text, translation_en, translation_zh,
                       explanation_md, audio_clip
-                    ) VALUES (?,?,?,?,?,?,?)
+                    ) VALUES (?,?,?,?,?,?,?,?)
                     """,
                     (
                         row_id,
                         0,
+                        "main_sentence",
                         e.get("sentence") or "",
                         e.get("sentence_translation_en") or e.get("translation_en") or "",
                         e.get("sentence_translation_zh") or e.get("translation_zh") or "",
@@ -199,11 +200,20 @@ def import_book(
                 conn.execute(
                     """
                     INSERT INTO entry_examples (
-                      entry_id, position, text, translation_en, translation_zh,
+                      entry_id, position, kind, text, translation_en, translation_zh,
                       explanation_md, audio_clip
-                    ) VALUES (?,?,?,?,?,?,?)
+                    ) VALUES (?,?,?,?,?,?,?,?)
                     """,
-                    (row_id, i, text, translation_en, translation_zh, explanation_md, audio_clip),
+                    (
+                        row_id,
+                        i,
+                        "example_sentence",
+                        text,
+                        translation_en,
+                        translation_zh,
+                        explanation_md,
+                        audio_clip,
+                    ),
                 )
 
         restored = restore_provenance_examples(conn, book_code)

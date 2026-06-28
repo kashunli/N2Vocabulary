@@ -42,12 +42,15 @@ def clean_entry(e: dict, clips_root: Path) -> dict:
 
     word_clip, sent_clip = resolve_clips(idx, unit_num, clips_root)
 
+    # Older source JSON used headword_text for the display word. Fold it into
+    # kanji at this import boundary so downstream files have one word field.
+    kanji = e.get("headword_text") or e.get("kanji") or ""
+
     return {
         "index":        idx,
         "unit":         {"number": unit_num, "header": e["unit"].get("header", "")},
         "reading":      e.get("reading") or "",
-        "kanji":        e.get("kanji") or "",
-        "headword_text": e.get("headword_text") or "",
+        "kanji":        kanji,
         "verb_pattern": e.get("verb_pattern") or None,
         "meaning_en":   (e.get("meanings") or {}).get("en") or "",
         "meaning_zh":   (e.get("meanings") or {}).get("zh") or "",

@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-r"""Generate N2Words.apkg - Anki deck for all N2 vocabulary entries.
+r"""Generate vocabulary word cards from the project SQLite database.
 
 Usage from D:\n2Prepare\N2Vocabulary:
     python -u skills/makeAnkiCards/scripts/make_anki.py [--out output\N2Words.apkg]
+    python -u skills/makeAnkiCards/scripts/make_anki.py --book N3 --out output\N3Words.apkg
+    python -u skills/makeAnkiCards/scripts/make_anki.py --book N2 --flagged-only --out output\N2Words_flagged.apkg
 
 Reads the current project-level SQLite database and packages clips from clips/.
 Stable deck/model/note IDs are preserved so Anki can update existing notes.
@@ -10,6 +12,7 @@ Stable deck/model/note IDs are preserved so Anki can update existing notes.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import os
 import re
 import sys
@@ -27,6 +30,7 @@ if str(PROJECT_ROOT) not in sys.path:
 if str(SCRIPT_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPT_ROOT))
 
+from db.connect import connect as connect_db
 from db.connect import load_entries
 from anki_render import render_japanese_sentence_html
 
@@ -120,13 +124,9 @@ UNIT_COLORS = {
 
 FRONT_TMPL = """\
 <div class="card-front">
-  <div class="unit-badge" style="background:{{UnitColor}}">{{UnitLabel}}</div>
-  <div class="headword-block">
+  <div class="headword-block prompt-word">
     <span class="headword">{{Headword}}</span>
-    {{#VerbPattern}}<span class="verb-pattern">({{VerbPattern}})</span>{{/VerbPattern}}
   </div>
-  <div class="reading">{{Reading}}</div>
-  <div class="audio-row">{{WordAudio}}</div>
 </div>
 """
 
@@ -153,7 +153,8 @@ BACK_TMPL = """\
   <div class="sentence-block">
     <div class="audio-row">{{SentenceAudio}}</div>
     <div class="sentence">{{Sentence}}</div>
-    {{#SentenceTranslationEN}}<div class="sentence-translation">{{SentenceTranslationEN}}</div>{{/SentenceTranslationEN}}
+    {{#SentenceTranslationEN}}<div class="sentence-translation en">{{SentenceTranslationEN}}</div>{{/SentenceTranslationEN}}
+    {{#SentenceTranslationZH}}<div class="sentence-translation zh">{{SentenceTranslationZH}}</div>{{/SentenceTranslationZH}}
   </div>
 
   {{#MoreExample1}}
@@ -208,6 +209,11 @@ CSS = """\
   box-sizing: border-box;
 }
 
+.card-front {
+  align-items: center;
+  justify-content: center;
+}
+
 /* Unit badge */
 .unit-badge {
   font-size: 11px;
@@ -227,6 +233,12 @@ CSS = """\
   align-items: baseline;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+.prompt-word {
+  justify-content: center;
+  margin: 0;
+  text-align: center;
 }
 
 .headword {
@@ -337,6 +349,10 @@ hr.divider {
   padding: 0 14px 4px;
 }
 
+.sentence-translation.zh {
+  color: #9ca8c8;
+}
+
 /* More examples */
 .more-examples {
   width: 100%;
@@ -364,6 +380,12 @@ hr.divider {
 
 .example-item {
   min-width: 0;
+}
+
+.example-meta {
+  color: var(--text-dim);
+  font-size: 12px;
+  margin-bottom: 2px;
 }
 
 .example-jp {
@@ -438,6 +460,15 @@ def _resolve_declared_clip(entry: dict, field: str) -> Path | None:
     return p if p.exists() else None
 
 
+def _resolve_clip_value(clip: str | None) -> Path | None:
+    if not clip:
+        return None
+    p = Path(clip)
+    if not p.is_absolute():
+        p = PROJECT_ROOT / p
+    return p if p.exists() else None
+
+
 def _find_clip_by_name(clips_root: Path, idx: int, kind: str) -> Path | None:
     for name in (f"{kind}{idx:03d}.mp3", f"{kind}{idx}.mp3", f"{kind}{idx:03d}-deduced.mp3", f"{kind}{idx}-deduced.mp3"):
         matches = sorted(clips_root.rglob(name))
@@ -449,13 +480,114 @@ def _find_clip_by_name(clips_root: Path, idx: int, kind: str) -> Path | None:
 def resolve_clips(entry: dict, clips_root: Path) -> tuple[Path | None, Path | None]:
     """Find word and sentence clip paths on disk for an entry.
 
-    Trusts explicit vocabulary.json clip paths first, then searches by filename.
-    Returns (word_path, sentence_path) as absolute Paths or None.
+    Trust explicit SQLite clip paths first. Filename search is legacy fallback
+    for the original N2 deck only; newer imported books can share source-index
+    numbers, so broad filename fallback would attach the wrong book's audio.
     """
     idx = entry["index"]
-    word = _resolve_declared_clip(entry, "word_clip") or _find_clip_by_name(clips_root, idx, "word")
-    sent = _resolve_declared_clip(entry, "sentence_clip") or _find_clip_by_name(clips_root, idx, "sentence")
+    book_code = entry.get("book_code") or "N2"
+    allow_legacy_fallback = book_code == "N2"
+
+    word = _resolve_declared_clip(entry, "word_clip")
+    if word is None and allow_legacy_fallback:
+        word = _find_clip_by_name(clips_root, idx, "word")
+
+    sent = _resolve_declared_clip(entry, "sentence_clip")
+    if sent is None and allow_legacy_fallback:
+        sent = _find_clip_by_name(clips_root, idx, "sentence")
     return word, sent
+
+
+def parse_source_indexes(value: str | None) -> set[int]:
+    """Parse friendly source-index groups like `1-10,25,40-42`."""
+    if not value:
+        return set()
+    indexes: set[int] = set()
+    for part in value.split(","):
+        item = part.strip()
+        if not item:
+            continue
+        if "-" in item:
+            start_text, end_text = item.split("-", 1)
+            start = int(start_text)
+            end = int(end_text)
+            if start <= 0 or end < start:
+                raise ValueError(f"invalid source index range: {item}")
+            indexes.update(range(start, end + 1))
+        else:
+            index = int(item)
+            if index <= 0:
+                raise ValueError(f"invalid source index: {item}")
+            indexes.add(index)
+    return indexes
+
+
+def load_flagged_source_indexes(db_path: Path, book_code: str) -> set[int]:
+    conn = connect_db(db_path, read_only=True, immutable=True)
+    try:
+        rows = conn.execute(
+            """
+            SELECT e.source_index
+              FROM entries e
+              JOIN word_marks m ON m.entry_id = e.entry_id
+             WHERE e.book_code = ?
+               AND COALESCE(m.flagged, 0) = 1
+            """,
+            (book_code,),
+        ).fetchall()
+    finally:
+        conn.close()
+    return {int(row["source_index"]) for row in rows}
+
+
+def filter_entries(
+    data: list[dict],
+    *,
+    db_path: Path,
+    book_code: str,
+    units: list[int] | None,
+    source_indexes: set[int],
+    flagged_only: bool,
+) -> list[dict]:
+    """Apply explicit export filters after the DB loader has built card rows."""
+    filtered = list(data)
+    if units:
+        wanted_units = set(units)
+        filtered = [e for e in filtered if int(e["unit"]["number"]) in wanted_units]
+    if source_indexes:
+        filtered = [e for e in filtered if int(e["index"]) in source_indexes]
+    if flagged_only:
+        flagged_indexes = load_flagged_source_indexes(db_path, book_code)
+        filtered = [e for e in filtered if int(e["index"]) in flagged_indexes]
+    return filtered
+
+
+def default_deck_name(book_code: str) -> str:
+    if book_code == "N2":
+        return "耳から覚える::N2Words"
+    return f"耳から覚える::{book_code}Words"
+
+
+def default_output_path(book_code: str) -> str:
+    if book_code == "N2":
+        return "output/N2Words.apkg"
+    safe_book = re.sub(r"[^A-Za-z0-9_-]+", "_", book_code).strip("_") or "Words"
+    return f"output/{safe_book}Words.apkg"
+
+
+def stable_deck_id(book_code: str, deck_name: str) -> int:
+    if book_code == "N2" and deck_name == "耳から覚える::N2Words":
+        return DECK_ID
+    digest = hashlib.sha1(f"n2vocab-deck:{deck_name}".encode("utf-8")).digest()
+    return int.from_bytes(digest[:4], "big")
+
+
+def note_guid(entry: dict) -> str:
+    idx = int(entry["index"])
+    book_code = entry.get("book_code") or "N2"
+    if book_code == "N2":
+        return genanki.guid_for(f"n2vocab_{idx}")
+    return genanki.guid_for(f"vocab_{book_code}_{idx}")
 
 
 def build_notes(data: list[dict], clips_root: Path) -> tuple[list[genanki.Note], list[Path]]:
@@ -480,6 +612,7 @@ def build_notes(data: list[dict], clips_root: Path) -> tuple[list[genanki.Note],
             {"name": "WordAudio"},
             {"name": "Sentence"},
             {"name": "SentenceTranslationEN"},
+            {"name": "SentenceTranslationZH"},
             {"name": "SentenceAudio"},
             {"name": "MoreExamples"},
             {"name": "MoreExample1"},
@@ -523,10 +656,16 @@ def build_notes(data: list[dict], clips_root: Path) -> tuple[list[genanki.Note],
             s = v or ""
             return html_mod.escape(str(s))
 
+        # Some imported source rows are kana-only and leave the display kanji
+        # blank. Anki only creates a card when the first rendered field has
+        # content, so fall back to the reading rather than dropping the note.
+        headword = e.get("kanji") or e.get("reading")
+
         example_items = e.get("example_items") or []
         examples_all = e.get("examples_all") or e.get("examples") or []
         sentence     = e.get("sentence") or e.get("sentence_text") or (examples_all[0] if examples_all else "")
         sentence_translation_en = e.get("sentence_translation_en") or ""
+        sentence_translation_zh = e.get("sentence_translation_zh") or ""
 
         # Anki templates cannot iterate over database rows. Pre-render the
         # extra examples into one HTML field and cap the total visible sentence
@@ -543,10 +682,14 @@ def build_notes(data: list[dict], clips_root: Path) -> tuple[list[genanki.Note],
             en = html_mod.escape(str(item.get("translation_en") or ""))
             zh = html_mod.escape(str(item.get("translation_zh") or ""))
             exp = explanation_to_html(str(item.get("explanation") or ""))
+            audio = media_tag(_resolve_clip_value(item.get("audio_clip")), "example")
+            meta_parts = [str(v).strip() for v in (item.get("category"), item.get("reading")) if str(v or "").strip()]
+            audio_html = f'<div class="audio-row example-audio">{audio}</div>' if audio else ""
+            meta_html = f'<div class="example-meta">{html_mod.escape(" / ".join(meta_parts))}</div>' if meta_parts else ""
             en_html = f'<div class="example-en">{en}</div>' if en else ""
             zh_html = f'<div class="example-zh">{zh}</div>' if zh else ""
             exp_html = f'<div class="example-explanation">{exp}</div>' if exp else ""
-            return f'<div class="example-jp">{jp}</div>{en_html}{zh_html}{exp_html}'
+            return f'{audio_html}{meta_html}<div class="example-jp">{jp}</div>{en_html}{zh_html}{exp_html}'
 
         # Keep each extra example in its own Anki field/column. The template
         # renders these in source order and intentionally omits item 6+.
@@ -559,7 +702,7 @@ def build_notes(data: list[dict], clips_root: Path) -> tuple[list[genanki.Note],
                 str(idx),
                 unit_label,
                 unit_color,
-                t(e.get("headword_text")),
+                t(headword),
                 t(e.get("reading")),
                 t(e.get("verb_pattern")),
                 t(e.get("meaning_en", "")),
@@ -568,12 +711,13 @@ def build_notes(data: list[dict], clips_root: Path) -> tuple[list[genanki.Note],
                 word_audio,
                 render_japanese_sentence_html(sentence),
                 t(sentence_translation_en),
+                t(sentence_translation_zh),
                 sent_audio,
                 "",
                 *more_example_fields,
             ],
-            guid=genanki.guid_for(f"n2vocab_{idx}"),
-            tags=[f"unit{unit_num:02d}", f"N2"],
+            guid=note_guid(e),
+            tags=[f"unit{unit_num:02d}", e.get("book_code") or "N2"],
         )
         notes.append(note)
 
@@ -581,11 +725,15 @@ def build_notes(data: list[dict], clips_root: Path) -> tuple[list[genanki.Note],
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="Generate N2Words.apkg")
-    ap.add_argument("--out", default="output/N2Words.apkg")
-    ap.add_argument("--db", default="output/n2vocab.sqlite")
+    ap = argparse.ArgumentParser(description="Generate vocabulary word-card APKGs")
+    ap.add_argument("--out", default=None)
+    ap.add_argument("--db", default="wordService/data/n2vocab.sqlite")
     ap.add_argument("--clips", default="clips")
     ap.add_argument("--book", default="N2")
+    ap.add_argument("--deck-name", default=None)
+    ap.add_argument("--unit", action="append", type=int, help="Export one unit; repeat for multiple units.")
+    ap.add_argument("--source-indexes", default="", help="Export source indexes such as 1-10,25,40-42.")
+    ap.add_argument("--flagged-only", action="store_true", help="Export only words flagged in wordService.")
     args = ap.parse_args()
 
     clips_root = Path(args.clips)
@@ -595,20 +743,36 @@ def main() -> None:
     if not db_path.is_absolute():
         db_path = PROJECT_ROOT / db_path
 
-    data = load_entries(book_code=args.book, db_path=db_path)
-    data.sort(key=lambda e: e["index"])
+    try:
+        source_indexes = parse_source_indexes(args.source_indexes)
+    except ValueError as exc:
+        raise SystemExit(f"ERROR: {exc}") from exc
 
-    print(f"Building notes for {len(data)} entries…")
+    data = load_entries(book_code=args.book, db_path=db_path)
+    data = filter_entries(
+        data,
+        db_path=db_path,
+        book_code=args.book,
+        units=args.unit,
+        source_indexes=source_indexes,
+        flagged_only=args.flagged_only,
+    )
+    data.sort(key=lambda e: e["index"])
+    if not data:
+        raise SystemExit("ERROR: no entries matched the requested export filters.")
+
+    deck_name = args.deck_name or default_deck_name(args.book)
+    print(f"Building notes for {len(data)} {args.book} entries...")
     notes, media, model = build_notes(data, clips_root)
 
-    deck = genanki.Deck(DECK_ID, "耳から覚える::N2Words")
+    deck = genanki.Deck(stable_deck_id(args.book, deck_name), deck_name)
     for note in notes:
         deck.add_note(note)
 
     package = genanki.Package(deck)
     package.media_files = [str(p) for p in media]
 
-    out = Path(args.out)
+    out = Path(args.out or default_output_path(args.book))
     if not out.is_absolute():
         out = PROJECT_ROOT / out
     out.parent.mkdir(parents=True, exist_ok=True)

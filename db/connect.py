@@ -13,7 +13,7 @@ from collections import defaultdict
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-DB_PATH = PROJECT_ROOT / "output" / "n2vocab.sqlite"
+DB_PATH = PROJECT_ROOT / "wordService" / "data" / "n2vocab.sqlite"
 
 
 def connect(
@@ -47,41 +47,78 @@ def load_entries(book_code: str = "N2", db_path: Path | str | None = None) -> li
        explanation, uuid, book_code}
 
     The normalized source for the main example sentence is
-    entry_examples.position = 0. Older entries.sentence / sentence_clip /
-    explanation_md fields are retained as fallback compatibility data.
+    entry_examples.kind identifies the role of each row. Older
+    entries.sentence / sentence_clip / explanation_md fields are retained as
+    fallback compatibility data.
 
     `index` is the per-book source_index (1..N within the book). The DB's
     surrogate entry_id is also exposed as `entry_id` for callers that need it.
     """
     conn = connect(db_path, read_only=True, immutable=True)
     try:
-        rows = conn.execute(
-            """
-            SELECT e.entry_id, e.uuid, e.book_code, e.source_index,
-                   e.unit_number, u.header AS unit_header,
-                   e.kanji, e.reading, e.kanji AS headword_text, e.verb_pattern,
-                   e.meaning_en, e.meaning_zh, e.sentence, e.explanation_md,
-                   e.word_clip, e.sentence_clip
-              FROM entries e
-              JOIN units u
-                ON u.book_code = e.book_code AND u.number = e.unit_number
-             WHERE e.book_code = ?
-             ORDER BY e.unit_number, e.position, e.source_index
-            """,
-            (book_code,),
-        ).fetchall()
+        canonical = conn.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='book_entries'"
+        ).fetchone()
+        if canonical:
+            rows = conn.execute(
+                """
+                SELECT be.entry_id, be.item_id, be.uuid, be.book_code, be.source_index,
+                       be.unit_number, u.header AS unit_header,
+                       v.kanji, v.reading, v.kanji AS headword_text, v.verb_pattern,
+                       v.meaning_en, v.meaning_zh, be.sentence,
+                       COALESCE(be.explanation_md, v.explanation_md) AS explanation_md,
+                       v.word_clip, be.sentence_clip
+                  FROM book_entries be
+                  JOIN vocabulary_items v ON v.item_id = be.item_id
+                  JOIN units u
+                    ON u.book_code = be.book_code AND u.number = be.unit_number
+                 WHERE be.book_code = ?
+                 ORDER BY be.unit_number, be.position, be.source_index
+                """,
+                (book_code,),
+            ).fetchall()
 
-        ex_rows = conn.execute(
-            """
-            SELECT x.entry_id, x.position, x.text, x.translation_en,
-                   x.translation_zh, x.explanation_md, x.audio_clip
-              FROM entry_examples x
-              JOIN entries e ON e.entry_id = x.entry_id
-             WHERE e.book_code = ?
-             ORDER BY x.entry_id, x.position
-            """,
-            (book_code,),
-        ).fetchall()
+            ex_rows = conn.execute(
+                """
+                SELECT be.entry_id, x.position, x.text, x.translation_en,
+                       x.translation_zh, x.explanation_md, x.audio_clip,
+                       x.category, x.reading, x.kind
+                  FROM item_examples x
+                  JOIN book_entries be ON be.item_id = x.item_id
+                 WHERE be.book_code = ?
+                 ORDER BY be.entry_id, x.position
+                """,
+                (book_code,),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                """
+                SELECT e.entry_id, e.entry_id AS item_id, e.uuid, e.book_code, e.source_index,
+                       e.unit_number, u.header AS unit_header,
+                       e.kanji, e.reading, e.kanji AS headword_text, e.verb_pattern,
+                       e.meaning_en, e.meaning_zh, e.sentence, e.explanation_md,
+                       e.word_clip, e.sentence_clip
+                  FROM entries e
+                  JOIN units u
+                    ON u.book_code = e.book_code AND u.number = e.unit_number
+                 WHERE e.book_code = ?
+                 ORDER BY e.unit_number, e.position, e.source_index
+                """,
+                (book_code,),
+            ).fetchall()
+
+            ex_rows = conn.execute(
+                """
+                SELECT x.entry_id, x.position, x.text, x.translation_en,
+                       x.translation_zh, x.explanation_md, x.audio_clip,
+                       x.category, x.reading, x.kind
+                  FROM entry_examples x
+                  JOIN entries e ON e.entry_id = x.entry_id
+                 WHERE e.book_code = ?
+                 ORDER BY x.entry_id, x.position
+                """,
+                (book_code,),
+            ).fetchall()
     finally:
         conn.close()
 
@@ -94,13 +131,19 @@ def load_entries(book_code: str = "N2", db_path: Path | str | None = None) -> li
             "translation_zh": r["translation_zh"] or "",
             "explanation": r["explanation_md"] or "",
             "audio_clip": r["audio_clip"],
+            "category": r["category"] or "",
+            "reading": r["reading"] or "",
+            "kind": r["kind"] or "example_sentence",
         })
 
     out: list[dict] = []
     for r in rows:
         example_items = examples_by_entry.get(r["entry_id"], [])
-        main_example = next((x for x in example_items if x["position"] == 0), None)
-        extra_examples = [x for x in example_items if x["position"] != 0]
+        main_example = next(
+            (x for x in example_items if x["kind"] == "main_sentence" or x["position"] == 0),
+            None,
+        )
+        extra_examples = [x for x in example_items if x is not main_example]
         sentence = (main_example or {}).get("text") or r["sentence"] or ""
         sentence_clip = (main_example or {}).get("audio_clip") or r["sentence_clip"]
         explanation = (main_example or {}).get("explanation") or r["explanation_md"] or ""
