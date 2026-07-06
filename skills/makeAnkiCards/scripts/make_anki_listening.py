@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
-r"""Build output/N2Words_listening.apkg - sentence-listening Anki deck.
+r"""Build listening-style vocabulary APKGs from the project SQLite database.
 
 Usage:
     python -u skills/makeAnkiCards/scripts/make_anki_listening.py [--out output\N2Words_listening.apkg]
+    python -u skills/makeAnkiCards/scripts/make_anki_listening.py --book N3 --out output\N3Words_listening.apkg
 
-Front: sentence audio auto-plays - pure listening comprehension.
-Back:  sentence text + vocabulary headword + meanings + AI explanation.
+Front: word-only recall prompt, matching the current N2 word-card style.
+Back:  sentence audio/text + vocabulary details + translations/explanation.
 """
 from __future__ import annotations
 
 import argparse
+import hashlib
 import html as html_mod
 import re
 import sys
@@ -118,9 +120,9 @@ UNIT_COLORS = {
 
 FRONT_TMPL = """\
 <div class="card-front">
-  <div class="unit-badge" style="background:{{UnitColor}}">{{UnitLabel}}</div>
-  <div class="prompt-label">Listen · recall the word</div>
-  <div class="audio-row">{{SentenceAudio}}</div>
+  <div class="headword-block prompt-word">
+    <span class="headword">{{Headword}}</span>
+  </div>
 </div>
 """
 
@@ -130,7 +132,7 @@ BACK_TMPL = """\
     <div class="sentence">{{Sentence}}</div>
     {{#SentenceTranslationEN}}<div class="sentence-translation en">{{SentenceTranslationEN}}</div>{{/SentenceTranslationEN}}
     {{#SentenceTranslationZH}}<div class="sentence-translation zh">{{SentenceTranslationZH}}</div>{{/SentenceTranslationZH}}
-    <div class="audio-row sentence-replay">{{SentenceAudio}}</div>
+    <div class="audio-row">{{WordAudio}}{{SentenceAudio}}</div>
   </div>
 
   <hr class="divider">
@@ -142,7 +144,6 @@ BACK_TMPL = """\
       {{#VerbPattern}}<span class="verb-pattern">({{VerbPattern}})</span>{{/VerbPattern}}
     </div>
     <div class="reading">{{Reading}}</div>
-    <div class="audio-row">{{WordAudio}}</div>
     <div class="meanings">
       {{#MeaningEN}}<div class="meaning"><span class="lang-tag">EN</span> {{MeaningEN}}</div>{{/MeaningEN}}
       {{#MeaningZH}}<div class="meaning"><span class="lang-tag">中</span> {{MeaningZH}}</div>{{/MeaningZH}}
@@ -207,14 +208,17 @@ CSS = """\
   box-sizing: border-box;
 }
 
+.card-front {
+  align-items: center;
+  justify-content: center;
+}
+
 /* ── Front ─────────────────────────────── */
 
-.prompt-label {
-  font-size: 13px;
-  letter-spacing: 0.06em;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  margin-top: 4px;
+.prompt-word {
+  justify-content: center;
+  margin: 0;
+  text-align: center;
 }
 
 /* ── Unit badge ────────────────────────── */
@@ -272,11 +276,6 @@ CSS = """\
 
 .sentence-translation.zh {
   color: #9ca8c8;
-}
-
-.sentence-replay {
-  margin-top: 2px;
-  margin-bottom: 0;
 }
 
 /* ── Vocabulary word section ───────────── */
@@ -502,7 +501,35 @@ hr.divider {
 """
 
 
-def build_deck(db: list[dict], clips_root: Path):
+def default_deck_name(book_code: str) -> str:
+    if book_code == "N2":
+        return "耳から覚える::N2WordsSentences"
+    return f"耳から覚える::{book_code}WordsSentences"
+
+
+def default_output_path(book_code: str) -> str:
+    if book_code == "N2":
+        return "output/N2Words_listening.apkg"
+    safe_book = re.sub(r"[^A-Za-z0-9_-]+", "_", book_code).strip("_") or "Words"
+    return f"output/{safe_book}Words_listening.apkg"
+
+
+def stable_deck_id(book_code: str, deck_name: str) -> int:
+    if book_code == "N2" and deck_name == "耳から覚える::N2WordsSentences":
+        return DECK_ID
+    digest = hashlib.sha1(f"n2vocab-listening-deck:{deck_name}".encode("utf-8")).digest()
+    return int.from_bytes(digest[:4], "big")
+
+
+def note_guid(entry: dict) -> str:
+    idx = int(entry["index"])
+    book_code = entry.get("book_code") or "N2"
+    if book_code == "N2":
+        return genanki.guid_for(f"n2listening_{idx}")
+    return genanki.guid_for(f"{book_code.lower()}listening_{idx}")
+
+
+def build_deck(db: list[dict], clips_root: Path, *, book_code: str, deck_name: str):
     model = genanki.Model(
         MODEL_ID,
         "N2 Vocabulary — Listening",
@@ -532,7 +559,7 @@ def build_deck(db: list[dict], clips_root: Path):
         css=CSS,
     )
 
-    deck   = genanki.Deck(DECK_ID, "耳から覚える::N2WordsSentences")
+    deck   = genanki.Deck(stable_deck_id(book_code, deck_name), deck_name)
     media:  list[str]  = []
     media_set: set[str] = set()
 
@@ -562,6 +589,7 @@ def build_deck(db: list[dict], clips_root: Path):
 
         word_audio = add_audio(e.get("word_clip"))
         sent_audio = add_audio(e.get("sentence_clip"))
+        headword = e.get("kanji") or e.get("reading")
 
         # Anki templates cannot iterate over arbitrary DB rows. Pre-render
         # extra examples into one field and cap visible sentence items at five:
@@ -604,7 +632,7 @@ def build_deck(db: list[dict], clips_root: Path):
                 str(idx),
                 unit_label,
                 unit_color,
-                t(e.get("kanji")),
+                t(headword),
                 t(e.get("reading")),
                 t(e.get("verb_pattern")),
                 t(e.get("meaning_en")),
@@ -618,8 +646,8 @@ def build_deck(db: list[dict], clips_root: Path):
                 explanation,
                 *more_example_fields,
             ],
-            guid=genanki.guid_for(f"n2listening_{idx}"),
-            tags=[f"unit{unit_num:02d}", "N2", "listening"],
+            guid=note_guid(e),
+            tags=[f"unit{unit_num:02d}", e.get("book_code") or book_code, "listening"],
         )
         deck.add_note(note)
 
@@ -638,9 +666,10 @@ def clip_exists(clip_rel: str | None) -> bool:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--db",  default="wordService/data/n2vocab.sqlite")
-    ap.add_argument("--out", default="output/N2Words_listening.apkg")
+    ap.add_argument("--out", default=None)
     ap.add_argument("--clips", default="clips")
     ap.add_argument("--book", default="N2")
+    ap.add_argument("--deck-name", default=None)
     args = ap.parse_args()
 
     db_path = Path(args.db)
@@ -657,13 +686,14 @@ def main() -> None:
     db = load_entries(book_code=args.book, db_path=db_path)
     db.sort(key=lambda e: e["index"])
 
-    print(f"Building listening deck for {len(db)} entries…")
-    deck, media = build_deck(db, clips_root)
+    deck_name = args.deck_name or default_deck_name(args.book)
+    print(f"Building listening deck for {len(db)} {args.book} entries...")
+    deck, media = build_deck(db, clips_root, book_code=args.book, deck_name=deck_name)
 
     pkg = genanki.Package(deck)
     pkg.media_files = media
 
-    out = Path(args.out)
+    out = Path(args.out or default_output_path(args.book))
     if not out.is_absolute():
         out = PROJECT_ROOT / out
     out.parent.mkdir(parents=True, exist_ok=True)

@@ -17,6 +17,7 @@ export function configureDetail(nextCallbacks) {
 export async function openDetail(entryId) {
   const entry = await fetchEntry(entryId);
   state.detailEntry = entry;
+  syncDetailAudioToCurrentCard(entry);
   elements.modalMeta.textContent = `${entry.book_code} #${String(entry.source_index).padStart(3, "0")} · ${unitLabel(entry.unit)}`;
   elements.modalTitle.innerHTML = rubyOrPlain(entry.kanji, entry.reading);
   wireAudioTarget(elements.modalTitle, entry.word_audio_url, "Play word audio");
@@ -133,6 +134,7 @@ async function generateSentenceAudio(entry, item, row) {
     if (item.position === 0) {
       entry.sentence_audio_url = payload.audio_url;
     }
+    syncExampleAudioToCurrentCard(entry, item.position, payload.audio_url);
     row.classList.remove("generatable", "generating");
     row.removeAttribute("aria-busy");
     wireAudioTarget(row, payload.audio_url, "Play sentence audio");
@@ -141,6 +143,39 @@ async function generateSentenceAudio(entry, item, row) {
     state.generatingAudioKeys.delete(key);
     row.classList.remove("generating");
     row.removeAttribute("aria-busy");
+  }
+}
+
+function syncDetailAudioToCurrentCard(entry) {
+  const examples = entry.examples && entry.examples.length ? entry.examples : [];
+  examples.forEach(item => {
+    if (item.audio_url) {
+      syncExampleAudioToCurrentCard(entry, item.position, item.audio_url);
+    }
+  });
+  if (entry.sentence_audio_url) {
+    syncExampleAudioToCurrentCard(entry, 0, entry.sentence_audio_url);
+  }
+}
+
+function syncExampleAudioToCurrentCard(entry, position, audioUrl) {
+  const cardEntry = state.currentEntries.find(current => current.entry_id === entry.entry_id);
+  if (!cardEntry || !audioUrl) return;
+
+  if (position === 0) {
+    cardEntry.sentence_audio_url = audioUrl;
+  }
+  const examples = cardEntry.examples || [];
+  const cardExample = examples.find(example => example.position === position);
+  if (cardExample) {
+    cardExample.audio_url = audioUrl;
+  }
+
+  const card = elements.grid.querySelector(`.card[data-id="${entry.entry_id}"]`);
+  if (!card) return;
+  const row = card.querySelector(`.card-example-row[data-position="${position}"]`);
+  if (row) {
+    wireAudioTarget(row, audioUrl, position === 0 ? "Play sentence audio" : "Play example audio");
   }
 }
 

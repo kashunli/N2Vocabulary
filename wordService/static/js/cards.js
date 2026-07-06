@@ -257,7 +257,11 @@ function renderSearchMatches(card, entry) {
     wireAudioTarget(row, item.audio_url, "Play matching sentence audio");
   });
 
-  card.querySelector(".card-sentence-translation").after(wrap);
+  const insertionPoint =
+    card.querySelector(".card-examples")
+    || card.querySelector(".card-meaning")
+    || card.querySelector(".card-kanji");
+  if (insertionPoint) insertionPoint.after(wrap);
 }
 
 export async function toggleMark(entry, key, card) {

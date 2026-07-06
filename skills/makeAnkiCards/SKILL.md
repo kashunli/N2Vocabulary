@@ -57,11 +57,15 @@ content.
   `item_examples.audio_clip`.
 - `scripts/make_anki_listening.py` builds the listening deck.
   - Deck name: `耳から覚える::N2WordsSentences`.
+  - The front side now follows the word-card style: headword only. Sentence
+    audio, sentence text, translations, reading, word audio, meanings, and
+    explanations stay on the back.
   - The back side shows the main sentence English translation and the same
     pre-rendered translated/explained extra examples in `MoreExample1` through
     `MoreExample5`.
   - It uses the same furigana renderer for the main sentence and extra example
     sentences.
+  - The same script can export `N3` with book-scoped deck and note identities.
 - `scripts/make_clean_db.py` and `scripts/merge_explanations.py` are legacy
   helpers kept only for archaeology unless the user explicitly asks to repair
   old JSON-era data.
@@ -102,6 +106,7 @@ Group export examples:
 
 ```powershell
 python -u .\skills\makeAnkiCards\scripts\make_anki.py --book N3 --out output\N3Words.apkg
+python -u .\skills\makeAnkiCards\scripts\make_anki_listening.py --book N3 --out output\N3Words_listening.apkg
 python -u .\skills\makeAnkiCards\scripts\make_anki.py --book N2 --flagged-only --out output\N2Words_flagged.apkg --deck-name "耳から覚える::N2Words::Flagged"
 python -u .\skills\makeAnkiCards\scripts\make_anki.py --book N2_1500 --unit 1 --unit 2 --out output\N2_1500_units01-02.apkg
 python -u .\skills\makeAnkiCards\scripts\make_anki.py --book N2 --source-indexes 1-20,85,120-125 --out output\N2Words_custom.apkg

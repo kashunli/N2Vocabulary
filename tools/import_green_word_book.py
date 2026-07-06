@@ -27,6 +27,7 @@ DEFAULT_GREEN_ROOT = Path(r"D:\n2Prepare\greenWordBook")
 DEFAULT_SUMMARY = PROJECT_ROOT / "output" / "green_word_book_import_summary.json"
 BOOK_CODE = "GWB_N2"
 BOOK_TITLE = "无敌绿宝书 N2 词汇"
+LANGUAGE_ORIGIN_RE = re.compile(r"^(?:英|米|法|德|徳|独|意|葡|蘭|荷|露|梵|希)\s*[A-Za-z]")
 
 
 def read_json(path: Path) -> Any:
@@ -163,6 +164,15 @@ def has_misplaced_bracket_form(record: dict[str, Any]) -> bool:
     )
 
 
+def is_language_origin_note(value: str) -> bool:
+    """Return true for GWB bracket notes like ``法 jupon`` or ``荷 koffie``.
+
+    These notes explain the source language of a loanword; they are useful
+    learner context, but should not replace the Japanese katakana headword.
+    """
+    return bool(LANGUAGE_ORIGIN_RE.match((value or "").strip()))
+
+
 def display_word(record: dict[str, Any]) -> tuple[str, str]:
     headword = str(record.get("headword") or "").strip()
     bracket = clean_bracket_form(str(record.get("bracket_form") or ""))
@@ -175,6 +185,8 @@ def display_word(record: dict[str, Any]) -> tuple[str, str]:
         # GWB consistently uses headword【display form】: for example,
         # あいかわらず【相変わらず】 and アイスクリーム【ice cream】.
         # Map both patterns to the service's normal display/reading pair.
+        if is_language_origin_note(bracket):
+            return headword, bracket
         return bracket, reading or headword
     return headword, reading
 

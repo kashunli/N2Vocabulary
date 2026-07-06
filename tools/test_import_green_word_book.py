@@ -27,6 +27,20 @@ class GreenWordBookImportTests(unittest.TestCase):
             ("on", "オン"),
         )
 
+    def test_display_word_keeps_language_origin_as_reading(self) -> None:
+        self.assertEqual(
+            display_word(
+                {"headword": "ズボン", "bracket_form": "【法 jupon】", "reading": ""}
+            ),
+            ("ズボン", "法 jupon"),
+        )
+        self.assertEqual(
+            display_word(
+                {"headword": "コーヒー", "bracket_form": "", "reading": "【荷 koffie】"}
+            ),
+            ("コーヒー", "荷 koffie"),
+        )
+
     def test_import_maps_source_rows_and_is_idempotent(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
