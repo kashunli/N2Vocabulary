@@ -1,6 +1,6 @@
 import { fetchBooks, fetchEntries, fetchStarredSentences, fetchSummary, fetchUnits } from "./api.js";
-import { exportFlaggedAudio } from "./audio.js";
-import { configureCards, renderCards } from "./cards.js";
+import { exportFlaggedAudio, moveScopePlayback, replayScopeImmediately, stopScopePlayback, toggleScopePlayback, updateScopePlaybackButton } from "./audio.js";
+import { configureCards, renderCards, toggleCurrentPlaybackMark } from "./cards.js";
 import { closeDetail, configureDetail, openDetail } from "./detail.js";
 import { escapeHTML, exampleKey, unitLabel } from "./format.js";
 import { configureStarred, renderStarredView } from "./starred.js";
@@ -15,6 +15,8 @@ import {
   updateAudioExportButton,
   updateFilterPills,
 } from "./state.js";
+
+let entriesLoadToken = 0;
 
 function currentBook() {
   return state.books.find(book => book.code === state.selectedBook) || {
@@ -42,7 +44,8 @@ function renderBooks() {
     elements.bookSelect.appendChild(option);
   });
   const book = currentBook();
-  elements.pageTitle.textContent = `${book.code} 語彙 - Card study`;
+  elements.pageTitle.textContent = "スタディウォール";
+  document.title = `${book.code} Study Wall`;
 }
 
 async function loadSummary() {
@@ -116,6 +119,11 @@ async function selectUnit(unitNumber) {
 
 async function loadEntries() {
   if (!state.units.length) return;
+  const loadToken = entriesLoadToken + 1;
+  entriesLoadToken = loadToken;
+  stopScopePlayback();
+  state.entriesLoading = true;
+  updateScopePlaybackButton();
   const params = new URLSearchParams({
     state: state.filterState,
     search: state.search,
@@ -124,9 +132,17 @@ async function loadEntries() {
   if (Number.isFinite(state.selectedUnit) && !state.search) {
     params.set("unit", String(state.selectedUnit));
   }
-  const payload = await fetchEntries(params);
-  state.currentEntries = payload.items || [];
-  renderCards();
+  try {
+    const payload = await fetchEntries(params);
+    if (loadToken !== entriesLoadToken) return;
+    state.currentEntries = payload.items || [];
+    renderCards();
+  } finally {
+    if (loadToken === entriesLoadToken) {
+      state.entriesLoading = false;
+      updateScopePlaybackButton();
+    }
+  }
 }
 
 async function loadStarredSentences() {
@@ -155,6 +171,7 @@ async function showCardView() {
 }
 
 async function showStarredView(options = {}) {
+  stopScopePlayback();
   state.view = "starred";
   if (options.resetScope) state.starredScope = "all";
   saveViewState();
@@ -216,6 +233,20 @@ function wireControls() {
     });
     renderCards();
   });
+  elements.scopePlayButton.addEventListener("click", () => {
+    toggleScopePlayback().catch(showError);
+  });
+  elements.scopeReplayButton.addEventListener("click", () => replayScopeImmediately().catch(showError));
+  elements.scopePreviousButton.addEventListener("click", () => {
+    moveScopePlayback(-1).catch(showError);
+  });
+  elements.scopePauseButton.addEventListener("click", () => {
+    toggleScopePlayback().catch(showError);
+  });
+  elements.scopeNextButton.addEventListener("click", () => {
+    moveScopePlayback(1).catch(showError);
+  });
+  elements.scopeStopButton.addEventListener("click", () => stopScopePlayback({announce: true}));
   elements.audioExportButton.addEventListener("click", () => {
     exportFlaggedAudio().catch(showError);
   });
@@ -231,8 +262,43 @@ function wireControls() {
     if (event.target === elements.backdrop) closeDetail();
   });
   document.addEventListener("keydown", event => {
-    if (event.key === "Escape" && elements.backdrop.classList.contains("open")) closeDetail();
-  });
+    if (event.key === "Escape" && elements.backdrop.classList.contains("open")) {
+      closeDetail();
+      return;
+    }
+    const target = event.target;
+    if (target instanceof HTMLElement && target.closest("input, textarea, select, [contenteditable='true']")) {
+      return;
+    }
+    if (event.repeat) return;
+
+    const key = event.key.toLowerCase();
+    if (event.key === " " || event.code === "Space") {
+      // Study shortcuts own Space and Enter outside text entry, even if a
+      // control still has focus from an earlier click.
+      event.preventDefault();
+      event.stopPropagation();
+      toggleScopePlayback().catch(showError);
+    } else if (event.key === "Enter") {
+      event.preventDefault();
+      event.stopPropagation();
+      toggleCurrentPlaybackMark("known").catch(showError);
+    } else if (event.key === "ArrowRight" || key === "d") {
+      event.preventDefault();
+      moveScopePlayback(1).catch(showError);
+    } else if (event.key === "ArrowLeft" || key === "a") {
+      event.preventDefault();
+      moveScopePlayback(-1).catch(showError);
+    } else if (event.key === "Escape") {
+      stopScopePlayback({announce: true});
+    } else if (key === "r") {
+      replayScopeImmediately().catch(showError);
+    } else if (key === "f") {
+      toggleCurrentPlaybackMark("flagged").catch(showError);
+    } else if (key === "k") {
+      toggleCurrentPlaybackMark("known").catch(showError);
+    }
+  }, {capture: true});
   window.addEventListener("scroll", scheduleScrollSave, {passive: true});
   window.addEventListener("beforeunload", () => saveViewState());
 }
@@ -247,6 +313,12 @@ function configureModules() {
 
 async function init() {
   restoreSavedViewState();
+  const previewParams = new URLSearchParams(window.location.search);
+  const previewUnit = Number(previewParams.get("preview-unit"));
+  if (Number.isFinite(previewUnit) && previewUnit > 0) state.selectedUnit = previewUnit;
+  if (["all", "known", "flagged", "unmarked"].includes(previewParams.get("preview-state"))) {
+    state.filterState = previewParams.get("preview-state");
+  }
   updateFilterPills();
   configureModules();
   wireControls();
@@ -254,12 +326,17 @@ async function init() {
   await loadSummary();
   await loadUnits();
   updateAudioExportButton();
+  updateScopePlaybackButton();
   if (state.view === "starred") {
     await showStarredView();
   } else {
     await showCardView();
   }
-  restoreScrollPosition();
+  if (previewParams.has("playback-preview")) {
+    window.scrollTo({top: 0, left: 0, behavior: "auto"});
+  } else {
+    restoreScrollPosition();
+  }
 }
 
 init().catch(showError);

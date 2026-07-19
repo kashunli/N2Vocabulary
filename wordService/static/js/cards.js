@@ -1,7 +1,7 @@
 import { updateMark, updateExampleStar } from "./api.js";
-import { ensureCardAudio, playClip, wireAudioTarget, wireCardAudioPrepTarget } from "./audio.js";
+import { ensureCardAudio, playClip, playScopeFromEntry, previewPlaybackVisual, setScopePlaybackWindow, updateScopePlaybackButton, wireAudioTarget, wireCardAudioPrepTarget } from "./audio.js";
 import { cardMeaningHTML, escapeHTML, exampleCategoryBadgeHTML, exampleTranslationHTML, rubyOrPlain, unitLabel } from "./format.js";
-import { elements, state, showError, updateAudioExportButton } from "./state.js";
+import { elements, setBanner, state, showError, updateAudioExportButton } from "./state.js";
 
 const callbacks = {
   loadSummary: null,
@@ -17,8 +17,12 @@ export function configureCards(nextCallbacks) {
 export function applyMarkClasses(card, mark) {
   card.classList.toggle("known", !!mark.known);
   card.classList.toggle("flagged", !!mark.flagged);
-  card.querySelector(".icon-btn.known").classList.toggle("on", !!mark.known);
-  card.querySelector(".icon-btn.flagged").classList.toggle("on", !!mark.flagged);
+  const knownButton = card.querySelector(".icon-btn.known");
+  const flaggedButton = card.querySelector(".icon-btn.flagged");
+  knownButton.classList.toggle("on", !!mark.known);
+  flaggedButton.classList.toggle("on", !!mark.flagged);
+  knownButton.setAttribute("aria-pressed", mark.known ? "true" : "false");
+  flaggedButton.setAttribute("aria-pressed", mark.flagged ? "true" : "false");
 }
 
 export function applySentenceStarButton(button, starred) {
@@ -72,10 +76,12 @@ export function renderCards() {
     elements.counter.textContent = "showing 0";
     updateCoverAllButton();
     updateAudioExportButton();
+    updateScopePlaybackButton();
     return;
   }
 
-  state.currentEntries.forEach(entry => {
+  const playbackPreview = new URLSearchParams(window.location.search).get("playback-preview");
+  state.currentEntries.forEach((entry, index) => {
     const fragment = elements.template.content.cloneNode(true);
     const card = fragment.querySelector(".card");
     card.dataset.id = String(entry.entry_id);
@@ -96,7 +102,8 @@ export function renderCards() {
     applySentenceStarButton(sentenceStar, entry.sentence_starred);
     sentenceStar.addEventListener("click", event => {
       event.stopPropagation();
-      toggleSentenceStar(entry.entry_id, 0, !entry.sentence_starred).then(starred => {
+      const position = Number(sentenceTarget?.dataset.position || 0);
+      toggleSentenceStar(entry.entry_id, position, !entry.sentence_starred).then(starred => {
         entry.sentence_starred = starred;
         applySentenceStarButton(sentenceStar, starred);
       }).catch(showError);
@@ -126,6 +133,12 @@ export function renderCards() {
     });
     card.addEventListener("click", event => {
       if (event.target.closest("button")) return;
+      if (state.scopePlaybackStatus !== "idle") {
+        event.preventDefault();
+        event.stopPropagation();
+        playScopeFromEntry(entry.entry_id).catch(showError);
+        return;
+      }
       if (event.target.closest(".audio-target, [data-card-audio-prep]")) return;
 
       const wordTarget = card.querySelector(".card-kanji");
@@ -144,24 +157,46 @@ export function renderCards() {
 
     applyMarkClasses(card, entry.mark || {});
     applyCoverState(card, entry, state.coveredEntryIds.has(entry.entry_id));
+    if ((playbackPreview === "word" || playbackPreview === "sentence") && index === 2) {
+      const previewTarget = playbackPreview === "word"
+        ? card.querySelector(".card-kanji")
+        : card.querySelector(".main-sentence-row");
+      previewPlaybackVisual(previewTarget);
+    }
     elements.grid.appendChild(fragment);
   });
+  if (playbackPreview === "word" || playbackPreview === "sentence") {
+    state.scopePlaybackStatus = "playing";
+    state.scopePlaybackPosition = Math.min(3, state.currentEntries.length);
+    state.scopePlaybackTotal = state.currentEntries.length;
+    state.scopePlaybackEntryId = state.currentEntries[2]?.entry_id || null;
+    state.scopePlaybackPhase = playbackPreview;
+    updateScopePlaybackButton();
+    const previewEntry = state.currentEntries[2];
+    if (previewEntry) {
+      setScopePlaybackWindow(previewEntry.entry_id);
+      setBanner(`Playing 3 of ${state.currentEntries.length}: ${previewEntry.kanji}`);
+      if (window.matchMedia("(max-width: 720px)").matches) {
+        window.requestAnimationFrame(() => {
+          elements.grid.querySelector(`.card[data-id="${previewEntry.entry_id}"]`)
+            ?.scrollIntoView({behavior: "auto", block: "center"});
+        });
+      }
+    }
+  }
   const scope = state.selectedUnit === null || state.search ? " across all sections" : "";
   elements.counter.textContent = `showing ${state.currentEntries.length}${scope}`;
   updateCoverAllButton();
   updateAudioExportButton();
+  updateScopePlaybackButton();
 }
 
 function renderCardSentences(card, entry) {
   const examples = (entry.examples || []).filter(item => item.text);
-  const mainExample = examples.find(item => item.position === 0);
-  const extraExamples = examples.filter(item => item.position > 0);
   const sentenceItems = [];
-  if (mainExample) {
-    sentenceItems.push({...mainExample, isMain: true});
-  } else if (entry.sentence) {
+  if (entry.sentence) {
     sentenceItems.push({
-      position: 0,
+      position: Number(entry.sentence_position || 0),
       text: entry.sentence,
       translation_en: entry.sentence_translation_en,
       translation_zh: entry.sentence_translation_zh,
@@ -169,7 +204,7 @@ function renderCardSentences(card, entry) {
       isMain: true,
     });
   }
-  sentenceItems.push(...extraExamples);
+  sentenceItems.push(...examples);
 
   const wrap = document.createElement("div");
   wrap.className = "card-examples";
@@ -273,8 +308,18 @@ export async function toggleMark(entry, key, card) {
   await updateMark(entry.entry_id, next);
   entry.mark = {...entry.mark, ...next};
   applyMarkClasses(card, entry.mark);
+  updateScopePlaybackButton();
   await callbacks.loadSummary();
   await callbacks.loadUnits();
+}
+
+export async function toggleCurrentPlaybackMark(key) {
+  const entry = state.currentEntries.find(item => item.entry_id === state.scopePlaybackEntryId);
+  const card = entry && elements.grid.querySelector(`.card[data-id="${entry.entry_id}"]`);
+  if (!entry || !card || (key !== "known" && key !== "flagged")) return false;
+  await toggleMark(entry, key, card);
+  setBanner(`${entry.kanji} is ${entry.mark[key] ? key : `not ${key}`}. Playback continues.`);
+  return true;
 }
 
 export async function toggleSentenceStar(entryId, position, starred) {

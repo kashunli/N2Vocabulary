@@ -20,8 +20,8 @@ The code is intentionally split into a few small learning-oriented modules:
 ## Inputs
 
 - Vocabulary DB: `data/n2vocab.sqlite`
-- Audio clips: `../clips/`; Rust playback expects flat aliases in
-  `../clips/words/` and `../clips/sentences/`
+- Audio clips: `../clips/`; original N2 playback uses flat aliases while
+  imported books can use explicit book-scoped paths such as `../clips/n1/`
 - Frontend assets: `static/`
 - Study marks: `item_marks` table in the same SQLite DB
 - Generated sentence audio: `../clips/generated_sentences/edge_tts/`
@@ -39,7 +39,9 @@ Important tables:
   display headword, including kana-only words.
 - `book_entries`: one row per book appearance. `source_index` is the
   word/book number used by book views; `unit_number` and `position` place it
-  in the UI. `entry_id` remains the API compatibility placement ID.
+  in the UI. `entry_id` remains the API compatibility placement ID. Meanings,
+  verb pattern, word audio, main sentence, and sentence audio may override the
+  shared-item compatibility values for that specific book.
 - `item_examples`: sentence/example/term rows. `kind` names the role
   (`main_sentence`, `example_sentence`, `related_term`), while `position` is
   display order.
@@ -60,6 +62,18 @@ The apply command creates a timestamped database backup, preserves GWB notes
 and examples with provenance, removes only matched GWB rows, and runs SQLite
 integrity checks. GWB and destination importers also reconcile this preserved
 content so a rebuild does not silently discard it.
+
+The Mimikara N1 book and its reviewed audio are imported from the sibling
+digitization project with:
+
+```powershell
+python tools/import_mimikara_n1.py
+```
+
+The importer validates the complete 1,170-entry source, derives unit placement
+from the accepted audio track manifest, copies 2,340 clips under `clips/n1/`,
+and runs SQLite integrity and foreign-key checks. Source PDF/audio and source
+review artifacts remain read-only.
 
 When a displayed word is wrong, inspect `book_entries`, `vocabulary_items`, and
 `item_examples` first.
@@ -111,13 +125,33 @@ Optional environment variables:
 The audio-generation endpoints queue Microsoft Edge TTS jobs so only one remote
 TTS request runs at a time. They store generated MP3s under
 `../clips/generated_sentences/edge_tts/` and write the relative paths back to
-`entries.word_clip` or `entry_examples.audio_clip`. Clicking a card outside its
+the selected `book_entries.word_clip` or `item_examples.audio_clip`. Clicking a card outside its
 buttons ensures and downloads both the word and main-sentence files.
 
 The flagged-audio export endpoint builds one MP3 for the selected unit's
 flagged words. The listening order is word audio, 1 second of silence, main
 sentence audio, 2 seconds of silence, then the next flagged word. Exports are
 written under `../clips/exports/flagged_units/` and require `ffmpeg` on `PATH`.
+
+## Autoplay review controls
+
+The Study Wall player automatically advances through the current visible card
+scope. Doing nothing moves to the next word; review actions are optional.
+During playback, the wall keeps the previously played card on the left, the
+current card enlarged in the center, and the next card on the right. Each card
+transition advances the page by one smooth vertical step.
+
+- `Space`: start, pause immediately, or resume, even when a button has focus
+- `R`: immediately restart the current card from its word audio
+- `Left Arrow` / `A`: previous card
+- `Right Arrow` / `D`: next card
+- `F`: toggle flagged without interrupting playback
+- `Enter` / `K`: toggle known without interrupting playback
+- `Escape`: stop immediately
+
+Shortcuts are ignored while a form field has focus, so normal typing stays
+intact. Outside text entry, study actions reserve `Space` and `Enter`; neither
+key activates a focused button or link.
 
 Canonical word and main-sentence audio paths are maintained with:
 

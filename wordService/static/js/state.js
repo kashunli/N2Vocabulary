@@ -9,6 +9,16 @@ export const elements = {
   search: document.getElementById("search"),
   statePills: Array.from(document.querySelectorAll(".state-pill")),
   coverAll: document.getElementById("cover-all"),
+  scopePlayButton: document.getElementById("scope-play-button"),
+  playbackDock: document.getElementById("playback-dock"),
+  playbackNowLabel: document.getElementById("playback-now-label"),
+  playbackNowDetail: document.getElementById("playback-now-detail"),
+  scopeReplayButton: document.getElementById("scope-replay-button"),
+  scopePreviousButton: document.getElementById("scope-previous-button"),
+  scopePauseButton: document.getElementById("scope-pause-button"),
+  scopeNextButton: document.getElementById("scope-next-button"),
+  scopeStopButton: document.getElementById("scope-stop-button"),
+  scopePlaybackCount: document.getElementById("scope-playback-count"),
   starredViewButton: document.getElementById("starred-view-button"),
   audioExportButton: document.getElementById("audio-export-button"),
   counter: document.getElementById("counter"),
@@ -53,6 +63,14 @@ export const state = {
   detailEntry: null,
   coveredEntryIds: new Set(),
   generatingAudioKeys: new Set(),
+  // Scoped playback keeps the current Audio object while paused. Resuming that
+  // same object preserves its currentTime instead of restarting the clip.
+  scopePlaybackStatus: "idle",
+  scopePlaybackPosition: 0,
+  scopePlaybackTotal: 0,
+  scopePlaybackEntryId: null,
+  scopePlaybackPhase: "idle",
+  entriesLoading: false,
   exportingAudio: false,
 };
 

@@ -10,8 +10,8 @@
   <header class="hero">
     <div class="hero-main">
       <div>
-        <div class="eyebrow">wordService</div>
-        <h1 id="page-title">語彙 — Card study</h1>
+        <h1 id="page-title">スタディウォール</h1>
+        <div class="eyebrow">Study Wall</div>
         <div class="meta" id="summary-meta">Loading vocabulary...</div>
       </div>
       <div class="hero-pickers">
@@ -38,6 +38,7 @@
       <button class="pill state-pill flagged" data-state="flagged">Flagged</button>
     </div>
     <button class="cover-all" id="cover-all" type="button" aria-pressed="false">cover all</button>
+    <button class="scope-play-button" id="scope-play-button" type="button" aria-pressed="false" aria-keyshortcuts="Space">play visible</button>
     <button class="starred-view-button" id="starred-view-button" type="button" aria-pressed="false">★ starred sentences</button>
     <button class="audio-export-button" id="audio-export-button" type="button">export flagged audio</button>
     <span class="counter" id="counter"></span>
@@ -73,6 +74,31 @@
     </section>
   </main>
 
+  <section class="playback-dock" id="playback-dock" aria-label="Playback controls">
+    <div class="playback-now" role="status" aria-live="polite">
+      <span class="playback-now-label" id="playback-now-label">Ready to play</span>
+      <span class="playback-now-detail" id="playback-now-detail">Your visible list will move forward automatically.</span>
+    </div>
+    <div class="playback-actions">
+      <button class="transport-button replay" id="scope-replay-button" type="button" aria-keyshortcuts="R">
+        <span>Replay now</span><kbd>R</kbd>
+      </button>
+      <button class="transport-button" id="scope-previous-button" type="button" aria-keyshortcuts="ArrowLeft A">
+        <span>Previous</span><kbd>← / A</kbd>
+      </button>
+      <button class="transport-button pause" id="scope-pause-button" type="button" aria-keyshortcuts="Space">
+        <span>Start</span><kbd>Space</kbd>
+      </button>
+      <button class="transport-button primary" id="scope-next-button" type="button" aria-keyshortcuts="ArrowRight D">
+        <span>Next</span><kbd>→ / D</kbd>
+      </button>
+      <button class="transport-button" id="scope-stop-button" type="button" aria-keyshortcuts="Escape">
+        <span>Stop</span><kbd>Esc</kbd>
+      </button>
+    </div>
+    <div class="playback-count" id="scope-playback-count">0 / 0</div>
+  </section>
+
   <div class="modal-backdrop" id="backdrop" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <div class="modal-head">
@@ -105,10 +131,12 @@
       <div class="card-top">
         <span class="card-actions">
           <button class="icon-btn sentence-star" type="button" title="Star main sentence">☆</button>
-          <button class="icon-btn known" type="button" title="Mark as known">✓</button>
-          <button class="icon-btn flagged" type="button" title="Flag for review">⚑</button>
+          <button class="icon-btn flagged" type="button" title="Flag for review" aria-keyshortcuts="F"><span aria-hidden="true">⚑</span><span class="card-action-text">Flag</span><kbd>F</kbd></button>
+          <button class="icon-btn known" type="button" title="Mark as known" aria-keyshortcuts="Enter K"><span aria-hidden="true">✓</span><span class="card-action-text">Known</span><kbd>Enter</kbd></button>
         </span>
       </div>
+      <progress class="card-playback-progress" max="3" value="0" aria-label="Word and sentence playback progress"></progress>
+      <div class="card-playback-label">Now playing</div>
       <div class="card-kanji"></div>
       <div class="card-meaning"></div>
       <div class="card-sentence"></div>

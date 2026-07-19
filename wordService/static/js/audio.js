@@ -1,6 +1,155 @@
 import { generateEntryAudio, generateExampleAudio, exportUnitFlaggedAudio } from "./api.js";
 import { unitLabel } from "./format.js";
-import { state, setBanner, showError, updateAudioExportButton } from "./state.js";
+import { elements, state, setBanner, showError, updateAudioExportButton } from "./state.js";
+
+let scopePlaybackToken = 0;
+let scopeResumeWaiters = [];
+
+function scopePlaybackIsActive() {
+  return state.scopePlaybackStatus !== "idle";
+}
+
+function settleScopeResumeWaiters(token, resumed) {
+  const remaining = [];
+  scopeResumeWaiters.forEach(waiter => {
+    if (token === undefined || waiter.token === token) {
+      waiter.resolve(resumed);
+    } else {
+      remaining.push(waiter);
+    }
+  });
+  scopeResumeWaiters = remaining;
+}
+
+function waitForScopeResume(token) {
+  if (token !== scopePlaybackToken || state.scopePlaybackStatus === "idle") {
+    return Promise.resolve(false);
+  }
+  if (state.scopePlaybackStatus === "playing") {
+    return Promise.resolve(true);
+  }
+  return new Promise(resolve => scopeResumeWaiters.push({token, resolve}));
+}
+
+function playbackPhase(target) {
+  return target && target.classList.contains("card-kanji") ? "word" : "sentence";
+}
+
+function showPlaybackVisual(target, options = {}) {
+  const {retainCard = false} = options;
+  if (!target) return () => {};
+  const card = target.closest(".card");
+  if (!card) return () => {};
+
+  const phase = playbackPhase(target);
+  const progress = card.querySelector(".card-playback-progress");
+  card.classList.add("scope-playing");
+  card.dataset.playbackPhase = phase;
+  // Three visual steps leave the line visibly in progress during both clips;
+  // completion is represented by advancing to the next card.
+  if (progress) progress.value = phase === "word" ? 1 : 2;
+
+  return () => {
+    if (!retainCard) {
+      card.classList.remove("scope-playing", "scope-paused", "scope-replaying");
+      delete card.dataset.playbackPhase;
+      if (progress) progress.value = 0;
+    }
+  };
+}
+
+export function previewPlaybackVisual(target) {
+  // This deterministic state is used only by the ?playback-preview URL during
+  // visual regression checks; normal playback always drives the same helper.
+  showPlaybackVisual(target);
+}
+
+function clearPlaybackVisuals() {
+  elements.grid.querySelectorAll(".card.scope-playing").forEach(card => {
+    card.classList.remove("scope-playing", "scope-paused", "scope-replaying");
+    delete card.dataset.playbackPhase;
+    const progress = card.querySelector(".card-playback-progress");
+    if (progress) progress.value = 0;
+    const label = card.querySelector(".card-playback-label");
+    if (label) label.textContent = "Now playing";
+  });
+}
+
+function clearScopePlaybackWindow() {
+  elements.grid.querySelectorAll(".card.scope-previous, .card.scope-current, .card.scope-next").forEach(card => {
+    card.classList.remove("scope-previous", "scope-current", "scope-next");
+  });
+}
+
+export function setScopePlaybackWindow(entryId) {
+  const cards = Array.from(elements.grid.querySelectorAll(".card"));
+  const currentIndex = cards.findIndex(card => Number(card.dataset.id) === Number(entryId));
+  cards.forEach((card, index) => {
+    card.classList.toggle("scope-previous", currentIndex > 0 && index === currentIndex - 1);
+    card.classList.toggle("scope-current", index === currentIndex);
+    card.classList.toggle("scope-next", currentIndex >= 0 && index === currentIndex + 1);
+  });
+}
+
+function updatePausedVisual(paused) {
+  elements.grid.querySelectorAll(".card.scope-playing").forEach(card => {
+    card.classList.toggle("scope-paused", paused);
+    const label = card.querySelector(".card-playback-label");
+    if (label) label.textContent = paused ? "Paused" : "Now playing";
+  });
+}
+
+function showPreparingVisual(card) {
+  clearPlaybackVisuals();
+  card.classList.add("scope-playing");
+  card.dataset.playbackPhase = "preparing";
+  const label = card.querySelector(".card-playback-label");
+  if (label) label.textContent = "Now playing";
+}
+
+function stopCurrentAudio() {
+  if (!state.currentAudio) return;
+  const audio = state.currentAudio;
+  audio.pause();
+  if (audio._target) {
+    audio._target.classList.remove("playing");
+  }
+  state.currentAudio = null;
+  if (audio._finish) {
+    audio._finish(false);
+  } else if (audio._clearVisual) {
+    audio._clearVisual();
+  }
+}
+
+function playTargetAndWait(target, token) {
+  const src = target && target.dataset.src;
+  if (!src || token !== scopePlaybackToken) return Promise.resolve(false);
+
+  stopCurrentAudio();
+  return new Promise(resolve => {
+    const audio = new Audio(src);
+    let settled = false;
+    audio._target = target;
+    state.currentAudio = audio;
+    target.classList.add("playing");
+    const clearVisual = showPlaybackVisual(target, {retainCard: true});
+    audio._clearVisual = clearVisual;
+
+    const finish = played => {
+      if (settled) return;
+      settled = true;
+      target.classList.remove("playing");
+      clearVisual();
+      if (state.currentAudio === audio) state.currentAudio = null;
+      resolve(played);
+    };
+    audio._finish = finish;
+    audio.addEventListener("ended", () => finish(true), {once: true});
+    audio.addEventListener("error", () => finish(false), {once: true});
+    audio.play().catch(() => finish(false));
+  });
+}
 
 export function wireAudioTarget(target, url, label) {
   target.dataset.src = url || "";
@@ -62,29 +211,52 @@ export function wireCardAudioPrepTarget(target, url, entry, card, label) {
 export function playClip(target) {
   const src = target.dataset.src;
   if (!src) return;
-  if (state.currentAudio) {
-    state.currentAudio.pause();
-    if (state.currentAudio._target) state.currentAudio._target.classList.remove("playing");
+  if (scopePlaybackIsActive()) {
+    // Keyboard activation on card text should follow the same "start here"
+    // rule as clicking the card while the visible queue is active.
+    const cardEntryId = Number(target.closest(".card")?.dataset.id);
+    if (Number.isFinite(cardEntryId)) {
+      playScopeFromEntry(cardEntryId).catch(showError);
+      return;
+    }
+    stopScopePlayback();
   }
+  stopCurrentAudio();
   const audio = new Audio(src);
   audio._target = target;
   target.classList.add("playing");
-  audio.addEventListener("ended", () => target.classList.remove("playing"));
+  const clearVisual = showPlaybackVisual(target);
+  audio._clearVisual = clearVisual;
+  audio.addEventListener("ended", () => {
+    target.classList.remove("playing");
+    clearVisual();
+    if (state.currentAudio === audio) state.currentAudio = null;
+  });
   audio.addEventListener("error", () => {
     target.classList.remove("playing");
+    clearVisual();
+    if (state.currentAudio === audio) state.currentAudio = null;
     setBanner(`Audio not found: ${src}`);
   });
-  audio.play().catch(() => target.classList.remove("playing"));
+  audio.play().catch(() => {
+    target.classList.remove("playing");
+    clearVisual();
+    if (state.currentAudio === audio) state.currentAudio = null;
+  });
   state.currentAudio = audio;
 }
 
-export async function ensureCardAudio(entry, card) {
+export async function ensureCardAudio(entry, card, options = {}) {
+  const {announce = true, download = true} = options;
   const key = `${entry.entry_id}:card`;
   if (state.generatingAudioKeys.has(key)) return;
   state.generatingAudioKeys.add(key);
   card.classList.add("generating-audio");
   card.setAttribute("aria-busy", "true");
   try {
+    const wordTarget = card.querySelector(".card-kanji");
+    const sentenceTarget = card.querySelector(".main-sentence-row") || card.querySelector(".card-sentence");
+    const sentencePosition = Number(sentenceTarget?.dataset.position || 0);
     const [wordPayload, sentencePayload] = await Promise.all([
       entry.word_audio_url
         ? Promise.resolve({audio_url: entry.word_audio_url})
@@ -93,29 +265,269 @@ export async function ensureCardAudio(entry, card) {
         ? (
             entry.sentence_audio_url
               ? Promise.resolve({audio_url: entry.sentence_audio_url})
-              : generateExampleAudio(entry.entry_id, 0)
+              : generateExampleAudio(entry.entry_id, sentencePosition)
           )
         : Promise.resolve(null),
     ]);
     entry.word_audio_url = wordPayload.audio_url;
     if (sentencePayload) entry.sentence_audio_url = sentencePayload.audio_url;
-    await Promise.all(
-      [entry.word_audio_url, entry.sentence_audio_url]
-        .filter(Boolean)
-        .map(downloadAudio)
-    );
-    const wordTarget = card.querySelector(".card-kanji");
-    const sentenceTarget = card.querySelector(".main-sentence-row") || card.querySelector(".card-sentence");
+    if (download) {
+      await Promise.all(
+        [entry.word_audio_url, entry.sentence_audio_url]
+          .filter(Boolean)
+          .map(downloadAudio)
+      );
+    }
     wireAudioTarget(wordTarget, entry.word_audio_url, "Play word audio");
     if (sentenceTarget) wireAudioTarget(sentenceTarget, entry.sentence_audio_url, "Play sentence audio");
     wireCardAudioPrepTarget(wordTarget, entry.word_audio_url, entry, card, "Generate word and sentence audio");
     if (sentenceTarget) wireCardAudioPrepTarget(sentenceTarget, entry.sentence_audio_url, entry, card, "Generate word and sentence audio");
-    setBanner("Word and sentence audio are ready.");
+    if (announce) setBanner("Word and sentence audio are ready.");
   } finally {
     state.generatingAudioKeys.delete(key);
     card.classList.remove("generating-audio");
     card.removeAttribute("aria-busy");
   }
+}
+
+export function updateScopePlaybackButton() {
+  const hasEntries = state.view === "cards" && state.currentEntries.length > 0 && !state.entriesLoading;
+  const status = state.scopePlaybackStatus;
+  const active = status !== "idle";
+  const paused = status === "paused";
+  const currentEntry = state.currentEntries.find(entry => entry.entry_id === state.scopePlaybackEntryId);
+  elements.scopePlayButton.disabled = !hasEntries;
+  elements.scopePlayButton.classList.toggle("playing", status === "playing");
+  elements.scopePlayButton.classList.toggle("paused", paused);
+  elements.scopePlayButton.setAttribute("aria-pressed", active ? "true" : "false");
+  elements.scopePlayButton.textContent = status === "playing"
+      ? `pause · ${state.scopePlaybackPosition}/${state.scopePlaybackTotal}`
+      : paused
+        ? `resume · ${state.scopePlaybackPosition}/${state.scopePlaybackTotal}`
+        : "play visible";
+  elements.scopePlayButton.title = !hasEntries
+    ? "No visible vocabulary cards to play"
+    : status === "playing"
+        ? "Pause immediately"
+        : paused
+          ? "Resume from the same audio position"
+        : "Play each visible word followed by its main example sentence";
+  elements.grid.classList.toggle("scope-playback-active", active);
+  elements.grid.classList.toggle("scope-playback-paused", paused);
+
+  elements.playbackDock.hidden = state.view !== "cards";
+  elements.playbackDock.classList.toggle("active", active);
+  elements.playbackDock.classList.toggle("paused", paused);
+  elements.playbackNowLabel.textContent = state.entriesLoading
+    ? "Loading your list"
+    : paused
+      ? "Paused"
+      : active
+        ? `Playing ${state.scopePlaybackPhase}`
+        : "Ready to play";
+  elements.playbackNowDetail.textContent = state.entriesLoading
+    ? "Playback will be ready when the visible list finishes loading."
+    : currentEntry
+      ? `${currentEntry.kanji} · ${state.scopePlaybackPosition} of ${state.scopePlaybackTotal}`
+      : "Your visible list will move forward automatically.";
+  elements.scopePlaybackCount.textContent = active
+    ? `${state.scopePlaybackPosition} / ${state.scopePlaybackTotal}`
+    : `0 / ${state.currentEntries.length}`;
+
+  elements.scopeReplayButton.disabled = !active;
+  elements.scopeReplayButton.querySelector("span").textContent = "Replay now";
+  elements.scopePreviousButton.disabled = !active || state.scopePlaybackPosition <= 1;
+  elements.scopeNextButton.disabled = !active;
+  elements.scopeStopButton.disabled = !active;
+  elements.scopePauseButton.disabled = !hasEntries;
+  elements.scopePauseButton.querySelector("span").textContent = paused
+      ? "Resume"
+      : active
+        ? "Pause"
+        : "Start";
+}
+
+export function stopScopePlayback(options = {}) {
+  const {announce = false} = options;
+  scopePlaybackToken += 1;
+  settleScopeResumeWaiters(undefined, false);
+  const wasActive = scopePlaybackIsActive();
+  state.scopePlaybackStatus = "idle";
+  state.scopePlaybackPosition = 0;
+  state.scopePlaybackTotal = 0;
+  state.scopePlaybackEntryId = null;
+  state.scopePlaybackPhase = "idle";
+  stopCurrentAudio();
+  clearPlaybackVisuals();
+  clearScopePlaybackWindow();
+  updateScopePlaybackButton();
+  if (announce && wasActive) setBanner("Visible audio playback stopped.");
+}
+
+async function resumeScopePlayback() {
+  if (state.scopePlaybackStatus !== "paused") return;
+  state.scopePlaybackStatus = "playing";
+  updatePausedVisual(false);
+  updateScopePlaybackButton();
+  if (state.currentAudio) {
+    try {
+      await state.currentAudio.play();
+    } catch (error) {
+      showError(error);
+      return;
+    }
+  }
+  settleScopeResumeWaiters(scopePlaybackToken, true);
+
+  setBanner(`Playing ${state.scopePlaybackPosition} of ${state.scopePlaybackTotal}.`);
+}
+
+function pauseScopePlaybackImmediately() {
+  if (state.scopePlaybackStatus !== "playing") return;
+  state.scopePlaybackStatus = "paused";
+  if (state.currentAudio) state.currentAudio.pause();
+  updatePausedVisual(true);
+  updateScopePlaybackButton();
+  setBanner(`Paused ${state.scopePlaybackPosition} of ${state.scopePlaybackTotal}.`);
+}
+
+async function playEntryCycle(card, token) {
+  const wordTarget = card.querySelector(".card-kanji");
+  const sentenceTarget = card.querySelector(".main-sentence-row");
+  let clipsPlayed = 0;
+
+  state.scopePlaybackPhase = "word";
+  updateScopePlaybackButton();
+  if (await playTargetAndWait(wordTarget, token)) clipsPlayed += 1;
+  if (!await waitForScopeResume(token)) return {completed: false, clipsPlayed};
+
+  state.scopePlaybackPhase = sentenceTarget?.dataset.src ? "sentence" : "card";
+  updateScopePlaybackButton();
+  if (await playTargetAndWait(sentenceTarget, token)) clipsPlayed += 1;
+  return {completed: token === scopePlaybackToken, clipsPlayed};
+}
+
+async function startScopePlayback(startIndex = 0) {
+  if (state.entriesLoading) {
+    setBanner("The visible list is still loading. Playback will be ready in a moment.");
+    return;
+  }
+  // Snapshot the filtered list. If the learner changes scope, loadEntries()
+  // stops this run before replacing the cards, so the queue never leaks into
+  // a different book, section, mark state, or search result.
+  const entries = [...state.currentEntries];
+  if (!entries.length || startIndex < 0 || startIndex >= entries.length) return;
+
+  // Invalidating the previous token lets an old queue unwind safely after its
+  // current clip or lazy audio-generation request settles.
+  const token = scopePlaybackToken + 1;
+  scopePlaybackToken = token;
+  settleScopeResumeWaiters(undefined, false);
+  stopCurrentAudio();
+  clearPlaybackVisuals();
+  state.scopePlaybackStatus = "playing";
+  state.scopePlaybackPosition = startIndex + 1;
+  state.scopePlaybackTotal = entries.length;
+  state.scopePlaybackEntryId = entries[startIndex].entry_id;
+  state.scopePlaybackPhase = "preparing";
+  updateScopePlaybackButton();
+
+  let clipsPlayed = 0;
+  let cardsVisited = 0;
+  for (let index = startIndex; index < entries.length; index += 1) {
+    if (token !== scopePlaybackToken) return;
+    const entry = entries[index];
+    const card = elements.grid.querySelector(`.card[data-id="${entry.entry_id}"]`);
+    if (!card) continue;
+
+    state.scopePlaybackPosition = index + 1;
+    state.scopePlaybackEntryId = entry.entry_id;
+    state.scopePlaybackPhase = "preparing";
+    cardsVisited += 1;
+    setScopePlaybackWindow(entry.entry_id);
+    showPreparingVisual(card);
+    updateScopePlaybackButton();
+    setBanner(`Playing ${index + 1} of ${entries.length}: ${entry.kanji}`);
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const bounds = card.getBoundingClientRect();
+    const toolbarBottom = elements.scopePlayButton.closest(".controls")?.getBoundingClientRect().bottom || 0;
+    const dockTop = elements.playbackDock.getBoundingClientRect().top || window.innerHeight;
+    const visibleBottom = Math.min(window.innerHeight, dockTop);
+    const availableTop = toolbarBottom + 12;
+    const availableBottom = visibleBottom - 12;
+    const centeredTop = availableTop + Math.max(0, (availableBottom - availableTop - bounds.height) / 2);
+    const nextScrollTop = Math.max(0, window.scrollY + bounds.top - centeredTop);
+    if (Math.abs(nextScrollTop - window.scrollY) > 1) {
+      window.scrollTo({
+        top: nextScrollTop,
+        left: 0,
+        behavior: reducedMotion ? "auto" : "smooth",
+      });
+    }
+
+    if (!entry.word_audio_url || (entry.sentence && !entry.sentence_audio_url)) {
+      try {
+        await ensureCardAudio(entry, card, {announce: false, download: false});
+      } catch (error) {
+        console.error(`Could not prepare audio for entry ${entry.entry_id}`, error);
+      }
+    }
+    if (!await waitForScopeResume(token)) return;
+
+    const firstCycle = await playEntryCycle(card, token);
+    clipsPlayed += firstCycle.clipsPlayed;
+    if (!firstCycle.completed) return;
+
+    clearPlaybackVisuals();
+  }
+
+  if (token !== scopePlaybackToken) return;
+  state.scopePlaybackStatus = "idle";
+  state.scopePlaybackPosition = 0;
+  state.scopePlaybackTotal = 0;
+  state.scopePlaybackEntryId = null;
+  state.scopePlaybackPhase = "idle";
+  clearScopePlaybackWindow();
+  updateScopePlaybackButton();
+  setBanner(`Finished ${cardsVisited} visible words (${clipsPlayed} audio clips).`);
+}
+
+export async function playScopeFromEntry(entryId) {
+  const index = state.currentEntries.findIndex(entry => entry.entry_id === entryId);
+  if (index < 0) return;
+  await startScopePlayback(index);
+}
+
+export async function toggleScopePlayback() {
+  if (state.scopePlaybackStatus === "playing") {
+    pauseScopePlaybackImmediately();
+    return;
+  }
+  if (state.scopePlaybackStatus === "paused") {
+    await resumeScopePlayback();
+    return;
+  }
+  await startScopePlayback(0);
+}
+
+export async function replayScopeImmediately() {
+  if (!scopePlaybackIsActive() || !state.scopePlaybackEntryId) return false;
+  const currentIndex = Math.max(0, state.scopePlaybackPosition - 1);
+  setBanner("Replaying the current card now.");
+  await startScopePlayback(currentIndex);
+  return true;
+}
+
+export async function moveScopePlayback(offset) {
+  if (!scopePlaybackIsActive() || !Number.isFinite(offset) || offset === 0) return;
+  const currentIndex = Math.max(0, state.scopePlaybackPosition - 1);
+  const nextIndex = currentIndex + Math.sign(offset);
+  if (nextIndex >= state.currentEntries.length) {
+    stopScopePlayback();
+    setBanner("Finished the visible list.");
+    return;
+  }
+  await startScopePlayback(Math.max(0, nextIndex));
 }
 
 export async function downloadAudio(url) {
