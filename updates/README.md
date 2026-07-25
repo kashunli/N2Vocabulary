@@ -6,6 +6,7 @@ Naming: `YYYY-MM-DD_short-slug.md`.
 
 ## Index
 
+- [2026-07-06 - GWB language-origin display cleanup](2026-07-06_gwb-language-origin-display.md) - moved language-origin notes like `法 jupon` out of the display headword and restored Japanese katakana as the GWB_N2 learner-facing word.
 - [2026-06-28 - All-book Anki exports](2026-06-28_anki-all-books-export.md) - rebuilt every book's word-card APKG and fixed kana-only Green Word Book rows that otherwise produced notes without cards.
 - [2026-06-25 - N2_1500 related forms as examples](2026-06-25_n2-1500-related-forms-examples.md) - moved related forms out of explanations into categorized `entry_examples` rows with preserved readings.
 - [2026-06-25 - N2_1500 English meanings](2026-06-25_n2-1500-english-meanings.md) - populated English word meanings for the imported N2_1500 book.

@@ -1,5 +1,5 @@
 import { fetchBooks, fetchEntries, fetchStarredSentences, fetchSummary, fetchUnits } from "./api.js";
-import { exportFlaggedAudio, moveScopePlayback, replayScopeImmediately, stopScopePlayback, toggleScopePlayback, updateScopePlaybackButton } from "./audio.js";
+import { exportFlaggedAudio, moveScopePlayback, replayScopeImmediately, resumeScopePlaybackFromSavedState, stopScopePlayback, toggleScopePlayback, updateScopePlaybackButton } from "./audio.js";
 import { configureCards, renderCards, toggleCurrentPlaybackMark } from "./cards.js";
 import { closeDetail, configureDetail, openDetail } from "./detail.js";
 import { escapeHTML, exampleKey, unitLabel } from "./format.js";
@@ -8,6 +8,7 @@ import {
   elements,
   restoreSavedViewState,
   restoreScrollPosition,
+  savePlaybackState,
   saveViewState,
   scheduleScrollSave,
   showError,
@@ -168,6 +169,7 @@ async function showCardView() {
   elements.starredViewButton.classList.remove("active");
   elements.starredViewButton.setAttribute("aria-pressed", "false");
   await loadEntries();
+  await resumeScopePlaybackFromSavedState(state.currentEntries);
 }
 
 async function showStarredView(options = {}) {
@@ -300,7 +302,10 @@ function wireControls() {
     }
   }, {capture: true});
   window.addEventListener("scroll", scheduleScrollSave, {passive: true});
-  window.addEventListener("beforeunload", () => saveViewState());
+  window.addEventListener("beforeunload", () => {
+    saveViewState();
+    savePlaybackState();
+  });
 }
 
 function configureModules() {

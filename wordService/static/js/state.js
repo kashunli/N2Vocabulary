@@ -75,6 +75,44 @@ export const state = {
 };
 
 const VIEW_STATE_STORAGE_KEY = "n2-word-service:view-state:v1";
+const PLAYBACK_STATE_KEY = "n2-word-service:playback-state:v1";
+
+export function savePlaybackState() {
+  if (state.scopePlaybackStatus === "idle") {
+    clearSavedPlaybackState();
+    return;
+  }
+  const payload = {
+    scopePlaybackStatus: state.scopePlaybackStatus,
+    scopePlaybackPosition: state.scopePlaybackPosition,
+    scopePlaybackTotal: state.scopePlaybackTotal,
+    scopePlaybackEntryId: state.scopePlaybackEntryId,
+    scopePlaybackPhase: state.scopePlaybackPhase,
+    audioCurrentTime: state.currentAudio ? state.currentAudio.currentTime : null,
+  };
+  try {
+    window.localStorage.setItem(PLAYBACK_STATE_KEY, JSON.stringify(payload));
+  } catch (error) {
+    console.warn("Could not save playback state", error);
+  }
+}
+
+export function readSavedPlaybackState() {
+  try {
+    const raw = window.localStorage.getItem(PLAYBACK_STATE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function clearSavedPlaybackState() {
+  try {
+    window.localStorage.removeItem(PLAYBACK_STATE_KEY);
+  } catch (error) {
+    console.warn("Could not clear playback state", error);
+  }
+}
 
 function readSavedViewState() {
   try {

@@ -1,6 +1,6 @@
 import { generateEntryAudio, generateExampleAudio, exportUnitFlaggedAudio } from "./api.js";
 import { unitLabel } from "./format.js";
-import { elements, state, setBanner, showError, updateAudioExportButton } from "./state.js";
+import { clearSavedPlaybackState, elements, readSavedPlaybackState, savePlaybackState, setBanner, showError, state, updateAudioExportButton } from "./state.js";
 
 let scopePlaybackToken = 0;
 let scopeResumeWaiters = [];
@@ -361,25 +361,30 @@ export function stopScopePlayback(options = {}) {
   clearPlaybackVisuals();
   clearScopePlaybackWindow();
   updateScopePlaybackButton();
+  clearSavedPlaybackState();
   if (announce && wasActive) setBanner("Visible audio playback stopped.");
 }
 
 async function resumeScopePlayback() {
   if (state.scopePlaybackStatus !== "paused") return;
-  state.scopePlaybackStatus = "playing";
-  updatePausedVisual(false);
-  updateScopePlaybackButton();
   if (state.currentAudio) {
+    state.scopePlaybackStatus = "playing";
+    updatePausedVisual(false);
+    updateScopePlaybackButton();
     try {
       await state.currentAudio.play();
     } catch (error) {
       showError(error);
       return;
     }
+    settleScopeResumeWaiters(scopePlaybackToken, true);
+    setBanner(`Playing ${state.scopePlaybackPosition} of ${state.scopePlaybackTotal}.`);
+    return;
   }
-  settleScopeResumeWaiters(scopePlaybackToken, true);
-
-  setBanner(`Playing ${state.scopePlaybackPosition} of ${state.scopePlaybackTotal}.`);
+  // If the Audio object is gone (e.g. after a page reload), start fresh from
+  // the saved position.
+  const startIndex = Math.max(0, state.scopePlaybackPosition - 1);
+  await startScopePlayback(startIndex);
 }
 
 function pauseScopePlaybackImmediately() {
@@ -388,6 +393,7 @@ function pauseScopePlaybackImmediately() {
   if (state.currentAudio) state.currentAudio.pause();
   updatePausedVisual(true);
   updateScopePlaybackButton();
+  savePlaybackState();
   setBanner(`Paused ${state.scopePlaybackPosition} of ${state.scopePlaybackTotal}.`);
 }
 
@@ -398,11 +404,13 @@ async function playEntryCycle(card, token) {
 
   state.scopePlaybackPhase = "word";
   updateScopePlaybackButton();
+  savePlaybackState();
   if (await playTargetAndWait(wordTarget, token)) clipsPlayed += 1;
   if (!await waitForScopeResume(token)) return {completed: false, clipsPlayed};
 
   state.scopePlaybackPhase = sentenceTarget?.dataset.src ? "sentence" : "card";
   updateScopePlaybackButton();
+  savePlaybackState();
   if (await playTargetAndWait(sentenceTarget, token)) clipsPlayed += 1;
   return {completed: token === scopePlaybackToken, clipsPlayed};
 }
@@ -447,6 +455,7 @@ async function startScopePlayback(startIndex = 0) {
     setScopePlaybackWindow(entry.entry_id);
     showPreparingVisual(card);
     updateScopePlaybackButton();
+    savePlaybackState();
     setBanner(`Playing ${index + 1} of ${entries.length}: ${entry.kanji}`);
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const bounds = card.getBoundingClientRect();
@@ -489,6 +498,7 @@ async function startScopePlayback(startIndex = 0) {
   state.scopePlaybackPhase = "idle";
   clearScopePlaybackWindow();
   updateScopePlaybackButton();
+  clearSavedPlaybackState();
   setBanner(`Finished ${cardsVisited} visible words (${clipsPlayed} audio clips).`);
 }
 
@@ -534,6 +544,45 @@ export async function downloadAudio(url) {
   const response = await fetch(url);
   if (!response.ok) throw new Error(`Could not download audio (${response.status})`);
   await response.arrayBuffer();
+}
+
+export async function resumeScopePlaybackFromSavedState(entries) {
+  const saved = readSavedPlaybackState();
+  if (!saved || saved.scopePlaybackStatus === "idle") return false;
+  if (!entries.length) return false;
+
+  const entryIndex = entries.findIndex(
+    entry => entry.entry_id === saved.scopePlaybackEntryId
+  );
+  if (entryIndex < 0) {
+    clearSavedPlaybackState();
+    return false;
+  }
+
+  // Restore the paused state so the UI shows playback dock controls.
+  state.scopePlaybackStatus = "paused";
+  state.scopePlaybackPosition = saved.scopePlaybackPosition || entryIndex + 1;
+  state.scopePlaybackTotal = saved.scopePlaybackTotal || entries.length;
+  state.scopePlaybackEntryId = saved.scopePlaybackEntryId;
+  state.scopePlaybackPhase = saved.scopePlaybackPhase || "idle";
+
+  // Show the card at the saved position as the current scope card.
+  const card = elements.grid.querySelector(
+    `.card[data-id="${saved.scopePlaybackEntryId}"]`
+  );
+  if (card) {
+    const phase = saved.scopePlaybackPhase;
+    card.classList.add("scope-playing", "scope-paused");
+    card.dataset.playbackPhase = phase;
+    const progress = card.querySelector(".card-playback-progress");
+    if (progress) progress.value = phase === "word" ? 1 : phase === "sentence" ? 2 : 0;
+    const label = card.querySelector(".card-playback-label");
+    if (label) label.textContent = "Paused";
+    setScopePlaybackWindow(saved.scopePlaybackEntryId);
+  }
+
+  updateScopePlaybackButton();
+  return true;
 }
 
 export async function exportFlaggedAudio() {
