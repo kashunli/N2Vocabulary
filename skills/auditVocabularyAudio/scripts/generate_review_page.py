@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 from typing import Any
 
@@ -29,6 +30,11 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def comparable_text(value: Any) -> str:
+    """Normalize formatting noise before deciding whether a suggestion changes text."""
+    return re.sub(r"[\s、。！？!?「」『』（）()［］\[\]・…〜～,./]", "", str(value or ""))
+
+
 def prepare_rows(rows: list[dict[str, Any]], output_path: Path) -> list[dict[str, Any]]:
     prepared: list[dict[str, Any]] = []
     for source in rows:
@@ -36,6 +42,9 @@ def prepare_rows(rows: list[dict[str, Any]], output_path: Path) -> list[dict[str
         audio_path = ROOT / str(row.get("audio_clip", "")).replace("/", os.sep)
         row["audio_url"] = os.path.relpath(audio_path, output_path.parent).replace(os.sep, "/")
         row["suggested_text"] = row.get("raw_line") or row.get("transcript") or row.get("expected", "")
+        row["has_text_replacement"] = comparable_text(row["suggested_text"]) != comparable_text(
+            row.get("expected", "")
+        )
         prepared.append(row)
     return prepared
 
@@ -171,6 +180,7 @@ def build_review_html(
     .accept {{ border-color: var(--good); color: var(--good); background: var(--good-soft); }}
     .keep {{ border-color: var(--keep); color: var(--keep); background: var(--keep-soft); }}
     .save-custom {{ border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }}
+    .audio-problem {{ border-color: var(--warn); color: var(--warn); background: var(--warn-soft); }}
     .decision-state {{ margin-top: 12px; min-height: 24px; color: var(--muted); font-weight: 700; }}
     .nav {{ justify-content: space-between; margin-top: 14px; }}
     .nav button {{ min-width: 130px; }}
@@ -224,6 +234,7 @@ def build_review_html(
         <option value="replace">Accepted replacement</option>
         <option value="keep">Kept original</option>
         <option value="custom">Custom text</option>
+        <option value="audio_problem">Audio problem</option>
       </select>
       <select id="unitFilter" aria-label="Unit"><option value="all">All units</option></select>
     </section>
@@ -248,7 +259,7 @@ def build_review_html(
             <div class="jp" id="originalText"></div>
           </div>
           <div class="text-box suggested">
-            <span class="label">Suggested replacement</span>
+            <span class="label" id="suggestionLabel">Suggested replacement</span>
             <div class="jp" id="suggestedText"></div>
           </div>
         </div>
@@ -266,6 +277,7 @@ def build_review_html(
         <div class="decision-buttons">
           <button class="accept" id="acceptButton">✓ Accept replacement</button>
           <button class="keep" id="keepButton">Keep original</button>
+          <button class="audio-problem" id="audioProblemButton">Audio problem</button>
           <button class="save-custom" id="customButton">Save custom text</button>
         </div>
         <div class="decision-state" id="decisionState" aria-live="polite"></div>
@@ -276,14 +288,14 @@ def build_review_html(
       <button id="previousButton">← Previous</button>
       <button id="nextButton">Next →</button>
     </div>
-    <p class="shortcuts"><kbd>Space</kbd> play · <kbd>A</kbd> accept · <kbd>K</kbd> keep · <kbd>C</kbd> custom · <kbd>←</kbd>/<kbd>→</kbd> navigate</p>
+    <p class="shortcuts"><kbd>Space</kbd> play · <kbd>A</kbd> accept · <kbd>K</kbd> keep · <kbd>P</kbd> audio problem · <kbd>C</kbd> custom · <kbd>←</kbd>/<kbd>→</kbd> navigate</p>
   </main>
 
   <script>
     const ITEMS = {payload};
     const SOURCE_SHA256 = "{source_sha256}";
     const STORAGE_KEY = "n2VocabularyAudioReview:v1:" + SOURCE_SHA256.slice(0, 12);
-    const DECISION_LABELS = {{ replace: "Accepted replacement", keep: "Kept original", custom: "Custom replacement" }};
+    const DECISION_LABELS = {{ replace: "Accepted replacement", keep: "Kept original", custom: "Custom replacement", audio_problem: "Audio problem" }};
     let decisions = loadDecisions();
     let visibleItems = [];
     let cursor = 0;
@@ -292,8 +304,8 @@ def build_review_html(
     const elements = Object.fromEntries([
       "counts","position","progressBar","classificationFilter","decisionFilter","unitFilter",
       "card","indexLabel","unitLabel","classificationChip","scoreLabel","headword","audio",
-      "playButton","originalText","suggestedText","asrText","rawText","evidenceText","customText",
-      "reviewNote","acceptButton","keepButton","customButton","decisionState","previousButton","nextButton",
+      "playButton","originalText","suggestionLabel","suggestedText","asrText","rawText","evidenceText","customText",
+      "reviewNote","acceptButton","keepButton","audioProblemButton","customButton","decisionState","previousButton","nextButton",
       "emptyState"
     ].map(id => [id, $(id)]));
 
@@ -327,7 +339,7 @@ def build_review_html(
         if (unit !== "all" && String(item.unit) !== unit) return false;
         if (decisionFilter === "pending" && decision) return false;
         if (decisionFilter === "decided" && !decision) return false;
-        if (["replace","keep","custom"].includes(decisionFilter) && decision?.decision !== decisionFilter) return false;
+        if (["replace","keep","custom","audio_problem"].includes(decisionFilter) && decision?.decision !== decisionFilter) return false;
         return true;
       }});
       cursor = Math.max(0, visibleItems.findIndex(item => keyFor(item) === priorKey));
@@ -360,6 +372,9 @@ def build_review_html(
       elements.originalText.textContent = item.expected;
       elements.suggestedText.textContent = item.suggested_text;
       elements.asrText.textContent = item.transcript;
+      elements.suggestionLabel.textContent = item.has_text_replacement ? "Suggested replacement" : "No text change suggested";
+      elements.acceptButton.disabled = !item.has_text_replacement;
+      elements.acceptButton.title = item.has_text_replacement ? "" : "The suggestion is equivalent to the original.";
       elements.rawText.textContent = item.raw_line || "No raw OCR block extracted";
       elements.evidenceText.textContent = `ASR/raw ${{item.asr_vs_raw}} · DB/raw ${{item.db_vs_raw}} · margin ${{item.evidence_margin}} · ${{item.raw_page}}`;
       elements.audio.src = item.audio_url;
@@ -410,6 +425,7 @@ def build_review_html(
     elements.playButton.addEventListener("click", playCurrent);
     elements.acceptButton.addEventListener("click", () => {{ const item=currentItem(); if(item) decide("replace", item.suggested_text); }});
     elements.keepButton.addEventListener("click", () => {{ const item=currentItem(); if(item) decide("keep", item.expected); }});
+    elements.audioProblemButton.addEventListener("click", () => {{ const item=currentItem(); if(item) decide("audio_problem", item.expected); }});
     elements.customButton.addEventListener("click", () => {{
       const text = elements.customText.value.trim();
       if (!text) {{ elements.decisionState.textContent = "Enter custom text before saving."; elements.customText.focus(); return; }}
@@ -441,6 +457,7 @@ def build_review_html(
       else if (event.key === "ArrowRight") move(1);
       else if (event.key.toLowerCase() === "a") elements.acceptButton.click();
       else if (event.key.toLowerCase() === "k") elements.keepButton.click();
+      else if (event.key.toLowerCase() === "p") elements.audioProblemButton.click();
       else if (event.key.toLowerCase() === "c") elements.customText.focus();
     }});
 

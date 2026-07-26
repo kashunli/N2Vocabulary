@@ -84,6 +84,20 @@ The page never writes to SQLite: accepting a replacement, keeping the original,
 or entering custom text only records a review decision for a later validated
 data-repair step.
 
+Use **Audio problem** when the sentence clip itself is defective, such as a clip
+that begins with the separate vocabulary-word recording. A suggestion equivalent
+to the original is labeled as a no-op and cannot be accepted as a replacement.
+
+Validate an exported human review before treating it as authoritative:
+
+```powershell
+python skills/auditVocabularyAudio/scripts/validate_review_decisions.py C:\path\to\review.json
+```
+
+The validator checks the evidence SHA, schema, unique source indices, canonical
+original text, and audio paths. It normalizes no-op replacements to `keep` and
+can apply confirmed clip defects with repeated `--audio-problem SOURCE_INDEX`.
+
 Do not give Whisper the expected word or sentence as a prompt. That would make
 the comparison circular and could conceal OCR mistakes.
 
@@ -102,6 +116,8 @@ the comparison circular and could conceal OCR mistakes.
   more strongly with each other than with canonical text.
 - `review.html`: offline decision UI with linked audio, persistent browser
   decisions, filters, keyboard shortcuts, and JSON/CSV export.
+- `reviews/vocabulary_audio/n2_all_both.json`: validated human decisions, their
+  evidence signature, normalization record, and any still-undecided source IDs.
 
 Each comparison records surface and phonetic similarity. Phonetic comparison is
 primary because correct speech is often written by ASR with different kanji.

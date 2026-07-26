@@ -37,12 +37,22 @@ class ReviewPageTests(unittest.TestCase):
         html = review.build_review_html(rows, "abc123", output)
         self.assertIn("N2 vocabulary audio review", html)
         self.assertIn("Accept replacement", html)
+        self.assertIn("Audio problem", html)
+        self.assertIn("No text change suggested", html)
         self.assertIn("Keep original", html)
         self.assertIn("Save custom text", html)
         self.assertIn("localStorage", html)
         self.assertIn("../../../clips/sentences/sentence1118.mp3", html)
         self.assertIn("続々（と）", html)
         self.assertIn('id="emptyState"', html)
+
+    def test_noop_suggestion_is_not_offered_as_replacement(self) -> None:
+        output = review.ROOT / "work" / "vocabulary_audio_audit" / "n2_all_both" / "review.html"
+        rows = [{"expected": "志願者が定員をオーバーした。", "raw_line": "志願者が定員をオーバーした"}]
+
+        prepared = review.prepare_rows(rows, output)
+
+        self.assertFalse(prepared[0]["has_text_replacement"])
 
     def test_script_payload_escapes_html_closing_tags(self) -> None:
         payload = review.safe_json_for_script({"text": "</script>"})

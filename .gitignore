@@ -54,6 +54,9 @@ wordService/data/*.sqlite-shm
 wordService/data/*.sqlite-journal
 wordService/data/*.sqlite.backup*
 *.json
+# Human-reviewed audit decisions are authoritative, inspectable project data.
+!reviews/vocabulary_audio/
+!reviews/vocabulary_audio/*.json
 # Backup snapshots and preserved local internals
 *.bk
 *.bak
