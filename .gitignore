@@ -9,6 +9,7 @@ vocabulary.json
 output/vocabulary*.json
 output/explanations/
 output/alignment/
+work/vocabulary_audio_audit/
 wordsAndExerciseInHtml/exercise_json/
 wordsAndExerciseInHtml/words/
 wordsAndExerciseInHtml/exercises/
