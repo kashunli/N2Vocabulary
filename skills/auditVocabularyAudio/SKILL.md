@@ -72,6 +72,18 @@ alone as truth:
 python skills/auditVocabularyAudio/scripts/triage_source_evidence.py
 ```
 
+Generate the offline review page after triage:
+
+```powershell
+python skills/auditVocabularyAudio/scripts/generate_review_page.py
+```
+
+Open `work/vocabulary_audio_audit/n2_all_both/review.html` in a browser. Decisions
+are saved in that browser's local storage and can be exported as JSON or CSV.
+The page never writes to SQLite: accepting a replacement, keeping the original,
+or entering custom text only records a review decision for a later validated
+data-repair step.
+
 Do not give Whisper the expected word or sentence as a prompt. That would make
 the comparison circular and could conceal OCR mistakes.
 
@@ -85,13 +97,15 @@ the comparison circular and could conceal OCR mistakes.
   inspection.
 - `work/vocabulary_audio_audit/<run-label>/report.md`: counts, reproducibility
   settings, and the highest-priority mismatches.
+- `source_evidence.csv`: every reviewed sentence with raw-OCR evidence scores.
+- `source_confirmed.md`: conservative candidates where ASR and raw OCR agree
+  more strongly with each other than with canonical text.
+- `review.html`: offline decision UI with linked audio, persistent browser
+  decisions, filters, keyboard shortcuts, and JSON/CSV export.
 
 Each comparison records surface and phonetic similarity. Phonetic comparison is
 primary because correct speech is often written by ASR with different kanji.
 Sentence review uses a deliberately strict threshold: a single OCR-corrupted
-- `source_evidence.csv`: every reviewed sentence with raw-OCR evidence scores.
-- `source_confirmed.md`: conservative candidates where ASR and raw OCR agree
-  more strongly with each other than with canonical text.
 content word can otherwise disappear inside a long high-scoring sentence.
 
 ## Acceptance
