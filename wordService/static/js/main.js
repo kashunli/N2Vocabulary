@@ -6,6 +6,7 @@ import { escapeHTML, exampleKey, unitLabel } from "./format.js";
 import { configureStarred, renderStarredView } from "./starred.js";
 import {
   elements,
+  readSavedPlaybackState,
   restoreSavedViewState,
   restoreScrollPosition,
   savePlaybackState,
@@ -122,7 +123,7 @@ async function loadEntries() {
   if (!state.units.length) return;
   const loadToken = entriesLoadToken + 1;
   entriesLoadToken = loadToken;
-  stopScopePlayback();
+  stopScopePlayback({clearSaved: false});
   state.entriesLoading = true;
   updateScopePlaybackButton();
   const params = new URLSearchParams({

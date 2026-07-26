@@ -296,21 +296,29 @@ export function updateScopePlaybackButton() {
   const active = status !== "idle";
   const paused = status === "paused";
   const currentEntry = state.currentEntries.find(entry => entry.entry_id === state.scopePlaybackEntryId);
+  const saved = active ? null : readSavedPlaybackState();
+  const hasSaved = saved && saved.scopePlaybackStatus !== "idle" && state.currentEntries.some(
+    entry => entry.entry_id === saved.scopePlaybackEntryId
+  );
   elements.scopePlayButton.disabled = !hasEntries;
   elements.scopePlayButton.classList.toggle("playing", status === "playing");
-  elements.scopePlayButton.classList.toggle("paused", paused);
-  elements.scopePlayButton.setAttribute("aria-pressed", active ? "true" : "false");
+  elements.scopePlayButton.classList.toggle("paused", paused || (!active && hasSaved));
+  elements.scopePlayButton.setAttribute("aria-pressed", (active || hasSaved) ? "true" : "false");
   elements.scopePlayButton.textContent = status === "playing"
       ? `pause · ${state.scopePlaybackPosition}/${state.scopePlaybackTotal}`
       : paused
         ? `resume · ${state.scopePlaybackPosition}/${state.scopePlaybackTotal}`
-        : "play visible";
+        : hasSaved
+          ? `resume · ${saved.scopePlaybackPosition}/${saved.scopePlaybackTotal}`
+          : "play visible";
   elements.scopePlayButton.title = !hasEntries
     ? "No visible vocabulary cards to play"
     : status === "playing"
         ? "Pause immediately"
         : paused
           ? "Resume from the same audio position"
+        : hasSaved
+          ? `Resume from where you left off (card ${saved.scopePlaybackPosition} of ${saved.scopePlaybackTotal})`
         : "Play each visible word followed by its main example sentence";
   elements.grid.classList.toggle("scope-playback-active", active);
   elements.grid.classList.toggle("scope-playback-paused", paused);
@@ -324,15 +332,21 @@ export function updateScopePlaybackButton() {
       ? "Paused"
       : active
         ? `Playing ${state.scopePlaybackPhase}`
-        : "Ready to play";
+        : hasSaved
+          ? "Paused earlier"
+          : "Ready to play";
   elements.playbackNowDetail.textContent = state.entriesLoading
     ? "Playback will be ready when the visible list finishes loading."
     : currentEntry
       ? `${currentEntry.kanji} · ${state.scopePlaybackPosition} of ${state.scopePlaybackTotal}`
-      : "Your visible list will move forward automatically.";
+      : hasSaved
+        ? "Press play to resume where you left off."
+        : "Your visible list will move forward automatically.";
   elements.scopePlaybackCount.textContent = active
     ? `${state.scopePlaybackPosition} / ${state.scopePlaybackTotal}`
-    : `0 / ${state.currentEntries.length}`;
+    : hasSaved
+      ? `${saved.scopePlaybackPosition} / ${saved.scopePlaybackTotal}`
+      : `0 / ${state.currentEntries.length}`;
 
   elements.scopeReplayButton.disabled = !active;
   elements.scopeReplayButton.querySelector("span").textContent = "Replay now";
@@ -348,7 +362,7 @@ export function updateScopePlaybackButton() {
 }
 
 export function stopScopePlayback(options = {}) {
-  const {announce = false} = options;
+  const {announce = false, clearSaved = true} = options;
   scopePlaybackToken += 1;
   settleScopeResumeWaiters(undefined, false);
   const wasActive = scopePlaybackIsActive();
@@ -361,7 +375,7 @@ export function stopScopePlayback(options = {}) {
   clearPlaybackVisuals();
   clearScopePlaybackWindow();
   updateScopePlaybackButton();
-  clearSavedPlaybackState();
+  if (clearSaved) clearSavedPlaybackState();
   if (announce && wasActive) setBanner("Visible audio playback stopped.");
 }
 
@@ -516,6 +530,17 @@ export async function toggleScopePlayback() {
   if (state.scopePlaybackStatus === "paused") {
     await resumeScopePlayback();
     return;
+  }
+  // When idle, check for a saved position and resume from there.
+  const saved = readSavedPlaybackState();
+  if (saved && saved.scopePlaybackStatus !== "idle") {
+    const index = state.currentEntries.findIndex(
+      entry => entry.entry_id === saved.scopePlaybackEntryId
+    );
+    if (index >= 0) {
+      await startScopePlayback(index);
+      return;
+    }
   }
   await startScopePlayback(0);
 }

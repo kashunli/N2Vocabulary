@@ -22,6 +22,12 @@ Goal: optimize the project so a future AI assistant and the user can safely unde
 - Keep comments useful and concrete; avoid comments that only restate a line of code.
 - When using terminal, Linux, or Git commands for the user, briefly explain what each command is for.
 
+## Commit Discipline
+
+- After every bugfix, feature update, or forward step — commit to git with a short, specific message describing what changed and why.
+- Commit messages should name the affected subsystem or file area (e.g. "wordService playback", "cutTwice threshold", "db migration").
+- End each commit message with `Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>`.
+
 ## Local Workflow Shape
 
 - Prefer small, self-contained workflow folders with a `SKILL.md`, nearby scripts, and clear input/output/cache contracts.
