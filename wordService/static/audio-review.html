@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>N2 audio and text review</title>
+  <link rel="stylesheet" href="/audio-review.css">
+</head>
+<body>
+  <header class="review-header">
+    <div>
+      <a class="back-link" href="/">← Study Wall</a>
+      <h1>N2 audio and text review</h1>
+      <p>Review OCR text against human audio. Decisions are saved by wordService.</p>
+    </div>
+    <button id="exportButton" type="button">Export decisions</button>
+  </header>
+
+  <main class="review-shell">
+    <section class="summary" aria-label="Review progress">
+      <div><strong id="counts">Loading…</strong><span id="position">0 / 0</span></div>
+      <div class="progress"><span id="progressBar"></span></div>
+    </section>
+
+    <section class="filters" aria-label="Review filters">
+      <select id="classificationFilter" aria-label="Evidence classification">
+        <option value="all">All evidence</option>
+        <option value="source_confirmed">Source-confirmed</option>
+        <option value="ambiguous">Ambiguous</option>
+        <option value="source_supports_db">Source supports original</option>
+      </select>
+      <select id="decisionFilter" aria-label="Decision status">
+        <option value="pending">Pending first</option>
+        <option value="all">All decisions</option>
+        <option value="decided">Decided only</option>
+        <option value="replace">Accepted replacement</option>
+        <option value="keep">Kept original</option>
+        <option value="custom">Custom text</option>
+        <option value="audio_problem">Audio problem</option>
+      </select>
+      <select id="unitFilter" aria-label="Unit"><option value="all">All units</option></select>
+    </section>
+
+    <article class="review-card" id="reviewCard">
+      <header class="card-header">
+        <div class="eyebrow">
+          <span id="indexLabel"></span><span id="unitLabel"></span>
+          <span class="chip" id="classificationChip"></span><span id="scoreLabel"></span>
+        </div>
+        <h2 id="headword"></h2>
+      </header>
+      <div class="card-content">
+        <div class="audio-row">
+          <button class="play-button" id="playButton" type="button">▶ Play</button>
+          <audio id="audio" controls preload="metadata"></audio>
+        </div>
+        <div class="comparison">
+          <section class="text-box">
+            <span class="label">Current original</span>
+            <div class="japanese" id="originalText"></div>
+          </section>
+          <section class="text-box suggestion">
+            <span class="label" id="suggestionLabel">Suggested replacement</span>
+            <div class="japanese" id="suggestedText"></div>
+          </section>
+        </div>
+        <details>
+          <summary>ASR and OCR evidence</summary>
+          <section class="text-box"><span class="label">ASR transcript</span><div class="japanese" id="asrText"></div></section>
+          <section class="text-box"><span class="label">Raw OCR</span><div class="japanese" id="rawText"></div></section>
+          <section class="text-box"><span class="label">Evidence</span><div id="evidenceText"></div></section>
+        </details>
+        <label class="editor">
+          <span class="label">Proposed canonical text</span>
+          <textarea id="customText" lang="ja"></textarea>
+        </label>
+        <label class="note-editor">
+          <span class="label">Review note</span>
+          <input id="reviewNote" type="text" placeholder="Optional note">
+        </label>
+        <div class="decision-buttons">
+          <button class="accept" id="acceptButton" type="button">✓ Accept replacement</button>
+          <button class="keep" id="keepButton" type="button">Keep original</button>
+          <button class="problem" id="audioProblemButton" type="button">Audio problem</button>
+          <button class="custom" id="customButton" type="button">Save edited text</button>
+          <button class="clear" id="clearButton" type="button">Clear decision</button>
+        </div>
+        <div class="decision-state" id="decisionState" aria-live="polite"></div>
+      </div>
+    </article>
+
+    <div class="empty" id="emptyState" hidden>No entries match the current filters.</div>
+    <nav class="navigation">
+      <button id="previousButton" type="button">← Previous</button>
+      <button id="nextButton" type="button">Next →</button>
+    </nav>
+    <p class="shortcuts"><kbd>Space</kbd> play · <kbd>A</kbd> accept · <kbd>K</kbd> keep · <kbd>P</kbd> audio problem · <kbd>C</kbd> edit · <kbd>←</kbd>/<kbd>→</kbd> navigate</p>
+  </main>
+  <script type="module" src="/audio-review.js"></script>
+</body>
+</html>

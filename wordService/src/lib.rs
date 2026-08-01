@@ -5,6 +5,7 @@
 //! modules makes the repository easier to test because integration tests can
 //! import `repository::WordRepository` directly.
 
+pub mod audio_review;
 pub mod config;
 pub mod http;
 pub mod models;

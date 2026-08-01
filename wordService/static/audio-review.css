@@ -1,0 +1,52 @@
+*,*::before,*::after{box-sizing:border-box}
+:root{--paper:#faf9f6;--ink:#1a1814;--muted:#68645e;--line:#ddd9d0;--accent:#1e3a5f;--good:#20744a;--good-bg:#e2f4e9;--keep:#5a4779;--keep-bg:#eee8f7;--warn:#9a5a00;--warn-bg:#fff1d6}
+body{margin:0;min-height:100vh;background:linear-gradient(145deg,#eef3f4,#faf7f1);color:var(--ink);font:15px/1.5 "Avenir Next","Hiragino Sans","Yu Gothic",sans-serif}
+button,select,textarea,input{font:inherit}
+button{cursor:pointer}
+button:disabled{cursor:not-allowed;opacity:.48}
+.review-header{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start;padding:1.25rem max(1rem,calc((100% - 1040px)/2));background:#fffdfa;border-bottom:1px solid var(--line)}
+.review-header h1{margin:.25rem 0 0;font:600 clamp(1.5rem,3vw,2.1rem)/1.2 "Iowan Old Style","Yu Mincho",serif;color:var(--accent)}
+.review-header p{margin:.35rem 0 0;color:var(--muted)}
+.back-link{color:var(--accent);text-decoration:none;font-weight:700}
+.review-header button,.filters select,.navigation button{border:1px solid var(--line);border-radius:8px;background:white;color:var(--ink);padding:.55rem .75rem}
+.review-shell{width:min(1040px,calc(100% - 2rem));margin:1rem auto 3rem}
+.summary{padding:.85rem 1rem;margin-bottom:.85rem;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.8)}
+.summary>div:first-child{display:flex;justify-content:space-between;gap:1rem}
+.progress{height:7px;margin-top:.7rem;overflow:hidden;border-radius:999px;background:#dde4e7}
+.progress span{display:block;width:0;height:100%;background:var(--accent);transition:width .2s}
+.filters{display:flex;flex-wrap:wrap;gap:.55rem;margin-bottom:.85rem}
+.review-card{overflow:hidden;border:1px solid var(--line);border-radius:18px;background:white;box-shadow:0 14px 40px rgba(30,58,95,.09)}
+.card-header{padding:1.15rem 1.3rem;border-bottom:1px solid var(--line)}
+.eyebrow{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;color:var(--muted);font-size:.88rem}
+.chip{padding:.2rem .55rem;border-radius:999px;background:#edf1f3;font-weight:700}
+.chip.confirmed{background:var(--good-bg);color:var(--good)}
+.chip.ambiguous{background:var(--warn-bg);color:var(--warn)}
+.chip.supports{background:var(--keep-bg);color:var(--keep)}
+h2{margin:.6rem 0 0;font-size:clamp(1.45rem,4vw,2.1rem)}
+.card-content{padding:1.15rem 1.3rem 1.35rem}
+.audio-row{display:grid;grid-template-columns:auto 1fr;gap:.75rem;align-items:center;margin-bottom:1rem}
+.play-button{min-width:90px;border:1px solid var(--accent);border-radius:8px;background:var(--accent);color:white;padding:.55rem .75rem;font-weight:800}
+audio{width:100%;min-width:0}
+.comparison{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.text-box{padding:.85rem .95rem;border:1px solid var(--line);border-radius:12px;background:#fbfcfd}
+.text-box.suggestion{border-color:#9dccd5;background:#f0fafb}
+.label{display:block;margin-bottom:.35rem;color:var(--muted);font-size:.75rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.japanese{font-size:1.12rem;line-height:1.7;overflow-wrap:anywhere}
+details{margin-top:.8rem;color:var(--muted)}
+details .text-box{margin-top:.65rem;color:var(--ink)}
+.editor,.note-editor{display:block;margin-top:1rem}
+textarea,input{width:100%;border:1px solid var(--line);border-radius:9px;background:white;padding:.7rem .75rem;color:var(--ink)}
+textarea{min-height:92px;resize:vertical;line-height:1.55}
+.decision-buttons{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.85rem}
+.decision-buttons button{flex:1 1 160px;border:1px solid var(--line);border-radius:8px;background:white;padding:.55rem .7rem;font-weight:750}
+.accept{border-color:var(--good)!important;color:var(--good);background:var(--good-bg)!important}
+.keep{border-color:var(--keep)!important;color:var(--keep);background:var(--keep-bg)!important}
+.problem{border-color:var(--warn)!important;color:var(--warn);background:var(--warn-bg)!important}
+.custom{border-color:var(--accent)!important;color:var(--accent)}
+.clear{color:var(--muted)}
+.decision-state{min-height:1.5rem;margin-top:.7rem;color:var(--muted);font-weight:700}
+.navigation{display:flex;justify-content:space-between;margin-top:.8rem}
+.empty{padding:3.5rem 1rem;text-align:center;color:var(--muted)}
+.shortcuts{text-align:center;color:var(--muted);font-size:.84rem}
+kbd{padding:.08rem .35rem;border:1px solid var(--line);border-radius:4px;background:white}
+@media(max-width:700px){.review-header{display:block}.review-header button{margin-top:.75rem}.comparison{grid-template-columns:1fr}.audio-row{display:block}audio{margin-top:.6rem}.review-shell{width:min(100% - 1rem,1040px)}}

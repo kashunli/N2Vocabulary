@@ -2,7 +2,7 @@
   "version": 1,
   "source_sha256": "f878b387e3a188d7adb2e33246e707b44048ae1ce63b972333326b21e0d85b30",
   "exported_at": "2026-07-26T07:16:43.197Z",
-  "validated_at": "2026-07-26T07:24:11.657275Z",
+  "validated_at": "2026-07-26T07:50:43.928987Z",
   "decisions": [
     {
       "source_index": 233,
@@ -13,7 +13,7 @@
       "replacement_text": "借金を返すには、休日も働くよりほかにしかたない。",
       "audio_clip": "clips/sentences/sentence233.mp3",
       "note": "Sentence clip contains the vocabulary-word audio before the example sentence.",
-      "updated_at": "2026-07-26T07:24:11.657275Z"
+      "updated_at": "2026-07-26T07:50:43.928987Z"
     },
     {
       "source_index": 318,
@@ -112,7 +112,7 @@
       "replacement_text": "道が込んでいるかと思ったら、わりにすいていた。",
       "audio_clip": "clips/sentences/sentence514.mp3",
       "note": "Sentence clip contains the vocabulary-word audio before the example sentence.",
-      "updated_at": "2026-07-26T07:24:11.657275Z"
+      "updated_at": "2026-07-26T07:50:43.928987Z"
     },
     {
       "source_index": 521,
@@ -662,7 +662,7 @@
       "replacement_text": "三日前に出した手紙がいまだに着かないのはおかしい。",
       "audio_clip": "clips/sentences/sentence1147.mp3",
       "note": "Normalized from a no-op replacement.",
-      "updated_at": "2026-07-26T07:24:11.657275Z"
+      "updated_at": "2026-07-26T07:50:43.928987Z"
     },
     {
       "source_index": 1148,
@@ -684,7 +684,7 @@
       "replacement_text": "大丈夫だとは思うが、万一失敗したらどうしよう。",
       "audio_clip": "clips/sentences/sentence1150.mp3",
       "note": "Sentence clip contains the vocabulary-word audio before the example sentence.",
-      "updated_at": "2026-07-26T07:24:11.657275Z"
+      "updated_at": "2026-07-26T07:50:43.928987Z"
     },
     {
       "source_index": 1154,

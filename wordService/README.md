@@ -10,6 +10,8 @@ workflow decisions unless the user explicitly asks to inspect history.
 The code is intentionally split into a few small learning-oriented modules:
 
 - `src/config.rs` reads runtime paths and environment variables.
+- `src/audio_review.rs` owns the signed audio/text review queue and its
+  separate SQLite decision store.
 - `src/repository.rs` is the SQLite boundary and contains most business logic.
 - `src/http.rs` is the tiny HTTP server and route table.
 - `src/models.rs` contains JSON response structs.
@@ -25,6 +27,10 @@ The code is intentionally split into a few small learning-oriented modules:
 - Frontend assets: `static/`
 - Study marks: `item_marks` table in the same SQLite DB
 - Generated sentence audio: `../clips/generated_sentences/edge_tts/`
+- Review candidates: `../reviews/vocabulary_audio/n2_all_both_candidates.json`
+- Seeded human decisions: `../reviews/vocabulary_audio/n2_all_both.json`
+- Live review decisions: `data/audio_reviews.sqlite` (separate from the
+  canonical vocabulary database)
 
 ## Vocabulary Data Flow
 
@@ -94,6 +100,7 @@ Then open:
 
 ```text
 http://127.0.0.1:8767/
+http://127.0.0.1:8767/audio-review.html
 ```
 
 Optional environment variables:
@@ -107,6 +114,9 @@ Optional environment variables:
 - `N2_WORD_SERVICE_TTS_VOICE` defaults to `ja-JP-KeitaNeural`
 - `N2_WORD_SERVICE_TTS_RATE` defaults to `-10%`
 - `N2_WORD_SERVICE_TTS_DIR` defaults to `clips/generated_sentences/edge_tts`
+- `N2_WORD_SERVICE_REVIEW_DB`
+- `N2_WORD_SERVICE_REVIEW_EVIDENCE`
+- `N2_WORD_SERVICE_REVIEW_SEED`
 
 ## API
 
@@ -121,6 +131,20 @@ Optional environment variables:
 - `POST /api/entries/<entry_id>/examples/<position>/audio`
 - `POST /api/units/<unit_number>/flagged-audio`
 - `GET /audio/<clips/...>`
+
+Audio/text review endpoints:
+
+- `GET /api/audio-review`
+- `PUT /api/audio-review/<source_index>` with `decision` set to `replace`,
+  `keep`, `custom`, or `audio_problem`, plus optional `replacement_text`
+  and `note`
+- `DELETE /api/audio-review/<source_index>` to return an item to pending
+
+The service imports the validated JSON decisions only when a review database is
+first initialized. Later browser edits are authoritative in
+`audio_reviews.sqlite`; they never modify canonical vocabulary text or audio.
+Use **Export decisions** before applying changes through the validator/repair
+workflow.
 
 The audio-generation endpoints queue Microsoft Edge TTS jobs so only one remote
 TTS request runs at a time. They store generated MP3s under
