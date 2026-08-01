@@ -786,6 +786,34 @@ main { max-width: 1420px; margin: 0 auto; padding: 1rem 1rem 8.6rem; }
   font-weight: 800;
   text-align: center;
 }
+.setting-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.setting-option {
+  padding: 0.5rem 0.4rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.setting-option:hover,
+.setting-option:focus-visible {
+  border-color: var(--muted2);
+  color: var(--ink);
+  outline: none;
+}
+.setting-option.selected {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
 .setting-range { width: 100%; accent-color: var(--accent); }
 .setting-range-scale {
   display: flex;

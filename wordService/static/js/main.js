@@ -17,6 +17,7 @@ import {
   savePlaybackState,
   saveViewState,
   scheduleScrollSave,
+  setPlaybackMode,
   showError,
   state,
   updateAudioExportButton,
@@ -29,6 +30,12 @@ function updatePlaybackSettingsUI() {
   const value = state.postSentenceSilenceMs;
   elements.postSentenceSilence.value = String(value);
   elements.postSentenceSilenceValue.textContent = `${value} ms`;
+  elements.playbackModeOptions.forEach(option => {
+    const selected = option.dataset.playbackMode === state.playbackMode;
+    option.classList.toggle("selected", selected);
+    option.setAttribute("aria-checked", selected ? "true" : "false");
+    option.tabIndex = selected ? 0 : -1;
+  });
 }
 
 function openPlaybackSettings() {
@@ -346,6 +353,12 @@ function wireControls() {
   elements.settingsClose.addEventListener("click", closePlaybackSettings);
   elements.settingsBackdrop.addEventListener("click", event => {
     if (event.target === elements.settingsBackdrop) closePlaybackSettings();
+  });
+  elements.playbackModeOptions.forEach(option => {
+    option.addEventListener("click", () => {
+      setPlaybackMode(option.dataset.playbackMode);
+      updatePlaybackSettingsUI();
+    });
   });
   elements.postSentenceSilence.addEventListener("input", event => {
     state.postSentenceSilenceMs = Number(event.target.value);

@@ -44,19 +44,31 @@ function entryHasSentence(entry) {
   return Boolean(entry?.sentence && entry.sentence.trim());
 }
 
+function entryClipsForPlayback(entry) {
+  if (state.playbackMode === "words") return 1;
+  if (state.playbackMode === "sentences") return entryHasSentence(entry) ? 1 : 0;
+  return entryHasSentence(entry) ? 2 : 1;
+}
+
+function entryClipsForPlaybackBefore(currentIndex) {
+  return state.currentEntries
+    .slice(0, currentIndex)
+    .reduce((total, entry) => total + entryClipsForPlayback(entry), 0);
+}
+
 function currentPlaybackClipIndex() {
   const cardIndex = Math.max(0, state.scopePlaybackPosition - 1);
-  const currentEntry = state.currentEntries[cardIndex];
-  const clipsBeforeCurrent = state.currentEntries
-    .slice(0, cardIndex)
-    .reduce((total, entry) => total + (entryHasSentence(entry) ? 2 : 1), 0);
-  return clipsBeforeCurrent + (state.scopePlaybackPhase === "sentence" && entryHasSentence(currentEntry) ? 1 : 0);
+  let clipIndex = entryClipsForPlaybackBefore(cardIndex);
+  // In both mode the sentence is the entry's second clip; in sentences mode
+  // it is the entry's only clip, so no offset.
+  if (state.scopePlaybackPhase === "sentence" && state.playbackMode === "both") clipIndex += 1;
+  return clipIndex;
 }
 
 function clipTargetForOffset(offset) {
   const currentClip = currentPlaybackClipIndex();
   const clips = state.currentEntries.reduce(
-    (total, entry) => total + (entryHasSentence(entry) ? 2 : 1),
+    (total, entry) => total + entryClipsForPlayback(entry),
     0,
   );
   const targetClip = currentClip + Math.sign(offset);
@@ -65,6 +77,17 @@ function clipTargetForOffset(offset) {
   let clipIndex = targetClip;
   for (let entryIndex = 0; entryIndex < state.currentEntries.length; entryIndex += 1) {
     const entry = state.currentEntries[entryIndex];
+    if (state.playbackMode === "words") {
+      if (clipIndex === 0) return {entryIndex, phase: "word"};
+      clipIndex -= 1;
+      continue;
+    }
+    if (state.playbackMode === "sentences") {
+      if (!entryHasSentence(entry)) continue;
+      if (clipIndex === 0) return {entryIndex, phase: "sentence"};
+      clipIndex -= 1;
+      continue;
+    }
     if (clipIndex === 0) return {entryIndex, phase: "word"};
     clipIndex -= 1;
     if (entryHasSentence(entry)) {
@@ -385,7 +408,11 @@ export function updateScopePlaybackButton() {
           ? "Resume from the same audio position"
         : hasSaved
           ? `Resume from where you left off (card ${saved.scopePlaybackPosition} of ${saved.scopePlaybackTotal})`
-        : "Play each visible word followed by its main example sentence";
+        : state.playbackMode === "words"
+          ? "Play each visible word"
+          : state.playbackMode === "sentences"
+            ? "Play the main example sentence for each visible word"
+          : "Play each visible word followed by its main example sentence";
   elements.grid.classList.toggle("scope-playback-active", active);
   elements.grid.classList.toggle("scope-playback-paused", paused);
 
@@ -482,12 +509,16 @@ async function playEntryCycle(card, token, startPhase = "word") {
   const sentenceTarget = card.querySelector(".main-sentence-row");
   let clipsPlayed = 0;
 
-  if (startPhase !== "sentence") {
+  if (state.playbackMode !== "sentences" && startPhase !== "sentence") {
     state.scopePlaybackPhase = "word";
     updateScopePlaybackButton();
     savePlaybackState();
     if (await playTargetAndWait(wordTarget, token)) clipsPlayed += 1;
     if (!await waitForScopeResume(token)) return {completed: false, clipsPlayed};
+  }
+
+  if (state.playbackMode === "words") {
+    return {completed: token === scopePlaybackToken, clipsPlayed};
   }
 
   state.scopePlaybackPhase = sentenceTarget?.dataset.src ? "sentence" : "card";
@@ -587,7 +618,7 @@ async function startScopePlayback(startIndex = 0, initialPhase = "word") {
     }
     }
 
-    if (!entry.word_audio_url || (entry.sentence && !entry.sentence_audio_url)) {
+    if (state.playbackMode !== "words" && (!entry.word_audio_url || (entry.sentence && !entry.sentence_audio_url))) {
       try {
         await ensureCardAudio(entry, card, {announce: false, download: false});
       } catch (error) {
@@ -612,7 +643,12 @@ async function startScopePlayback(startIndex = 0, initialPhase = "word") {
   clearScopePlaybackWindow();
   updateScopePlaybackButton();
   clearSavedPlaybackState();
-  setBanner(`Finished ${cardsVisited} visible words (${clipsPlayed} audio clips).`);
+  const modeLabel = state.playbackMode === "words"
+    ? "words"
+    : state.playbackMode === "sentences"
+      ? "sentences"
+      : "word + sentence";
+  setBanner(`Finished ${cardsVisited} visible entries (${clipsPlayed} ${modeLabel} audio clips).`);
 }
 
 export async function playScopeFromEntry(entryId) {

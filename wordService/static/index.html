@@ -141,6 +141,17 @@
       <div class="modal-body settings-body">
         <div class="setting-row">
           <div>
+            <span class="setting-label" id="playback-mode-label">Playback</span>
+            <p class="setting-help">Choose what plays as the visible list advances.</p>
+          </div>
+        </div>
+        <div class="setting-options" role="radiogroup" aria-labelledby="playback-mode-label">
+          <button type="button" class="setting-option" data-playback-mode="words">Words only</button>
+          <button type="button" class="setting-option" data-playback-mode="sentences">Sentences only</button>
+          <button type="button" class="setting-option" data-playback-mode="both">Word + sentence</button>
+        </div>
+        <div class="setting-row">
+          <div>
             <label class="setting-label" for="post-sentence-silence">Silence after sentence</label>
             <p class="setting-help">Wait this long before the next word starts during visible-list playback.</p>
           </div>
@@ -148,7 +159,7 @@
         </div>
         <input id="post-sentence-silence" class="setting-range" type="range" min="0" max="3000" step="100" value="500">
         <div class="setting-range-scale" aria-hidden="true"><span>None</span><span>3 seconds</span></div>
-        <button type="button" class="settings-reset" id="reset-playback-settings">Reset to 500 ms</button>
+        <button type="button" class="settings-reset" id="reset-playback-settings">Reset to defaults</button>
       </div>
     </div>
   </div>

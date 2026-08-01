@@ -48,6 +48,7 @@ export const elements = {
   settingsButton: document.getElementById("settings-button"),
   settingsBackdrop: document.getElementById("settings-backdrop"),
   settingsClose: document.getElementById("settings-close"),
+  playbackModeOptions: Array.from(document.querySelectorAll(".setting-option[data-playback-mode]")),
   postSentenceSilence: document.getElementById("post-sentence-silence"),
   postSentenceSilenceValue: document.getElementById("post-sentence-silence-value"),
   resetPlaybackSettings: document.getElementById("reset-playback-settings"),
@@ -79,6 +80,7 @@ export const state = {
   scopePlaybackEntryId: null,
   scopePlaybackPhase: "idle",
   postSentenceSilenceMs: 500,
+  playbackMode: "both",
   railListWidthPx: 360,
   entriesLoading: false,
   exportingAudio: false,
@@ -89,6 +91,11 @@ const PLAYBACK_STATE_KEY = "n2-word-service:playback-state:v1";
 const PLAYBACK_SETTINGS_KEY = "n2-word-service:playback-settings:v1";
 const RAIL_LAYOUT_SETTINGS_KEY = "n2-word-service:rail-layout-settings:v1";
 const DEFAULT_POST_SENTENCE_SILENCE_MS = 500;
+const PLAYBACK_MODES = ["both", "words", "sentences"];
+
+function normalizePlaybackMode(value) {
+  return PLAYBACK_MODES.includes(value) ? value : "both";
+}
 
 export function restoreRailLayoutSettings() {
   try {
@@ -121,6 +128,7 @@ export function restorePlaybackSettings() {
     if (Number.isFinite(value)) {
       state.postSentenceSilenceMs = Math.min(3000, Math.max(0, Math.round(value / 100) * 100));
     }
+    state.playbackMode = normalizePlaybackMode(saved.playbackMode);
   } catch (error) {
     console.warn("Could not read playback settings", error);
   }
@@ -130,6 +138,7 @@ export function savePlaybackSettings() {
   try {
     window.localStorage.setItem(PLAYBACK_SETTINGS_KEY, JSON.stringify({
       postSentenceSilenceMs: state.postSentenceSilenceMs,
+      playbackMode: state.playbackMode,
     }));
   } catch (error) {
     console.warn("Could not save playback settings", error);
@@ -138,6 +147,12 @@ export function savePlaybackSettings() {
 
 export function resetPlaybackSettings() {
   state.postSentenceSilenceMs = DEFAULT_POST_SENTENCE_SILENCE_MS;
+  state.playbackMode = "both";
+  savePlaybackSettings();
+}
+
+export function setPlaybackMode(mode) {
+  state.playbackMode = normalizePlaybackMode(mode);
   savePlaybackSettings();
 }
 
