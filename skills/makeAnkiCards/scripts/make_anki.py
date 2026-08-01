@@ -39,6 +39,10 @@ from anki_render import render_japanese_sentence_html
 _MD_BOLD = re.compile(r'\*\*(.+?)\*\*')
 _MD_ITALIC = re.compile(r'(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)')
 _MD_JLPT_TAG = re.compile(r'\[(JLPT\s*N\d+)\]')
+_CATEGORY_LABELS = {
+    "連": "Collocation", "合": "Compound", "対": "Antonym",
+    "類": "Synonym", "慣": "Idiom", "関連": "Related",
+}
 
 
 def _md_inline(text: str) -> str:
@@ -169,6 +173,13 @@ BACK_TMPL = """\
     </div>
   </div>
   {{/MoreExample1}}
+
+  {{#MoreExamples}}
+  <div class="more-examples related-terms">
+    <div class="examples-label">Related terms</div>
+    <div class="examples-list">{{MoreExamples}}</div>
+  </div>
+  {{/MoreExamples}}
 
   <div class="index-tag">#{{Index}}</div>
 </div>
@@ -450,22 +461,25 @@ hr.divider {
 """
 
 
-def _resolve_declared_clip(entry: dict, field: str) -> Path | None:
+def _resolve_declared_clip(entry: dict, field: str, clips_root: Path) -> Path | None:
     clip = entry.get(field)
     if not clip:
         return None
     p = Path(clip)
     if not p.is_absolute():
-        p = PROJECT_ROOT / p
+        # Stored paths use the stable `clips/...` prefix. Resolve it relative
+        # to the caller's clips root so isolated pilot exports do not read live
+        # project media by accident.
+        p = clips_root.parent / p if p.parts and p.parts[0] == "clips" else PROJECT_ROOT / p
     return p if p.exists() else None
 
 
-def _resolve_clip_value(clip: str | None) -> Path | None:
+def _resolve_clip_value(clip: str | None, clips_root: Path) -> Path | None:
     if not clip:
         return None
     p = Path(clip)
     if not p.is_absolute():
-        p = PROJECT_ROOT / p
+        p = clips_root.parent / p if p.parts and p.parts[0] == "clips" else PROJECT_ROOT / p
     return p if p.exists() else None
 
 
@@ -488,11 +502,11 @@ def resolve_clips(entry: dict, clips_root: Path) -> tuple[Path | None, Path | No
     book_code = entry.get("book_code") or "N2"
     allow_legacy_fallback = book_code == "N2"
 
-    word = _resolve_declared_clip(entry, "word_clip")
+    word = _resolve_declared_clip(entry, "word_clip", clips_root)
     if word is None and allow_legacy_fallback:
         word = _find_clip_by_name(clips_root, idx, "word")
 
-    sent = _resolve_declared_clip(entry, "sentence_clip")
+    sent = _resolve_declared_clip(entry, "sentence_clip", clips_root)
     if sent is None and allow_legacy_fallback:
         sent = _find_clip_by_name(clips_root, idx, "sentence")
     return word, sent
@@ -667,23 +681,27 @@ def build_notes(data: list[dict], clips_root: Path) -> tuple[list[genanki.Note],
         sentence_translation_en = e.get("sentence_translation_en") or ""
         sentence_translation_zh = e.get("sentence_translation_zh") or ""
 
-        # Anki templates cannot iterate over database rows. Pre-render the
-        # extra examples into one HTML field and cap the total visible sentence
-        # items at five: one main sentence plus four additional examples.
-        extra_items = [x for x in example_items if x.get("position") != 0 and x.get("text")]
+        # Sentence examples keep the five established fixed fields. Structured
+        # terms use the existing MoreExamples HTML field so no collocation,
+        # synonym, or related term is lost merely because a word has many.
+        extra_items = [x for x in (e.get("examples_detailed") or []) if x.get("text")]
         if not extra_items:
             extra_items = [
                 {"position": i + 1, "text": text, "translation_en": ""}
                 for i, text in enumerate(examples_all)
                 if text
             ]
+        related_items = [x for x in extra_items if x.get("kind") == "related_term"]
+        sentence_items = [x for x in extra_items if x.get("kind") != "related_term"]
         def render_more_example(item: dict) -> str:
             jp = render_japanese_sentence_html(item.get("text") or "")
             en = html_mod.escape(str(item.get("translation_en") or ""))
             zh = html_mod.escape(str(item.get("translation_zh") or ""))
             exp = explanation_to_html(str(item.get("explanation") or ""))
-            audio = media_tag(_resolve_clip_value(item.get("audio_clip")), "example")
-            meta_parts = [str(v).strip() for v in (item.get("category"), item.get("reading")) if str(v or "").strip()]
+            audio = media_tag(_resolve_clip_value(item.get("audio_clip"), clips_root), "example")
+            category = str(item.get("category") or "").strip()
+            category = _CATEGORY_LABELS.get(category, category)
+            meta_parts = [str(v).strip() for v in (category, item.get("reading")) if str(v or "").strip()]
             audio_html = f'<div class="audio-row example-audio">{audio}</div>' if audio else ""
             meta_html = f'<div class="example-meta">{html_mod.escape(" / ".join(meta_parts))}</div>' if meta_parts else ""
             en_html = f'<div class="example-en">{en}</div>' if en else ""
@@ -693,7 +711,11 @@ def build_notes(data: list[dict], clips_root: Path) -> tuple[list[genanki.Note],
 
         # Keep each extra example in its own Anki field/column. The template
         # renders these in source order and intentionally omits item 6+.
-        more_example_fields = [render_more_example(item) for item in extra_items[:5]]
+        more_examples_html = "".join(
+            f'<div class="example-item">{render_more_example(item)}</div>'
+            for item in related_items
+        )
+        more_example_fields = [render_more_example(item) for item in sentence_items[:5]]
         more_example_fields.extend([""] * (5 - len(more_example_fields)))
 
         note = genanki.Note(
@@ -713,7 +735,7 @@ def build_notes(data: list[dict], clips_root: Path) -> tuple[list[genanki.Note],
                 t(sentence_translation_en),
                 t(sentence_translation_zh),
                 sent_audio,
-                "",
+                more_examples_html,
                 *more_example_fields,
             ],
             guid=note_guid(e),

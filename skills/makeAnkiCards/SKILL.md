@@ -16,8 +16,9 @@ current project contract: `wordService/data/n2vocab.sqlite`, flat clip aliases u
 - **Word audio**: `clips/words/word<entry_id>.mp3`
 - **Main sentence audio**: `clips/sentences/sentence<entry_id>.mp3`
 - **Generated sentence audio**: `clips/generated_sentences/edge_tts/`
-- **SQLite audio fields**: `vocabulary_items.word_clip` and
-  `item_examples.audio_clip` in the canonical manifest
+- **SQLite audio fields**: book-specific `book_entries.word_clip` with
+  `vocabulary_items.word_clip` as a compatibility fallback, plus
+  `book_entries.sentence_clip` and `item_examples.audio_clip`
 - **Example translations**: `item_examples.translation_en`; use
   `item_examples.kind` to distinguish the main sentence from extra examples
   and related terms
@@ -40,7 +41,7 @@ content.
   - Japanese sentence fields are rendered through `scripts/anki_render.py`, so
     kanji-bearing tokens get `<ruby><rt>...</rt></ruby>` furigana.
   - The same template can export other `book_entries.book_code` groups from the
-    words DB with `--book`, including `N3`, `N2_1500`, and `GWB_N2`.
+    words DB with `--book`, including `N1`, `N3`, `N2_1500`, and `GWB_N2`.
   - `N2_1500` main sentence audio is allowed only when SQLite explicitly names
     a `sentence_clip`. Do not use source-index filename fallback for imported
     books; that was the older path that could accidentally pick up another
@@ -105,6 +106,7 @@ python -u .\skills\makeAnkiCards\scripts\make_anki_listening.py --db wordService
 Group export examples:
 
 ```powershell
+python -u .\skills\makeAnkiCards\scripts\make_anki.py --book N1 --out output\N1Words.apkg
 python -u .\skills\makeAnkiCards\scripts\make_anki.py --book N3 --out output\N3Words.apkg
 python -u .\skills\makeAnkiCards\scripts\make_anki_listening.py --book N3 --out output\N3Words_listening.apkg
 python -u .\skills\makeAnkiCards\scripts\make_anki.py --book N2 --flagged-only --out output\N2Words_flagged.apkg --deck-name "耳から覚える::N2Words::Flagged"

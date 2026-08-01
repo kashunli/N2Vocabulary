@@ -34,6 +34,10 @@ from anki_render import render_japanese_sentence_html
 _MD_BOLD = re.compile(r'\*\*(.+?)\*\*')
 _MD_ITALIC = re.compile(r'(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)')
 _MD_JLPT_TAG = re.compile(r'\[(JLPT\s*N\d+)\]')
+_CATEGORY_LABELS = {
+    "連": "Collocation", "合": "Compound", "対": "Antonym",
+    "類": "Synonym", "慣": "Idiom", "関連": "Related",
+}
 
 
 def _md_inline(text: str) -> str:
@@ -168,6 +172,14 @@ BACK_TMPL = """\
     </div>
   </div>
   {{/MoreExample1}}
+
+  {{#MoreExamples}}
+  <hr class="divider">
+  <div class="more-examples related-terms">
+    <div class="more-label">Related terms</div>
+    <div class="examples-list">{{MoreExamples}}</div>
+  </div>
+  {{/MoreExamples}}
 
   <div class="index-tag">#{{Index}}</div>
 </div>
@@ -591,26 +603,26 @@ def build_deck(db: list[dict], clips_root: Path, *, book_code: str, deck_name: s
         sent_audio = add_audio(e.get("sentence_clip"))
         headword = e.get("kanji") or e.get("reading")
 
-        # Anki templates cannot iterate over arbitrary DB rows. Pre-render
-        # extra examples into one field and cap visible sentence items at five:
-        # the main sentence plus up to four additional examples.
+        # Sentence examples keep the established fixed fields. All structured
+        # terms are rendered through the existing MoreExamples HTML field.
         examples = e.get("examples") or []
-        extra_items = [
-            x for x in e.get("example_items", [])
-            if x.get("position") != 0 and x.get("text")
-        ]
+        extra_items = [x for x in (e.get("examples_detailed") or []) if x.get("text")]
         if not extra_items:
             extra_items = [
                 {"position": i + 1, "text": text, "translation_en": ""}
                 for i, text in enumerate(examples)
                 if text
             ]
+        related_items = [x for x in extra_items if x.get("kind") == "related_term"]
+        sentence_items = [x for x in extra_items if x.get("kind") != "related_term"]
         def render_more_example(item: dict) -> str:
             jp = render_japanese_sentence_html(item.get("text") or "")
             en = html_mod.escape(str(item.get("translation_en") or ""))
             zh = html_mod.escape(str(item.get("translation_zh") or ""))
             exp = explanation_to_html(str(item.get("explanation") or ""))
-            meta_parts = [str(v).strip() for v in (item.get("category"), item.get("reading")) if str(v or "").strip()]
+            category = str(item.get("category") or "").strip()
+            category = _CATEGORY_LABELS.get(category, category)
+            meta_parts = [str(v).strip() for v in (category, item.get("reading")) if str(v or "").strip()]
             meta_html = f'<div class="example-meta">{html_mod.escape(" / ".join(meta_parts))}</div>' if meta_parts else ""
             en_html = f'<div class="example-en">{en}</div>' if en else ""
             zh_html = f'<div class="example-zh">{zh}</div>' if zh else ""
@@ -619,7 +631,11 @@ def build_deck(db: list[dict], clips_root: Path, *, book_code: str, deck_name: s
 
         # Keep each extra example in its own Anki field/column. The template
         # renders these in source order and intentionally omits item 6+.
-        more_example_fields = [render_more_example(item) for item in extra_items[:5]]
+        more_examples_html = "".join(
+            f'<div class="example-item">{render_more_example(item)}</div>'
+            for item in related_items
+        )
+        more_example_fields = [render_more_example(item) for item in sentence_items[:5]]
         more_example_fields.extend([""] * (5 - len(more_example_fields)))
 
         # explanation: convert markdown to HTML for Anki display
@@ -642,7 +658,7 @@ def build_deck(db: list[dict], clips_root: Path, *, book_code: str, deck_name: s
                 t(e.get("sentence_translation_en")),
                 t(e.get("sentence_translation_zh")),
                 sent_audio,
-                "",
+                more_examples_html,
                 explanation,
                 *more_example_fields,
             ],
