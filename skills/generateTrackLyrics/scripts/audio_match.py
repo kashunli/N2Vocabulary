@@ -166,4 +166,3 @@ def padded_speech_bounds(
         following_silence = max(0.0, next_start - end)
         trailing = min(trailing, following_silence / 2.0)
     return padded_start, end + trailing
-

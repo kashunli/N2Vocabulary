@@ -53,4 +53,3 @@ class EntryRequest:
     word: ClipRequest
     sentences: list[ClipRequest]
     source_candidates: list[str]
-
