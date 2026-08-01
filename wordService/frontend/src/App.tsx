@@ -2,12 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import {
   exportUnitFlaggedAudio,
-  getBooks,
   getEntries,
-  getEntry,
-  getStarredSentences,
-  getSummary,
-  getUnits,
   updateExampleStar,
   updateMark,
 } from "./api";
@@ -15,34 +10,25 @@ import { PlaybackSettingsModal } from "./features/player/PlaybackSettingsModal";
 import { RailPlayer } from "./features/player/RailPlayer";
 import { useStudyPlayback } from "./features/player/useStudyPlayback";
 import { StarredView } from "./features/study/StarredView";
-import { StudyHeader, type FilterState } from "./features/study/StudyHeader";
+import { StudyHeader } from "./features/study/StudyHeader";
 import { StudyWallView } from "./features/study/StudyWallView";
 import { unitLabel } from "./features/study/unitLabel";
+import { useStudyCatalog } from "./features/study/useStudyCatalog";
+import type { FilterState } from "./features/study/studyTypes";
 import type {
-  BookSummary,
   Entry,
-  StarredSentence,
-  UnitSummary,
-  VocabularySummary,
 } from "./types";
 
 export function App() {
-  const [books, setBooks] = useState<BookSummary[]>([]);
   const [selectedBook, setSelectedBook] = useState("N2");
-  const [summary, setSummary] = useState<VocabularySummary>();
-  const [units, setUnits] = useState<UnitSummary[]>([]);
   const [selectedUnit, setSelectedUnit] = useState<number | null>(null);
   const [filterState, setFilterState] = useState<FilterState>("all");
   const [search, setSearch] = useState("");
   const [entries, setEntries] = useState<Entry[]>([]);
   const [entriesLoading, setEntriesLoading] = useState(false);
-  const [detail, setDetail] = useState<Entry>();
   const [coveredEntryIds, setCoveredEntryIds] = useState<Set<number>>(() => new Set());
   const [blurred, setBlurred] = useState(false);
   const [showStarred, setShowStarred] = useState(false);
-  const [starredSentences, setStarredSentences] = useState<StarredSentence[]>([]);
-  const [selectedStarredKey, setSelectedStarredKey] = useState<string>();
-  const [status, setStatus] = useState("");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const {
     activeEntry,
@@ -76,31 +62,25 @@ export function App() {
     target,
     togglePlayback,
   } = useStudyPlayback({entries, showStarred});
+  const {
+    books,
+    detail,
+    refreshCatalog,
+    refreshStarred,
+    selectedStarredKey,
+    setDetail,
+    setSelectedStarredKey,
+    setStatus,
+    starredSentences,
+    status,
+    summary,
+    units,
+  } = useStudyCatalog({activeEntry, selectedBook, selectedUnit, showStarred});
   const currentBook = books.find((book) => book.code === selectedBook);
   const selectedStarred = starredSentences.find((item) => (
     `${item.entry_id}:${item.position}` === selectedStarredKey
   ));
   const allVisibleCovered = entries.length > 0 && entries.every((entry) => coveredEntryIds.has(entry.entry_id));
-
-  useEffect(() => {
-    getBooks()
-      .then((payload) => setBooks(payload.items))
-      .catch((error: unknown) => setStatus(error instanceof Error ? error.message : "Could not load books."));
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    Promise.all([getSummary(selectedBook), getUnits(selectedBook)])
-      .then(([nextSummary, nextUnits]) => {
-        if (cancelled) return;
-        setSummary(nextSummary);
-        setUnits(nextUnits.items);
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) setStatus(error instanceof Error ? error.message : "Could not load sections.");
-      });
-    return () => { cancelled = true; };
-  }, [selectedBook]);
 
   useEffect(() => {
     let cancelled = false;
@@ -119,34 +99,6 @@ export function App() {
       });
     return () => { cancelled = true; };
   }, [filterState, playbackMode, resetPosition, search, selectedBook, selectedUnit]);
-
-  useEffect(() => {
-    if (!activeEntry) {
-      setDetail(undefined);
-      return undefined;
-    }
-    let cancelled = false;
-    getEntry(activeEntry.entry_id, selectedBook)
-      .then((nextDetail) => { if (!cancelled) setDetail(nextDetail); })
-      .catch((error: unknown) => { if (!cancelled) setStatus(error instanceof Error ? error.message : "Could not load word details."); });
-    return () => { cancelled = true; };
-  }, [activeEntry, selectedBook]);
-
-  useEffect(() => {
-    if (!showStarred) return undefined;
-    let cancelled = false;
-    getStarredSentences(selectedBook, selectedUnit ?? undefined)
-      .then((payload) => {
-        if (cancelled) return;
-        setStarredSentences(payload.items);
-        setSelectedStarredKey((current) => payload.items.some((item) => `${item.entry_id}:${item.position}` === current)
-          ? current
-          : payload.items[0] ? `${payload.items[0].entry_id}:${payload.items[0].position}` : undefined);
-      })
-      .catch((error: unknown) => { if (!cancelled) setStatus(error instanceof Error ? error.message : "Could not load starred sentences."); });
-    return () => { cancelled = true; };
-  }, [selectedBook, selectedUnit, showStarred]);
-
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -184,12 +136,6 @@ export function App() {
     return () => document.removeEventListener("keydown", onKey, {capture: true});
   });
 
-  const refreshCatalog = useCallback(async () => {
-    const [nextSummary, nextUnits] = await Promise.all([getSummary(selectedBook), getUnits(selectedBook)]);
-    setSummary(nextSummary);
-    setUnits(nextUnits.items);
-  }, [selectedBook]);
-
   const toggleMark = useCallback(async (key: "known" | "flagged") => {
     if (!activeEntry) return;
     const next = {
@@ -225,13 +171,12 @@ export function App() {
         : current);
       setStatus(payload.starred ? "Main sentence starred." : "Main sentence unstarred.");
       if (showStarred) {
-        const starred = await getStarredSentences(selectedBook, selectedUnit ?? undefined);
-        setStarredSentences(starred.items);
+        await refreshStarred();
       }
     } catch (error: unknown) {
       setStatus(error instanceof Error ? error.message : "Could not update the sentence star.");
     }
-  }, [activeEntry, selectedBook, selectedUnit, showStarred]);
+  }, [activeEntry, refreshStarred, selectedBook, showStarred]);
 
   const toggleCoverAll = useCallback(() => {
     setCoveredEntryIds((current) => {

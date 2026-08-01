@@ -1,7 +1,8 @@
 import type { AudioTarget, BookSummary, UnitSummary, VocabularySummary } from "../../types";
 import { unitLabel } from "./unitLabel";
+import type { FilterState } from "./studyTypes";
 
-export type FilterState = "all" | "unmarked" | "known" | "flagged";
+export type { FilterState } from "./studyTypes";
 
 interface StudyHeaderProps {
   allVisibleCovered: boolean;
