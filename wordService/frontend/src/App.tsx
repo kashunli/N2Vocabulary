@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import {
   exportUnitFlaggedAudio,
@@ -11,12 +11,12 @@ import {
   updateExampleStar,
   updateMark,
 } from "./api";
-import { MarkdownContent } from "./features/explanation/MarkdownContent";
 import { PlaybackSettingsModal } from "./features/player/PlaybackSettingsModal";
 import { RailPlayer } from "./features/player/RailPlayer";
 import { useStudyPlayback } from "./features/player/useStudyPlayback";
 import { StarredView } from "./features/study/StarredView";
 import { StudyHeader, type FilterState } from "./features/study/StudyHeader";
+import { StudyWallView } from "./features/study/StudyWallView";
 import { unitLabel } from "./features/study/unitLabel";
 import type {
   BookSummary,
@@ -37,8 +37,6 @@ export function App() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [entriesLoading, setEntriesLoading] = useState(false);
   const [detail, setDetail] = useState<Entry>();
-  const [listWidth, setListWidth] = useState(320);
-  const [draggingDivider, setDraggingDivider] = useState(false);
   const [coveredEntryIds, setCoveredEntryIds] = useState<Set<number>>(() => new Set());
   const [blurred, setBlurred] = useState(false);
   const [showStarred, setShowStarred] = useState(false);
@@ -46,9 +44,6 @@ export function App() {
   const [selectedStarredKey, setSelectedStarredKey] = useState<string>();
   const [status, setStatus] = useState("");
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const activeRef = useRef<HTMLButtonElement | null>(null);
-  const layoutRef = useRef<HTMLDivElement | null>(null);
-  const currentRef = useRef<HTMLElement | null>(null);
   const {
     activeEntry,
     activeIndex,
@@ -152,36 +147,6 @@ export function App() {
     return () => { cancelled = true; };
   }, [selectedBook, selectedUnit, showStarred]);
 
-  useEffect(() => {
-    activeRef.current?.scrollIntoView({behavior: "smooth", block: "center"});
-  }, [activeIndex, entries]);
-
-  useLayoutEffect(() => {
-    const current = currentRef.current;
-    if (!current) return;
-    // A long explanation can leave the detail pane scrolled down. Reset it
-    // before the newly focused word is painted so its heading cannot remain
-    // hidden above the pane when playback advances.
-    current.scrollTop = 0;
-    current.scrollLeft = 0;
-  }, [activeEntry?.entry_id, selectedBook, showStarred]);
-
-  useEffect(() => {
-    if (!draggingDivider) return undefined;
-    const move = (event: PointerEvent) => {
-      const left = layoutRef.current?.getBoundingClientRect().left || 0;
-      setListWidth(Math.min(620, Math.max(220, Math.round(event.clientX - left))));
-    };
-    const stop = () => setDraggingDivider(false);
-    window.addEventListener("pointermove", move);
-    window.addEventListener("pointerup", stop, {once: true});
-    window.addEventListener("pointercancel", stop, {once: true});
-    return () => {
-      window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerup", stop);
-      window.removeEventListener("pointercancel", stop);
-    };
-  }, [draggingDivider]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -347,31 +312,20 @@ export function App() {
           onFocusEntry={focusStarredEntry}
           onSelectStarred={setSelectedStarredKey}
           onSelectUnit={setSelectedUnit}
-        /> : <div className="react-layout" ref={layoutRef} style={{gridTemplateColumns: `${listWidth}px 12px minmax(0, 1fr)`}}>
-          <section className="react-list" aria-label="Vocabulary playback list">
-            {entriesLoading ? <p className="react-empty">Loading vocabulary…</p> : entries.length ? entries.map((entry, index) => <button key={entry.entry_id} ref={index === activeIndex ? activeRef : null} className={`${index === activeIndex ? "is-active " : ""}${coveredEntryIds.has(entry.entry_id) ? "is-covered" : ""}`} aria-current={index === activeIndex ? "true" : undefined} onClick={() => selectEntry(index)}><span className="react-row-index">{String(index + 1).padStart(3, "0")}</span><span className="react-row-kanji">{entry.kanji}</span><span className="react-row-status" aria-label={`${entry.mark?.known ? "known" : ""}${entry.mark?.flagged ? " flagged" : ""}`}>{entry.mark?.known ? "✓" : ""}{entry.mark?.flagged ? " ⚑" : ""}</span></button>) : <p className="react-empty">No words match the current filters.</p>}
-          </section>
-          <button className="react-divider" type="button" role="separator" aria-orientation="vertical" aria-label="Adjust playback list width" aria-valuemin={220} aria-valuemax={620} aria-valuenow={listWidth} tabIndex={0} onPointerDown={(event) => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); setDraggingDivider(true); }} onKeyDown={(event) => { if (event.key === "ArrowLeft") setListWidth((value) => Math.max(220, value - (event.shiftKey ? 50 : 20))); else if (event.key === "ArrowRight") setListWidth((value) => Math.min(620, value + (event.shiftKey ? 50 : 20))); else return; event.preventDefault(); }}> </button>
-          <section ref={currentRef} className={`react-current${activeEntry && coveredEntryIds.has(activeEntry.entry_id) ? " is-covered" : ""}`} aria-live="polite" aria-label="Current vocabulary item">
-            {activeEntry ? <>
-              <span className="eyebrow">{activeEntry.book_code} #{String(activeEntry.source_index).padStart(3, "0")} · {unitLabel(activeEntry.unit)}</span>
-              <h2>{activeEntry.kanji}</h2>
-              {coveredEntryIds.has(activeEntry.entry_id) ? <p className="react-covered-note">Answers covered. Press Uncover all or Cover all to reveal the study details.</p> : <>
-                <ruby>{activeEntry.kanji}<rt>{activeEntry.reading}</rt></ruby>
-                <p className="react-meaning">{activeEntry.meaning_en || activeEntry.meaning_zh}</p>
-                <div className="react-current-actions">
-                  <button type="button" onClick={() => selectPhase("word")} className={activePhase === "word" ? "is-selected" : ""}>Word</button>
-                  <button type="button" onClick={() => selectPhase("sentence")} className={activePhase === "sentence" ? "is-selected" : ""} disabled={!activeEntry.sentence_audio_url}>Sentence</button>
-                  <button type="button" className={activeEntry.mark?.known ? "is-on" : ""} onClick={() => void toggleMark("known")} aria-pressed={!!activeEntry.mark?.known}>✓ Known</button>
-                  <button type="button" className={activeEntry.mark?.flagged ? "is-on" : ""} onClick={() => void toggleMark("flagged")} aria-pressed={!!activeEntry.mark?.flagged}>⚑ Flag</button>
-                  <button type="button" className={activeEntry.sentence_starred ? "is-on" : ""} onClick={() => void toggleSentenceStar()} aria-pressed={!!activeEntry.sentence_starred}>{activeEntry.sentence_starred ? "★" : "☆"} Sentence</button>
-                </div>
-                {detail?.sentence ? <div className="react-sentence"><strong>{detail.sentence}</strong><span>{detail.sentence_translation_en || detail.sentence_translation_zh}</span></div> : null}
-                {detail?.explanation_md ? <details><summary>Sentence explanation</summary><MarkdownContent value={detail.explanation_md} /></details> : null}
-              </>}
-            </> : <p className="react-empty">Loading vocabulary…</p>}
-          </section>
-        </div>}
+        /> : <StudyWallView
+          activeEntry={activeEntry}
+          activeIndex={activeIndex}
+          activePhase={activePhase}
+          bookCode={selectedBook}
+          coveredEntryIds={coveredEntryIds}
+          detail={detail}
+          entries={entries}
+          entriesLoading={entriesLoading}
+          onSelectEntry={selectEntry}
+          onSelectPhase={selectPhase}
+          onToggleMark={toggleMark}
+          onToggleSentenceStar={toggleSentenceStar}
+        />}
       </div>
 
       <RailPlayer
