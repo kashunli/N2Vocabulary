@@ -6,6 +6,10 @@ Naming: `YYYY-MM-DD_short-slug.md`.
 
 ## Index
 
+- [2026-07-19 - Autoplay review transport](2026-07-19_wordservice-autoplay-review-transport.md) - added the Study Wall player, deferred pause, idempotent replay-once, and optional keyboard marking while the list advances automatically.
+- [2026-07-18 - N1 human-cut audio runtime fix](2026-07-18_n1-human-audio-runtime-fix.md) - rebuilt the stale service release so all N1 cards use their imported human word and main-sentence clips, with a regression test for shared identities.
+- [2026-07-14 - Visible-scope audio playback](2026-07-14_wordservice-visible-audio-playback.md) - added scope-aware continuous playback with progress, pause/resume at the same timestamp, and click-a-card start-here behavior.
+- [2026-07-12 - Mimikara N1 import](2026-07-12_mimikara-n1-import.md) - imported all 1,170 reviewed N1 entries and 2,340 clips into the multi-book web service and built a verified N1 Anki deck.
 - [2026-07-06 - GWB language-origin display cleanup](2026-07-06_gwb-language-origin-display.md) - moved language-origin notes like `法 jupon` out of the display headword and restored Japanese katakana as the GWB_N2 learner-facing word.
 - [2026-06-28 - All-book Anki exports](2026-06-28_anki-all-books-export.md) - rebuilt every book's word-card APKG and fixed kana-only Green Word Book rows that otherwise produced notes without cards.
 - [2026-06-25 - N2_1500 related forms as examples](2026-06-25_n2-1500-related-forms-examples.md) - moved related forms out of explanations into categorized `entry_examples` rows with preserved readings.
