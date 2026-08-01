@@ -21,6 +21,25 @@ downloads/
 # 2. Source audio and cut clips
 audio/
 clips/
+# Canonical cut clips used by the N1/N2/N3 word service. Keep generated TTS,
+# exports, and supplementary book clip trees local.
+clips/*
+!clips/
+!clips/track_index_mapping.md
+!clips/words/
+!clips/words/*.mp3
+!clips/sentences/
+!clips/sentences/*.mp3
+!clips/n1/
+!clips/n1/words/
+!clips/n1/words/*.mp3
+!clips/n1/sentences/
+!clips/n1/sentences/*.mp3
+!clips/n3/
+!clips/n3/words/
+!clips/n3/words/*.mp3
+!clips/n3/sentences/
+!clips/n3/sentences/*.mp3
 output/clips/
 legacy/oldClips/
 
