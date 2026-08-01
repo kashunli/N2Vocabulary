@@ -98,7 +98,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .react-content-scroll {
   flex: 1 1 auto;
   min-height: 0;
-  overflow: auto;
+  /* The list and detail panes own their vertical scrolling. Keeping this
+     outer region as a viewport prevents a second scrollbar beside the detail
+     pane while the header and player remain fixed. */
+  overflow: hidden;
   padding: 16px 0 22px;
   scrollbar-color: #cfc5b5 transparent;
 }
@@ -106,7 +109,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .react-content-scroll.is-blurred .react-current,
 .react-content-scroll.is-blurred .react-starred-view { filter: blur(8px); transition: filter 160ms ease; }
 
-.react-layout { display: grid; grid-template-rows: minmax(0, 1fr); height: 100%; min-height: 520px; }
+.react-layout { display: grid; grid-template-rows: minmax(0, 1fr); height: 100%; min-height: 0; }
 .react-list { min-width: 0; min-height: 0; overflow: auto; padding: 2px 20px 10px 0; scrollbar-width: thin; }
 .react-list button { display: grid; grid-template-columns: 36px minmax(0, 1fr) 46px; width: 100%; align-items: center; border: 0; border-bottom: 1px solid #e0d8cd; background: transparent; color: #756d65; cursor: pointer; padding: 9px 12px 9px 2px; text-align: left; transition: color 160ms ease, background 160ms ease; }
 .react-list button:hover, .react-list button:focus-visible { background: #f0e8dd; color: #9d3d2d; outline: none; }
@@ -122,7 +125,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 .react-divider { border: 0; border-left: 1px solid #cfc5b5; border-right: 1px solid #cfc5b5; background: transparent; cursor: col-resize; padding: 0; }
 .react-divider:hover, .react-divider:focus-visible { background: #eee4d6; outline: none; }
-.react-current { min-width: 0; min-height: 0; overflow: auto; display: flex; flex-direction: column; justify-content: center; padding: clamp(24px, 6vw, 88px); }
+.react-current { min-width: 0; min-height: 0; overflow: auto; display: flex; flex-direction: column; justify-content: flex-start; justify-content: safe center; padding: clamp(24px, 6vw, 88px); scroll-padding-block: clamp(24px, 6vw, 88px); }
 .react-current h2 { margin: 11px 0 3px; font-size: clamp(2rem, 4vw, 4rem); font-weight: 400; line-height: 1; }
 .react-current ruby { color: #756d65; font-size: 1.2rem; }
 .react-current rt { color: #9d3d2d; font-family: system-ui, sans-serif; font-size: .54em; }
@@ -148,7 +151,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .react-markdown strong { color: #4f3a32; }
 .react-covered-note { color: #aaa096; font: .9rem/1.5 system-ui, sans-serif; }
 
-.react-starred-view { display: grid; grid-template-columns: 210px minmax(260px, 1fr) minmax(260px, .9fr); min-height: 520px; gap: 18px; }
+.react-starred-view { display: grid; grid-template-columns: 210px minmax(260px, 1fr) minmax(260px, .9fr); height: 100%; min-height: 0; overflow: auto; gap: 18px; }
 .react-starred-filter { padding-right: 14px; border-right: 1px solid #cfc5b5; }
 .section-label { color: #9d3d2d; font: 700 .68rem/1.2 system-ui, sans-serif; letter-spacing: .12em; text-transform: uppercase; }
 .react-starred-filter button { display: flex; width: 100%; justify-content: space-between; gap: 10px; border: 0; border-bottom: 1px solid #e0d8cd; background: transparent; color: #756d65; cursor: pointer; padding: 12px 4px; text-align: left; }
@@ -217,7 +220,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
 @media (max-width: 700px) {
   .react-shell { padding-inline: 12px; }
   .react-pickers { grid-template-columns: 1fr; }
-  .react-layout { grid-template-columns: 1fr !important; min-height: 0; }
+  .react-content-scroll { overflow: auto; }
+  .react-layout { grid-template-columns: 1fr !important; grid-template-rows: auto auto; height: auto; min-height: 0; }
   .react-list { min-height: 35vh; max-height: 42vh; padding-right: 0; }
   .react-divider { display: none; }
   .react-current { min-height: 480px; padding: 40px 4px; }
