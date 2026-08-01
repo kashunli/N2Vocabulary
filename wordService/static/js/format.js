@@ -167,20 +167,22 @@ export function exampleBadgeHTML(item) {
 
 export function exampleCategoryBadgeHTML(item) {
   if (!item.category) return "";
-  const labels = {
-    "連": "連",
-    "合": "合",
-    "対": "対",
-    "類": "類",
-    "慣": "慣",
-    collocation: "连语",
-    compound: "合成语",
-    antonym: "反义词",
-    synonym: "类义词",
-    idiom: "惯用语",
+  const categories = {
+    "連": { label: "Collocation", css: "collocation" },
+    "合": { label: "Compound", css: "compound" },
+    "対": { label: "Antonym", css: "antonym" },
+    "類": { label: "Synonym", css: "synonym" },
+    "慣": { label: "Idiom", css: "idiom" },
+    "関連": { label: "Related", css: "related" },
+    collocation: { label: "Collocation", css: "collocation" },
+    compound: { label: "Compound", css: "compound" },
+    antonym: { label: "Antonym", css: "antonym" },
+    synonym: { label: "Synonym", css: "synonym" },
+    idiom: { label: "Idiom", css: "idiom" },
+    related: { label: "Related", css: "related" },
   };
-  const label = labels[item.category] || item.category;
-  return `<span class="badge category-${escapeHTML(item.category)}">${escapeHTML(label)}</span>`;
+  const category = categories[item.category] || { label: item.category, css: "related" };
+  return `<span class="badge category-${escapeHTML(category.css)}">${escapeHTML(category.label)}</span>`;
 }
 
 export function exampleKey(entryId, position) {
