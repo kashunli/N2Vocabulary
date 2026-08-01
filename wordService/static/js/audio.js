@@ -166,7 +166,17 @@ function syncRailWavebar(audio) {
   }
   if (elements.railWavebarSeek) {
     elements.railWavebarSeek.disabled = !duration;
-    elements.railWavebarSeek.value = String(progress);
+    // Use the actual audio timestamp for the native range control.  This is
+    // the same interaction model as Listening Practice: the browser owns the
+    // click-and-drag gesture, and each input event seeks to that exact second.
+    elements.railWavebarSeek.min = "0";
+    elements.railWavebarSeek.max = String(duration || 0);
+    elements.railWavebarSeek.step = "0.01";
+    elements.railWavebarSeek.value = String(current);
+    elements.railWavebarSeek.setAttribute(
+      "aria-valuetext",
+      `${formatRailWaveTime(current)} / ${formatRailWaveTime(duration)}`,
+    );
   }
   if (elements.railWavebarCurrent) elements.railWavebarCurrent.textContent = formatRailWaveTime(current);
   if (elements.railWavebarDuration) elements.railWavebarDuration.textContent = formatRailWaveTime(duration);
@@ -181,6 +191,9 @@ function releaseRailWavebar(audio) {
   if (elements.railWavebar) elements.railWavebar.style.setProperty("--wave-progress", "0");
   if (elements.railWavebarSeek) {
     elements.railWavebarSeek.disabled = true;
+    elements.railWavebarSeek.min = "0";
+    elements.railWavebarSeek.max = "0";
+    elements.railWavebarSeek.step = "0.01";
     elements.railWavebarSeek.value = "0";
   }
   if (elements.railWavebarLabel) elements.railWavebarLabel.textContent = "Waiting for a clip";
@@ -206,11 +219,11 @@ function connectRailWavebar(audio, label, seed) {
   loadRailWaveform(audio, seed, loadToken);
 }
 
-export function seekRailWavebar(progress) {
+export function seekRailWavebar(seconds) {
   const audio = state.currentAudio;
   if (!audio || !Number.isFinite(audio.duration) || audio.duration <= 0) return;
-  const safeProgress = Math.min(1, Math.max(0, Number(progress) || 0));
-  audio.currentTime = safeProgress * audio.duration;
+  const safeSeconds = Math.min(audio.duration, Math.max(0, Number(seconds) || 0));
+  audio.currentTime = safeSeconds;
   syncRailWavebar(audio);
 }
 
