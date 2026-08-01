@@ -35,6 +35,7 @@ export const elements = {
   starredEmpty: document.getElementById("starred-empty"),
   starredDetail: document.getElementById("starred-detail"),
   railCurrentPanel: document.getElementById("rail-current-panel"),
+  railResizer: document.getElementById("rail-resizer"),
   template: document.getElementById("card-template"),
   backdrop: document.getElementById("backdrop"),
   modalClose: document.querySelector(".modal-close"),
@@ -78,6 +79,7 @@ export const state = {
   scopePlaybackEntryId: null,
   scopePlaybackPhase: "idle",
   postSentenceSilenceMs: 500,
+  railListWidthPx: 360,
   entriesLoading: false,
   exportingAudio: false,
 };
@@ -85,7 +87,31 @@ export const state = {
 const VIEW_STATE_STORAGE_KEY = "n2-word-service:view-state:v1";
 const PLAYBACK_STATE_KEY = "n2-word-service:playback-state:v1";
 const PLAYBACK_SETTINGS_KEY = "n2-word-service:playback-settings:v1";
+const RAIL_LAYOUT_SETTINGS_KEY = "n2-word-service:rail-layout-settings:v1";
 const DEFAULT_POST_SENTENCE_SILENCE_MS = 500;
+
+export function restoreRailLayoutSettings() {
+  try {
+    const raw = window.localStorage.getItem(RAIL_LAYOUT_SETTINGS_KEY);
+    const saved = raw ? JSON.parse(raw) : {};
+    const value = Number(saved.railListWidthPx);
+    if (Number.isFinite(value)) {
+      state.railListWidthPx = Math.min(620, Math.max(220, Math.round(value)));
+    }
+  } catch (error) {
+    console.warn("Could not read rail layout settings", error);
+  }
+}
+
+export function saveRailLayoutSettings() {
+  try {
+    window.localStorage.setItem(RAIL_LAYOUT_SETTINGS_KEY, JSON.stringify({
+      railListWidthPx: state.railListWidthPx,
+    }));
+  } catch (error) {
+    console.warn("Could not save rail layout settings", error);
+  }
+}
 
 export function restorePlaybackSettings() {
   try {

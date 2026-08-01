@@ -3,10 +3,47 @@
 
 .rail-layout {
   display: grid;
-  grid-template-columns: minmax(240px, 0.82fr) minmax(430px, 1.18fr);
+  grid-template-columns: minmax(220px, var(--rail-list-width, 360px)) 14px minmax(0, 1fr);
   gap: clamp(24px, 4vw, 64px);
   align-items: start;
 }
+
+.rail-resizer {
+  align-self: stretch;
+  min-height: calc(100vh - 230px);
+  border-left: 1px solid transparent;
+  border-right: 1px solid transparent;
+  cursor: col-resize;
+  touch-action: none;
+  position: relative;
+}
+
+.rail-resizer::after {
+  content: "";
+  position: absolute;
+  top: 45%;
+  left: 4px;
+  width: 4px;
+  height: 42px;
+  border-radius: 999px;
+  background: var(--line);
+  transition: background 0.15s, transform 0.15s;
+}
+
+.rail-resizer:hover,
+.rail-resizer:focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--line));
+  outline: none;
+}
+
+.rail-resizer:hover::after,
+.rail-resizer:focus-visible::after {
+  background: var(--accent);
+  transform: scaleY(1.15);
+}
+
+.is-resizing-rail,
+.is-resizing-rail * { cursor: col-resize !important; }
 
 .rail-page .grid {
   display: grid;
@@ -98,6 +135,7 @@
 .rail-page .grid .card.scope-paused .card-kanji { color: #8a5a12; }
 
 .rail-current-panel {
+  grid-column: 3;
   position: sticky;
   top: 1rem;
   min-width: 0;
@@ -183,7 +221,9 @@
 
 @media (max-width: 900px) {
   .rail-layout { grid-template-columns: 1fr; gap: 12px; }
+  .rail-resizer { display: none; }
   .rail-current-panel {
+    grid-column: 1;
     grid-row: 1;
     position: relative;
     top: auto;
