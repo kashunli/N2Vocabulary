@@ -117,6 +117,19 @@
   font-weight: 600;
 }
 
+/* The shared playback stylesheet enlarges the classic current card. Keep rail rows uniform. */
+.rail-page .grid.scope-playback-active .card.scope-current .card-kanji {
+  font-size: 1.22rem;
+  line-height: 1.2;
+  padding-right: 0;
+}
+
+.rail-page .grid.scope-playback-active .card.scope-current {
+  min-height: 58px;
+  padding: 8px 14px;
+  gap: 10px;
+}
+
 .rail-page .grid .card.scope-playing {
   background: color-mix(in srgb, var(--flag-bg) 58%, #fff);
 }
