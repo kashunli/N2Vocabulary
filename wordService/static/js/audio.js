@@ -4,6 +4,7 @@ import { clearSavedPlaybackState, elements, readSavedPlaybackState, savePlayback
 
 let scopePlaybackToken = 0;
 let scopeResumeWaiters = [];
+const SENTENCE_PAUSE_MS = 1000;
 
 function scopePlaybackIsActive() {
   return state.scopePlaybackStatus !== "idle";
@@ -29,6 +30,15 @@ function waitForScopeResume(token) {
     return Promise.resolve(true);
   }
   return new Promise(resolve => scopeResumeWaiters.push({token, resolve}));
+}
+
+function waitAfterSentence(token) {
+  if (token !== scopePlaybackToken) return Promise.resolve(false);
+  return new Promise(resolve => {
+    window.setTimeout(() => {
+      resolve(token === scopePlaybackToken);
+    }, SENTENCE_PAUSE_MS);
+  });
 }
 
 function playbackPhase(target) {
@@ -425,7 +435,14 @@ async function playEntryCycle(card, token) {
   state.scopePlaybackPhase = sentenceTarget?.dataset.src ? "sentence" : "card";
   updateScopePlaybackButton();
   savePlaybackState();
-  if (await playTargetAndWait(sentenceTarget, token)) clipsPlayed += 1;
+  const sentencePlayed = await playTargetAndWait(sentenceTarget, token);
+  if (sentencePlayed) {
+    clipsPlayed += 1;
+    // Keep a clear one-second silence between this sentence and the next
+    // card's word audio. A token check lets stop/restart invalidate the wait.
+    if (!await waitAfterSentence(token)) return {completed: false, clipsPlayed};
+    if (!await waitForScopeResume(token)) return {completed: false, clipsPlayed};
+  }
   return {completed: token === scopePlaybackToken, clipsPlayed};
 }
 
