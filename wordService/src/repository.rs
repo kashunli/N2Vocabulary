@@ -75,16 +75,6 @@ struct EntryRow {
     mark_updated_at: Option<String>,
 }
 
-/// The audio export works from concrete clip paths rather than serialized entry
-/// payloads. Keeping this small type private makes the export contract obvious:
-/// one flagged word contributes exactly word audio, then sentence audio.
-#[derive(Debug)]
-struct FlaggedAudioExportItem {
-    source_index: i64,
-    word_clip: String,
-    sentence_clip: String,
-}
-
 impl WordRepository {
     /// Create a repository handle.
     ///
@@ -450,9 +440,12 @@ impl WordRepository {
             SELECT DISTINCT
               be.entry_id, be.item_id, be.uuid, be.book_code, be.source_index, be.unit_number,
               u.header AS unit_header, u.title AS unit_title, v.kanji, v.reading,
-              v.verb_pattern, v.meaning_en, v.meaning_zh, be.sentence,
+              COALESCE(NULLIF(be.verb_pattern, ''), v.verb_pattern) AS verb_pattern,
+              COALESCE(NULLIF(be.meaning_en, ''), v.meaning_en) AS meaning_en,
+              COALESCE(NULLIF(be.meaning_zh, ''), v.meaning_zh) AS meaning_zh,
+              be.sentence,
               COALESCE(be.explanation_md, v.explanation_md) AS explanation_md,
-              v.word_clip, be.sentence_clip,
+              COALESCE(be.word_clip, v.word_clip) AS word_clip, be.sentence_clip,
               m.known, m.flagged, m.updated_at AS mark_updated_at
             FROM book_entries be
             JOIN vocabulary_items v ON v.item_id = be.item_id
@@ -497,9 +490,12 @@ impl WordRepository {
             SELECT
               be.entry_id, be.item_id, be.uuid, be.book_code, be.source_index, be.unit_number,
               u.header AS unit_header, u.title AS unit_title, v.kanji, v.reading,
-              v.verb_pattern, v.meaning_en, v.meaning_zh, be.sentence,
+              COALESCE(NULLIF(be.verb_pattern, ''), v.verb_pattern) AS verb_pattern,
+              COALESCE(NULLIF(be.meaning_en, ''), v.meaning_en) AS meaning_en,
+              COALESCE(NULLIF(be.meaning_zh, ''), v.meaning_zh) AS meaning_zh,
+              be.sentence,
               COALESCE(be.explanation_md, v.explanation_md) AS explanation_md,
-              v.word_clip, be.sentence_clip,
+              COALESCE(be.word_clip, v.word_clip) AS word_clip, be.sentence_clip,
               m.known, m.flagged, m.updated_at AS mark_updated_at
             FROM book_entries be
             JOIN vocabulary_items v ON v.item_id = be.item_id
@@ -580,7 +576,27 @@ impl WordRepository {
         let sql = format!(
             r#"
             SELECT ex.item_id, ex.position, ex.kind, text, reading, translation_en,
-                   translation_zh, explanation_md, audio_clip, ex.category,
+                   translation_zh, explanation_md,
+                   COALESCE(
+                     (
+                       SELECT source_entry.sentence_clip
+                       FROM item_example_sources p
+                       JOIN book_entries source_entry
+                         ON source_entry.item_id = p.item_id
+                        AND source_entry.book_code = p.source_book_code
+                        AND source_entry.source_index = p.source_index
+                       WHERE p.item_id = ex.item_id AND p.position = ex.position
+                         AND TRIM(COALESCE(source_entry.sentence, '')) = TRIM(COALESCE(ex.text, ''))
+                         AND TRIM(COALESCE(source_entry.sentence_clip, '')) <> ''
+                       ORDER BY CASE p.source_book_code
+                                  WHEN 'N1' THEN 0 WHEN 'N2' THEN 1 WHEN 'N3' THEN 2 ELSE 3
+                                END,
+                                p.source_book_code, p.source_index
+                       LIMIT 1
+                     ),
+                     ex.audio_clip
+                   ) AS resolved_audio_clip,
+                   ex.category,
                    CASE WHEN s.item_id IS NULL THEN 0 ELSE 1 END AS starred,
                    (
                      SELECT p.source_book_code FROM item_example_sources p
@@ -591,7 +607,22 @@ impl WordRepository {
                      SELECT p.source_index FROM item_example_sources p
                      WHERE p.item_id = ex.item_id AND p.position = ex.position
                      ORDER BY p.source_book_code, p.source_index LIMIT 1
-                   ) AS source_index
+                   ) AS source_index,
+                   (
+                     SELECT p.source_book_code
+                     FROM item_example_sources p
+                     JOIN book_entries source_entry
+                       ON source_entry.item_id = p.item_id
+                      AND source_entry.book_code = p.source_book_code
+                      AND source_entry.source_index = p.source_index
+                     WHERE p.item_id = ex.item_id AND p.position = ex.position
+                       AND TRIM(COALESCE(source_entry.sentence, '')) = TRIM(COALESCE(ex.text, ''))
+                     ORDER BY CASE p.source_book_code
+                                WHEN 'N1' THEN 0 WHEN 'N2' THEN 1 WHEN 'N3' THEN 2 ELSE 3
+                              END,
+                              p.source_book_code, p.source_index
+                     LIMIT 1
+                   ) AS main_source_book_code
             FROM item_examples ex
             LEFT JOIN item_sentence_stars s
               ON s.item_id = ex.item_id AND s.position = ex.position
@@ -620,6 +651,7 @@ impl WordRepository {
                     starred: int_to_bool(row.get(10)?),
                     source_book_code: row.get(11)?,
                     source_index: row.get(12)?,
+                    main_source_book_code: row.get(13)?,
                 },
             ))
         })?;
@@ -666,21 +698,56 @@ impl WordRepository {
         // Work with slices here so the rest of the function can treat "no
         // examples" and "empty examples Vec" the same way without cloning.
         let examples_slice = examples.map(Vec::as_slice).unwrap_or(&[]);
-        let main_example = examples_slice
+        // Mimikara is the primary study source. When the same vocabulary item
+        // occurs in several books, choose its originating Mimikara sentence in
+        // the stable N1 > N2 > N3 order, regardless of which book is open.
+        let preferred_mimikara_main = examples_slice
             .iter()
-            .find(|example| example.kind == "main_sentence")
+            .filter_map(|example| {
+                mimikara_book_priority(example.main_source_book_code.as_deref())
+                    .map(|priority| (priority, example.position, example))
+            })
+            .min_by_key(|(priority, position, _)| (*priority, *position))
+            .map(|(_, _, example)| example);
+        let main_example = preferred_mimikara_main
+            .or_else(|| {
+                row.sentence.as_deref().and_then(|sentence| {
+                    examples_slice
+                        .iter()
+                        .find(|example| example.text.trim() == sentence.trim())
+                })
+            })
+            .or_else(|| {
+                examples_slice
+                    .iter()
+                    .find(|example| example.main_source_book_code.is_some())
+            })
+            .or_else(|| {
+                examples_slice
+                    .iter()
+                    .find(|example| example.kind == "main_sentence")
+            })
             .or_else(|| examples_slice.iter().find(|example| example.position == 0));
 
-        // The current schema stores the main sentence in entry_examples at
-        // position 0. The legacy entries.sentence column stays as a fallback so
-        // the service can survive mid-migration databases.
+        // The selected example is authoritative. The book-scoped sentence is
+        // retained only as a compatibility fallback for incomplete migrations.
         let sentence = main_example
             .map(|example| example.text.clone())
             .or_else(|| row.sentence.clone())
             .unwrap_or_default();
+        let selected_matches_current_book =
+            main_example
+                .zip(row.sentence.as_deref())
+                .is_some_and(|(example, current_sentence)| {
+                    example.text.trim() == current_sentence.trim()
+                });
         let sentence_audio_url = main_example
             .and_then(|example| example.audio_url.clone())
-            .or_else(|| self.audio_url(row.sentence_clip.as_deref()));
+            .or_else(|| {
+                selected_matches_current_book
+                    .then(|| self.audio_url(row.sentence_clip.as_deref()))
+                    .flatten()
+            });
 
         EntryPayload {
             entry_id: row.entry_id,
@@ -704,9 +771,10 @@ impl WordRepository {
             sentence_translation_zh: main_example
                 .map(|example| example.translation_zh.clone())
                 .unwrap_or_default(),
+            sentence_position: main_example.map(|example| example.position).unwrap_or(0),
             sentence_starred: main_example.map(|example| example.starred).unwrap_or(false),
             word_audio_url: self.audio_url(row.word_clip.as_deref()),
-            sentence_audio_url,
+            sentence_audio_url: sentence_audio_url.clone(),
             mark: MarkState {
                 known: row.known.map(int_to_bool).unwrap_or(false),
                 flagged: row.flagged.map(int_to_bool).unwrap_or(false),
@@ -717,11 +785,25 @@ impl WordRepository {
             // terms stored in entry_examples positions 1+ can render on cards,
             // while detail view still receives the complete example set.
             examples: if detail {
-                Some(examples_slice.to_vec())
+                let mut ordered_examples = examples_slice.to_vec();
+                if let Some(main) = main_example {
+                    ordered_examples.sort_by_key(|example| {
+                        (example.position != main.position, example.position)
+                    });
+                    if let Some(first) = ordered_examples.first_mut() {
+                        first.kind = "main_sentence".to_string();
+                        first.audio_url = sentence_audio_url.clone();
+                    }
+                }
+                Some(ordered_examples)
             } else {
                 let extra_examples = examples_slice
                     .iter()
-                    .filter(|example| example.position > 0)
+                    .filter(|example| {
+                        main_example
+                            .map(|main| example.position != main.position)
+                            .unwrap_or(true)
+                    })
                     .cloned()
                     .collect::<Vec<_>>();
                 (!extra_examples.is_empty()).then_some(extra_examples)
@@ -826,9 +908,11 @@ impl WordRepository {
             SELECT
               be.entry_id, ex.position, be.source_index, be.unit_number,
               u.header, u.title, v.kanji, v.reading,
-              v.meaning_en, v.meaning_zh, ex.text, ex.translation_en,
+              COALESCE(NULLIF(be.meaning_en, ''), v.meaning_en) AS meaning_en,
+              COALESCE(NULLIF(be.meaning_zh, ''), v.meaning_zh) AS meaning_zh,
+              ex.text, ex.translation_en,
               ex.translation_zh, ex.explanation_md, ex.audio_clip,
-              v.word_clip, s.updated_at
+              COALESCE(be.word_clip, v.word_clip) AS word_clip, s.updated_at
             FROM item_sentence_stars s
             JOIN item_examples ex
               ON ex.item_id = s.item_id AND ex.position = s.position
@@ -1027,7 +1111,8 @@ impl WordRepository {
         let row: Option<(i64, String, Option<String>, Option<String>)> = conn
             .query_row(
                 r#"
-                SELECT be.item_id, v.kanji, v.reading, v.word_clip
+                SELECT be.entry_id, v.kanji, v.reading,
+                       COALESCE(be.word_clip, v.word_clip) AS word_clip
                 FROM book_entries be
                 JOIN vocabulary_items v ON v.item_id = be.item_id
                 WHERE be.book_code = ? AND be.entry_id = ?
@@ -1038,7 +1123,7 @@ impl WordRepository {
             .optional()?;
         drop(conn);
 
-        let Some((item_id, word, reading, current_clip)) = row else {
+        let Some((entry_id, word, reading, current_clip)) = row else {
             bail!("unknown entry");
         };
         let word = word_text_for_tts(&word, reading.as_deref());
@@ -1067,7 +1152,7 @@ impl WordRepository {
             bail!("TTS returned no audio bytes");
         }
         write_file_atomically(&final_path, &audio_bytes)?;
-        self.update_word_audio_clip(item_id, &generated_rel_path, generated_dir)?;
+        self.update_word_audio_clip(entry_id, &generated_rel_path, generated_dir)?;
         let generated_url = self
             .audio_url(Some(&generated_rel_path))
             .context("generated word audio path should be servable")?;
@@ -1176,7 +1261,7 @@ impl WordRepository {
             r#"
             SELECT
               be.source_index,
-              v.word_clip,
+              COALESCE(be.word_clip, v.word_clip) AS word_clip,
               COALESCE(ex.audio_clip, be.sentence_clip) AS sentence_clip
             FROM book_entries be
             JOIN vocabulary_items v ON v.item_id = be.item_id
@@ -1249,7 +1334,7 @@ impl WordRepository {
 
     fn update_word_audio_clip(
         &self,
-        item_id: i64,
+        entry_id: i64,
         clip_path: &str,
         generated_dir: &str,
     ) -> Result<()> {
@@ -1266,8 +1351,8 @@ impl WordRepository {
             "#,
         )?;
         let changed = conn.execute(
-            "UPDATE vocabulary_items SET word_clip = ? WHERE item_id = ?",
-            params![clip_path, item_id],
+            "UPDATE book_entries SET word_clip = ? WHERE book_code = ? AND entry_id = ?",
+            params![clip_path, &self.book_code, entry_id],
         )?;
         if changed != 1 {
             bail!("unknown entry");
@@ -1312,6 +1397,15 @@ fn collect_rows<T>(
         values.push(row?);
     }
     Ok(values)
+}
+
+fn mimikara_book_priority(book_code: Option<&str>) -> Option<u8> {
+    match book_code {
+        Some("N1") => Some(0),
+        Some("N2") => Some(1),
+        Some("N3") => Some(2),
+        _ => None,
+    }
 }
 
 fn normalize_book_code(value: &str) -> String {

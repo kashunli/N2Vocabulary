@@ -171,6 +171,139 @@ fn entry_listing_can_search_current_unit_or_all_units() {
 }
 
 #[test]
+fn card_payload_keeps_book_specific_main_sentence_at_its_real_position() {
+    let fixture = Fixture::new();
+    let conn = Connection::open(&fixture.db_path).unwrap();
+    conn.execute(
+        "UPDATE book_entries SET sentence = '人生経験が豊富だ。' WHERE book_code = 'N2' AND entry_id = 1",
+        [],
+    )
+    .unwrap();
+    drop(conn);
+
+    let listed = fixture.repo.list_entries(Some(1), "all", "人生").unwrap();
+    let entry = listed
+        .items
+        .iter()
+        .find(|entry| entry.entry_id == 1)
+        .expect("entry exists");
+    assert_eq!(entry.sentence, "人生経験が豊富だ。");
+    assert_eq!(entry.sentence_translation_en, "Has rich life experience.");
+    assert_eq!(entry.sentence_position, 1);
+
+    let examples = entry.examples.as_ref().expect("card examples");
+    assert!(
+        examples.iter().all(|example| example.position != 1),
+        "the selected main stays in compact top-level fields"
+    );
+    assert_eq!(
+        examples
+            .iter()
+            .find(|example| example.position == 0)
+            .expect("the shared sentence remains available as an extra")
+            .text,
+        "幸せな人生を送る。"
+    );
+}
+
+#[test]
+fn mimikara_main_sentences_take_priority_in_n1_n2_n3_order() {
+    let fixture = Fixture::new();
+    for clip in ["n1-main.mp3", "n3-main.mp3", "gwb-main.mp3"] {
+        fs::write(fixture.clips_dir.join("sentences").join(clip), clip).unwrap();
+    }
+
+    let conn = Connection::open(&fixture.db_path).unwrap();
+    conn.execute_batch(
+        r#"
+        INSERT INTO books(code, title) VALUES
+          ('N1', 'Mimikara N1'),
+          ('N3', 'Mimikara N3'),
+          ('GWB_N2', 'Green Word Book N2');
+        INSERT INTO units(book_code, number, header, title) VALUES
+          ('N1', 1, 'N1 unit', 'N1 unit'),
+          ('N3', 1, 'N3 unit', 'N3 unit'),
+          ('GWB_N2', 1, 'GWB unit', 'GWB unit');
+
+        INSERT INTO book_entries(
+          entry_id, item_id, uuid, book_code, unit_number, source_index, position,
+          sentence, sentence_clip
+        ) VALUES
+          (101, 1, 'uuid-n1-shared', 'N1', 1, 101, 1,
+           'N1で人生を学ぶ。', 'clips/sentences/n1-main.mp3'),
+          (102, 1, 'uuid-n3-shared', 'N3', 1, 102, 1,
+           'N3で人生を学ぶ。', 'clips/sentences/n3-main.mp3'),
+          (103, 1, 'uuid-gwb-shared', 'GWB_N2', 1, 103, 1,
+           '別の本で人生を学ぶ。', 'clips/sentences/gwb-main.mp3');
+
+        INSERT INTO item_examples(
+          item_id, position, kind, text, translation_en
+        ) VALUES
+          (1, 3, 'example_sentence', 'N3で人生を学ぶ。', 'Learn about life in N3.'),
+          (1, 4, 'example_sentence', '別の本で人生を学ぶ。', 'Learn about life in another book.'),
+          (1, 5, 'example_sentence', 'N1で人生を学ぶ。', 'Learn about life in N1.');
+
+        INSERT OR IGNORE INTO item_source_notes(
+          item_id, source_book_code, source_entry_uuid, source_index, source_sentence
+        ) VALUES
+          (1, 'N2', 'uuid-1', 1, '幸せな人生を送る。'),
+          (1, 'N1', 'uuid-n1-shared', 101, 'N1で人生を学ぶ。'),
+          (1, 'N3', 'uuid-n3-shared', 102, 'N3で人生を学ぶ。'),
+          (1, 'GWB_N2', 'uuid-gwb-shared', 103, '別の本で人生を学ぶ。');
+        INSERT OR IGNORE INTO item_example_sources(
+          item_id, position, source_book_code, source_index
+        ) VALUES
+          (1, 0, 'N2', 1),
+          (1, 3, 'N3', 102),
+          (1, 4, 'GWB_N2', 103),
+          (1, 5, 'N1', 101);
+        "#,
+    )
+    .unwrap();
+    drop(conn);
+
+    let preferred = fixture.repo.get_entry(1).unwrap().expect("entry exists");
+    assert_eq!(preferred.sentence, "N1で人生を学ぶ。");
+    assert_eq!(preferred.sentence_position, 5);
+    assert_eq!(
+        preferred.sentence_audio_url.as_deref(),
+        Some("/audio/clips/sentences/n1-main.mp3")
+    );
+
+    let conn = Connection::open(&fixture.db_path).unwrap();
+    conn.execute_batch(
+        r#"
+        DELETE FROM item_examples WHERE item_id = 1 AND position = 5;
+        DELETE FROM item_source_notes
+          WHERE item_id = 1 AND source_book_code = 'N1' AND source_index = 101;
+        DELETE FROM book_entries WHERE entry_id = 101;
+        "#,
+    )
+    .unwrap();
+    drop(conn);
+
+    let without_n1 = fixture.repo.get_entry(1).unwrap().expect("entry exists");
+    assert_eq!(without_n1.sentence, "幸せな人生を送る。");
+    assert_eq!(without_n1.sentence_position, 0);
+
+    let conn = Connection::open(&fixture.db_path).unwrap();
+    conn.execute_batch(
+        r#"
+        UPDATE book_entries SET sentence = NULL, sentence_clip = NULL WHERE entry_id = 1;
+        DELETE FROM item_examples WHERE item_id = 1 AND position = 0;
+        DELETE FROM item_source_notes
+          WHERE item_id = 1 AND source_book_code = 'N2' AND source_index = 1;
+        "#,
+    )
+    .unwrap();
+    drop(conn);
+
+    let without_n1_or_n2 = fixture.repo.get_entry(1).unwrap().expect("entry exists");
+    assert_eq!(without_n1_or_n2.sentence, "N3で人生を学ぶ。");
+    assert_eq!(without_n1_or_n2.sentence_position, 3);
+}
+
+#[test]
 fn detail_includes_examples_and_audio_urls() {
     let fixture = Fixture::new();
 
@@ -185,6 +318,75 @@ fn detail_includes_examples_and_audio_urls() {
     assert_eq!(
         entry.sentence_audio_url.as_deref(),
         Some("/audio/clips/sentences/sentence1.mp3")
+    );
+}
+
+#[test]
+fn book_entry_audio_overrides_shared_item_audio() {
+    let fixture = Fixture::new();
+    fs::create_dir_all(fixture.clips_dir.join("book_audio")).unwrap();
+    fs::create_dir_all(fixture.clips_dir.join("generated")).unwrap();
+    fs::write(
+        fixture.clips_dir.join("book_audio").join("word1.mp3"),
+        b"human word",
+    )
+    .unwrap();
+    fs::write(
+        fixture.clips_dir.join("book_audio").join("sentence1.mp3"),
+        b"human sentence",
+    )
+    .unwrap();
+    fs::write(
+        fixture.clips_dir.join("generated").join("shared_word1.mp3"),
+        b"generated word",
+    )
+    .unwrap();
+    fs::write(
+        fixture
+            .clips_dir
+            .join("generated")
+            .join("shared_sentence1.mp3"),
+        b"generated sentence",
+    )
+    .unwrap();
+
+    let conn = Connection::open(&fixture.db_path).unwrap();
+    conn.execute(
+        "UPDATE vocabulary_items SET word_clip = 'clips/generated/shared_word1.mp3' WHERE item_id = 1",
+        [],
+    )
+    .unwrap();
+    conn.execute(
+        "UPDATE item_examples SET audio_clip = 'clips/generated/shared_sentence1.mp3' WHERE item_id = 1 AND position = 0",
+        [],
+    )
+    .unwrap();
+    conn.execute(
+        "UPDATE book_entries SET word_clip = 'clips/book_audio/word1.mp3', sentence_clip = 'clips/book_audio/sentence1.mp3' WHERE book_code = 'N2' AND entry_id = 1",
+        [],
+    )
+    .unwrap();
+    drop(conn);
+
+    let listed = fixture.repo.list_entries(Some(1), "all", "人生").unwrap();
+    let list_entry = &listed.items[0];
+    assert_eq!(
+        list_entry.word_audio_url.as_deref(),
+        Some("/audio/clips/book_audio/word1.mp3")
+    );
+    assert_eq!(
+        list_entry.sentence_audio_url.as_deref(),
+        Some("/audio/clips/book_audio/sentence1.mp3")
+    );
+
+    let detail = fixture.repo.get_entry(1).unwrap().expect("entry exists");
+    assert_eq!(
+        detail.word_audio_url.as_deref(),
+        Some("/audio/clips/book_audio/word1.mp3")
+    );
+    assert_eq!(
+        detail.sentence_audio_url.as_deref(),
+        Some("/audio/clips/book_audio/sentence1.mp3")
     );
 }
 
@@ -415,7 +617,7 @@ fn missing_word_audio_is_generated_and_stored() {
     let conn = Connection::open(&fixture.db_path).unwrap();
     let stored: String = conn
         .query_row(
-            "SELECT word_clip FROM vocabulary_items WHERE item_id = 1",
+            "SELECT word_clip FROM book_entries WHERE book_code = 'N2' AND entry_id = 1",
             [],
             |row| row.get(0),
         )
@@ -695,4 +897,8 @@ fn create_test_db(db_path: &PathBuf) {
     .expect("create schema");
     conn.execute_batch(include_str!("../../db/migrations/007_vocabulary_items.sql"))
         .expect("create canonical item schema");
+    conn.execute_batch(include_str!(
+        "../../db/migrations/008_book_entry_word_clip.sql"
+    ))
+    .expect("create book-specific word audio schema");
 }

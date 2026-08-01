@@ -19,6 +19,9 @@ const DEFAULT_TTS_PITCH: &str = "+0Hz";
 pub struct AppConfig {
     pub db_path: PathBuf,
     pub static_dir: PathBuf,
+    pub review_db_path: PathBuf,
+    pub review_evidence_path: PathBuf,
+    pub review_seed_path: PathBuf,
     pub clips_dir: PathBuf,
     pub host: String,
     pub port: u16,
@@ -52,6 +55,24 @@ impl AppConfig {
         let default_clips = project_root.join("clips");
 
         Ok(Self {
+            review_db_path: env_path(
+                "N2_WORD_SERVICE_REVIEW_DB",
+                word_service_dir.join("data").join("audio_reviews.sqlite"),
+            ),
+            review_evidence_path: env_path(
+                "N2_WORD_SERVICE_REVIEW_EVIDENCE",
+                project_root
+                    .join("reviews")
+                    .join("vocabulary_audio")
+                    .join("n2_all_both_candidates.json"),
+            ),
+            review_seed_path: env_path(
+                "N2_WORD_SERVICE_REVIEW_SEED",
+                project_root
+                    .join("reviews")
+                    .join("vocabulary_audio")
+                    .join("n2_all_both.json"),
+            ),
             db_path: env_path("N2_WORD_SERVICE_DB", default_db),
             static_dir: env_path("N2_WORD_SERVICE_STATIC", default_static),
             clips_dir: env_path("N2_WORD_SERVICE_CLIPS", default_clips),

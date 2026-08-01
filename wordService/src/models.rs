@@ -76,6 +76,11 @@ pub struct EntryExample {
     pub source_book_code: Option<String>,
     pub source_index: Option<i64>,
     pub category: Option<String>,
+
+    // Internal selection metadata. A merged example can be the originating
+    // sentence of a source book even when its shared item position is not 0.
+    #[serde(skip)]
+    pub main_source_book_code: Option<String>,
 }
 
 /// Word-level material retained from a merged source book entry.
@@ -138,6 +143,7 @@ pub struct EntryPayload {
     pub sentence: String,
     pub sentence_translation_en: String,
     pub sentence_translation_zh: String,
+    pub sentence_position: i64,
     pub sentence_starred: bool,
     pub word_audio_url: Option<String>,
     pub sentence_audio_url: Option<String>,
