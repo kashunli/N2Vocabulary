@@ -104,6 +104,7 @@ export function useAudioBufferPlayer(
     bufferRef.current = null;
     loadedUrlRef.current = "";
     decodePromiseRef.current = null;
+    publishCurrentTime(0);
     setAudioBuffer(null);
     setIsPlaying(false);
     setLoadFailed(false);
@@ -141,7 +142,7 @@ export function useAudioBufferPlayer(
       if (contextRef.current === context) contextRef.current = null;
       void context.close();
     };
-  }, [audioUrl, cancelAnimation, detachSource]);
+  }, [audioUrl, cancelAnimation, detachSource, publishCurrentTime]);
 
   const playRange = useCallback(async ({
     start,

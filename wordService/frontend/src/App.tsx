@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 import {
   exportUnitFlaggedAudio,
@@ -62,6 +62,106 @@ function savePlaybackSettings(silence: number, mode: PlaybackMode) {
   }));
 }
 
+type MarkdownBlock =
+  | {kind: "paragraph"; lines: string[]}
+  | {kind: "heading"; level: 1 | 2 | 3; text: string}
+  | {kind: "list"; ordered: boolean; items: string[]}
+  | {kind: "rule"};
+
+function renderInlineMarkdown(value: string): ReactNode[] {
+  const tokens = value.split(/(`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*)/g).filter(Boolean);
+  return tokens.map((token, index) => {
+    if (token.startsWith("**") && token.endsWith("**")) {
+      return <strong key={index}>{token.slice(2, -2)}</strong>;
+    }
+    if (token.startsWith("*") && token.endsWith("*")) {
+      return <em key={index}>{token.slice(1, -1)}</em>;
+    }
+    if (token.startsWith("`") && token.endsWith("`")) {
+      return <code key={index}>{token.slice(1, -1)}</code>;
+    }
+    return <span key={index}>{token}</span>;
+  });
+}
+
+function parseMarkdown(value: string): MarkdownBlock[] {
+  const blocks: MarkdownBlock[] = [];
+  let paragraph: string[] = [];
+  let listItems: string[] = [];
+  let listOrdered = false;
+
+  const flushParagraph = () => {
+    if (paragraph.length) blocks.push({kind: "paragraph", lines: paragraph});
+    paragraph = [];
+  };
+  const flushList = () => {
+    if (listItems.length) blocks.push({kind: "list", ordered: listOrdered, items: listItems});
+    listItems = [];
+  };
+
+  value.replace(/\r\n/g, "\n").split("\n").forEach((rawLine) => {
+    const line = rawLine.trim();
+    if (!line) {
+      flushParagraph();
+      flushList();
+      return;
+    }
+    if (/^---+$/.test(line)) {
+      flushParagraph();
+      flushList();
+      blocks.push({kind: "rule"});
+      return;
+    }
+    const heading = line.match(/^(#{1,3})\s+(.+)$/);
+    if (heading) {
+      flushParagraph();
+      flushList();
+      blocks.push({kind: "heading", level: heading[1].length as 1 | 2 | 3, text: heading[2]});
+      return;
+    }
+    const bullet = line.match(/^[-*]\s+(.+)$/);
+    if (bullet) {
+      flushParagraph();
+      if (listItems.length && listOrdered) flushList();
+      listOrdered = false;
+      listItems.push(bullet[1]);
+      return;
+    }
+    const numbered = line.match(/^\d+[.)]\s+(.+)$/);
+    if (numbered) {
+      flushParagraph();
+      if (listItems.length && !listOrdered) flushList();
+      listOrdered = true;
+      listItems.push(numbered[1]);
+      return;
+    }
+    flushList();
+    paragraph.push(line);
+  });
+
+  flushParagraph();
+  flushList();
+  return blocks;
+}
+
+function MarkdownContent({value}: {value: string}) {
+  return <div className="react-explanation react-markdown">
+    {parseMarkdown(value).map((block, index) => {
+      if (block.kind === "rule") return <hr key={index} />;
+      if (block.kind === "heading") {
+        if (block.level === 1) return <h3 key={index}>{renderInlineMarkdown(block.text)}</h3>;
+        if (block.level === 2) return <h4 key={index}>{renderInlineMarkdown(block.text)}</h4>;
+        return <h5 key={index}>{renderInlineMarkdown(block.text)}</h5>;
+      }
+      if (block.kind === "list") {
+        const ListTag = block.ordered ? "ol" : "ul";
+        return <ListTag key={index}>{block.items.map((item, itemIndex) => <li key={itemIndex}>{renderInlineMarkdown(item)}</li>)}</ListTag>;
+      }
+      return <p key={index}>{block.lines.map((line, lineIndex) => <span key={lineIndex}>{lineIndex ? <br /> : null}{renderInlineMarkdown(line)}</span>)}</p>;
+    })}
+  </div>;
+}
+
 export function App() {
   const [books, setBooks] = useState<BookSummary[]>([]);
   const [selectedBook, setSelectedBook] = useState("N2");
@@ -87,7 +187,8 @@ export function App() {
   const savedSettings = useMemo(readPlaybackSettings, []);
   const [postSentenceSilence, setPostSentenceSilence] = useState(savedSettings.silence);
   const [playbackMode, setPlaybackMode] = useState<PlaybackMode>(savedSettings.mode);
-  const [autoAdvance, setAutoAdvance] = useState(false);
+  const [autoAdvance, setAutoAdvance] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [playRequest, setPlayRequest] = useState(0);
   const [replayRequest, setReplayRequest] = useState(0);
   const [pauseRequest, setPauseRequest] = useState(0);
@@ -325,13 +426,12 @@ export function App() {
   }, [activeEntry, activePhase, advanceAfterPlayback, cancelEndTimer, playbackMode, postSentenceSilence]);
 
   const togglePlayback = useCallback(() => {
-    if (autoAdvance) {
-      setAutoAdvance(false);
+    if (isPlaying) {
       setPauseRequest((value) => value + 1);
     } else {
       requestPlayback();
     }
-  }, [autoAdvance, requestPlayback]);
+  }, [isPlaying, requestPlayback]);
 
   const replayFocused = useCallback(() => {
     setAutoAdvance(true);
@@ -456,7 +556,7 @@ export function App() {
           <p className="react-starred-sentence">{selectedStarred.text}</p>
           <p>{selectedStarred.translation_en || selectedStarred.translation_zh}</p>
           <p className="react-meaning">{selectedStarred.meaning_en || selectedStarred.meaning_zh}</p>
-          {selectedStarred.explanation_md ? <details open><summary>Sentence explanation</summary><p className="react-explanation">{selectedStarred.explanation_md}</p></details> : null}
+          {selectedStarred.explanation_md ? <details open><summary>Sentence explanation</summary><MarkdownContent value={selectedStarred.explanation_md} /></details> : null}
           <button type="button" onClick={() => {
             const index = entries.findIndex((entry) => entry.entry_id === selectedStarred.entry_id);
             if (index >= 0) {
@@ -499,7 +599,7 @@ export function App() {
         </div>
         <div className="react-toolbar-actions">
           <button type="button" onClick={toggleCoverAll} disabled={!entries.length} aria-pressed={allVisibleCovered}>{allVisibleCovered ? "Uncover all" : "Cover all"}</button>
-          <button type="button" onClick={togglePlayback} disabled={!target} aria-pressed={autoAdvance}>{autoAdvance ? "Pause visible" : "Play visible"}</button>
+          <button type="button" onClick={togglePlayback} disabled={!target} aria-pressed={isPlaying}>{isPlaying ? "Pause visible" : "Play visible"}</button>
           <button type="button" className={showStarred ? "is-selected" : ""} onClick={() => setShowStarred((current) => !current)} aria-pressed={showStarred}>★ Starred sentences</button>
           <a href="/audio-review.html">Audio text review</a>
           <button type="button" onClick={() => void exportFlaggedAudio()} disabled={selectedUnit === null}>Export flagged audio</button>
@@ -533,7 +633,7 @@ export function App() {
                   <button type="button" className={activeEntry.sentence_starred ? "is-on" : ""} onClick={() => void toggleSentenceStar()} aria-pressed={!!activeEntry.sentence_starred}>{activeEntry.sentence_starred ? "★" : "☆"} Sentence</button>
                 </div>
                 {detail?.sentence ? <div className="react-sentence"><strong>{detail.sentence}</strong><span>{detail.sentence_translation_en || detail.sentence_translation_zh}</span></div> : null}
-                {detail?.explanation_md ? <details><summary>Sentence explanation</summary><p className="react-explanation">{detail.explanation_md}</p></details> : null}
+                {detail?.explanation_md ? <details><summary>Sentence explanation</summary><MarkdownContent value={detail.explanation_md} /></details> : null}
               </>}
             </> : <p className="react-empty">Loading vocabulary…</p>}
           </section>
@@ -543,6 +643,7 @@ export function App() {
       <RailPlayer
         target={target}
         autoPlay={autoAdvance}
+        onPlayingChange={setIsPlaying}
         playRequest={playRequest}
         replayRequest={replayRequest}
         pauseRequest={pauseRequest}

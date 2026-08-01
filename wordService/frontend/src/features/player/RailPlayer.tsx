@@ -18,6 +18,7 @@ interface RailPlayerProps {
   pauseRequest: number;
   stopRequest: number;
   onEnded: () => void;
+  onPlayingChange: (playing: boolean) => void;
   onTogglePlayback: () => void;
   onReplay: () => void;
   onPrevious: () => void;
@@ -35,6 +36,7 @@ export function RailPlayer({
   pauseRequest,
   stopRequest,
   onEnded,
+  onPlayingChange,
   onTogglePlayback,
   onReplay,
   onPrevious,
@@ -53,6 +55,10 @@ export function RailPlayer({
   const lastPauseRequest = useRef(pauseRequest);
   const lastStopRequest = useRef(stopRequest);
   currentTimeRef.current = player.currentTime;
+
+  useEffect(() => {
+    onPlayingChange(player.isPlaying);
+  }, [onPlayingChange, player.isPlaying]);
 
   useEffect(() => {
     setError("");
