@@ -1,3 +1,4 @@
+use crate::audio_review::{AudioReviewStore, AudioReviewUpdate};
 use crate::config::AppConfig;
 use crate::repository::WordRepository;
 use crate::tts::TtsService;
@@ -24,6 +25,11 @@ pub fn run_server(config: AppConfig) -> Result<()> {
         &config.book_code,
     );
     repository.ensure_ready()?;
+    let audio_review = AudioReviewStore::load(
+        config.review_db_path.clone(),
+        &config.review_evidence_path,
+        &config.review_seed_path,
+    )?;
     let tts_service = TtsService::new(&config.tts)?;
 
     let address = format!("{}:{}", config.host, config.port);
@@ -34,6 +40,7 @@ pub fn run_server(config: AppConfig) -> Result<()> {
     );
     println!("  db: {}", config.db_path.display());
     println!("  clips: {}", config.clips_dir.display());
+    println!("  audio review db: {}", config.review_db_path.display());
     println!(
         "  generated word/sentence audio: {}",
         config.tts.generated_dir
@@ -47,12 +54,14 @@ pub fn run_server(config: AppConfig) -> Result<()> {
         let request_config = config.clone();
         let request_repository = repository.clone();
         let request_tts_service = tts_service.clone();
+        let request_audio_review = audio_review.clone();
         thread::spawn(move || {
             if let Err(error) = handle_request(
                 request,
                 request_config,
                 request_repository,
                 request_tts_service,
+                request_audio_review,
             ) {
                 eprintln!("request failed: {error:#}");
             }
@@ -67,13 +76,15 @@ fn handle_request(
     config: AppConfig,
     repository: WordRepository,
     tts_service: TtsService,
+    audio_review: AudioReviewStore,
 ) -> Result<()> {
     // Keep method routing near the top so unsupported mutation methods fail
     // before any path-specific logic runs.
     match request.method() {
         Method::Options => return send_options(request),
         Method::Get | Method::Head => {}
-        Method::Put => return handle_put(request, repository),
+        Method::Put => return handle_put(request, repository, audio_review),
+        Method::Delete => return handle_delete(request, audio_review),
         Method::Post => return handle_post(request, config, repository, tts_service),
         _ => {
             return send_json(
@@ -121,6 +132,9 @@ fn handle_request(
             );
         }
         "/api/marks" => return send_json(request, StatusCode(200), &repository.get_marks()?),
+        "/api/audio-review" => {
+            return send_json(request, StatusCode(200), &audio_review.list()?);
+        }
         "/api/starred-sentences" => {
             let unit = match params.get("unit").filter(|value| !value.is_empty()) {
                 Some(value) => Some(value.parse::<i64>().context("unit must be an integer")?),
@@ -321,7 +335,11 @@ fn handle_post(
     }
 }
 
-fn handle_put(mut request: Request, repository: WordRepository) -> Result<()> {
+fn handle_put(
+    mut request: Request,
+    repository: WordRepository,
+    audio_review: AudioReviewStore,
+) -> Result<()> {
     let parsed = parse_local_url(request.url())?;
     let path = parsed.path().trim_end_matches('/').to_string();
     let params = query_map(&parsed);
@@ -337,6 +355,49 @@ fn handle_put(mut request: Request, repository: WordRepository) -> Result<()> {
                 return send_json(request, StatusCode(400), &json!({"error": "invalid JSON"}));
             }
         };
+
+    if let Some(id_text) = path.strip_prefix("/api/audio-review/") {
+        let source_index = match id_text.parse::<i64>() {
+            Ok(value) => value,
+            Err(_) => {
+                return send_json(
+                    request,
+                    StatusCode(400),
+                    &json!({"error": "source index must be integer"}),
+                );
+            }
+        };
+        let update = match serde_json::from_value::<AudioReviewUpdate>(body.clone()) {
+            Ok(value) => value,
+            Err(_) => {
+                return send_json(
+                    request,
+                    StatusCode(400),
+                    &json!({"error": "invalid audio review payload"}),
+                );
+            }
+        };
+        return match audio_review.set_decision(source_index, update) {
+            Ok(decision) => send_json(request, StatusCode(200), &decision),
+            Err(error) if error.to_string().contains("unknown audio review item") => send_json(
+                request,
+                StatusCode(404),
+                &json!({"error": "unknown audio review item"}),
+            ),
+            Err(error)
+                if error.to_string().contains("invalid audio review decision")
+                    || error.to_string().contains("cannot be empty")
+                    || error.to_string().contains("equivalent to the original") =>
+            {
+                send_json(
+                    request,
+                    StatusCode(400),
+                    &json!({"error": error.to_string()}),
+                )
+            }
+            Err(error) => Err(error),
+        };
+    }
 
     if let Some(id_text) = path.strip_prefix("/api/marks/") {
         let entry_id = match id_text.parse::<i64>() {
@@ -416,6 +477,37 @@ fn handle_put(mut request: Request, repository: WordRepository) -> Result<()> {
     send_json(request, StatusCode(404), &json!({"error": "not found"}))
 }
 
+fn handle_delete(request: Request, audio_review: AudioReviewStore) -> Result<()> {
+    let parsed = parse_local_url(request.url())?;
+    let path = parsed.path().trim_end_matches('/').to_string();
+    let Some(id_text) = path.strip_prefix("/api/audio-review/") else {
+        return send_json(request, StatusCode(404), &json!({"error": "not found"}));
+    };
+    let source_index = match id_text.parse::<i64>() {
+        Ok(value) => value,
+        Err(_) => {
+            return send_json(
+                request,
+                StatusCode(400),
+                &json!({"error": "source index must be integer"}),
+            );
+        }
+    };
+    match audio_review.clear_decision(source_index) {
+        Ok(cleared) => send_json(
+            request,
+            StatusCode(200),
+            &json!({"ok": true, "cleared": cleared}),
+        ),
+        Err(error) if error.to_string().contains("unknown audio review item") => send_json(
+            request,
+            StatusCode(404),
+            &json!({"error": "unknown audio review item"}),
+        ),
+        Err(error) => Err(error),
+    }
+}
+
 fn send_options(request: Request) -> Result<()> {
     let response = add_headers(Response::empty(StatusCode(204)), cors_headers());
     request.respond(response)?;
@@ -434,7 +526,13 @@ fn repository_for_params(
 
 fn static_asset_path(static_dir: &Path, request_path: &str) -> Option<PathBuf> {
     match request_path {
-        "/styles.css" | "/app.js" => Some(static_dir.join(request_path.trim_start_matches('/'))),
+        "/styles.css"
+        | "/app.js"
+        | "/audio-review.html"
+        | "/audio-review.css"
+        | "/audio-review.js"
+        | "/study-wall-rail.html"
+        | "/study-wall-rail.css" => Some(static_dir.join(request_path.trim_start_matches('/'))),
         _ => {
             let module_name = request_path.strip_prefix("/js/")?;
             // ES module imports only need direct files in static/js. Keeping the
@@ -524,7 +622,10 @@ fn query_map(url: &Url) -> HashMap<String, String> {
 fn cors_headers() -> Vec<Header> {
     vec![
         header("Access-Control-Allow-Origin", "*"),
-        header("Access-Control-Allow-Methods", "GET, PUT, POST, OPTIONS"),
+        header(
+            "Access-Control-Allow-Methods",
+            "GET, PUT, POST, DELETE, OPTIONS",
+        ),
         header("Access-Control-Allow-Headers", "Content-Type"),
     ]
 }
@@ -547,6 +648,22 @@ mod tests {
         assert_eq!(
             static_asset_path(root, "/js/main.js").as_deref(),
             Some(Path::new("static/js/main.js"))
+        );
+        assert_eq!(
+            static_asset_path(root, "/audio-review.html").as_deref(),
+            Some(Path::new("static/audio-review.html"))
+        );
+        assert_eq!(
+            static_asset_path(root, "/audio-review.js").as_deref(),
+            Some(Path::new("static/audio-review.js"))
+        );
+        assert_eq!(
+            static_asset_path(root, "/study-wall-rail.html").as_deref(),
+            Some(Path::new("static/study-wall-rail.html"))
+        );
+        assert_eq!(
+            static_asset_path(root, "/study-wall-rail.css").as_deref(),
+            Some(Path::new("static/study-wall-rail.css"))
         );
     }
 

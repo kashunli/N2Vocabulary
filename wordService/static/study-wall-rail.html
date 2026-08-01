@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>N2 wordService · Rail Study Wall</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/study-wall-rail.css">
+</head>
+<body class="rail-page">
+  <header class="hero">
+    <div class="hero-main">
+      <div>
+        <h1 id="page-title">スタディウォール</h1>
+        <div class="eyebrow">Rail Study Wall · review design</div>
+        <div class="meta" id="summary-meta">Loading vocabulary...</div>
+      </div>
+      <div class="hero-pickers">
+        <label class="unit-picker"><span>Book</span><select id="book-select"></select></label>
+        <label class="unit-picker"><span>Section</span><select id="unit-select"></select></label>
+      </div>
+    </div>
+  </header>
+
+  <nav class="unit-strip" id="unit-strip" aria-label="Sections"></nav>
+
+  <section class="controls">
+    <input id="search" type="search" placeholder="Search kanji, reading, meaning, sentence...">
+    <div class="pill-group" aria-label="Study state filter">
+      <button class="pill state-pill active" data-state="all">All</button>
+      <button class="pill state-pill" data-state="unmarked">Unmarked</button>
+      <button class="pill state-pill known" data-state="known">Known</button>
+      <button class="pill state-pill flagged" data-state="flagged">Flagged</button>
+    </div>
+    <button class="cover-all" id="cover-all" type="button" aria-pressed="false">cover all</button>
+    <button class="scope-play-button" id="scope-play-button" type="button" aria-pressed="false" aria-keyshortcuts="Space">play visible</button>
+    <button class="starred-view-button" id="starred-view-button" type="button" aria-pressed="false">★ starred sentences</button>
+    <a class="audio-review-link" href="/audio-review.html">audio text review</a>
+    <button class="audio-export-button" id="audio-export-button" type="button">export flagged audio</button>
+    <button class="settings-button" id="settings-button" type="button" aria-label="Open playback settings" title="Playback settings">⚙</button>
+    <span class="counter" id="counter"></span>
+  </section>
+
+  <div class="status-banner" id="status-banner"></div>
+
+  <main>
+    <section id="card-view">
+      <div class="grid" id="card-grid"></div>
+    </section>
+
+    <section class="starred-view" id="starred-view" hidden>
+      <aside class="starred-filter">
+        <div class="section-label">Section filter</div>
+        <div class="starred-unit-list" id="starred-unit-list"></div>
+        <p class="starred-hint">Default review shows starred sentences across all sections. Section view keeps the same starred-only rule.</p>
+      </aside>
+      <section class="starred-list-panel" id="starred-list-panel">
+        <div class="starred-list-head"><div><div class="starred-title" id="starred-title">Starred sentences</div><div class="starred-subtitle" id="starred-subtitle"></div></div><div class="starred-count" id="starred-count"></div></div>
+        <div class="starred-list" id="starred-list"></div>
+        <div class="empty starred-empty" id="starred-empty">No starred sentences yet.</div>
+      </section>
+      <aside class="starred-detail" id="starred-detail"></aside>
+    </section>
+  </main>
+
+  <section class="playback-dock" id="playback-dock" aria-label="Playback controls">
+    <div class="playback-now" role="status" aria-live="polite"><span class="playback-now-label" id="playback-now-label">Ready to play</span><span class="playback-now-detail" id="playback-now-detail">Your visible list will move forward automatically.</span></div>
+    <div class="playback-actions">
+      <button class="transport-button replay" id="scope-replay-button" type="button" aria-keyshortcuts="R"><span>Replay now</span><kbd>R</kbd></button>
+      <button class="transport-button" id="scope-previous-button" type="button" aria-keyshortcuts="ArrowLeft A"><span>Previous</span><kbd>← / A</kbd></button>
+      <button class="transport-button pause" id="scope-pause-button" type="button" aria-keyshortcuts="Space"><span>Start</span><kbd>Space</kbd></button>
+      <button class="transport-button primary" id="scope-next-button" type="button" aria-keyshortcuts="ArrowRight D"><span>Next</span><kbd>→ / D</kbd></button>
+      <button class="transport-button" id="scope-stop-button" type="button" aria-keyshortcuts="Escape"><span>Stop</span><kbd>Esc</kbd></button>
+    </div>
+    <div class="playback-count" id="scope-playback-count">0 / 0</div>
+  </section>
+
+  <div class="modal-backdrop" id="backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-head"><div><div class="meta" id="modal-meta"></div><div class="kanji" id="modal-title"></div></div><button type="button" class="modal-close" aria-label="Close">×</button></div>
+      <div class="modal-body"><div class="modal-actions"><button type="button" class="icon-btn known">Known</button><button type="button" class="icon-btn flagged">Flag</button></div><div class="modal-meaning" id="modal-meaning"></div><div><div class="section-label">Sentences</div><div class="sentences" id="modal-sentences"></div></div><div id="modal-explanation-wrap"><div class="section-label">Explanation</div><div class="explanation" id="modal-explanation"></div></div></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop settings-backdrop" id="settings-backdrop" aria-hidden="true">
+    <div class="modal settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <div class="modal-head"><div><div class="meta">Playback</div><h2 class="settings-title" id="settings-title">Playback settings</h2></div><button type="button" class="modal-close" id="settings-close" aria-label="Close playback settings">×</button></div>
+      <div class="modal-body settings-body"><div class="setting-row"><div><label class="setting-label" for="post-sentence-silence">Silence after sentence</label><p class="setting-help">Wait this long before the next word starts during visible-list playback.</p></div><output class="setting-value" id="post-sentence-silence-value" for="post-sentence-silence">500 ms</output></div><input id="post-sentence-silence" class="setting-range" type="range" min="0" max="3000" step="100" value="500"><div class="setting-range-scale" aria-hidden="true"><span>None</span><span>3 seconds</span></div><button type="button" class="settings-reset" id="reset-playback-settings">Reset to 500 ms</button></div>
+    </div>
+  </div>
+
+  <template id="card-template">
+    <article class="card">
+      <div class="card-top"><span class="card-actions"><button class="icon-btn sentence-star" type="button" title="Star main sentence">☆</button><button class="icon-btn flagged" type="button" title="Flag for review" aria-keyshortcuts="F"><span aria-hidden="true">⚑</span><span class="card-action-text">Flag</span><kbd>F</kbd></button><button class="icon-btn known" type="button" title="Mark as known" aria-keyshortcuts="Enter K"><span aria-hidden="true">✓</span><span class="card-action-text">Known</span><kbd>Enter</kbd></button></span></div>
+      <progress class="card-playback-progress" max="3" value="0" aria-label="Word and sentence playback progress"></progress>
+      <div class="card-playback-label">Now playing</div>
+      <div class="card-kanji"></div><div class="card-meaning"></div><div class="card-sentence"></div><div class="card-sentence-translation"></div>
+      <div class="card-bottom"><button class="cover-button" type="button">cover</button><button class="details-button" type="button">details</button><span class="card-index"></span></div>
+    </article>
+  </template>
+  <script type="module" src="/js/main.js"></script>
+</body>
+</html>
