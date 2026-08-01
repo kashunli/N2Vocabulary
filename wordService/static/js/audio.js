@@ -41,6 +41,41 @@ function waitAfterSentence(token) {
   });
 }
 
+function entryHasSentence(entry) {
+  return Boolean(entry?.sentence && entry.sentence.trim());
+}
+
+function currentPlaybackClipIndex() {
+  const cardIndex = Math.max(0, state.scopePlaybackPosition - 1);
+  const currentEntry = state.currentEntries[cardIndex];
+  const clipsBeforeCurrent = state.currentEntries
+    .slice(0, cardIndex)
+    .reduce((total, entry) => total + (entryHasSentence(entry) ? 2 : 1), 0);
+  return clipsBeforeCurrent + (state.scopePlaybackPhase === "sentence" && entryHasSentence(currentEntry) ? 1 : 0);
+}
+
+function clipTargetForOffset(offset) {
+  const currentClip = currentPlaybackClipIndex();
+  const clips = state.currentEntries.reduce(
+    (total, entry) => total + (entryHasSentence(entry) ? 2 : 1),
+    0,
+  );
+  const targetClip = currentClip + Math.sign(offset);
+  if (targetClip < 0 || targetClip >= clips) return null;
+
+  let clipIndex = targetClip;
+  for (let entryIndex = 0; entryIndex < state.currentEntries.length; entryIndex += 1) {
+    const entry = state.currentEntries[entryIndex];
+    if (clipIndex === 0) return {entryIndex, phase: "word"};
+    clipIndex -= 1;
+    if (entryHasSentence(entry)) {
+      if (clipIndex === 0) return {entryIndex, phase: "sentence"};
+      clipIndex -= 1;
+    }
+  }
+  return null;
+}
+
 function playbackPhase(target) {
   return target && target.classList.contains("card-kanji") ? "word" : "sentence";
 }
@@ -360,8 +395,8 @@ export function updateScopePlaybackButton() {
 
   elements.scopeReplayButton.disabled = !active;
   elements.scopeReplayButton.querySelector("span").textContent = "Replay now";
-  elements.scopePreviousButton.disabled = !active || state.scopePlaybackPosition <= 1;
-  elements.scopeNextButton.disabled = !active;
+  elements.scopePreviousButton.disabled = !active || !clipTargetForOffset(-1);
+  elements.scopeNextButton.disabled = !active || !clipTargetForOffset(1);
   elements.scopeStopButton.disabled = !active;
   elements.scopePauseButton.disabled = !hasEntries;
   elements.scopePauseButton.querySelector("span").textContent = paused
@@ -408,7 +443,7 @@ async function resumeScopePlayback() {
   // If the Audio object is gone (e.g. after a page reload), start fresh from
   // the saved position.
   const startIndex = Math.max(0, state.scopePlaybackPosition - 1);
-  await startScopePlayback(startIndex);
+  await startScopePlayback(startIndex, state.scopePlaybackPhase === "sentence" ? "sentence" : "word");
 }
 
 function pauseScopePlaybackImmediately() {
@@ -421,16 +456,18 @@ function pauseScopePlaybackImmediately() {
   setBanner(`Paused ${state.scopePlaybackPosition} of ${state.scopePlaybackTotal}.`);
 }
 
-async function playEntryCycle(card, token) {
+async function playEntryCycle(card, token, startPhase = "word") {
   const wordTarget = card.querySelector(".card-kanji");
   const sentenceTarget = card.querySelector(".main-sentence-row");
   let clipsPlayed = 0;
 
-  state.scopePlaybackPhase = "word";
-  updateScopePlaybackButton();
-  savePlaybackState();
-  if (await playTargetAndWait(wordTarget, token)) clipsPlayed += 1;
-  if (!await waitForScopeResume(token)) return {completed: false, clipsPlayed};
+  if (startPhase !== "sentence") {
+    state.scopePlaybackPhase = "word";
+    updateScopePlaybackButton();
+    savePlaybackState();
+    if (await playTargetAndWait(wordTarget, token)) clipsPlayed += 1;
+    if (!await waitForScopeResume(token)) return {completed: false, clipsPlayed};
+  }
 
   state.scopePlaybackPhase = sentenceTarget?.dataset.src ? "sentence" : "card";
   updateScopePlaybackButton();
@@ -446,7 +483,7 @@ async function playEntryCycle(card, token) {
   return {completed: token === scopePlaybackToken, clipsPlayed};
 }
 
-async function startScopePlayback(startIndex = 0) {
+async function startScopePlayback(startIndex = 0, initialPhase = "word") {
   if (state.entriesLoading) {
     setBanner("The visible list is still loading. Playback will be ready in a moment.");
     return;
@@ -514,7 +551,7 @@ async function startScopePlayback(startIndex = 0) {
     }
     if (!await waitForScopeResume(token)) return;
 
-    const firstCycle = await playEntryCycle(card, token);
+    const firstCycle = await playEntryCycle(card, token, index === startIndex ? initialPhase : "word");
     clipsPlayed += firstCycle.clipsPlayed;
     if (!firstCycle.completed) return;
 
@@ -555,7 +592,7 @@ export async function toggleScopePlayback() {
       entry => entry.entry_id === saved.scopePlaybackEntryId
     );
     if (index >= 0) {
-      await startScopePlayback(index);
+      await startScopePlayback(index, saved.scopePlaybackPhase === "sentence" ? "sentence" : "word");
       return;
     }
   }
@@ -565,21 +602,28 @@ export async function toggleScopePlayback() {
 export async function replayScopeImmediately() {
   if (!scopePlaybackIsActive() || !state.scopePlaybackEntryId) return false;
   const currentIndex = Math.max(0, state.scopePlaybackPosition - 1);
-  setBanner("Replaying the current card now.");
-  await startScopePlayback(currentIndex);
+  const phase = state.scopePlaybackPhase === "sentence" ? "sentence" : "word";
+  setBanner(`Replaying the current ${phase} now.`);
+  await startScopePlayback(currentIndex, phase);
   return true;
 }
 
 export async function moveScopePlayback(offset) {
   if (!scopePlaybackIsActive() || !Number.isFinite(offset) || offset === 0) return;
-  const currentIndex = Math.max(0, state.scopePlaybackPosition - 1);
-  const nextIndex = currentIndex + Math.sign(offset);
-  if (nextIndex >= state.currentEntries.length) {
-    stopScopePlayback();
-    setBanner("Finished the visible list.");
+  const target = clipTargetForOffset(offset);
+  if (!target) {
+    if (offset > 0) {
+      stopScopePlayback();
+      setBanner("Finished the visible list.");
+    }
     return;
   }
-  await startScopePlayback(Math.max(0, nextIndex));
+  if (offset < 0) {
+    setBanner(`Playing the previous ${target.phase}.`);
+  } else {
+    setBanner(`Playing the next ${target.phase}.`);
+  }
+  await startScopePlayback(target.entryIndex, target.phase);
 }
 
 export async function downloadAudio(url) {
