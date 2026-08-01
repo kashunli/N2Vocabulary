@@ -2,10 +2,12 @@ import { generateEntryAudio, generateExampleAudio, exportUnitFlaggedAudio } from
 import { unitLabel } from "./format.js";
 import { clearSavedPlaybackState, elements, readSavedPlaybackState, savePlaybackState, setBanner, showError, state, updateAudioExportButton } from "./state.js";
 import { connectRailWavebar, releaseRailWavebar, seekRailWavebar } from "./audioWaveform.js";
-export { seekRailWavebar };
 import { clearScopePlaybackWindow, setScopePlaybackWindow, syncRailCurrentPanel } from "./audioRailPanel.js";
 import { clipTargetForOffset } from "./audioPlaybackNavigation.js";
-export { setScopePlaybackWindow, syncRailCurrentPanel };
+
+// Keep these exports stable for cards.js and the classic page while the
+// implementation is organized into focused audio modules.
+export { seekRailWavebar, setScopePlaybackWindow, syncRailCurrentPanel };
 
 let scopePlaybackToken = 0;
 let scopeResumeWaiters = [];
