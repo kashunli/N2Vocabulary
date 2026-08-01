@@ -16,6 +16,7 @@ import { PlaybackSettingsModal } from "./features/player/PlaybackSettingsModal";
 import { RailPlayer } from "./features/player/RailPlayer";
 import { useStudyPlayback } from "./features/player/useStudyPlayback";
 import { StarredView } from "./features/study/StarredView";
+import { StudyHeader, type FilterState } from "./features/study/StudyHeader";
 import { unitLabel } from "./features/study/unitLabel";
 import type {
   BookSummary,
@@ -24,8 +25,6 @@ import type {
   UnitSummary,
   VocabularySummary,
 } from "./types";
-
-type FilterState = "all" | "unmarked" | "known" | "flagged";
 
 export function App() {
   const [books, setBooks] = useState<BookSummary[]>([]);
@@ -309,43 +308,33 @@ export function App() {
 
   return (
     <main className="react-shell">
-      <header className="react-header">
-        <div className="react-brand">
-          <span className="eyebrow">N2 VOCABULARY · REACT PREVIEW</span>
-          <h1>{currentBook?.title || "スタディウォール"}</h1>
-          <div className="react-summary-meta">
-            {summary ? <><span>{summary.entries} entries</span><span>{summary.units} sections</span><span>{summary.known} known</span><span>{summary.flagged} flagged</span><span>{summary.unmarked} unmarked</span></> : <span>Loading vocabulary…</span>}
-          </div>
-        </div>
-        <div className="react-pickers">
-          <label><span>Book</span><select value={selectedBook} onChange={(event) => { setSelectedBook(event.target.value); setSelectedUnit(null); setShowStarred(false); }}><option value="">Choose book</option>{books.map((book) => <option key={book.code} value={book.code}>{book.code} · {book.title}</option>)}</select></label>
-          <label><span>Section</span><select value={selectedUnit ?? ""} onChange={(event) => setSelectedUnit(event.target.value ? Number(event.target.value) : null)}><option value="">All sections</option>{units.map((item) => <option key={item.number} value={item.number}>{unitLabel(item)} · {item.entry_count} words</option>)}</select></label>
-        </div>
-      </header>
-
-      <nav className="react-unit-strip" aria-label="Sections">
-        <button type="button" className={selectedUnit === null ? "is-selected" : ""} onClick={() => setSelectedUnit(null)}>All</button>
-        {units.map((item) => <button type="button" key={item.number} className={selectedUnit === item.number ? "is-selected" : ""} onClick={() => setSelectedUnit(item.number)} title={`${item.title} · ${item.entry_count} words`}>{unitLabel(item)}</button>)}
-      </nav>
-
-      <section className="react-toolbar" aria-label="Study controls">
-        <div className="react-toolbar-search"><input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search kanji, reading, meaning, sentence…" aria-label="Search vocabulary" /></div>
-        <div className="react-pill-group" role="group" aria-label="Study state filter">
-          {(["all", "unmarked", "known", "flagged"] as FilterState[]).map((filter) => <button type="button" key={filter} className={`${filterState === filter ? "is-selected " : ""}react-pill react-pill-${filter}`} onClick={() => { setFilterState(filter); setShowStarred(false); }}>{filter[0].toUpperCase() + filter.slice(1)}{filter !== "all" && summary ? <small>{summary[filter]}</small> : null}</button>)}
-        </div>
-        <div className="react-toolbar-actions">
-          <button type="button" onClick={toggleCoverAll} disabled={!entries.length} aria-pressed={allVisibleCovered}>{allVisibleCovered ? "Uncover all" : "Cover all"}</button>
-          <button type="button" onClick={togglePlayback} disabled={!target} aria-pressed={playbackActive}>{playbackActive ? "Pause visible" : isSilencePaused ? "Resume visible" : "Play visible"}</button>
-          <button type="button" className={showStarred ? "is-selected" : ""} onClick={() => setShowStarred((current) => !current)} aria-pressed={showStarred}>★ Starred sentences</button>
-          <a href="/audio-review.html">Audio text review</a>
-          <button type="button" onClick={() => void exportFlaggedAudio()} disabled={selectedUnit === null}>Export flagged audio</button>
-          <a href="/">Classic study wall</a>
-          <a href="/study-wall-rail.html">Current rail</a>
-          <button type="button" onClick={() => setBlurred((current) => !current)} aria-pressed={blurred} title="B: blur / reveal the study content">B</button>
-          <button type="button" className="react-settings-button" onClick={() => setSettingsOpen(true)} aria-label="Open playback settings" title="Playback settings">⚙</button>
-        </div>
-      </section>
-
+      <StudyHeader
+        allVisibleCovered={allVisibleCovered}
+        blurred={blurred}
+        books={books}
+        currentBook={currentBook}
+        entriesCount={entries.length}
+        exportFlaggedAudio={() => void exportFlaggedAudio()}
+        filterState={filterState}
+        isSilencePaused={isSilencePaused}
+        playbackActive={playbackActive}
+        search={search}
+        selectedBook={selectedBook}
+        selectedUnit={selectedUnit}
+        showStarred={showStarred}
+        summary={summary}
+        target={target}
+        units={units}
+        onOpenSettings={() => setSettingsOpen(true)}
+        onSearch={setSearch}
+        onSelectBook={(book) => { setSelectedBook(book); setSelectedUnit(null); setShowStarred(false); }}
+        onSelectFilter={(filter) => { setFilterState(filter); setShowStarred(false); }}
+        onSelectUnit={setSelectedUnit}
+        onToggleBlur={() => setBlurred((current) => !current)}
+        onToggleCoverAll={toggleCoverAll}
+        onTogglePlayback={togglePlayback}
+        onToggleStarred={() => setShowStarred((current) => !current)}
+      />
       {status ? <div className="react-status" role="status" aria-live="polite">{status}</div> : null}
 
       <div className={`react-content-scroll${blurred ? " is-blurred" : ""}`}>
