@@ -28,6 +28,12 @@ type FilterState = "all" | "unmarked" | "known" | "flagged";
 const PLAYBACK_SETTINGS_KEY = "n2-word-service:react-playback-settings:v1";
 const DEFAULT_SILENCE_MS = 500;
 
+type StoredPlaybackSettings = {
+  postWordSilenceMs?: number;
+  postSentenceSilenceMs?: number;
+  playbackMode?: PlaybackMode;
+};
+
 function targetFor(entry: Entry, phase: PlaybackPhase): AudioTarget | null {
   const url = phase === "word" ? entry.word_audio_url : entry.sentence_audio_url;
   return url ? {entry, phase, url} : null;
@@ -38,26 +44,32 @@ function unitLabel(unit?: UnitSummary | Entry["unit"]) {
   return `U${String(unit.number).padStart(2, "0")} ${unit.title || unit.header}`;
 }
 
-function readPlaybackSettings(): {silence: number; mode: PlaybackMode} {
+function normalizeSilence(value: unknown) {
+  const silence = Number(value);
+  return Number.isFinite(silence) ? Math.min(3000, Math.max(0, Math.round(silence / 100) * 100)) : DEFAULT_SILENCE_MS;
+}
+
+function readPlaybackSettings(): {postWordSilence: number; postSentenceSilence: number; mode: PlaybackMode} {
   try {
     const raw = window.localStorage.getItem(PLAYBACK_SETTINGS_KEY);
-    const saved = raw ? JSON.parse(raw) as {postSentenceSilenceMs?: number; playbackMode?: PlaybackMode} : {};
-    const silence = Number(saved.postSentenceSilenceMs);
+    const saved = raw ? JSON.parse(raw) as StoredPlaybackSettings : {};
     const mode = saved.playbackMode === "words" || saved.playbackMode === "sentences" || saved.playbackMode === "both"
       ? saved.playbackMode
       : "both";
     return {
-      silence: Number.isFinite(silence) ? Math.min(3000, Math.max(0, Math.round(silence / 100) * 100)) : DEFAULT_SILENCE_MS,
+      postWordSilence: normalizeSilence(saved.postWordSilenceMs),
+      postSentenceSilence: normalizeSilence(saved.postSentenceSilenceMs),
       mode,
     };
   } catch {
-    return {silence: DEFAULT_SILENCE_MS, mode: "both"};
+    return {postWordSilence: DEFAULT_SILENCE_MS, postSentenceSilence: DEFAULT_SILENCE_MS, mode: "both"};
   }
 }
 
-function savePlaybackSettings(silence: number, mode: PlaybackMode) {
+function savePlaybackSettings(postWordSilence: number, postSentenceSilence: number, mode: PlaybackMode) {
   window.localStorage.setItem(PLAYBACK_SETTINGS_KEY, JSON.stringify({
-    postSentenceSilenceMs: silence,
+    postWordSilenceMs: postWordSilence,
+    postSentenceSilenceMs: postSentenceSilence,
     playbackMode: mode,
   }));
 }
@@ -185,7 +197,8 @@ export function App() {
   const [status, setStatus] = useState("");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const savedSettings = useMemo(readPlaybackSettings, []);
-  const [postSentenceSilence, setPostSentenceSilence] = useState(savedSettings.silence);
+  const [postWordSilence, setPostWordSilence] = useState(savedSettings.postWordSilence);
+  const [postSentenceSilence, setPostSentenceSilence] = useState(savedSettings.postSentenceSilence);
   const [playbackMode, setPlaybackMode] = useState<PlaybackMode>(savedSettings.mode);
   const [autoAdvance, setAutoAdvance] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -366,9 +379,10 @@ export function App() {
   }, []);
 
   const requestPlayback = useCallback(() => {
+    cancelEndTimer();
     setAutoAdvance(true);
     setPlayRequest((value) => value + 1);
-  }, []);
+  }, [cancelEndTimer]);
 
   const selectEntry = useCallback((index: number, phase?: PlaybackPhase) => {
     if (index < 0 || index >= entries.length) return;
@@ -418,23 +432,27 @@ export function App() {
     setActivePhase(playbackMode === "sentences" ? "sentence" : "word");
   }, [activeEntry, activeIndex, entries.length, playbackMode]);
 
+  const scheduleAfterSilence = useCallback((silenceMs: number, callback: () => void) => {
+    cancelEndTimer();
+    if (silenceMs <= 0) {
+      callback();
+      return;
+    }
+    const generation = endGenerationRef.current;
+    endTimerRef.current = window.setTimeout(() => {
+      endTimerRef.current = null;
+      if (generation === endGenerationRef.current && autoAdvanceRef.current) callback();
+    }, silenceMs);
+  }, [cancelEndTimer]);
+
   const handlePlaybackEnd = useCallback(() => {
     if (!autoAdvanceRef.current) return;
     if (playbackMode === "both" && activePhase === "word" && activeEntry?.sentence_audio_url) {
-      setActivePhase("sentence");
+      scheduleAfterSilence(postWordSilence, () => setActivePhase("sentence"));
       return;
     }
-    if (activePhase === "sentence" && postSentenceSilence > 0) {
-      cancelEndTimer();
-      const generation = endGenerationRef.current;
-      endTimerRef.current = window.setTimeout(() => {
-        endTimerRef.current = null;
-        if (generation === endGenerationRef.current && autoAdvanceRef.current) advanceAfterPlayback();
-      }, postSentenceSilence);
-      return;
-    }
-    advanceAfterPlayback();
-  }, [activeEntry, activePhase, advanceAfterPlayback, cancelEndTimer, playbackMode, postSentenceSilence]);
+    scheduleAfterSilence(activePhase === "word" ? postWordSilence : postSentenceSilence, advanceAfterPlayback);
+  }, [activeEntry, activePhase, advanceAfterPlayback, playbackMode, postSentenceSilence, postWordSilence, scheduleAfterSilence]);
 
   const togglePlayback = useCallback(() => {
     if (isPlaying) {
@@ -445,9 +463,10 @@ export function App() {
   }, [isPlaying, requestPlayback]);
 
   const replayFocused = useCallback(() => {
+    cancelEndTimer();
     setAutoAdvance(true);
     setReplayRequest((value) => value + 1);
-  }, []);
+  }, [cancelEndTimer]);
 
   const stopPlayback = useCallback(() => {
     cancelEndTimer();
@@ -456,15 +475,21 @@ export function App() {
   }, [cancelEndTimer]);
 
   const changePlaybackMode = useCallback((mode: PlaybackMode) => {
+    cancelEndTimer();
     setPlaybackMode(mode);
     setActivePhase(mode === "sentences" && activeEntry?.sentence_audio_url ? "sentence" : "word");
-    savePlaybackSettings(postSentenceSilence, mode);
-  }, [activeEntry, postSentenceSilence]);
+    savePlaybackSettings(postWordSilence, postSentenceSilence, mode);
+  }, [activeEntry, cancelEndTimer, postSentenceSilence, postWordSilence]);
+
+  const changePostWordSilence = useCallback((value: number) => {
+    setPostWordSilence(value);
+    savePlaybackSettings(value, postSentenceSilence, playbackMode);
+  }, [playbackMode, postSentenceSilence]);
 
   const changePostSentenceSilence = useCallback((value: number) => {
     setPostSentenceSilence(value);
-    savePlaybackSettings(value, playbackMode);
-  }, [playbackMode]);
+    savePlaybackSettings(postWordSilence, value, playbackMode);
+  }, [playbackMode, postWordSilence]);
 
   const toggleMark = useCallback(async (key: "known" | "flagged") => {
     if (!activeEntry) return;
@@ -677,10 +702,13 @@ export function App() {
             <div className="react-setting-options" role="radiogroup" aria-label="Playback mode">
               {(["words", "sentences", "both"] as PlaybackMode[]).map((mode) => <button type="button" key={mode} className={playbackMode === mode ? "is-selected" : ""} role="radio" aria-checked={playbackMode === mode} onClick={() => changePlaybackMode(mode)}>{mode === "words" ? "Words only" : mode === "sentences" ? "Sentences only" : "Word + sentence"}</button>)}
             </div>
+            <div className="react-setting-copy"><label htmlFor="react-post-word-silence">Silence after word</label><output htmlFor="react-post-word-silence">{postWordSilence} ms</output><p>Wait this long after a word clip before its sentence or the next word starts.</p></div>
+            <input id="react-post-word-silence" type="range" min="0" max="3000" step="100" value={postWordSilence} onChange={(event) => changePostWordSilence(Number(event.target.value))} />
+            <div className="react-setting-scale" aria-hidden="true"><span>None</span><span>3 seconds</span></div>
             <div className="react-setting-copy"><label htmlFor="react-post-sentence-silence">Silence after sentence</label><output htmlFor="react-post-sentence-silence">{postSentenceSilence} ms</output><p>Wait this long before the next word starts during visible-list playback.</p></div>
             <input id="react-post-sentence-silence" type="range" min="0" max="3000" step="100" value={postSentenceSilence} onChange={(event) => changePostSentenceSilence(Number(event.target.value))} />
             <div className="react-setting-scale" aria-hidden="true"><span>None</span><span>3 seconds</span></div>
-            <button type="button" className="react-settings-reset" onClick={() => { setPostSentenceSilence(DEFAULT_SILENCE_MS); setPlaybackMode("both"); savePlaybackSettings(DEFAULT_SILENCE_MS, "both"); }}>Reset to defaults</button>
+            <button type="button" className="react-settings-reset" onClick={() => { setPostWordSilence(DEFAULT_SILENCE_MS); setPostSentenceSilence(DEFAULT_SILENCE_MS); setPlaybackMode("both"); savePlaybackSettings(DEFAULT_SILENCE_MS, DEFAULT_SILENCE_MS, "both"); }}>Reset to defaults</button>
           </div>
         </section>
       </div> : null}

@@ -194,11 +194,11 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .react-player-status { min-width: 0; margin-left: 8px; overflow: hidden; color: #756d65; text-overflow: ellipsis; white-space: nowrap; }
 
 .react-modal-backdrop { position: fixed; z-index: 20; inset: 0; display: grid; place-items: center; background: rgba(40, 36, 33, .32); padding: 20px; }
-.react-settings-modal { width: min(560px, 100%); border: 1px solid #cfc5b5; border-radius: 3px; background: #fffaf2; box-shadow: 0 20px 60px rgba(40, 36, 33, .18); }
-.react-settings-head { display: flex; align-items: start; justify-content: space-between; border-bottom: 1px solid #cfc5b5; padding: 20px 22px 16px; }
+.react-settings-modal { width: min(560px, 100%); max-height: calc(100vh - 40px); display: flex; flex-direction: column; border: 1px solid #cfc5b5; border-radius: 3px; background: #fffaf2; box-shadow: 0 20px 60px rgba(40, 36, 33, .18); }
+.react-settings-head { flex: 0 0 auto; display: flex; align-items: start; justify-content: space-between; border-bottom: 1px solid #cfc5b5; padding: 20px 22px 16px; }
 .react-settings-head h2 { margin: 6px 0 0; font-size: 1.6rem; font-weight: 500; }
 .react-settings-head > button { border: 0; background: transparent; color: #756d65; cursor: pointer; font-size: 1.7rem; line-height: 1; }
-.react-settings-body { display: grid; gap: 14px; padding: 20px 22px 24px; font-family: system-ui, sans-serif; }
+.react-settings-body { min-height: 0; display: grid; gap: 14px; overflow: auto; padding: 20px 22px 24px; font-family: system-ui, sans-serif; }
 .react-setting-copy { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 12px; }
 .react-setting-copy > span, .react-setting-copy > label { color: #282421; font-weight: 650; }
 .react-setting-copy output { color: #9d3d2d; font-size: .82rem; }
