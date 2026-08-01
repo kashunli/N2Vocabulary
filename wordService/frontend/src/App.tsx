@@ -18,6 +18,7 @@ export function App() {
   const [detail, setDetail] = useState<Entry>();
   const [listWidth, setListWidth] = useState(360);
   const [draggingDivider, setDraggingDivider] = useState(false);
+  const [postSentenceSilence, setPostSentenceSilence] = useState(() => Number(localStorage.getItem("react-post-sentence-silence") || 500));
   const activeRef = useRef<HTMLButtonElement | null>(null);
   const activeEntry = entries[activeIndex];
   const target = useMemo(() => activeEntry ? targetFor(activeEntry, activePhase) : null, [activeEntry, activePhase]);
@@ -68,6 +69,14 @@ export function App() {
     setActivePhase("word");
   }
 
+  function handlePlaybackEnd() {
+    if (activePhase === "sentence" && postSentenceSilence > 0) {
+      window.setTimeout(() => move(1), postSentenceSilence);
+    } else {
+      move(1);
+    }
+  }
+
   return (
     <main className="react-shell">
       <header className="react-header">
@@ -77,6 +86,7 @@ export function App() {
       <div className="react-toolbar">
         <label>Section <select value={unit || ""} onChange={(event) => setUnit(event.target.value ? Number(event.target.value) : undefined)}><option value="">All sections</option>{units.map((item) => <option key={item.number} value={item.number}>{item.title || item.header}</option>)}</select></label>
         <span>{entries.length} words · React/Vite migration preview</span>
+        <label className="silence-setting">Post-sentence silence <input type="range" min="0" max="3000" step="100" value={postSentenceSilence} onChange={(event) => { const value = Number(event.target.value); setPostSentenceSilence(value); localStorage.setItem("react-post-sentence-silence", String(value)); }} /><output>{postSentenceSilence} ms</output></label>
       </div>
       <div className="react-layout" style={{gridTemplateColumns: `${listWidth}px 12px minmax(0, 1fr)`}}>
         <section className="react-list" aria-label="Vocabulary playback list">
@@ -88,7 +98,7 @@ export function App() {
           <nav className="react-nav"><button type="button" onClick={() => move(-1)} disabled={activeIndex === 0}>Previous</button><button type="button" onClick={() => move(1)} disabled={!entries.length || activeIndex === entries.length - 1}>Next</button></nav>
         </section>
       </div>
-      <RailPlayer target={target} onEnded={() => move(1)} />
+      <RailPlayer target={target} onEnded={handlePlaybackEnd} />
     </main>
   );
 }

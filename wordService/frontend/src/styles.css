@@ -11,6 +11,7 @@ button, select { font: inherit; }
 .react-toolbar { display: flex; justify-content: space-between; gap: 16px; padding: 18px 0; color: #756d65; font-family: system-ui, sans-serif; font-size: .85rem; }
 .react-toolbar label { display: flex; gap: 8px; align-items: center; }
 .react-toolbar select { border: 1px solid #cfc5b5; background: #fffaf2; padding: 7px 9px; }
+.silence-setting { display: flex; align-items: center; gap: 8px; white-space: nowrap; }.silence-setting input { accent-color: #9d3d2d; }.silence-setting output { min-width: 4.5em; color: #9d3d2d; }
 .react-layout { display: grid; grid-template-columns: 360px 12px minmax(0, 1fr); min-height: 52vh; border-top: 1px solid #cfc5b5; }
 .react-list { overflow: auto; max-height: 58vh; padding: 12px 20px 12px 0; }
 .react-list button { display: flex; width: 100%; align-items: baseline; gap: 12px; border: 0; border-bottom: 1px solid #e0d8cd; background: transparent; color: #756d65; cursor: pointer; padding: 10px 12px; text-align: left; transition: color 160ms ease, background 160ms ease; }
