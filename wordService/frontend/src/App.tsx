@@ -15,6 +15,8 @@ import { MarkdownContent } from "./features/explanation/MarkdownContent";
 import { RailPlayer } from "./features/player/RailPlayer";
 import type { PlaybackMode } from "./features/player/playbackSettings";
 import { useStudyPlayback } from "./features/player/useStudyPlayback";
+import { StarredView } from "./features/study/StarredView";
+import { unitLabel } from "./features/study/unitLabel";
 import type {
   BookSummary,
   Entry,
@@ -24,11 +26,6 @@ import type {
 } from "./types";
 
 type FilterState = "all" | "unmarked" | "known" | "flagged";
-
-function unitLabel(unit?: UnitSummary | Entry["unit"]) {
-  if (!unit) return "All sections";
-  return `U${String(unit.number).padStart(2, "0")} ${unit.title || unit.header}`;
-}
 
 export function App() {
   const [books, setBooks] = useState<BookSummary[]>([]);
@@ -300,47 +297,15 @@ export function App() {
     }
   }, [selectedBook, selectedUnit, units]);
 
-  const renderStarredView = () => (
-    <section className="react-starred-view" aria-label="Starred sentence review">
-      <aside className="react-starred-filter">
-        <div className="section-label">Section filter</div>
-        <button type="button" className={!selectedUnit ? "is-selected" : ""} onClick={() => setSelectedUnit(null)}>
-          <strong>All sections</strong><span>{starredSentences.length}</span>
-        </button>
-        {units.map((item) => (
-          <button type="button" key={item.number} className={selectedUnit === item.number ? "is-selected" : ""} onClick={() => setSelectedUnit(item.number)}>
-            <strong>{unitLabel(item)}</strong><span>{starredSentences.filter((sentence) => sentence.unit.number === item.number).length}</span>
-          </button>
-        ))}
-      </aside>
-      <section className="react-starred-list-panel">
-        <div className="react-starred-heading"><div><span className="eyebrow">SENTENCE REVIEW</span><h2>Starred sentences</h2></div><span>{starredSentences.length} shown</span></div>
-        {starredSentences.length ? starredSentences.map((item, index) => {
-          const key = `${item.entry_id}:${item.position}`;
-          return <button type="button" key={key} className={`react-starred-row${key === selectedStarredKey ? " is-selected" : ""}`} onClick={() => setSelectedStarredKey(key)}><span>{String(index + 1).padStart(2, "0")}</span><strong>{item.text}</strong><small>{item.translation_en || item.translation_zh}</small><em>★</em></button>;
-        }) : <p className="react-empty">No starred sentences yet.</p>}
-      </section>
-      <aside className="react-starred-detail">
-        {selectedStarred ? <>
-          <span className="eyebrow">{unitLabel(selectedStarred.unit)} · #{selectedStarred.source_index}</span>
-          <h2>{selectedStarred.word}</h2>
-          <p className="react-starred-sentence">{selectedStarred.text}</p>
-          <p>{selectedStarred.translation_en || selectedStarred.translation_zh}</p>
-          <p className="react-meaning">{selectedStarred.meaning_en || selectedStarred.meaning_zh}</p>
-          {selectedStarred.explanation_md ? <details open><summary>Sentence explanation</summary><MarkdownContent value={selectedStarred.explanation_md} /></details> : null}
-          <button type="button" onClick={() => {
-            const index = entries.findIndex((entry) => entry.entry_id === selectedStarred.entry_id);
-            if (index >= 0) {
-              setShowStarred(false);
-              selectEntry(index, "sentence");
-            } else {
-              setStatus("The starred sentence is outside the current filtered list. Clear the search or filter to focus it.");
-            }
-          }}>Focus in study wall</button>
-        </> : <p className="react-empty">Pick a starred sentence to review it here.</p>}
-      </aside>
-    </section>
-  );
+  const focusStarredEntry = useCallback((entryId: number) => {
+    const index = entries.findIndex((entry) => entry.entry_id === entryId);
+    if (index >= 0) {
+      setShowStarred(false);
+      selectEntry(index, "sentence");
+    } else {
+      setStatus("The starred sentence is outside the current filtered list. Clear the search or filter to focus it.");
+    }
+  }, [entries, selectEntry]);
 
   return (
     <main className="react-shell">
@@ -384,7 +349,16 @@ export function App() {
       {status ? <div className="react-status" role="status" aria-live="polite">{status}</div> : null}
 
       <div className={`react-content-scroll${blurred ? " is-blurred" : ""}`}>
-        {showStarred ? renderStarredView() : <div className="react-layout" ref={layoutRef} style={{gridTemplateColumns: `${listWidth}px 12px minmax(0, 1fr)`}}>
+        {showStarred ? <StarredView
+          selectedStarred={selectedStarred}
+          selectedStarredKey={selectedStarredKey}
+          selectedUnit={selectedUnit}
+          starredSentences={starredSentences}
+          units={units}
+          onFocusEntry={focusStarredEntry}
+          onSelectStarred={setSelectedStarredKey}
+          onSelectUnit={setSelectedUnit}
+        /> : <div className="react-layout" ref={layoutRef} style={{gridTemplateColumns: `${listWidth}px 12px minmax(0, 1fr)`}}>
           <section className="react-list" aria-label="Vocabulary playback list">
             {entriesLoading ? <p className="react-empty">Loading vocabulary…</p> : entries.length ? entries.map((entry, index) => <button key={entry.entry_id} ref={index === activeIndex ? activeRef : null} className={`${index === activeIndex ? "is-active " : ""}${coveredEntryIds.has(entry.entry_id) ? "is-covered" : ""}`} aria-current={index === activeIndex ? "true" : undefined} onClick={() => selectEntry(index)}><span className="react-row-index">{String(index + 1).padStart(3, "0")}</span><span className="react-row-kanji">{entry.kanji}</span><span className="react-row-status" aria-label={`${entry.mark?.known ? "known" : ""}${entry.mark?.flagged ? " flagged" : ""}`}>{entry.mark?.known ? "✓" : ""}{entry.mark?.flagged ? " ⚑" : ""}</span></button>) : <p className="react-empty">No words match the current filters.</p>}
           </section>
