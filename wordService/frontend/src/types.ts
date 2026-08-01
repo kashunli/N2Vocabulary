@@ -16,9 +16,13 @@ export interface Entry {
   sentence: string;
   sentence_translation_en: string;
   sentence_translation_zh: string;
+  sentence_position?: number;
+  sentence_starred?: boolean;
   word_audio_url?: string;
   sentence_audio_url?: string;
   explanation_md?: string;
+  mark?: Mark;
+  examples?: Example[];
 }
 
 export interface UnitSummary {
@@ -26,6 +30,58 @@ export interface UnitSummary {
   header: string;
   title: string;
   entry_count: number;
+  known?: number;
+  flagged?: number;
+  unmarked?: number;
+}
+
+export interface BookSummary {
+  code: string;
+  entries: number;
+  title: string;
+  units: number;
+}
+
+export interface VocabularySummary {
+  entries: number;
+  units: number;
+  known: number;
+  flagged: number;
+  unmarked: number;
+}
+
+export interface Mark {
+  known: boolean;
+  flagged: boolean;
+  updated_at?: string;
+}
+
+export interface Example {
+  position: number;
+  kind: string;
+  text: string;
+  reading?: string;
+  translation_en?: string;
+  translation_zh?: string;
+  explanation_md?: string;
+  audio_url?: string;
+  starred?: boolean;
+}
+
+export interface StarredSentence {
+  entry_id: number;
+  position: number;
+  text: string;
+  reading?: string;
+  translation_en?: string;
+  translation_zh?: string;
+  explanation_md?: string;
+  audio_url?: string;
+  word: string;
+  meaning_en: string;
+  meaning_zh: string;
+  source_index: number;
+  unit: UnitRef;
 }
 
 export interface AudioTarget {

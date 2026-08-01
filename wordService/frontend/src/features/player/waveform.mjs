@@ -18,6 +18,30 @@ export function detectPauseCentersMs(
   endMs,
   options = PAUSE_DETECTION_DEFAULTS,
 ) {
+  return detectSilenceRunsMs(channels, sampleRate, startMs, endMs, options)
+    .map(({startMs: runStartMs, endMs: runEndMs}) => (runStartMs + runEndMs) / 2);
+}
+
+// Keep the exact same adaptive detector available as intervals for the
+// waveform overlay. The audio itself remains the timing authority; these
+// intervals are visual review evidence derived from the decoded PCM.
+export function detectSilenceGapsMs(
+  channels,
+  sampleRate,
+  startMs,
+  endMs,
+  options = PAUSE_DETECTION_DEFAULTS,
+) {
+  return detectSilenceRunsMs(channels, sampleRate, startMs, endMs, options);
+}
+
+function detectSilenceRunsMs(
+  channels,
+  sampleRate,
+  startMs,
+  endMs,
+  options,
+) {
   if (!channels.length || !Number.isFinite(sampleRate) || sampleRate <= 0) return [];
 
   const availableFrames = Math.min(...channels.map((channel) => channel.length));
@@ -69,7 +93,7 @@ export function detectPauseCentersMs(
     speechLevel * 0.45,
     Math.max(relativeThreshold, noiseFloor * 1.5),
   );
-  const pauseCenters = [];
+  const silenceRuns = [];
   let quietRunStart = -1;
 
   for (let index = 0; index <= rmsValues.length; index += 1) {
@@ -81,13 +105,14 @@ export function detectPauseCentersMs(
     const quietDurationMs = (quietRunEnd - quietRunStart) * frameMs;
     const isInternalPause = quietRunStart > 0 && quietRunEnd < rmsValues.length;
     if (isInternalPause && quietDurationMs >= minimumPauseMs) {
-      const centerOffsetMs = ((quietRunStart + quietRunEnd) / 2) * frameMs;
-      pauseCenters.push(Math.min(endMs, Math.max(startMs, startMs + centerOffsetMs)));
+      const runStartMs = Math.min(endMs, Math.max(startMs, startMs + quietRunStart * frameMs));
+      const runEndMs = Math.min(endMs, Math.max(startMs, startMs + quietRunEnd * frameMs));
+      silenceRuns.push({startMs: runStartMs, endMs: runEndMs});
     }
     quietRunStart = -1;
   }
 
-  return pauseCenters;
+  return silenceRuns;
 }
 
 export function buildWaveformBars(
