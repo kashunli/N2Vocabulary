@@ -48,6 +48,7 @@ export const elements = {
   settingsButton: document.getElementById("settings-button"),
   settingsBackdrop: document.getElementById("settings-backdrop"),
   settingsClose: document.getElementById("settings-close"),
+  blurButton: document.getElementById("blur-button"),
   playbackModeOptions: Array.from(document.querySelectorAll(".setting-option[data-playback-mode]")),
   postSentenceSilence: document.getElementById("post-sentence-silence"),
   postSentenceSilenceValue: document.getElementById("post-sentence-silence-value"),
@@ -81,6 +82,7 @@ export const state = {
   scopePlaybackPhase: "idle",
   postSentenceSilenceMs: 500,
   playbackMode: "both",
+  blurred: false,
   railListWidthPx: 360,
   entriesLoading: false,
   exportingAudio: false,
@@ -90,6 +92,7 @@ const VIEW_STATE_STORAGE_KEY = "n2-word-service:view-state:v1";
 const PLAYBACK_STATE_KEY = "n2-word-service:playback-state:v1";
 const PLAYBACK_SETTINGS_KEY = "n2-word-service:playback-settings:v1";
 const RAIL_LAYOUT_SETTINGS_KEY = "n2-word-service:rail-layout-settings:v1";
+const RAIL_BLUR_KEY = "n2-word-service:rail-blurred:v1";
 const DEFAULT_POST_SENTENCE_SILENCE_MS = 500;
 const PLAYBACK_MODES = ["both", "words", "sentences"];
 
@@ -117,6 +120,23 @@ export function saveRailLayoutSettings() {
     }));
   } catch (error) {
     console.warn("Could not save rail layout settings", error);
+  }
+}
+
+export function restoreRailBlur() {
+  try {
+    state.blurred = window.localStorage.getItem(RAIL_BLUR_KEY) === "true";
+  } catch (error) {
+    console.warn("Could not read rail blur setting", error);
+  }
+}
+
+export function setRailBlur(blurred) {
+  state.blurred = !!blurred;
+  try {
+    window.localStorage.setItem(RAIL_BLUR_KEY, state.blurred ? "true" : "false");
+  } catch (error) {
+    console.warn("Could not save rail blur setting", error);
   }
 }
 

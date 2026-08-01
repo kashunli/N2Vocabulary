@@ -169,28 +169,33 @@
   pointer-events: none;
 }
 
-.rail-current-display .card-top {
-  position: static;
-  order: 5;
-  justify-content: flex-start;
-  margin-top: 12px;
+/* The mark buttons are the only interactive controls in the panel. */
+.rail-current-display .rail-panel-marks { pointer-events: auto; }
+
+.rail-current-display .rail-panel-marks {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
 }
 
-.rail-current-display .card-playback-progress {
-  position: static;
-  display: block;
-  order: -2;
-  width: 100%;
-  height: 4px;
-  border-radius: 0;
+.rail-current-display .rail-panel-marks .icon-btn {
+  width: auto;
+  height: 30px;
+  gap: 6px;
+  padding: 0 9px;
+  color: var(--ink);
+  background: #fff;
 }
+.rail-current-display .icon-btn.known.on { background: var(--known); border-color: var(--known); color: #fff; }
+.rail-current-display .icon-btn.flagged.on { background: var(--flag); border-color: var(--flag); color: #fff; }
 
-.rail-current-display .card-playback-label {
-  display: block;
-  order: -1;
-  margin: 0;
-  color: var(--flag);
+.rail-current-display .rail-panel-index {
+  margin-left: auto;
+  color: var(--muted2);
   font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
 }
 
 .rail-current-display .card-kanji {
@@ -199,34 +204,80 @@
   min-height: 0;
   padding: 0;
   color: var(--ink);
-  font-size: clamp(3.4rem, 7vw, 6.8rem);
-  line-height: 1.05;
+  font-size: clamp(2rem, 4.5vw, 3.2rem);
+  line-height: 1.1;
   margin: 0 0 4px;
 }
 
 .rail-current-display .card-meaning {
   order: 1;
   display: grid;
+  gap: 3px;
   max-width: 40rem;
-  font-size: 1.05rem;
+  font-size: 1rem;
+  line-height: 1.4;
 }
+.rail-current-display .card-meaning .en { color: var(--ink); font-weight: 600; }
+.rail-current-display .card-meaning .zh { color: var(--muted2); }
 
-.rail-current-display .card-examples {
+.rail-current-display .rail-panel-sentence {
   order: 2;
   display: flex;
-  max-height: 42vh;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--line) 78%, transparent);
+  border-radius: 10px;
+  background: var(--paper);
+}
+.rail-current-display .rail-panel-sentence-text {
+  font-family: "Iowan Old Style", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  font-size: 1.15rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.rail-current-display .rail-panel-sentence-translation {
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+.rail-current-display .rail-panel-sentence-translation .en { color: var(--ink); font-weight: 500; }
+.rail-current-display .rail-panel-sentence-translation .zh { color: var(--muted2); }
+
+.rail-current-display .rail-panel-explain-label {
+  order: 3;
+  margin-top: 4px;
+}
+.rail-current-display .rail-panel-explanation {
+  order: 4;
+  max-height: 40vh;
   overflow-y: auto;
-  border-top: 0;
-  padding-top: 0;
+  scrollbar-gutter: stable;
+  border-top: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+  padding-top: 10px;
 }
 
-.rail-current-display .card-bottom { order: 6; }
+.rail-current-display .card-examples { display: none; }
+.rail-current-display .card-bottom { order: 6; display: none; }
 
 .rail-current-display[data-playback-phase="word"] .card-kanji { color: var(--flag); }
-.rail-current-display[data-playback-phase="sentence"] .main-sentence-row {
+.rail-current-display[data-playback-phase="sentence"] .rail-panel-sentence {
   background: #eaf3ff;
   border-color: color-mix(in srgb, var(--accent) 32%, var(--line));
   box-shadow: inset 3px 0 0 color-mix(in srgb, var(--accent) 68%, transparent);
+}
+
+/* Blur covers the left word list and the right now-playing panel. */
+.rail-page.is-blurred .grid .card .card-kanji,
+.rail-page.is-blurred .rail-current-display {
+  filter: blur(0.55em);
+  user-select: none;
+}
+
+.rail-page .blur-button[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
 }
 
 @media (max-width: 900px) {
@@ -244,10 +295,11 @@
     grid-row: 2;
     max-height: 46vh;
   }
-  .rail-current-display .card-kanji { font-size: clamp(3rem, 15vw, 5.5rem); }
+  .rail-current-display .card-kanji { font-size: clamp(2.2rem, 11vw, 3.4rem); }
+  .rail-current-display .rail-panel-explanation { max-height: 34vh; }
 }
 
 @media (max-width: 560px) {
-  .rail-current-display .card-examples { max-height: 34vh; }
+  .rail-current-display .rail-panel-explanation { max-height: 32vh; }
   .rail-page .grid { max-height: 40vh; }
 }

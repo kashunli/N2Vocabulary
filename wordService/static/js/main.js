@@ -10,6 +10,7 @@ import {
   restoreRailLayoutSettings,
   restoreSavedViewState,
   restorePlaybackSettings,
+  restoreRailBlur,
   resetPlaybackSettings,
   restoreScrollPosition,
   savePlaybackSettings,
@@ -18,6 +19,7 @@ import {
   saveViewState,
   scheduleScrollSave,
   setPlaybackMode,
+  setRailBlur,
   showError,
   state,
   updateAudioExportButton,
@@ -38,8 +40,16 @@ function updatePlaybackSettingsUI() {
   });
 }
 
-function openPlaybackSettings() {
-  updatePlaybackSettingsUI();
+function applyBlurUI() {
+  if (!elements.blurButton) return;
+  document.body.classList.toggle("is-blurred", state.blurred);
+  elements.blurButton.setAttribute("aria-pressed", state.blurred ? "true" : "false");
+  elements.blurButton.title = state.blurred
+    ? "B: reveal the list and panel"
+    : "B: blur the list and panel";
+}
+
+function openPlaybackSettings() {  updatePlaybackSettingsUI();
   elements.settingsBackdrop.classList.add("open");
   elements.settingsBackdrop.setAttribute("aria-hidden", "false");
   elements.postSentenceSilence.focus();
@@ -350,6 +360,12 @@ function wireControls() {
     exportFlaggedAudio().catch(showError);
   });
   elements.settingsButton.addEventListener("click", openPlaybackSettings);
+  if (elements.blurButton) {
+    elements.blurButton.addEventListener("click", () => {
+      setRailBlur(!state.blurred);
+      applyBlurUI();
+    });
+  }
   elements.settingsClose.addEventListener("click", closePlaybackSettings);
   elements.settingsBackdrop.addEventListener("click", event => {
     if (event.target === elements.settingsBackdrop) closePlaybackSettings();
@@ -417,6 +433,9 @@ function wireControls() {
       stopScopePlayback({announce: true});
     } else if (key === "r") {
       replayScopeImmediately().catch(showError);
+    } else if (key === "b" && elements.blurButton) {
+      setRailBlur(!state.blurred);
+      applyBlurUI();
     } else if (key === "f") {
       toggleCurrentPlaybackMark("flagged").catch(showError);
     } else if (key === "k") {
@@ -442,7 +461,9 @@ async function init() {
   restoreSavedViewState();
   restorePlaybackSettings();
   restoreRailLayoutSettings();
+  restoreRailBlur();
   updatePlaybackSettingsUI();
+  applyBlurUI();
   const previewParams = new URLSearchParams(window.location.search);
   const previewUnit = Number(previewParams.get("preview-unit"));
   if (Number.isFinite(previewUnit) && previewUnit > 0) state.selectedUnit = previewUnit;
