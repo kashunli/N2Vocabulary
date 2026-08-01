@@ -25,6 +25,7 @@ Goal: optimize the project so a future AI assistant and the user can safely unde
 ## Commit Discipline
 
 - After every bugfix, feature update, or forward step — commit to git with a short, specific message describing what changed and why.
+- Commit immediately after each completed fix or feature is verified, before starting the next task. Do not batch several changes into one commit; stage only the files that belong to the change.
 - Commit messages should name the affected subsystem or file area (e.g. "wordService playback", "cutTwice threshold", "db migration").
 - End each commit message with `Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>`.
 
