@@ -38,6 +38,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--evidence-json", type=Path, default=DEFAULT_EVIDENCE)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument(
+        "--candidate-output",
+        type=Path,
+        help="Write a signed candidate bundle for the wordService review page.",
+    )
+    parser.add_argument(
         "--audio-problem",
         type=int,
         action="append",
@@ -207,6 +212,22 @@ def main() -> int:
     args.output.write_text(
         json.dumps(normalized, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
+    if args.candidate_output:
+        args.candidate_output.parent.mkdir(parents=True, exist_ok=True)
+        args.candidate_output.write_text(
+            json.dumps(
+                {
+                    "version": 1,
+                    "source_sha256": normalized["source_sha256"],
+                    "items": evidence_rows,
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        report["candidate_output"] = str(args.candidate_output)
     print(json.dumps({"output": str(args.output), **report}, ensure_ascii=False, indent=2))
     return 0
 

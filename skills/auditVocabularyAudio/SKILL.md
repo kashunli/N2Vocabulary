@@ -98,6 +98,17 @@ The validator checks the evidence SHA, schema, unique source indices, canonical
 original text, and audio paths. It normalizes no-op replacements to `keep` and
 can apply confirmed clip defects with repeated `--audio-problem SOURCE_INDEX`.
 
+Add `--candidate-output` when the integrated wordService review page needs a
+fresh signed evidence bundle:
+
+```powershell
+python skills/auditVocabularyAudio/scripts/validate_review_decisions.py C:\path\to\review.json `
+  --candidate-output reviews/vocabulary_audio/n2_all_both_candidates.json
+```
+
+The service page at `http://127.0.0.1:8767/audio-review.html` persists decisions
+in a separate review database and still does not update canonical vocabulary.
+
 Do not give Whisper the expected word or sentence as a prompt. That would make
 the comparison circular and could conceal OCR mistakes.
 
@@ -118,6 +129,8 @@ the comparison circular and could conceal OCR mistakes.
   decisions, filters, keyboard shortcuts, and JSON/CSV export.
 - `reviews/vocabulary_audio/n2_all_both.json`: validated human decisions, their
   evidence signature, normalization record, and any still-undecided source IDs.
+- `reviews/vocabulary_audio/n2_all_both_candidates.json`: signed evidence
+  consumed by the integrated wordService review page.
 
 Each comparison records surface and phonetic similarity. Phonetic comparison is
 primary because correct speech is often written by ASR with different kanji.
