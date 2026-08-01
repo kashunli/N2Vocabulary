@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
-import {
-  exportUnitFlaggedAudio,
-  getEntries,
-  updateExampleStar,
-  updateMark,
-} from "./api";
+import { exportUnitFlaggedAudio, updateExampleStar, updateMark } from "./api";
 import { PlaybackSettingsModal } from "./features/player/PlaybackSettingsModal";
 import { RailPlayer } from "./features/player/RailPlayer";
 import { useStudyPlayback } from "./features/player/useStudyPlayback";
@@ -14,6 +9,7 @@ import { StudyHeader } from "./features/study/StudyHeader";
 import { StudyWallView } from "./features/study/StudyWallView";
 import { unitLabel } from "./features/study/unitLabel";
 import { useStudyCatalog } from "./features/study/useStudyCatalog";
+import { useStudyEntries } from "./features/study/useStudyEntries";
 import type { FilterState } from "./features/study/studyTypes";
 import type {
   Entry,
@@ -82,23 +78,17 @@ export function App() {
   ));
   const allVisibleCovered = entries.length > 0 && entries.every((entry) => coveredEntryIds.has(entry.entry_id));
 
-  useEffect(() => {
-    let cancelled = false;
-    setEntriesLoading(true);
-    getEntries(selectedBook, selectedUnit ?? undefined, filterState, search)
-      .then((payload) => {
-        if (cancelled) return;
-        setEntries(payload.items);
-        resetPosition(payload.items);
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) setStatus(error instanceof Error ? error.message : "Could not load vocabulary.");
-      })
-      .finally(() => {
-        if (!cancelled) setEntriesLoading(false);
-      });
-    return () => { cancelled = true; };
-  }, [filterState, playbackMode, resetPosition, search, selectedBook, selectedUnit]);
+  useStudyEntries({
+    filterState,
+    playbackMode,
+    resetPosition,
+    search,
+    selectedBook,
+    selectedUnit,
+    setEntries,
+    setEntriesLoading,
+    setStatus,
+  });
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
