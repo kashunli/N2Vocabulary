@@ -111,6 +111,13 @@ fn handle_request(
             "text/html; charset=utf-8",
         );
     }
+    if path == "/study-wall-react" || path == "/study-wall-react/" || path == "/study-wall-react.html" {
+        return send_file(
+            request,
+            &config.static_dir.join("react-rail").join("index.html"),
+            "text/html; charset=utf-8",
+        );
+    }
     if let Some(asset_path) = static_asset_path(&config.static_dir, &path) {
         return send_file(request, &asset_path, "");
     }
@@ -535,6 +542,19 @@ fn static_asset_path(static_dir: &Path, request_path: &str) -> Option<PathBuf> {
         | "/study-wall-rail.html"
         | "/study-wall-rail.css" => Some(static_dir.join(request_path.trim_start_matches('/'))),
         _ => {
+            if let Some(asset_name) = request_path.strip_prefix("/study-wall-react/assets/") {
+                // Vite emits one-level hashed JS/CSS assets. Keep this route
+                // narrow so the React bundle cannot expose arbitrary files.
+                if asset_name.is_empty()
+                    || asset_name.contains('/')
+                    || asset_name.contains('\\')
+                    || asset_name.contains("..")
+                    || !(asset_name.ends_with(".js") || asset_name.ends_with(".css"))
+                {
+                    return None;
+                }
+                return Some(static_dir.join("react-rail").join("assets").join(asset_name));
+            }
             let module_name = request_path.strip_prefix("/js/")?;
             // ES module imports only need direct files in static/js. Keeping the
             // route flat avoids accidentally exposing arbitrary static subtrees.
@@ -670,6 +690,10 @@ mod tests {
             static_asset_path(root, "/study-wall-rail.css").as_deref(),
             Some(Path::new("static/study-wall-rail.css"))
         );
+        assert_eq!(
+            static_asset_path(root, "/study-wall-react/assets/index-abc123.js").as_deref(),
+            Some(Path::new("static/react-rail/assets/index-abc123.js"))
+        );
     }
 
     #[test]
@@ -679,5 +703,7 @@ mod tests {
         assert!(static_asset_path(root, "/js/nested/main.js").is_none());
         assert!(static_asset_path(root, "/js/main.css").is_none());
         assert!(static_asset_path(root, "/api/summary").is_none());
+        assert!(static_asset_path(root, "/study-wall-react/assets/../index.js").is_none());
+        assert!(static_asset_path(root, "/study-wall-react/assets/index.html").is_none());
     }
 }
