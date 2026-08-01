@@ -3,15 +3,14 @@ use crate::config::AppConfig;
 use crate::repository::WordRepository;
 use crate::tts::TtsService;
 use anyhow::{Context, Result, anyhow};
-use serde::Serialize;
 use serde_json::json;
 use std::collections::HashMap;
-use std::fs;
-use std::io::Read;
-use std::path::{Path, PathBuf};
 use std::thread;
-use tiny_http::{Header, Method, Request, Response, Server, StatusCode};
-use url::Url;
+use tiny_http::{Method, Request, Server, StatusCode};
+
+mod response;
+
+use response::{parse_local_url, query_map, send_file, send_json, send_options, static_asset_path};
 
 /// Start the local HTTP server.
 ///
@@ -111,7 +110,10 @@ fn handle_request(
             "text/html; charset=utf-8",
         );
     }
-    if path == "/study-wall-react" || path == "/study-wall-react/" || path == "/study-wall-react.html" {
+    if path == "/study-wall-react"
+        || path == "/study-wall-react/"
+        || path == "/study-wall-react.html"
+    {
         return send_file(
             request,
             &config.static_dir.join("react-rail").join("index.html"),
@@ -515,12 +517,6 @@ fn handle_delete(request: Request, audio_review: AudioReviewStore) -> Result<()>
     }
 }
 
-fn send_options(request: Request) -> Result<()> {
-    let response = add_headers(Response::empty(StatusCode(204)), cors_headers());
-    request.respond(response)?;
-    Ok(())
-}
-
 fn repository_for_params(
     repository: &WordRepository,
     params: &HashMap<String, String>,
@@ -528,182 +524,5 @@ fn repository_for_params(
     match params.get("book").filter(|value| !value.trim().is_empty()) {
         Some(book_code) => repository.for_book(book_code),
         None => repository.clone(),
-    }
-}
-
-fn static_asset_path(static_dir: &Path, request_path: &str) -> Option<PathBuf> {
-    match request_path {
-        "/styles.css"
-        | "/favicon.svg"
-        | "/app.js"
-        | "/audio-review.html"
-        | "/audio-review.css"
-        | "/audio-review.js"
-        | "/study-wall-rail.html"
-        | "/study-wall-rail.css" => Some(static_dir.join(request_path.trim_start_matches('/'))),
-        _ => {
-            if let Some(asset_name) = request_path.strip_prefix("/study-wall-react/assets/") {
-                // Vite emits one-level hashed JS/CSS assets. Keep this route
-                // narrow so the React bundle cannot expose arbitrary files.
-                if asset_name.is_empty()
-                    || asset_name.contains('/')
-                    || asset_name.contains('\\')
-                    || asset_name.contains("..")
-                    || !(asset_name.ends_with(".js") || asset_name.ends_with(".css"))
-                {
-                    return None;
-                }
-                return Some(static_dir.join("react-rail").join("assets").join(asset_name));
-            }
-            let module_name = request_path.strip_prefix("/js/")?;
-            // ES module imports only need direct files in static/js. Keeping the
-            // route flat avoids accidentally exposing arbitrary static subtrees.
-            if module_name.is_empty()
-                || module_name.contains('/')
-                || module_name.contains('\\')
-                || module_name.contains("..")
-                || !module_name.ends_with(".js")
-            {
-                return None;
-            }
-            Some(static_dir.join("js").join(module_name))
-        }
-    }
-}
-fn send_json<T: Serialize>(request: Request, status: StatusCode, payload: &T) -> Result<()> {
-    let data = serde_json::to_vec(payload)?;
-    let mut headers = cors_headers();
-    headers.push(header("Cache-Control", "no-store"));
-    headers.push(header("Content-Type", "application/json; charset=utf-8"));
-
-    // HEAD should return the same status/headers as GET without a response
-    // body. This helper centralizes that rule for every JSON endpoint.
-    if request.method() == &Method::Head {
-        request.respond(add_headers(Response::empty(status), headers))?;
-    } else {
-        request.respond(add_headers(
-            Response::from_data(data).with_status_code(status),
-            headers,
-        ))?;
-    }
-    Ok(())
-}
-
-fn send_file(request: Request, path: &Path, content_type: &str) -> Result<()> {
-    if !path.exists() || !path.is_file() {
-        return send_json(request, StatusCode(404), &json!({"error": "not found"}));
-    }
-    let ctype = if content_type.is_empty() {
-        // Let mime_guess handle static assets where the type is obvious from
-        // the extension. Audio routes pass an explicit content type above.
-        mime_guess::from_path(path)
-            .first_or_octet_stream()
-            .essence_str()
-            .to_string()
-    } else {
-        content_type.to_string()
-    };
-    let mut headers = vec![
-        header("Cache-Control", "no-store"),
-        header("Content-Type", &ctype),
-    ];
-    headers.extend(cors_headers());
-
-    if request.method() == &Method::Head {
-        request.respond(add_headers(Response::empty(StatusCode(200)), headers))?;
-    } else {
-        request.respond(add_headers(
-            Response::from_data(fs::read(path)?).with_status_code(StatusCode(200)),
-            headers,
-        ))?;
-    }
-    Ok(())
-}
-
-fn add_headers<R: Read>(mut response: Response<R>, headers: Vec<Header>) -> Response<R> {
-    for header in headers {
-        response.add_header(header);
-    }
-    response
-}
-
-fn parse_local_url(raw: &str) -> Result<Url> {
-    // tiny_http exposes only the path/query part for normal requests. Prefixing
-    // a dummy host lets the `url` crate parse query strings with standard URL
-    // rules instead of hand-splitting on `?` and `&`.
-    Url::parse(&format!("http://localhost{raw}")).context("parse request URL")
-}
-
-fn query_map(url: &Url) -> HashMap<String, String> {
-    url.query_pairs()
-        .map(|(key, value)| (key.into_owned(), value.into_owned()))
-        .collect()
-}
-
-fn cors_headers() -> Vec<Header> {
-    vec![
-        header("Access-Control-Allow-Origin", "*"),
-        header(
-            "Access-Control-Allow-Methods",
-            "GET, PUT, POST, DELETE, OPTIONS",
-        ),
-        header("Access-Control-Allow-Headers", "Content-Type"),
-    ]
-}
-
-fn header(name: &str, value: &str) -> Header {
-    Header::from_bytes(name.as_bytes(), value.as_bytes()).expect("static header should be valid")
-}
-#[cfg(test)]
-mod tests {
-    use super::static_asset_path;
-    use std::path::Path;
-
-    #[test]
-    fn static_asset_path_allows_known_static_files_and_js_modules() {
-        let root = Path::new("static");
-        assert_eq!(
-        static_asset_path(root, "/styles.css").as_deref(),
-        Some(Path::new("static/styles.css"))
-    );
-    assert_eq!(
-        static_asset_path(root, "/favicon.svg").as_deref(),
-        Some(Path::new("static/favicon.svg"))
-    );
-        assert_eq!(
-            static_asset_path(root, "/js/main.js").as_deref(),
-            Some(Path::new("static/js/main.js"))
-        );
-        assert_eq!(
-            static_asset_path(root, "/audio-review.html").as_deref(),
-            Some(Path::new("static/audio-review.html"))
-        );
-        assert_eq!(
-            static_asset_path(root, "/audio-review.js").as_deref(),
-            Some(Path::new("static/audio-review.js"))
-        );
-        assert_eq!(
-            static_asset_path(root, "/study-wall-rail.html").as_deref(),
-            Some(Path::new("static/study-wall-rail.html"))
-        );
-        assert_eq!(
-            static_asset_path(root, "/study-wall-rail.css").as_deref(),
-            Some(Path::new("static/study-wall-rail.css"))
-        );
-        assert_eq!(
-            static_asset_path(root, "/study-wall-react/assets/index-abc123.js").as_deref(),
-            Some(Path::new("static/react-rail/assets/index-abc123.js"))
-        );
-    }
-
-    #[test]
-    fn static_asset_path_rejects_nested_or_non_js_module_paths() {
-        let root = Path::new("static");
-        assert!(static_asset_path(root, "/js/../app.js").is_none());
-        assert!(static_asset_path(root, "/js/nested/main.js").is_none());
-        assert!(static_asset_path(root, "/js/main.css").is_none());
-        assert!(static_asset_path(root, "/api/summary").is_none());
-        assert!(static_asset_path(root, "/study-wall-react/assets/../index.js").is_none());
-        assert!(static_asset_path(root, "/study-wall-react/assets/index.html").is_none());
     }
 }
