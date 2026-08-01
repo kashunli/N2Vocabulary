@@ -13,6 +13,13 @@ import {
 } from "./api";
 import { MarkdownContent } from "./features/explanation/MarkdownContent";
 import { RailPlayer } from "./features/player/RailPlayer";
+import {
+  DEFAULT_SILENCE_MS,
+  readPlaybackSettings,
+  savePlaybackSettings,
+  type PlaybackMode,
+  type PlaybackPhase,
+} from "./features/player/playbackSettings";
 import type {
   AudioTarget,
   BookSummary,
@@ -22,18 +29,7 @@ import type {
   VocabularySummary,
 } from "./types";
 
-type PlaybackPhase = "word" | "sentence";
-type PlaybackMode = "words" | "sentences" | "both";
 type FilterState = "all" | "unmarked" | "known" | "flagged";
-
-const PLAYBACK_SETTINGS_KEY = "n2-word-service:react-playback-settings:v1";
-const DEFAULT_SILENCE_MS = 500;
-
-type StoredPlaybackSettings = {
-  postWordSilenceMs?: number;
-  postSentenceSilenceMs?: number;
-  playbackMode?: PlaybackMode;
-};
 
 type PendingSilence = {
   remainingMs: number;
@@ -49,36 +45,6 @@ function targetFor(entry: Entry, phase: PlaybackPhase): AudioTarget | null {
 function unitLabel(unit?: UnitSummary | Entry["unit"]) {
   if (!unit) return "All sections";
   return `U${String(unit.number).padStart(2, "0")} ${unit.title || unit.header}`;
-}
-
-function normalizeSilence(value: unknown) {
-  const silence = Number(value);
-  return Number.isFinite(silence) ? Math.min(3000, Math.max(0, Math.round(silence / 100) * 100)) : DEFAULT_SILENCE_MS;
-}
-
-function readPlaybackSettings(): {postWordSilence: number; postSentenceSilence: number; mode: PlaybackMode} {
-  try {
-    const raw = window.localStorage.getItem(PLAYBACK_SETTINGS_KEY);
-    const saved = raw ? JSON.parse(raw) as StoredPlaybackSettings : {};
-    const mode = saved.playbackMode === "words" || saved.playbackMode === "sentences" || saved.playbackMode === "both"
-      ? saved.playbackMode
-      : "both";
-    return {
-      postWordSilence: normalizeSilence(saved.postWordSilenceMs),
-      postSentenceSilence: normalizeSilence(saved.postSentenceSilenceMs),
-      mode,
-    };
-  } catch {
-    return {postWordSilence: DEFAULT_SILENCE_MS, postSentenceSilence: DEFAULT_SILENCE_MS, mode: "both"};
-  }
-}
-
-function savePlaybackSettings(postWordSilence: number, postSentenceSilence: number, mode: PlaybackMode) {
-  window.localStorage.setItem(PLAYBACK_SETTINGS_KEY, JSON.stringify({
-    postWordSilenceMs: postWordSilence,
-    postSentenceSilenceMs: postSentenceSilence,
-    playbackMode: mode,
-  }));
 }
 
 export function App() {
