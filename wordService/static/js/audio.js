@@ -8,6 +8,7 @@ let scopeResumeWaiters = [];
 let railWavebarCleanup = null;
 let railWavebarAudioContext = null;
 let railWavebarLoadToken = 0;
+let railWavebarAnimationFrame = null;
 const railWaveformCache = new Map();
 const RAIL_WAVE_BAR_COUNT = 148;
 
@@ -182,10 +183,33 @@ function syncRailWavebar(audio) {
   if (elements.railWavebarDuration) elements.railWavebarDuration.textContent = formatRailWaveTime(duration);
 }
 
+function stopRailWavebarAnimation() {
+  if (railWavebarAnimationFrame === null) return;
+  window.cancelAnimationFrame(railWavebarAnimationFrame);
+  railWavebarAnimationFrame = null;
+}
+
+function animateRailWavebar(audio) {
+  stopRailWavebarAnimation();
+  const frame = () => {
+    if (state.currentAudio !== audio || audio.paused || audio.ended) {
+      railWavebarAnimationFrame = null;
+      return;
+    }
+    // Native `timeupdate` is deliberately throttled by browsers. Reading the
+    // media clock on each frame keeps the cursor moving like Listening
+    // Practice rather than hopping several times per second.
+    syncRailWavebar(audio);
+    railWavebarAnimationFrame = window.requestAnimationFrame(frame);
+  };
+  railWavebarAnimationFrame = window.requestAnimationFrame(frame);
+}
+
 function releaseRailWavebar(audio) {
   if (audio && audio._railWavebarCleanup) audio._railWavebarCleanup();
   if (audio && state.currentAudio !== audio) return;
   railWavebarLoadToken += 1;
+  stopRailWavebarAnimation();
   railWavebarCleanup?.();
   railWavebarCleanup = null;
   if (elements.railWavebar) elements.railWavebar.style.setProperty("--wave-progress", "0");
@@ -206,13 +230,28 @@ function connectRailWavebar(audio, label, seed) {
   renderRailWavebarBars(placeholderRailWaveform(seed), []);
   if (elements.railWavebarLabel) elements.railWavebarLabel.textContent = label;
   const sync = () => syncRailWavebar(audio);
+  const startAnimation = () => {
+    sync();
+    animateRailWavebar(audio);
+  };
+  const stopAnimation = () => {
+    sync();
+    stopRailWavebarAnimation();
+  };
   ["loadedmetadata", "durationchange", "timeupdate", "play", "pause", "ended"].forEach(event => {
     audio.addEventListener(event, sync);
   });
+  audio.addEventListener("play", startAnimation);
+  audio.addEventListener("pause", stopAnimation);
+  audio.addEventListener("ended", stopAnimation);
   railWavebarCleanup = () => {
     ["loadedmetadata", "durationchange", "timeupdate", "play", "pause", "ended"].forEach(event => {
       audio.removeEventListener(event, sync);
     });
+    audio.removeEventListener("play", startAnimation);
+    audio.removeEventListener("pause", stopAnimation);
+    audio.removeEventListener("ended", stopAnimation);
+    stopRailWavebarAnimation();
   };
   audio._railWavebarCleanup = railWavebarCleanup;
   sync();
@@ -223,8 +262,11 @@ export function seekRailWavebar(seconds) {
   const audio = state.currentAudio;
   if (!audio || !Number.isFinite(audio.duration) || audio.duration <= 0) return;
   const safeSeconds = Math.min(audio.duration, Math.max(0, Number(seconds) || 0));
+  // Assigning `currentTime` seeks asynchronously for compressed audio. Do
+  // not redraw from the stale media clock here: wait until the browser has
+  // accepted the new position, otherwise a click visibly snaps back.
+  audio.addEventListener("seeked", () => syncRailWavebar(audio), {once: true});
   audio.currentTime = safeSeconds;
-  syncRailWavebar(audio);
 }
 
 if (elements.railWavebar) renderRailWavebarBars(placeholderRailWaveform("idle"), []);

@@ -360,9 +360,6 @@ function wireControls() {
     elements.railWavebarSeek.addEventListener("input", event => {
       seekRailWavebar(Number(event.target.value));
     });
-    elements.railWavebarSeek.addEventListener("change", event => {
-      seekRailWavebar(Number(event.target.value));
-    });
   }
   elements.audioExportButton.addEventListener("click", () => {
     exportFlaggedAudio().catch(showError);
@@ -415,7 +412,12 @@ function wireControls() {
       return;
     }
     const target = event.target;
-    if (target instanceof HTMLElement && target.closest("input, textarea, select, [contenteditable='true']")) {
+    // The waveform slider remains a normal native range control for mouse
+    // and touch seeking, but it must not trap the study shortcuts after a
+    // click. Other text-entry controls still keep their usual behavior.
+    if (target instanceof HTMLElement
+      && target !== elements.railWavebarSeek
+      && target.closest("input, textarea, select, [contenteditable='true']")) {
       return;
     }
     if (event.repeat) return;
