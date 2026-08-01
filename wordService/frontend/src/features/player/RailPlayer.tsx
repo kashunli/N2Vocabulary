@@ -13,6 +13,8 @@ function formatTime(value: number) {
 interface RailPlayerProps {
   target: AudioTarget | null;
   autoPlay: boolean;
+  isPlaybackActive: boolean;
+  isSilencePlaying: boolean;
   playRequest: number;
   replayRequest: number;
   pauseRequest: number;
@@ -31,6 +33,8 @@ interface RailPlayerProps {
 export function RailPlayer({
   target,
   autoPlay,
+  isPlaybackActive,
+  isSilencePlaying,
   playRequest,
   replayRequest,
   pauseRequest,
@@ -155,11 +159,11 @@ export function RailPlayer({
         <button type="button" onClick={onPrevious} disabled={!canPrevious} aria-label="Play previous word or sentence">Previous</button>
         <button type="button" onClick={onReplay} disabled={!player.audioBuffer} aria-label="Replay focused word or sentence">Replay</button>
         <button type="button" className="react-player-primary" onClick={onTogglePlayback} disabled={!player.audioBuffer} aria-keyshortcuts="Space">
-          {player.isPlaying ? "Pause" : "Play"}
+          {isPlaybackActive ? "Pause" : "Play"}
         </button>
         <button type="button" onClick={onNext} disabled={!canNext} aria-label="Play next word or sentence">Next</button>
         <button type="button" onClick={onStop} disabled={!player.audioBuffer} aria-keyshortcuts="Escape">Stop</button>
-        <span className="react-player-status">{error || (player.isPlaying ? "Playing focused audio" : "Click the wave to seek · Space to play")}</span>
+        <span className="react-player-status">{error || (isSilencePlaying ? `Playing silence after ${target?.phase || "audio"}` : isPlaybackActive ? "Playing focused audio" : "Click the wave to seek · Space to play")}</span>
       </div>
     </section>
   );

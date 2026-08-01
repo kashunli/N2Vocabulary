@@ -34,6 +34,12 @@ type StoredPlaybackSettings = {
   playbackMode?: PlaybackMode;
 };
 
+type PendingSilence = {
+  remainingMs: number;
+  startedAt: number | null;
+  callback: () => void;
+};
+
 function targetFor(entry: Entry, phase: PlaybackPhase): AudioTarget | null {
   const url = phase === "word" ? entry.word_audio_url : entry.sentence_audio_url;
   return url ? {entry, phase, url} : null;
@@ -206,11 +212,14 @@ export function App() {
   const [replayRequest, setReplayRequest] = useState(0);
   const [pauseRequest, setPauseRequest] = useState(0);
   const [stopRequest, setStopRequest] = useState(0);
+  const [isSilencePlaying, setIsSilencePlaying] = useState(false);
+  const [isSilencePaused, setIsSilencePaused] = useState(false);
   const activeRef = useRef<HTMLButtonElement | null>(null);
   const layoutRef = useRef<HTMLDivElement | null>(null);
   const currentRef = useRef<HTMLElement | null>(null);
   const endTimerRef = useRef<number | null>(null);
   const endGenerationRef = useRef(0);
+  const pendingSilenceRef = useRef<PendingSilence | null>(null);
   const autoAdvanceRef = useRef(autoAdvance);
   const activeEntry = entries[activeIndex];
   const target = useMemo(
@@ -370,7 +379,7 @@ export function App() {
     setUnits(nextUnits.items);
   }, [selectedBook]);
 
-  const cancelEndTimer = useCallback(() => {
+  const clearEndTimer = useCallback(() => {
     endGenerationRef.current += 1;
     if (endTimerRef.current !== null) {
       window.clearTimeout(endTimerRef.current);
@@ -378,11 +387,100 @@ export function App() {
     }
   }, []);
 
+  const cancelEndTimer = useCallback(() => {
+    clearEndTimer();
+    pendingSilenceRef.current = null;
+    setIsSilencePlaying(false);
+    setIsSilencePaused(false);
+  }, [clearEndTimer]);
+
+  const startPendingSilence = useCallback(() => {
+    // The AudioBuffer source has already ended, but this configured boundary
+    // gap is still part of the learner's playback run. Keeping it here lets
+    // Space pause/resume the gap instead of treating the ended clip as new.
+    const pending = pendingSilenceRef.current;
+    if (!pending) return false;
+
+    if (pending.remainingMs <= 0) {
+      pendingSilenceRef.current = null;
+      setIsSilencePlaying(false);
+      setIsSilencePaused(false);
+      if (autoAdvanceRef.current) pending.callback();
+      return true;
+    }
+
+    pending.startedAt = performance.now();
+    setIsSilencePlaying(true);
+    setIsSilencePaused(false);
+    const generation = endGenerationRef.current;
+    endTimerRef.current = window.setTimeout(() => {
+      if (generation !== endGenerationRef.current) return;
+      endTimerRef.current = null;
+      const finished = pendingSilenceRef.current;
+      pendingSilenceRef.current = null;
+      setIsSilencePlaying(false);
+      setIsSilencePaused(false);
+      if (finished && autoAdvanceRef.current) finished.callback();
+    }, pending.remainingMs);
+    return true;
+  }, []);
+
+  const scheduleAfterSilence = useCallback((silenceMs: number, callback: () => void) => {
+    cancelEndTimer();
+    if (silenceMs <= 0) {
+      callback();
+      return;
+    }
+    pendingSilenceRef.current = {
+      remainingMs: silenceMs,
+      startedAt: null,
+      callback,
+    };
+    startPendingSilence();
+  }, [cancelEndTimer, startPendingSilence]);
+
   const requestPlayback = useCallback(() => {
     cancelEndTimer();
+    autoAdvanceRef.current = true;
     setAutoAdvance(true);
     setPlayRequest((value) => value + 1);
   }, [cancelEndTimer]);
+
+  const pauseSilence = useCallback(() => {
+    const pending = pendingSilenceRef.current;
+    if (!pending) {
+      cancelEndTimer();
+      autoAdvanceRef.current = false;
+      setAutoAdvance(false);
+      return;
+    }
+
+    const elapsedMs = pending.startedAt === null
+      ? 0
+      : Math.max(0, performance.now() - pending.startedAt);
+    const remainingMs = Math.max(0, pending.remainingMs - elapsedMs);
+    clearEndTimer();
+    autoAdvanceRef.current = false;
+    setAutoAdvance(false);
+    setIsSilencePlaying(false);
+    if (remainingMs > 0) {
+      pendingSilenceRef.current = {...pending, remainingMs, startedAt: null};
+      setIsSilencePaused(true);
+    } else {
+      pendingSilenceRef.current = null;
+      setIsSilencePaused(false);
+    }
+  }, [cancelEndTimer, clearEndTimer]);
+
+  const resumeSilence = useCallback(() => {
+    if (!pendingSilenceRef.current) {
+      requestPlayback();
+      return;
+    }
+    autoAdvanceRef.current = true;
+    setAutoAdvance(true);
+    startPendingSilence();
+  }, [requestPlayback, startPendingSilence]);
 
   const selectEntry = useCallback((index: number, phase?: PlaybackPhase) => {
     if (index < 0 || index >= entries.length) return;
@@ -432,19 +530,6 @@ export function App() {
     setActivePhase(playbackMode === "sentences" ? "sentence" : "word");
   }, [activeEntry, activeIndex, entries.length, playbackMode]);
 
-  const scheduleAfterSilence = useCallback((silenceMs: number, callback: () => void) => {
-    cancelEndTimer();
-    if (silenceMs <= 0) {
-      callback();
-      return;
-    }
-    const generation = endGenerationRef.current;
-    endTimerRef.current = window.setTimeout(() => {
-      endTimerRef.current = null;
-      if (generation === endGenerationRef.current && autoAdvanceRef.current) callback();
-    }, silenceMs);
-  }, [cancelEndTimer]);
-
   const handlePlaybackEnd = useCallback(() => {
     if (!autoAdvanceRef.current) return;
     if (playbackMode === "both" && activePhase === "word" && activeEntry?.sentence_audio_url) {
@@ -454,13 +539,25 @@ export function App() {
     scheduleAfterSilence(activePhase === "word" ? postWordSilence : postSentenceSilence, advanceAfterPlayback);
   }, [activeEntry, activePhase, advanceAfterPlayback, playbackMode, postSentenceSilence, postWordSilence, scheduleAfterSilence]);
 
+  const handlePlayingChange = useCallback((playing: boolean) => {
+    setIsPlaying(playing);
+    if (playing) {
+      setIsSilencePlaying(false);
+      setIsSilencePaused(false);
+    }
+  }, []);
+
   const togglePlayback = useCallback(() => {
     if (isPlaying) {
       setPauseRequest((value) => value + 1);
+    } else if (isSilencePlaying) {
+      pauseSilence();
+    } else if (isSilencePaused) {
+      resumeSilence();
     } else {
       requestPlayback();
     }
-  }, [isPlaying, requestPlayback]);
+  }, [isPlaying, isSilencePaused, isSilencePlaying, pauseSilence, requestPlayback, resumeSilence]);
 
   const replayFocused = useCallback(() => {
     cancelEndTimer();
@@ -470,6 +567,7 @@ export function App() {
 
   const stopPlayback = useCallback(() => {
     cancelEndTimer();
+    autoAdvanceRef.current = false;
     setAutoAdvance(false);
     setStopRequest((value) => value + 1);
   }, [cancelEndTimer]);
@@ -564,6 +662,7 @@ export function App() {
 
   const canPrevious = !showStarred && (activeIndex > 0 || (playbackMode === "both" && activePhase === "sentence"));
   const canNext = !showStarred && (activeIndex < entries.length - 1 || (playbackMode === "both" && activePhase === "word" && !!activeEntry?.sentence_audio_url));
+  const playbackActive = isPlaying || isSilencePlaying;
 
   const renderStarredView = () => (
     <section className="react-starred-view" aria-label="Starred sentence review">
@@ -635,7 +734,7 @@ export function App() {
         </div>
         <div className="react-toolbar-actions">
           <button type="button" onClick={toggleCoverAll} disabled={!entries.length} aria-pressed={allVisibleCovered}>{allVisibleCovered ? "Uncover all" : "Cover all"}</button>
-          <button type="button" onClick={togglePlayback} disabled={!target} aria-pressed={isPlaying}>{isPlaying ? "Pause visible" : "Play visible"}</button>
+          <button type="button" onClick={togglePlayback} disabled={!target} aria-pressed={playbackActive}>{playbackActive ? "Pause visible" : isSilencePaused ? "Resume visible" : "Play visible"}</button>
           <button type="button" className={showStarred ? "is-selected" : ""} onClick={() => setShowStarred((current) => !current)} aria-pressed={showStarred}>★ Starred sentences</button>
           <a href="/audio-review.html">Audio text review</a>
           <button type="button" onClick={() => void exportFlaggedAudio()} disabled={selectedUnit === null}>Export flagged audio</button>
@@ -679,7 +778,9 @@ export function App() {
       <RailPlayer
         target={target}
         autoPlay={autoAdvance}
-        onPlayingChange={setIsPlaying}
+        isPlaybackActive={playbackActive}
+        isSilencePlaying={isSilencePlaying}
+        onPlayingChange={handlePlayingChange}
         playRequest={playRequest}
         replayRequest={replayRequest}
         pauseRequest={pauseRequest}
