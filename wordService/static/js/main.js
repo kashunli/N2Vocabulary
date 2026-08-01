@@ -1,5 +1,5 @@
 import { fetchBooks, fetchEntries, fetchStarredSentences, fetchSummary, fetchUnits } from "./api.js";
-import { exportFlaggedAudio, moveScopePlayback, replayScopeImmediately, resumeScopePlaybackFromSavedState, stopScopePlayback, toggleScopePlayback, updateScopePlaybackButton } from "./audio.js";
+import { exportFlaggedAudio, moveScopePlayback, replayScopeImmediately, resumeScopePlaybackFromSavedState, seekRailWavebar, stopScopePlayback, toggleScopePlayback, updateScopePlaybackButton } from "./audio.js";
 import { configureCards, renderCards, toggleCurrentPlaybackMark } from "./cards.js";
 import { closeDetail, configureDetail, openDetail } from "./detail.js";
 import { escapeHTML, exampleKey, unitLabel } from "./format.js";
@@ -356,6 +356,11 @@ function wireControls() {
     moveScopePlayback(1).catch(showError);
   });
   elements.scopeStopButton.addEventListener("click", () => stopScopePlayback({announce: true}));
+  if (elements.railWavebarSeek) {
+    elements.railWavebarSeek.addEventListener("input", event => {
+      seekRailWavebar(event.target.value);
+    });
+  }
   elements.audioExportButton.addEventListener("click", () => {
     exportFlaggedAudio().catch(showError);
   });

@@ -5,6 +5,84 @@ import { applyMarkClasses, toggleMark } from "./cards.js";
 
 let scopePlaybackToken = 0;
 let scopeResumeWaiters = [];
+let railWavebarCleanup = null;
+
+function formatRailWaveTime(value) {
+  if (!Number.isFinite(value) || value < 0) return "0:00";
+  const minutes = Math.floor(value / 60);
+  const seconds = Math.floor(value % 60).toString().padStart(2, "0");
+  return `${minutes}:${seconds}`;
+}
+
+function renderRailWavebarBars(seed) {
+  const bars = elements.railWavebarBars;
+  if (!bars) return;
+  let hash = 17;
+  for (const character of String(seed || "clip")) hash = (hash * 31 + character.charCodeAt(0)) % 997;
+  bars.innerHTML = Array.from({length: 72}, (_, index) => {
+    const wave = Math.abs(Math.sin((index + 1) * 0.73 + hash * 0.017));
+    const height = Math.round(22 + wave * 68);
+    return `<span style="--bar-height:${height}%"></span>`;
+  }).join("");
+}
+
+function syncRailWavebar(audio) {
+  if (!elements.railWavebar || !audio) return;
+  const duration = Number.isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 0;
+  const current = duration ? Math.min(duration, Math.max(0, audio.currentTime || 0)) : 0;
+  const progress = duration ? current / duration : 0;
+  elements.railWavebar.style.setProperty("--wave-progress", String(progress));
+  if (elements.railWavebarSeek) {
+    elements.railWavebarSeek.disabled = !duration;
+    elements.railWavebarSeek.value = String(progress);
+  }
+  if (elements.railWavebarCurrent) elements.railWavebarCurrent.textContent = formatRailWaveTime(current);
+  if (elements.railWavebarDuration) elements.railWavebarDuration.textContent = formatRailWaveTime(duration);
+  elements.railWavebarBars?.querySelectorAll("span").forEach((bar, index, all) => {
+    bar.classList.toggle("is-played", index / Math.max(1, all.length - 1) <= progress);
+  });
+}
+
+function releaseRailWavebar(audio) {
+  if (audio && audio._railWavebarCleanup) audio._railWavebarCleanup();
+  if (audio && state.currentAudio !== audio) return;
+  railWavebarCleanup?.();
+  railWavebarCleanup = null;
+  if (elements.railWavebar) elements.railWavebar.style.setProperty("--wave-progress", "0");
+  if (elements.railWavebarSeek) {
+    elements.railWavebarSeek.disabled = true;
+    elements.railWavebarSeek.value = "0";
+  }
+  if (elements.railWavebarLabel) elements.railWavebarLabel.textContent = "Waiting for a clip";
+}
+
+function connectRailWavebar(audio, label, seed) {
+  releaseRailWavebar();
+  if (!elements.railWavebar) return;
+  renderRailWavebarBars(seed);
+  if (elements.railWavebarLabel) elements.railWavebarLabel.textContent = label;
+  const sync = () => syncRailWavebar(audio);
+  ["loadedmetadata", "durationchange", "timeupdate", "play", "pause", "ended"].forEach(event => {
+    audio.addEventListener(event, sync);
+  });
+  railWavebarCleanup = () => {
+    ["loadedmetadata", "durationchange", "timeupdate", "play", "pause", "ended"].forEach(event => {
+      audio.removeEventListener(event, sync);
+    });
+  };
+  audio._railWavebarCleanup = railWavebarCleanup;
+  sync();
+}
+
+export function seekRailWavebar(progress) {
+  const audio = state.currentAudio;
+  if (!audio || !Number.isFinite(audio.duration) || audio.duration <= 0) return;
+  const safeProgress = Math.min(1, Math.max(0, Number(progress) || 0));
+  audio.currentTime = safeProgress * audio.duration;
+  syncRailWavebar(audio);
+}
+
+if (elements.railWavebar) renderRailWavebarBars("idle");
 
 function scopePlaybackIsActive() {
   return state.scopePlaybackStatus !== "idle";
@@ -307,6 +385,7 @@ function stopCurrentAudio() {
   if (!state.currentAudio) return;
   const audio = state.currentAudio;
   audio.pause();
+  releaseRailWavebar(audio);
   if (audio._target) {
     audio._target.classList.remove("playing");
   }
@@ -328,6 +407,7 @@ function playTargetAndWait(target, token) {
     let settled = false;
     audio._target = target;
     state.currentAudio = audio;
+    connectRailWavebar(audio, `${target.closest(".card")?.querySelector(".card-kanji")?.textContent || "Current clip"} · ${playbackPhase(target)}`, `${target.dataset.src}:${playbackPhase(target)}`);
     target.classList.add("playing");
     const clearVisual = showPlaybackVisual(target, {retainCard: true});
     audio._clearVisual = clearVisual;
@@ -337,6 +417,7 @@ function playTargetAndWait(target, token) {
       settled = true;
       target.classList.remove("playing");
       clearVisual();
+      releaseRailWavebar(audio);
       if (state.currentAudio === audio) state.currentAudio = null;
       resolve(played);
     };
@@ -421,22 +502,26 @@ export function playClip(target) {
   const audio = new Audio(src);
   audio._target = target;
   target.classList.add("playing");
+  connectRailWavebar(audio, `${target.closest(".card")?.querySelector(".card-kanji")?.textContent || "Current clip"} · ${playbackPhase(target)}`, `${src}:${playbackPhase(target)}`);
   const clearVisual = showPlaybackVisual(target);
   audio._clearVisual = clearVisual;
   audio.addEventListener("ended", () => {
     target.classList.remove("playing");
     clearVisual();
+    releaseRailWavebar(audio);
     if (state.currentAudio === audio) state.currentAudio = null;
   });
   audio.addEventListener("error", () => {
     target.classList.remove("playing");
     clearVisual();
+    releaseRailWavebar(audio);
     if (state.currentAudio === audio) state.currentAudio = null;
     setBanner(`Audio not found: ${src}`);
   });
   audio.play().catch(() => {
     target.classList.remove("playing");
     clearVisual();
+    releaseRailWavebar(audio);
     if (state.currentAudio === audio) state.currentAudio = null;
   });
   state.currentAudio = audio;

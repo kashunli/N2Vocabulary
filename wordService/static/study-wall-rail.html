@@ -79,6 +79,21 @@
       <button class="transport-button" id="scope-stop-button" type="button" aria-keyshortcuts="Escape"><span>Stop</span><kbd>Esc</kbd></button>
     </div>
     <div class="playback-count" id="scope-playback-count">0 / 0</div>
+    <div class="rail-wavebar" id="rail-wavebar" aria-label="Current audio waveform">
+      <div class="rail-wavebar-side">
+        <span class="rail-wavebar-kicker">AUDIO</span>
+        <span class="rail-wavebar-label" id="rail-wavebar-label">Waiting for a clip</span>
+      </div>
+      <div class="rail-wavebar-main">
+        <div class="rail-wavebar-track" id="rail-wavebar-track">
+          <div class="rail-wavebar-bars" id="rail-wavebar-bars" aria-hidden="true"></div>
+          <div class="rail-wavebar-played" aria-hidden="true"></div>
+          <div class="rail-wavebar-cursor" aria-hidden="true"></div>
+          <input class="rail-wavebar-seek" id="rail-wavebar-seek" type="range" min="0" max="1" step="0.001" value="0" aria-label="Seek current audio" disabled>
+        </div>
+        <div class="rail-wavebar-times"><span id="rail-wavebar-current">0:00</span><span id="rail-wavebar-duration">0:00</span></div>
+      </div>
+    </div>
   </section>
 
   <div class="modal-backdrop" id="backdrop" aria-hidden="true">

@@ -267,6 +267,209 @@
   box-shadow: inset 3px 0 0 color-mix(in srgb, var(--accent) 68%, transparent);
 }
 
+/* Rail player: transport controls and waveform share one quiet, continuous dock. */
+.rail-page .playback-dock {
+  grid-template-columns: minmax(170px, 0.9fr) minmax(420px, 3.8fr) 86px;
+  grid-template-rows: minmax(78px, auto) 82px;
+  min-height: 160px;
+  border-color: color-mix(in srgb, var(--accent) 16%, var(--line));
+  border-radius: 16px;
+  background: rgba(255, 253, 250, 0.98);
+}
+
+.rail-page .playback-now {
+  padding: 12px 16px;
+  background: color-mix(in srgb, var(--accent) 4%, #fffdfa);
+}
+
+.rail-page .playback-actions {
+  grid-template-columns: 1fr 1fr 1.3fr 1fr 0.8fr;
+  gap: 7px;
+  padding: 9px;
+}
+
+.rail-page .transport-button {
+  min-height: 44px;
+  border-color: transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+  transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+.rail-page .transport-button:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--accent) 22%, var(--line));
+  background: color-mix(in srgb, var(--accent) 7%, #fff);
+  color: var(--ink);
+}
+
+.rail-page .transport-button.pause:not(:disabled) {
+  border-color: color-mix(in srgb, var(--accent) 24%, var(--line));
+  background: color-mix(in srgb, var(--accent) 9%, #fff);
+  color: var(--accent);
+}
+
+.rail-page .transport-button.primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.rail-page .playback-count {
+  background: color-mix(in srgb, var(--accent) 5%, #fffdfa);
+  border-left-color: color-mix(in srgb, var(--accent) 16%, var(--line));
+}
+
+.rail-wavebar {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: grid;
+  grid-template-columns: minmax(170px, 0.9fr) minmax(0, 3.8fr) 86px;
+  align-items: center;
+  gap: 0;
+  border-top: 1px solid color-mix(in srgb, var(--accent) 14%, var(--line));
+  background: color-mix(in srgb, var(--accent) 3%, #fffdfa);
+}
+
+.rail-wavebar-side {
+  display: grid;
+  gap: 3px;
+  padding: 10px 16px;
+}
+
+.rail-wavebar-kicker {
+  color: var(--accent);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.rail-wavebar-label {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rail-wavebar-main {
+  min-width: 0;
+  padding: 10px 16px 8px;
+}
+
+.rail-wavebar-track {
+  position: relative;
+  height: 48px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--line) 30%, #fff);
+  cursor: col-resize;
+}
+
+.rail-wavebar-bars {
+  position: absolute;
+  inset: 7px 9px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3px;
+}
+
+.rail-wavebar-bars span {
+  flex: 1 1 0;
+  min-width: 2px;
+  height: var(--bar-height, 28%);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--muted2) 64%, #fff);
+  transition: background-color 0.12s ease;
+}
+
+.rail-wavebar-bars span.is-played { background: var(--accent); }
+
+.rail-wavebar-played,
+.rail-wavebar-cursor {
+  pointer-events: none;
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+}
+
+.rail-wavebar-played {
+  left: 0;
+  width: calc(var(--wave-progress, 0) * 100%);
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+}
+
+.rail-wavebar-cursor {
+  left: calc(var(--wave-progress, 0) * 100%);
+  width: 2px;
+  transform: translateX(-1px);
+  border-radius: 99px;
+  background: var(--flag);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--flag) 14%, transparent);
+}
+
+.rail-wavebar-seek {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: col-resize;
+}
+
+.rail-wavebar-seek:focus-visible {
+  opacity: 0.01;
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.rail-wavebar-times {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 3px;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 720px) {
+  .rail-page .playback-dock {
+    grid-template-columns: 1fr 78px;
+    grid-template-rows: auto auto 76px;
+    min-height: 0;
+  }
+
+  .rail-page .playback-now {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .rail-page .playback-actions {
+    grid-column: 1;
+    grid-row: 2;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .rail-page .playback-count {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .rail-wavebar {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    grid-template-columns: 1fr;
+  }
+
+  .rail-wavebar-side { display: none; }
+  .rail-wavebar-main { padding: 9px 12px 7px; }
+}
+
 /* Blur covers the left word list and the right now-playing panel. */
 .rail-page.is-blurred .grid .card .card-kanji,
 .rail-page.is-blurred .rail-current-display {
