@@ -527,6 +527,7 @@ fn repository_for_params(
 fn static_asset_path(static_dir: &Path, request_path: &str) -> Option<PathBuf> {
     match request_path {
         "/styles.css"
+        | "/favicon.svg"
         | "/app.js"
         | "/audio-review.html"
         | "/audio-review.css"
@@ -642,9 +643,13 @@ mod tests {
     fn static_asset_path_allows_known_static_files_and_js_modules() {
         let root = Path::new("static");
         assert_eq!(
-            static_asset_path(root, "/styles.css").as_deref(),
-            Some(Path::new("static/styles.css"))
-        );
+        static_asset_path(root, "/styles.css").as_deref(),
+        Some(Path::new("static/styles.css"))
+    );
+    assert_eq!(
+        static_asset_path(root, "/favicon.svg").as_deref(),
+        Some(Path::new("static/favicon.svg"))
+    );
         assert_eq!(
             static_asset_path(root, "/js/main.js").as_deref(),
             Some(Path::new("static/js/main.js"))
