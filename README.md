@@ -1,6 +1,7 @@
 # N2 Vocabulary Digitalization
 
-This repository turns an OCR'd JLPT N2 vocabulary book plus its audio tracks into two main study products:
+This repository combines several JLPT vocabulary books, including the Mimikara
+N1 and N2 books, into two main study products:
 
 - a local SQLite-backed word-study service
 - Anki decks for word study and sentence listening
@@ -16,12 +17,14 @@ The current project truth is:
 
 ## Folder Map
 
-- `audio/` - source MP3 tracks from the book audio.
+- `audio/` - original N2 source MP3 tracks; imported books keep their source
+  media immutable in their source repositories.
 - `json/` - OCR/page JSON used by vocabulary and exercise workflows.
 - `parse/` - OCR parser docs and parser project files, now flattened into this root repo.
 - `wordService/data/n2vocab.sqlite` - current canonical vocabulary data used by the word runtime and Anki builders.
 - `vocabulary.json.db` - retired JSON vocabulary snapshot kept only for reference/history.
-- `clips/` - current service-facing audio clips, especially `clips/words/` and `clips/sentences/`.
+- `clips/` - current service-facing audio clips, including the original flat
+  aliases and book-scoped folders such as `clips/n1/`.
 - `skills/` - reusable project-local skills and workflow folders for later review.
 - `wordService/` - Rust word-study service and archived legacy Python service.
 - `output/` - current historical/working output bucket; see `docs/ARCHITECTURE.md` for the target split.
@@ -48,13 +51,19 @@ For a bad word shown in the browser, start from the SQLite row:
   `wordNNN`.
 - `book_entries.unit_number` and `book_entries.position` place the item in a
   unit/book view.
-- `vocabulary_items.kanji`, `vocabulary_items.reading`, meanings, and
-  `book_entries` compatibility sentence fields feed the main card.
+- `vocabulary_items.kanji` and `vocabulary_items.reading` identify the shared
+  item. Book-specific meaning, verb-pattern, word-audio, sentence, and
+  sentence-audio values in `book_entries` override shared compatibility values.
 - `item_examples.kind` is the content role (`main_sentence`,
   `example_sentence`, or `related_term`); `position` is display order.
 - `item_examples` is authoritative for sentence/example text and audio.
-- `vocabulary_items.word_clip`, `book_entries.sentence_clip`, and
-  `item_examples.audio_clip` point into `clips/`.
+- `book_entries.word_clip`, `book_entries.sentence_clip`, and
+  `item_examples.audio_clip` point into `clips/`; shared-item clip values remain
+  compatibility fallbacks for older books.
+
+The Mimikara N1 dataset is imported reproducibly with
+`python tools/import_mimikara_n1.py`. It validates all 1,170 canonical source
+entries and their 2,340 accepted word/sentence clips before updating SQLite.
 
 Operational debugging steps live in `docs/RUNBOOK.md`; service-specific API and
 configuration details live in `wordService/README.md`.

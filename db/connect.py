@@ -64,10 +64,14 @@ def load_entries(book_code: str = "N2", db_path: Path | str | None = None) -> li
                 """
                 SELECT be.entry_id, be.item_id, be.uuid, be.book_code, be.source_index,
                        be.unit_number, u.header AS unit_header,
-                       v.kanji, v.reading, v.kanji AS headword_text, v.verb_pattern,
-                       v.meaning_en, v.meaning_zh, be.sentence,
+                       v.kanji, v.reading, v.kanji AS headword_text,
+                       COALESCE(NULLIF(be.verb_pattern, ''), v.verb_pattern) AS verb_pattern,
+                       COALESCE(NULLIF(be.meaning_en, ''), v.meaning_en) AS meaning_en,
+                       COALESCE(NULLIF(be.meaning_zh, ''), v.meaning_zh) AS meaning_zh,
+                       be.sentence,
                        COALESCE(be.explanation_md, v.explanation_md) AS explanation_md,
-                       v.word_clip, be.sentence_clip
+                       COALESCE(be.word_clip, v.word_clip) AS word_clip,
+                       be.sentence_clip
                   FROM book_entries be
                   JOIN vocabulary_items v ON v.item_id = be.item_id
                   JOIN units u
@@ -140,12 +144,24 @@ def load_entries(book_code: str = "N2", db_path: Path | str | None = None) -> li
     for r in rows:
         example_items = examples_by_entry.get(r["entry_id"], [])
         main_example = next(
+            (x for x in example_items if r["sentence"] and x["text"].strip() == r["sentence"].strip()),
+            None,
+        ) or next(
             (x for x in example_items if x["kind"] == "main_sentence" or x["position"] == 0),
             None,
         )
         extra_examples = [x for x in example_items if x is not main_example]
-        sentence = (main_example or {}).get("text") or r["sentence"] or ""
-        sentence_clip = (main_example or {}).get("audio_clip") or r["sentence_clip"]
+        if main_example is not None:
+            # Examples are shared by vocabulary identity, but the first example
+            # is book-specific. Present the current book's sentence first and
+            # attach its book-specific audio without rewriting another book's
+            # canonical example row.
+            main_example = dict(main_example)
+            main_example["kind"] = "main_sentence"
+            main_example["audio_clip"] = r["sentence_clip"] or main_example.get("audio_clip")
+            example_items = [main_example, *extra_examples]
+        sentence = r["sentence"] or (main_example or {}).get("text") or ""
+        sentence_clip = r["sentence_clip"] or (main_example or {}).get("audio_clip")
         explanation = (main_example or {}).get("explanation") or r["explanation_md"] or ""
         out.append({
             "index": r["source_index"],
