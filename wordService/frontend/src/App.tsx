@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 import { exportUnitFlaggedAudio, updateExampleStar, updateMark } from "./api";
 import { PlaybackSettingsModal } from "./features/player/PlaybackSettingsModal";
 import { RailPlayer } from "./features/player/RailPlayer";
+import { useStudyKeyboardShortcuts } from "./features/player/useStudyKeyboardShortcuts";
 import { useStudyPlayback } from "./features/player/useStudyPlayback";
 import { StarredView } from "./features/study/StarredView";
 import { StudyHeader } from "./features/study/StudyHeader";
@@ -90,42 +91,6 @@ export function App() {
     setStatus,
   });
 
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      const targetElement = event.target;
-      const isWaveformInput = targetElement instanceof HTMLElement && !!targetElement.closest(".line-waveform input");
-      if (!isWaveformInput && targetElement instanceof HTMLElement && targetElement.closest("input, select, textarea, [contenteditable='true']")) return;
-      if (event.repeat) return;
-      const key = event.key.toLowerCase();
-      if (event.code === "Space") {
-        event.preventDefault();
-        togglePlayback();
-      } else if (event.key === "ArrowRight" || key === "d") {
-        event.preventDefault();
-        moveClip(1);
-      } else if (event.key === "ArrowLeft" || key === "a") {
-        event.preventDefault();
-        moveClip(-1);
-      } else if (key === "r") {
-        event.preventDefault();
-        replayFocused();
-      } else if (key === "b") {
-        event.preventDefault();
-        setBlurred((current) => !current);
-      } else if (key === "f") {
-        event.preventDefault();
-        void toggleMark("flagged");
-      } else if (key === "k" || event.key === "Enter") {
-        event.preventDefault();
-        void toggleMark("known");
-      } else if (event.key === "Escape" && settingsOpen) {
-        setSettingsOpen(false);
-      }
-    };
-    document.addEventListener("keydown", onKey, {capture: true});
-    return () => document.removeEventListener("keydown", onKey, {capture: true});
-  });
-
   const toggleMark = useCallback(async (key: "known" | "flagged") => {
     if (!activeEntry) return;
     const next = {
@@ -147,6 +112,16 @@ export function App() {
       setStatus(error instanceof Error ? error.message : "Could not update the study mark.");
     }
   }, [activeEntry, refreshCatalog, selectedBook]);
+
+  useStudyKeyboardShortcuts({
+    onBlurToggle: () => setBlurred((current) => !current),
+    onMoveClip: moveClip,
+    onReplay: replayFocused,
+    onSetSettingsOpen: setSettingsOpen,
+    onToggleMark: toggleMark,
+    onTogglePlayback: togglePlayback,
+    settingsOpen,
+  });
 
   const toggleSentenceStar = useCallback(async () => {
     if (!activeEntry) return;
