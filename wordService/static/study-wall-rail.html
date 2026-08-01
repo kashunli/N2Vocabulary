@@ -45,7 +45,10 @@
 
   <main>
     <section id="card-view">
-      <div class="grid" id="card-grid"></div>
+      <div class="rail-layout">
+        <div class="grid" id="card-grid" aria-label="Vocabulary playback list"></div>
+        <aside class="rail-current-panel" id="rail-current-panel" aria-live="polite" aria-label="Current playback"></aside>
+      </div>
     </section>
 
     <section class="starred-view" id="starred-view" hidden>

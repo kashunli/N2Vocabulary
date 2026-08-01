@@ -1,5 +1,5 @@
 import { updateMark, updateExampleStar } from "./api.js";
-import { ensureCardAudio, playClip, playScopeFromEntry, previewPlaybackVisual, setScopePlaybackWindow, updateScopePlaybackButton, wireAudioTarget, wireCardAudioPrepTarget } from "./audio.js";
+import { ensureCardAudio, playClip, playScopeFromEntry, previewPlaybackVisual, setScopePlaybackWindow, syncRailCurrentPanel, updateScopePlaybackButton, wireAudioTarget, wireCardAudioPrepTarget } from "./audio.js";
 import { cardMeaningHTML, escapeHTML, exampleCategoryBadgeHTML, exampleTranslationHTML, rubyOrPlain, unitLabel } from "./format.js";
 import { elements, setBanner, state, showError, updateAudioExportButton } from "./state.js";
 
@@ -165,6 +165,7 @@ export function renderCards() {
     }
     elements.grid.appendChild(fragment);
   });
+  syncRailCurrentPanel(state.currentEntries[0]?.entry_id);
   if (playbackPreview === "word" || playbackPreview === "sentence") {
     state.scopePlaybackStatus = "playing";
     state.scopePlaybackPosition = Math.min(3, state.currentEntries.length);

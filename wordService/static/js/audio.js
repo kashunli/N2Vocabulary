@@ -92,6 +92,7 @@ function showPlaybackVisual(target, options = {}) {
   // Three visual steps leave the line visibly in progress during both clips;
   // completion is represented by advancing to the next card.
   if (progress) progress.value = phase === "word" ? 1 : 2;
+  syncRailCurrentPanel(card.dataset.id);
 
   return () => {
     if (!retainCard) {
@@ -123,6 +124,24 @@ function clearScopePlaybackWindow() {
   elements.grid.querySelectorAll(".card.scope-previous, .card.scope-current, .card.scope-next").forEach(card => {
     card.classList.remove("scope-previous", "scope-current", "scope-next");
   });
+  syncRailCurrentPanel(state.currentEntries[0]?.entry_id);
+}
+
+export function syncRailCurrentPanel(entryId) {
+  const panel = elements.railCurrentPanel;
+  if (!panel) return;
+  panel.innerHTML = "";
+  const source = elements.grid.querySelector(`.card[data-id="${entryId}"]`)
+    || elements.grid.querySelector(".card");
+  if (!source) return;
+
+  const clone = source.cloneNode(true);
+  clone.classList.add("rail-current-display");
+  clone.querySelectorAll("button, [role='button']").forEach(control => {
+    control.removeAttribute("tabindex");
+    control.setAttribute("aria-hidden", "true");
+  });
+  panel.appendChild(clone);
 }
 
 export function setScopePlaybackWindow(entryId) {
@@ -133,6 +152,7 @@ export function setScopePlaybackWindow(entryId) {
     card.classList.toggle("scope-current", index === currentIndex);
     card.classList.toggle("scope-next", currentIndex >= 0 && index === currentIndex + 1);
   });
+  syncRailCurrentPanel(entryId);
 }
 
 function updatePausedVisual(paused) {
@@ -141,6 +161,7 @@ function updatePausedVisual(paused) {
     const label = card.querySelector(".card-playback-label");
     if (label) label.textContent = paused ? "Paused" : "Now playing";
   });
+  syncRailCurrentPanel(state.scopePlaybackEntryId);
 }
 
 function showPreparingVisual(card) {
@@ -149,6 +170,7 @@ function showPreparingVisual(card) {
   card.dataset.playbackPhase = "preparing";
   const label = card.querySelector(".card-playback-label");
   if (label) label.textContent = "Now playing";
+  syncRailCurrentPanel(card.dataset.id);
 }
 
 function stopCurrentAudio() {
@@ -474,12 +496,31 @@ async function playEntryCycle(card, token, startPhase = "word") {
   const sentencePlayed = await playTargetAndWait(sentenceTarget, token);
   if (sentencePlayed) {
     clipsPlayed += 1;
-    // Keep a clear one-second silence between this sentence and the next
-    // card's word audio. A token check lets stop/restart invalidate the wait.
+    // Keep the configured silence between this sentence and the next card's
+    // word audio. A token check lets stop/restart invalidate the wait.
     if (!await waitAfterSentence(token)) return {completed: false, clipsPlayed};
     if (!await waitForScopeResume(token)) return {completed: false, clipsPlayed};
   }
   return {completed: token === scopePlaybackToken, clipsPlayed};
+}
+
+function scrollRailFocus(card, reducedMotion) {
+  if (!elements.railCurrentPanel || !document.body.classList.contains("rail-page")) return false;
+  const list = elements.grid;
+  const listBounds = list.getBoundingClientRect();
+  const cardBounds = card.getBoundingClientRect();
+  const target = list.scrollTop
+    + (cardBounds.top - listBounds.top)
+    - Math.max(0, (list.clientHeight - cardBounds.height) / 2);
+  const maxScroll = Math.max(0, list.scrollHeight - list.clientHeight);
+  const nextScrollTop = Math.min(maxScroll, Math.max(0, target));
+  if (Math.abs(nextScrollTop - list.scrollTop) > 1) {
+    list.scrollTo({
+      top: nextScrollTop,
+      behavior: reducedMotion ? "auto" : "smooth",
+    });
+  }
+  return true;
 }
 
 async function startScopePlayback(startIndex = 0, initialPhase = "word") {
@@ -526,6 +567,10 @@ async function startScopePlayback(startIndex = 0, initialPhase = "word") {
     setBanner(`Playing ${index + 1} of ${entries.length}: ${entry.kanji}`);
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const bounds = card.getBoundingClientRect();
+    if (scrollRailFocus(card, reducedMotion)) {
+      // The rail owns its own scroll position; the right current panel stays
+      // fixed while the active word moves through the left list.
+    } else {
     const toolbarBottom = elements.scopePlayButton.closest(".controls")?.getBoundingClientRect().bottom || 0;
     const dockTop = elements.playbackDock.getBoundingClientRect().top || window.innerHeight;
     const visibleBottom = Math.min(window.innerHeight, dockTop);
@@ -539,6 +584,7 @@ async function startScopePlayback(startIndex = 0, initialPhase = "word") {
         left: 0,
         behavior: reducedMotion ? "auto" : "smooth",
       });
+    }
     }
 
     if (!entry.word_audio_url || (entry.sentence && !entry.sentence_audio_url)) {

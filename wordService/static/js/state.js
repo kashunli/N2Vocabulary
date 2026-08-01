@@ -34,6 +34,7 @@ export const elements = {
   starredList: document.getElementById("starred-list"),
   starredEmpty: document.getElementById("starred-empty"),
   starredDetail: document.getElementById("starred-detail"),
+  railCurrentPanel: document.getElementById("rail-current-panel"),
   template: document.getElementById("card-template"),
   backdrop: document.getElementById("backdrop"),
   modalClose: document.querySelector(".modal-close"),
