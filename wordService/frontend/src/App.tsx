@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import {
   exportUnitFlaggedAudio,
@@ -13,15 +13,9 @@ import {
 } from "./api";
 import { MarkdownContent } from "./features/explanation/MarkdownContent";
 import { RailPlayer } from "./features/player/RailPlayer";
-import {
-  DEFAULT_SILENCE_MS,
-  readPlaybackSettings,
-  savePlaybackSettings,
-  type PlaybackMode,
-  type PlaybackPhase,
-} from "./features/player/playbackSettings";
+import type { PlaybackMode } from "./features/player/playbackSettings";
+import { useStudyPlayback } from "./features/player/useStudyPlayback";
 import type {
-  AudioTarget,
   BookSummary,
   Entry,
   StarredSentence,
@@ -30,17 +24,6 @@ import type {
 } from "./types";
 
 type FilterState = "all" | "unmarked" | "known" | "flagged";
-
-type PendingSilence = {
-  remainingMs: number;
-  startedAt: number | null;
-  callback: () => void;
-};
-
-function targetFor(entry: Entry, phase: PlaybackPhase): AudioTarget | null {
-  const url = phase === "word" ? entry.word_audio_url : entry.sentence_audio_url;
-  return url ? {entry, phase, url} : null;
-}
 
 function unitLabel(unit?: UnitSummary | Entry["unit"]) {
   if (!unit) return "All sections";
@@ -57,8 +40,6 @@ export function App() {
   const [search, setSearch] = useState("");
   const [entries, setEntries] = useState<Entry[]>([]);
   const [entriesLoading, setEntriesLoading] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [activePhase, setActivePhase] = useState<PlaybackPhase>("word");
   const [detail, setDetail] = useState<Entry>();
   const [listWidth, setListWidth] = useState(320);
   const [draggingDivider, setDraggingDivider] = useState(false);
@@ -69,39 +50,46 @@ export function App() {
   const [selectedStarredKey, setSelectedStarredKey] = useState<string>();
   const [status, setStatus] = useState("");
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const savedSettings = useMemo(readPlaybackSettings, []);
-  const [postWordSilence, setPostWordSilence] = useState(savedSettings.postWordSilence);
-  const [postSentenceSilence, setPostSentenceSilence] = useState(savedSettings.postSentenceSilence);
-  const [playbackMode, setPlaybackMode] = useState<PlaybackMode>(savedSettings.mode);
-  const [autoAdvance, setAutoAdvance] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [playRequest, setPlayRequest] = useState(0);
-  const [replayRequest, setReplayRequest] = useState(0);
-  const [pauseRequest, setPauseRequest] = useState(0);
-  const [stopRequest, setStopRequest] = useState(0);
-  const [isSilencePlaying, setIsSilencePlaying] = useState(false);
-  const [isSilencePaused, setIsSilencePaused] = useState(false);
   const activeRef = useRef<HTMLButtonElement | null>(null);
   const layoutRef = useRef<HTMLDivElement | null>(null);
   const currentRef = useRef<HTMLElement | null>(null);
-  const endTimerRef = useRef<number | null>(null);
-  const endGenerationRef = useRef(0);
-  const pendingSilenceRef = useRef<PendingSilence | null>(null);
-  const autoAdvanceRef = useRef(autoAdvance);
-  const activeEntry = entries[activeIndex];
-  const target = useMemo(
-    () => (activeEntry ? targetFor(activeEntry, activePhase) : null),
-    [activeEntry, activePhase],
-  );
+  const {
+    activeEntry,
+    activeIndex,
+    activePhase,
+    autoAdvance,
+    canNext,
+    canPrevious,
+    changePlaybackMode,
+    changePostSentenceSilence,
+    changePostWordSilence,
+    handlePlaybackEnd,
+    handlePlayingChange,
+    isSilencePaused,
+    isSilencePlaying,
+    moveClip,
+    pauseRequest,
+    playbackActive,
+    playbackMode,
+    postSentenceSilence,
+    postWordSilence,
+    playRequest,
+    replayFocused,
+    replayRequest,
+    resetPlaybackSettings,
+    resetPosition,
+    selectEntry,
+    selectPhase,
+    stopPlayback,
+    stopRequest,
+    target,
+    togglePlayback,
+  } = useStudyPlayback({entries, showStarred});
   const currentBook = books.find((book) => book.code === selectedBook);
   const selectedStarred = starredSentences.find((item) => (
     `${item.entry_id}:${item.position}` === selectedStarredKey
   ));
   const allVisibleCovered = entries.length > 0 && entries.every((entry) => coveredEntryIds.has(entry.entry_id));
-
-  useEffect(() => {
-    autoAdvanceRef.current = autoAdvance;
-  }, [autoAdvance]);
 
   useEffect(() => {
     getBooks()
@@ -130,8 +118,7 @@ export function App() {
       .then((payload) => {
         if (cancelled) return;
         setEntries(payload.items);
-        setActiveIndex(0);
-        setActivePhase(playbackMode === "sentences" && payload.items[0]?.sentence_audio_url ? "sentence" : "word");
+        resetPosition(payload.items);
       })
       .catch((error: unknown) => {
         if (!cancelled) setStatus(error instanceof Error ? error.message : "Could not load vocabulary.");
@@ -140,7 +127,7 @@ export function App() {
         if (!cancelled) setEntriesLoading(false);
       });
     return () => { cancelled = true; };
-  }, [filterState, playbackMode, search, selectedBook, selectedUnit]);
+  }, [filterState, playbackMode, resetPosition, search, selectedBook, selectedUnit]);
 
   useEffect(() => {
     if (!activeEntry) {
@@ -236,225 +223,11 @@ export function App() {
     return () => document.removeEventListener("keydown", onKey, {capture: true});
   });
 
-  useEffect(() => () => {
-    if (endTimerRef.current !== null) window.clearTimeout(endTimerRef.current);
-  }, []);
-
   const refreshCatalog = useCallback(async () => {
     const [nextSummary, nextUnits] = await Promise.all([getSummary(selectedBook), getUnits(selectedBook)]);
     setSummary(nextSummary);
     setUnits(nextUnits.items);
   }, [selectedBook]);
-
-  const clearEndTimer = useCallback(() => {
-    endGenerationRef.current += 1;
-    if (endTimerRef.current !== null) {
-      window.clearTimeout(endTimerRef.current);
-      endTimerRef.current = null;
-    }
-  }, []);
-
-  const cancelEndTimer = useCallback(() => {
-    clearEndTimer();
-    pendingSilenceRef.current = null;
-    setIsSilencePlaying(false);
-    setIsSilencePaused(false);
-  }, [clearEndTimer]);
-
-  const startPendingSilence = useCallback(() => {
-    // The AudioBuffer source has already ended, but this configured boundary
-    // gap is still part of the learner's playback run. Keeping it here lets
-    // Space pause/resume the gap instead of treating the ended clip as new.
-    const pending = pendingSilenceRef.current;
-    if (!pending) return false;
-
-    if (pending.remainingMs <= 0) {
-      pendingSilenceRef.current = null;
-      setIsSilencePlaying(false);
-      setIsSilencePaused(false);
-      if (autoAdvanceRef.current) pending.callback();
-      return true;
-    }
-
-    pending.startedAt = performance.now();
-    setIsSilencePlaying(true);
-    setIsSilencePaused(false);
-    const generation = endGenerationRef.current;
-    endTimerRef.current = window.setTimeout(() => {
-      if (generation !== endGenerationRef.current) return;
-      endTimerRef.current = null;
-      const finished = pendingSilenceRef.current;
-      pendingSilenceRef.current = null;
-      setIsSilencePlaying(false);
-      setIsSilencePaused(false);
-      if (finished && autoAdvanceRef.current) finished.callback();
-    }, pending.remainingMs);
-    return true;
-  }, []);
-
-  const scheduleAfterSilence = useCallback((silenceMs: number, callback: () => void) => {
-    cancelEndTimer();
-    if (silenceMs <= 0) {
-      callback();
-      return;
-    }
-    pendingSilenceRef.current = {
-      remainingMs: silenceMs,
-      startedAt: null,
-      callback,
-    };
-    startPendingSilence();
-  }, [cancelEndTimer, startPendingSilence]);
-
-  const requestPlayback = useCallback(() => {
-    cancelEndTimer();
-    autoAdvanceRef.current = true;
-    setAutoAdvance(true);
-    setPlayRequest((value) => value + 1);
-  }, [cancelEndTimer]);
-
-  const pauseSilence = useCallback(() => {
-    const pending = pendingSilenceRef.current;
-    if (!pending) {
-      cancelEndTimer();
-      autoAdvanceRef.current = false;
-      setAutoAdvance(false);
-      return;
-    }
-
-    const elapsedMs = pending.startedAt === null
-      ? 0
-      : Math.max(0, performance.now() - pending.startedAt);
-    const remainingMs = Math.max(0, pending.remainingMs - elapsedMs);
-    clearEndTimer();
-    autoAdvanceRef.current = false;
-    setAutoAdvance(false);
-    setIsSilencePlaying(false);
-    if (remainingMs > 0) {
-      pendingSilenceRef.current = {...pending, remainingMs, startedAt: null};
-      setIsSilencePaused(true);
-    } else {
-      pendingSilenceRef.current = null;
-      setIsSilencePaused(false);
-    }
-  }, [cancelEndTimer, clearEndTimer]);
-
-  const resumeSilence = useCallback(() => {
-    if (!pendingSilenceRef.current) {
-      requestPlayback();
-      return;
-    }
-    autoAdvanceRef.current = true;
-    setAutoAdvance(true);
-    startPendingSilence();
-  }, [requestPlayback, startPendingSilence]);
-
-  const selectEntry = useCallback((index: number, phase?: PlaybackPhase) => {
-    if (index < 0 || index >= entries.length) return;
-    cancelEndTimer();
-    const nextPhase = phase || (playbackMode === "sentences" && entries[index].sentence_audio_url ? "sentence" : "word");
-    setActiveIndex(index);
-    setActivePhase(nextPhase);
-    requestPlayback();
-  }, [cancelEndTimer, entries, playbackMode, requestPlayback]);
-
-  const moveClip = useCallback((direction: -1 | 1) => {
-    if (!activeEntry || showStarred) return;
-    let nextIndex = activeIndex;
-    let nextPhase: PlaybackPhase = activePhase;
-    if (playbackMode === "words") {
-      nextIndex += direction;
-      nextPhase = "word";
-    } else if (playbackMode === "sentences") {
-      nextIndex += direction;
-      nextPhase = "sentence";
-    } else if (direction > 0) {
-      if (activePhase === "word" && activeEntry.sentence_audio_url) {
-        nextPhase = "sentence";
-      } else {
-        nextIndex += 1;
-        nextPhase = "word";
-      }
-    } else if (activePhase === "sentence") {
-      nextPhase = "word";
-    } else if (activeIndex > 0) {
-      nextIndex -= 1;
-      nextPhase = entries[nextIndex]?.sentence_audio_url ? "sentence" : "word";
-    }
-    if (nextIndex < 0 || nextIndex >= entries.length || (nextIndex === activeIndex && nextPhase === activePhase)) return;
-    cancelEndTimer();
-    setActiveIndex(nextIndex);
-    setActivePhase(nextPhase);
-    requestPlayback();
-  }, [activeEntry, activeIndex, activePhase, cancelEndTimer, entries, playbackMode, requestPlayback, showStarred]);
-
-  const advanceAfterPlayback = useCallback(() => {
-    if (!activeEntry || activeIndex >= entries.length - 1) {
-      setAutoAdvance(false);
-      return;
-    }
-    setActiveIndex(activeIndex + 1);
-    setActivePhase(playbackMode === "sentences" ? "sentence" : "word");
-  }, [activeEntry, activeIndex, entries.length, playbackMode]);
-
-  const handlePlaybackEnd = useCallback(() => {
-    if (!autoAdvanceRef.current) return;
-    if (playbackMode === "both" && activePhase === "word" && activeEntry?.sentence_audio_url) {
-      scheduleAfterSilence(postWordSilence, () => setActivePhase("sentence"));
-      return;
-    }
-    scheduleAfterSilence(activePhase === "word" ? postWordSilence : postSentenceSilence, advanceAfterPlayback);
-  }, [activeEntry, activePhase, advanceAfterPlayback, playbackMode, postSentenceSilence, postWordSilence, scheduleAfterSilence]);
-
-  const handlePlayingChange = useCallback((playing: boolean) => {
-    setIsPlaying(playing);
-    if (playing) {
-      setIsSilencePlaying(false);
-      setIsSilencePaused(false);
-    }
-  }, []);
-
-  const togglePlayback = useCallback(() => {
-    if (isPlaying) {
-      setPauseRequest((value) => value + 1);
-    } else if (isSilencePlaying) {
-      pauseSilence();
-    } else if (isSilencePaused) {
-      resumeSilence();
-    } else {
-      requestPlayback();
-    }
-  }, [isPlaying, isSilencePaused, isSilencePlaying, pauseSilence, requestPlayback, resumeSilence]);
-
-  const replayFocused = useCallback(() => {
-    cancelEndTimer();
-    setAutoAdvance(true);
-    setReplayRequest((value) => value + 1);
-  }, [cancelEndTimer]);
-
-  const stopPlayback = useCallback(() => {
-    cancelEndTimer();
-    autoAdvanceRef.current = false;
-    setAutoAdvance(false);
-    setStopRequest((value) => value + 1);
-  }, [cancelEndTimer]);
-
-  const changePlaybackMode = useCallback((mode: PlaybackMode) => {
-    cancelEndTimer();
-    setPlaybackMode(mode);
-    setActivePhase(mode === "sentences" && activeEntry?.sentence_audio_url ? "sentence" : "word");
-    savePlaybackSettings(postWordSilence, postSentenceSilence, mode);
-  }, [activeEntry, cancelEndTimer, postSentenceSilence, postWordSilence]);
-
-  const changePostWordSilence = useCallback((value: number) => {
-    setPostWordSilence(value);
-    savePlaybackSettings(value, postSentenceSilence, playbackMode);
-  }, [playbackMode, postSentenceSilence]);
-
-  const changePostSentenceSilence = useCallback((value: number) => {
-    setPostSentenceSilence(value);
-    savePlaybackSettings(postWordSilence, value, playbackMode);
-  }, [playbackMode, postWordSilence]);
 
   const toggleMark = useCallback(async (key: "known" | "flagged") => {
     if (!activeEntry) return;
@@ -526,10 +299,6 @@ export function App() {
       setStatus(error instanceof Error ? error.message : "Could not export flagged audio.");
     }
   }, [selectedBook, selectedUnit, units]);
-
-  const canPrevious = !showStarred && (activeIndex > 0 || (playbackMode === "both" && activePhase === "sentence"));
-  const canNext = !showStarred && (activeIndex < entries.length - 1 || (playbackMode === "both" && activePhase === "word" && !!activeEntry?.sentence_audio_url));
-  const playbackActive = isPlaying || isSilencePlaying;
 
   const renderStarredView = () => (
     <section className="react-starred-view" aria-label="Starred sentence review">
@@ -628,8 +397,8 @@ export function App() {
                 <ruby>{activeEntry.kanji}<rt>{activeEntry.reading}</rt></ruby>
                 <p className="react-meaning">{activeEntry.meaning_en || activeEntry.meaning_zh}</p>
                 <div className="react-current-actions">
-                  <button type="button" onClick={() => { setActivePhase("word"); requestPlayback(); }} className={activePhase === "word" ? "is-selected" : ""}>Word</button>
-                  <button type="button" onClick={() => { setActivePhase("sentence"); requestPlayback(); }} className={activePhase === "sentence" ? "is-selected" : ""} disabled={!activeEntry.sentence_audio_url}>Sentence</button>
+                  <button type="button" onClick={() => selectPhase("word")} className={activePhase === "word" ? "is-selected" : ""}>Word</button>
+                  <button type="button" onClick={() => selectPhase("sentence")} className={activePhase === "sentence" ? "is-selected" : ""} disabled={!activeEntry.sentence_audio_url}>Sentence</button>
                   <button type="button" className={activeEntry.mark?.known ? "is-on" : ""} onClick={() => void toggleMark("known")} aria-pressed={!!activeEntry.mark?.known}>✓ Known</button>
                   <button type="button" className={activeEntry.mark?.flagged ? "is-on" : ""} onClick={() => void toggleMark("flagged")} aria-pressed={!!activeEntry.mark?.flagged}>⚑ Flag</button>
                   <button type="button" className={activeEntry.sentence_starred ? "is-on" : ""} onClick={() => void toggleSentenceStar()} aria-pressed={!!activeEntry.sentence_starred}>{activeEntry.sentence_starred ? "★" : "☆"} Sentence</button>
@@ -676,7 +445,7 @@ export function App() {
             <div className="react-setting-copy"><label htmlFor="react-post-sentence-silence">Silence after sentence</label><output htmlFor="react-post-sentence-silence">{postSentenceSilence} ms</output><p>Wait this long before the next word starts during visible-list playback.</p></div>
             <input id="react-post-sentence-silence" type="range" min="0" max="3000" step="100" value={postSentenceSilence} onChange={(event) => changePostSentenceSilence(Number(event.target.value))} />
             <div className="react-setting-scale" aria-hidden="true"><span>None</span><span>3 seconds</span></div>
-            <button type="button" className="react-settings-reset" onClick={() => { setPostWordSilence(DEFAULT_SILENCE_MS); setPostSentenceSilence(DEFAULT_SILENCE_MS); setPlaybackMode("both"); savePlaybackSettings(DEFAULT_SILENCE_MS, DEFAULT_SILENCE_MS, "both"); }}>Reset to defaults</button>
+            <button type="button" className="react-settings-reset" onClick={resetPlaybackSettings}>Reset to defaults</button>
           </div>
         </section>
       </div> : null}
