@@ -4,7 +4,6 @@ import { clearSavedPlaybackState, elements, readSavedPlaybackState, savePlayback
 
 let scopePlaybackToken = 0;
 let scopeResumeWaiters = [];
-const SENTENCE_PAUSE_MS = 1000;
 
 function scopePlaybackIsActive() {
   return state.scopePlaybackStatus !== "idle";
@@ -37,7 +36,7 @@ function waitAfterSentence(token) {
   return new Promise(resolve => {
     window.setTimeout(() => {
       resolve(token === scopePlaybackToken);
-    }, SENTENCE_PAUSE_MS);
+    }, state.postSentenceSilenceMs);
   });
 }
 

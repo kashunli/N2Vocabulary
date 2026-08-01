@@ -40,7 +40,9 @@
     <button class="cover-all" id="cover-all" type="button" aria-pressed="false">cover all</button>
     <button class="scope-play-button" id="scope-play-button" type="button" aria-pressed="false" aria-keyshortcuts="Space">play visible</button>
     <button class="starred-view-button" id="starred-view-button" type="button" aria-pressed="false">★ starred sentences</button>
+    <a class="audio-review-link" href="/audio-review.html">audio text review</a>
     <button class="audio-export-button" id="audio-export-button" type="button">export flagged audio</button>
+    <button class="settings-button" id="settings-button" type="button" aria-label="Open playback settings" title="Playback settings">⚙</button>
     <span class="counter" id="counter"></span>
   </section>
 
@@ -122,6 +124,30 @@
           <div class="section-label">Explanation</div>
           <div class="explanation" id="modal-explanation"></div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop settings-backdrop" id="settings-backdrop" aria-hidden="true">
+    <div class="modal settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <div class="modal-head">
+        <div>
+          <div class="meta">Playback</div>
+          <h2 class="settings-title" id="settings-title">Playback settings</h2>
+        </div>
+        <button type="button" class="modal-close" id="settings-close" aria-label="Close playback settings">×</button>
+      </div>
+      <div class="modal-body settings-body">
+        <div class="setting-row">
+          <div>
+            <label class="setting-label" for="post-sentence-silence">Silence after sentence</label>
+            <p class="setting-help">Wait this long before the next word starts during visible-list playback.</p>
+          </div>
+          <output class="setting-value" id="post-sentence-silence-value" for="post-sentence-silence">500 ms</output>
+        </div>
+        <input id="post-sentence-silence" class="setting-range" type="range" min="0" max="3000" step="100" value="500">
+        <div class="setting-range-scale" aria-hidden="true"><span>None</span><span>3 seconds</span></div>
+        <button type="button" class="settings-reset" id="reset-playback-settings">Reset to 500 ms</button>
       </div>
     </div>
   </div>

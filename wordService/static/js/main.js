@@ -8,7 +8,10 @@ import {
   elements,
   readSavedPlaybackState,
   restoreSavedViewState,
+  restorePlaybackSettings,
+  resetPlaybackSettings,
   restoreScrollPosition,
+  savePlaybackSettings,
   savePlaybackState,
   saveViewState,
   scheduleScrollSave,
@@ -19,6 +22,25 @@ import {
 } from "./state.js";
 
 let entriesLoadToken = 0;
+
+function updatePlaybackSettingsUI() {
+  const value = state.postSentenceSilenceMs;
+  elements.postSentenceSilence.value = String(value);
+  elements.postSentenceSilenceValue.textContent = `${value} ms`;
+}
+
+function openPlaybackSettings() {
+  updatePlaybackSettingsUI();
+  elements.settingsBackdrop.classList.add("open");
+  elements.settingsBackdrop.setAttribute("aria-hidden", "false");
+  elements.postSentenceSilence.focus();
+}
+
+function closePlaybackSettings() {
+  elements.settingsBackdrop.classList.remove("open");
+  elements.settingsBackdrop.setAttribute("aria-hidden", "true");
+  elements.settingsButton.focus();
+}
 
 function currentBook() {
   return state.books.find(book => book.code === state.selectedBook) || {
@@ -253,6 +275,20 @@ function wireControls() {
   elements.audioExportButton.addEventListener("click", () => {
     exportFlaggedAudio().catch(showError);
   });
+  elements.settingsButton.addEventListener("click", openPlaybackSettings);
+  elements.settingsClose.addEventListener("click", closePlaybackSettings);
+  elements.settingsBackdrop.addEventListener("click", event => {
+    if (event.target === elements.settingsBackdrop) closePlaybackSettings();
+  });
+  elements.postSentenceSilence.addEventListener("input", event => {
+    state.postSentenceSilenceMs = Number(event.target.value);
+    savePlaybackSettings();
+    updatePlaybackSettingsUI();
+  });
+  elements.resetPlaybackSettings.addEventListener("click", () => {
+    resetPlaybackSettings();
+    updatePlaybackSettingsUI();
+  });
   elements.starredViewButton.addEventListener("click", () => {
     if (state.view === "starred") {
       showCardView().catch(showError);
@@ -265,6 +301,10 @@ function wireControls() {
     if (event.target === elements.backdrop) closeDetail();
   });
   document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && elements.settingsBackdrop.classList.contains("open")) {
+      closePlaybackSettings();
+      return;
+    }
     if (event.key === "Escape" && elements.backdrop.classList.contains("open")) {
       closeDetail();
       return;
@@ -319,6 +359,8 @@ function configureModules() {
 
 async function init() {
   restoreSavedViewState();
+  restorePlaybackSettings();
+  updatePlaybackSettingsUI();
   const previewParams = new URLSearchParams(window.location.search);
   const previewUnit = Number(previewParams.get("preview-unit"));
   if (Number.isFinite(previewUnit) && previewUnit > 0) state.selectedUnit = previewUnit;
