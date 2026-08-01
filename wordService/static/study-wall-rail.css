@@ -427,54 +427,43 @@
 
 .rail-wavebar-track {
   position: relative;
-  height: 48px;
+  height: 44px;
   overflow: hidden;
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--line) 30%, #fff);
-  cursor: col-resize;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--line) 38%, #fff);
+  cursor: crosshair;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 
-.rail-wavebar-bars {
+.rail-wavebar-track:focus-within {
+  border-color: var(--flag);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--flag) 18%, transparent);
+}
+
+.rail-wavebar-svg {
   position: absolute;
-  inset: 7px 9px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 2.1px;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
-.rail-wavebar-bars span {
-  flex: 1 1 0;
-  min-width: 1px;
-  height: var(--bar-height, 28%);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--muted2) 64%, #fff);
-  transition: background-color 0.12s ease;
+.rail-wavebar-unplayed {
+  fill: color-mix(in srgb, var(--muted2) 72%, var(--line));
 }
 
-.rail-wavebar-bars span.is-played { background: var(--flag); }
+.rail-wavebar-played { fill: var(--flag); }
 
-.rail-wavebar-played,
-.rail-wavebar-cursor {
-  pointer-events: none;
-  position: absolute;
-  top: 4px;
-  bottom: 4px;
-}
-
-.rail-wavebar-played {
-  left: 0;
-  width: calc(var(--wave-progress, 0) * 100%);
-  background: color-mix(in srgb, var(--accent) 6%, transparent);
+.rail-wavebar-silence-gap {
+  fill: color-mix(in srgb, var(--paper2) 86%, var(--line));
+  opacity: 0.9;
 }
 
 .rail-wavebar-cursor {
-  left: calc(var(--wave-progress, 0) * 100%);
-  width: 2px;
-  transform: translateX(-1px);
-  border-radius: 99px;
-  background: var(--flag);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--flag) 14%, transparent);
+  stroke: color-mix(in srgb, var(--flag) 88%, #000);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
 }
 
 .rail-wavebar-seek {
@@ -484,7 +473,7 @@
   height: 100%;
   margin: 0;
   opacity: 0;
-  cursor: col-resize;
+  cursor: crosshair;
 }
 
 .rail-wavebar-seek:focus-visible {

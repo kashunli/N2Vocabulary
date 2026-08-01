@@ -291,6 +291,41 @@ async function showStarredView(options = {}) {
   await loadStarredSentences();
 }
 
+function wireRailWavebarPointerSeek() {
+  const track = elements.railWavebarTrack;
+  if (!track) return;
+  let dragging = false;
+
+  const seekFromPointer = event => {
+    const bounds = track.getBoundingClientRect();
+    if (!bounds.width) return;
+    const progress = Math.min(1, Math.max(0, (event.clientX - bounds.left) / bounds.width));
+    seekRailWavebar(progress);
+  };
+  const stopDragging = event => {
+    if (!dragging) return;
+    seekFromPointer(event);
+    dragging = false;
+    track.releasePointerCapture?.(event.pointerId);
+  };
+
+  track.addEventListener("pointerdown", event => {
+    if (!state.currentAudio) return;
+    event.preventDefault();
+    dragging = true;
+    track.setPointerCapture?.(event.pointerId);
+    seekFromPointer(event);
+  });
+  track.addEventListener("pointermove", event => {
+    if (dragging || event.buttons === 1) seekFromPointer(event);
+  });
+  track.addEventListener("pointerup", stopDragging);
+  track.addEventListener("pointercancel", stopDragging);
+  track.addEventListener("click", event => {
+    if (!dragging) seekFromPointer(event);
+  });
+}
+
 function wireControls() {
   elements.bookSelect.addEventListener("change", event => {
     state.selectedBook = (event.target.value || "N2").toUpperCase();
@@ -361,6 +396,7 @@ function wireControls() {
       seekRailWavebar(event.target.value);
     });
   }
+  wireRailWavebarPointerSeek();
   elements.audioExportButton.addEventListener("click", () => {
     exportFlaggedAudio().catch(showError);
   });

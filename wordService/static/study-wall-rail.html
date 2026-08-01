@@ -89,9 +89,15 @@
       </div>
       <div class="rail-wavebar-main">
         <div class="rail-wavebar-track" id="rail-wavebar-track">
-          <div class="rail-wavebar-bars" id="rail-wavebar-bars" aria-hidden="true"></div>
-          <div class="rail-wavebar-played" aria-hidden="true"></div>
-          <div class="rail-wavebar-cursor" aria-hidden="true"></div>
+          <svg class="rail-wavebar-svg" viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <clipPath id="rail-wavebar-progress-clip"><rect id="rail-wavebar-progress-rect" x="0" y="0" width="0" height="100"></rect></clipPath>
+            </defs>
+            <g class="rail-wavebar-silence" id="rail-wavebar-silence"></g>
+            <g class="rail-wavebar-unplayed" id="rail-wavebar-unplayed"></g>
+            <g class="rail-wavebar-played" id="rail-wavebar-played" clip-path="url(#rail-wavebar-progress-clip)"></g>
+            <line class="rail-wavebar-cursor" id="rail-wavebar-cursor" x1="0" x2="0" y1="4" y2="96"></line>
+          </svg>
           <input class="rail-wavebar-seek" id="rail-wavebar-seek" type="range" min="0" max="1" step="0.001" value="0" aria-label="Seek current audio" disabled>
         </div>
         <div class="rail-wavebar-times"><span id="rail-wavebar-current">0:00</span><span id="rail-wavebar-duration">0:00</span></div>

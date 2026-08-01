@@ -6,6 +6,10 @@ import { applyMarkClasses, toggleMark } from "./cards.js";
 let scopePlaybackToken = 0;
 let scopeResumeWaiters = [];
 let railWavebarCleanup = null;
+let railWavebarAudioContext = null;
+let railWavebarLoadToken = 0;
+const railWaveformCache = new Map();
+const RAIL_WAVE_BAR_COUNT = 148;
 
 function formatRailWaveTime(value) {
   if (!Number.isFinite(value) || value < 0) return "0:00";
@@ -14,16 +18,139 @@ function formatRailWaveTime(value) {
   return `${minutes}:${seconds}`;
 }
 
-function renderRailWavebarBars(seed) {
-  const bars = elements.railWavebarBars;
-  if (!bars) return;
+function placeholderRailWaveform(seed) {
   let hash = 17;
   for (const character of String(seed || "clip")) hash = (hash * 31 + character.charCodeAt(0)) % 997;
-  bars.innerHTML = Array.from({length: 148}, (_, index) => {
+  return Array.from({length: RAIL_WAVE_BAR_COUNT}, (_, index) => {
     const wave = Math.abs(Math.sin((index + 1) * 0.73 + hash * 0.017));
-    const height = Math.round(22 + wave * 68);
-    return `<span style="--bar-height:${height}%"></span>`;
+    return Math.max(0.07, 0.22 + wave * 0.68);
+  });
+}
+
+function waveformValuesFromBuffer(audioBuffer) {
+  const channels = Array.from(
+    {length: audioBuffer.numberOfChannels},
+    (_, index) => audioBuffer.getChannelData(index),
+  );
+  const rawPeaks = [];
+  for (let barIndex = 0; barIndex < RAIL_WAVE_BAR_COUNT; barIndex += 1) {
+    const start = Math.floor((barIndex * audioBuffer.length) / RAIL_WAVE_BAR_COUNT);
+    const end = Math.max(start + 1, Math.floor(((barIndex + 1) * audioBuffer.length) / RAIL_WAVE_BAR_COUNT));
+    let peak = 0;
+    for (let frame = start; frame < Math.min(end, audioBuffer.length); frame += 1) {
+      let amplitude = 0;
+      for (const channel of channels) amplitude += Math.abs(channel[frame] || 0);
+      peak = Math.max(peak, amplitude / Math.max(1, channels.length));
+    }
+    rawPeaks.push(peak);
+  }
+  const loudest = Math.max(...rawPeaks, 0.0001);
+  return rawPeaks.map(peak => Math.max(0.07, peak / loudest));
+}
+
+function percentile(values, quantile) {
+  if (!values.length) return 0;
+  const sorted = [...values].sort((left, right) => left - right);
+  return sorted[Math.min(sorted.length - 1, Math.max(0, Math.floor((sorted.length - 1) * quantile)))];
+}
+
+function detectRailSilenceGaps(audioBuffer) {
+  const channels = Array.from(
+    {length: audioBuffer.numberOfChannels},
+    (_, index) => audioBuffer.getChannelData(index),
+  );
+  const frameMs = 10;
+  const framesPerWindow = Math.max(1, Math.round(audioBuffer.sampleRate * frameMs / 1000));
+  const rmsValues = [];
+  for (let start = 0; start < audioBuffer.length; start += framesPerWindow) {
+    const end = Math.min(audioBuffer.length, start + framesPerWindow);
+    let sumSquares = 0;
+    let sampleCount = 0;
+    for (let frame = start; frame < end; frame += 1) {
+      for (const channel of channels) {
+        const sample = channel[frame] || 0;
+        sumSquares += sample * sample;
+        sampleCount += 1;
+      }
+    }
+    rmsValues.push(Math.sqrt(sumSquares / Math.max(1, sampleCount)));
+  }
+  const speechLevel = percentile(rmsValues, 0.85);
+  if (speechLevel <= 0.00001) return [];
+  const noiseFloor = percentile(rmsValues, 0.15);
+  const relativeThreshold = speechLevel * 10 ** (-18 / 20);
+  const threshold = Math.min(speechLevel * 0.45, Math.max(relativeThreshold, noiseFloor * 1.5));
+  const gaps = [];
+  let quietStart = -1;
+  for (let index = 0; index <= rmsValues.length; index += 1) {
+    const quiet = index < rmsValues.length && rmsValues[index] <= threshold;
+    if (quiet && quietStart < 0) quietStart = index;
+    if (quiet || quietStart < 0) continue;
+    const quietEnd = index;
+    if (quietStart > 0 && quietEnd < rmsValues.length && (quietEnd - quietStart) * frameMs >= 120) {
+      gaps.push({
+        start: quietStart / rmsValues.length,
+        end: quietEnd / rmsValues.length,
+      });
+    }
+    quietStart = -1;
+  }
+  return gaps;
+}
+
+function renderRailWavebarSilence(gaps) {
+  if (!elements.railWavebarSilence) return;
+  elements.railWavebarSilence.innerHTML = gaps.map(gap => (
+    `<rect class="rail-wavebar-silence-gap" x="${gap.start * 1000}" y="2" width="${(gap.end - gap.start) * 1000}" height="96" rx="3"></rect>`
+  )).join("");
+}
+
+function renderRailWavebarBars(values, gaps = []) {
+  const unplayed = elements.railWavebarUnplayed;
+  const played = elements.railWavebarPlayed;
+  if (!unplayed || !played) return;
+  const gap = 2.1;
+  const barWidth = (1000 - gap * (values.length - 1)) / values.length;
+  const rects = values.map((height, index) => {
+    const renderedHeight = Math.max(5, height * 84);
+    const x = index * (barWidth + gap);
+    const y = (100 - renderedHeight) / 2;
+    return `<rect x="${x}" y="${y}" width="${barWidth}" height="${renderedHeight}" rx="${Math.min(2, barWidth / 2)}"></rect>`;
   }).join("");
+  unplayed.innerHTML = rects;
+  played.innerHTML = rects;
+  renderRailWavebarSilence(gaps);
+}
+
+async function loadRailWaveform(audio, seed, token) {
+  const src = audio.currentSrc || audio.src;
+  if (!src || token !== railWavebarLoadToken) return;
+  if (railWaveformCache.has(src)) {
+    const cached = railWaveformCache.get(src);
+    renderRailWavebarBars(cached.values, cached.gaps);
+    syncRailWavebar(audio);
+    return;
+  }
+  try {
+    if (!railWavebarAudioContext) {
+      const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextConstructor) return;
+      railWavebarAudioContext = new AudioContextConstructor();
+    }
+    const response = await fetch(src);
+    if (!response.ok) throw new Error(`Waveform audio request failed: ${response.status}`);
+    const audioBuffer = await railWavebarAudioContext.decodeAudioData(await response.arrayBuffer());
+    const values = waveformValuesFromBuffer(audioBuffer);
+    const gaps = detectRailSilenceGaps(audioBuffer);
+    railWaveformCache.set(src, {values, gaps});
+    if (token === railWavebarLoadToken && state.currentAudio === audio) {
+      renderRailWavebarBars(values, gaps);
+      syncRailWavebar(audio);
+    }
+  } catch (error) {
+    // Keep the deterministic placeholder if a browser cannot decode this clip.
+    if (token === railWavebarLoadToken) renderRailWavebarBars(placeholderRailWaveform(seed), []);
+  }
 }
 
 function syncRailWavebar(audio) {
@@ -32,20 +159,23 @@ function syncRailWavebar(audio) {
   const current = duration ? Math.min(duration, Math.max(0, audio.currentTime || 0)) : 0;
   const progress = duration ? current / duration : 0;
   elements.railWavebar.style.setProperty("--wave-progress", String(progress));
+  if (elements.railWavebarProgressRect) elements.railWavebarProgressRect.setAttribute("width", String(progress * 1000));
+  if (elements.railWavebarCursor) {
+    elements.railWavebarCursor.setAttribute("x1", String(progress * 1000));
+    elements.railWavebarCursor.setAttribute("x2", String(progress * 1000));
+  }
   if (elements.railWavebarSeek) {
     elements.railWavebarSeek.disabled = !duration;
     elements.railWavebarSeek.value = String(progress);
   }
   if (elements.railWavebarCurrent) elements.railWavebarCurrent.textContent = formatRailWaveTime(current);
   if (elements.railWavebarDuration) elements.railWavebarDuration.textContent = formatRailWaveTime(duration);
-  elements.railWavebarBars?.querySelectorAll("span").forEach((bar, index, all) => {
-    bar.classList.toggle("is-played", index / Math.max(1, all.length - 1) <= progress);
-  });
 }
 
 function releaseRailWavebar(audio) {
   if (audio && audio._railWavebarCleanup) audio._railWavebarCleanup();
   if (audio && state.currentAudio !== audio) return;
+  railWavebarLoadToken += 1;
   railWavebarCleanup?.();
   railWavebarCleanup = null;
   if (elements.railWavebar) elements.railWavebar.style.setProperty("--wave-progress", "0");
@@ -59,7 +189,8 @@ function releaseRailWavebar(audio) {
 function connectRailWavebar(audio, label, seed) {
   releaseRailWavebar();
   if (!elements.railWavebar) return;
-  renderRailWavebarBars(seed);
+  const loadToken = railWavebarLoadToken;
+  renderRailWavebarBars(placeholderRailWaveform(seed), []);
   if (elements.railWavebarLabel) elements.railWavebarLabel.textContent = label;
   const sync = () => syncRailWavebar(audio);
   ["loadedmetadata", "durationchange", "timeupdate", "play", "pause", "ended"].forEach(event => {
@@ -72,6 +203,7 @@ function connectRailWavebar(audio, label, seed) {
   };
   audio._railWavebarCleanup = railWavebarCleanup;
   sync();
+  loadRailWaveform(audio, seed, loadToken);
 }
 
 export function seekRailWavebar(progress) {
@@ -82,7 +214,7 @@ export function seekRailWavebar(progress) {
   syncRailWavebar(audio);
 }
 
-if (elements.railWavebar) renderRailWavebarBars("idle");
+if (elements.railWavebar) renderRailWavebarBars(placeholderRailWaveform("idle"), []);
 
 function scopePlaybackIsActive() {
   return state.scopePlaybackStatus !== "idle";
