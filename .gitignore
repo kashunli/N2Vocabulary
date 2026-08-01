@@ -81,6 +81,7 @@ tokens/
 credentials/
 *credentials*
 .claude/
+.codex/
 .cursor/
 .vscode/
 *.sqlite.backup*
