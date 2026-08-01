@@ -266,6 +266,21 @@ rt { font-size: 0.4em; line-height: 1; color: var(--muted2); }
   cursor: not-allowed;
   opacity: 0.65;
 }
+.layout-switch-button {
+  padding: 0.32rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--line));
+  border-radius: 6px;
+  background: #fff;
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.layout-switch-button:hover,
+.layout-switch-button:focus-visible {
+  background: #edf2f7;
+  border-color: var(--accent);
+}
 .settings-button {
   width: 34px;
   height: 34px;
