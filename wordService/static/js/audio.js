@@ -19,7 +19,7 @@ function renderRailWavebarBars(seed) {
   if (!bars) return;
   let hash = 17;
   for (const character of String(seed || "clip")) hash = (hash * 31 + character.charCodeAt(0)) % 997;
-  bars.innerHTML = Array.from({length: 72}, (_, index) => {
+  bars.innerHTML = Array.from({length: 148}, (_, index) => {
     const wave = Math.abs(Math.sin((index + 1) * 0.73 + hash * 0.017));
     const height = Math.round(22 + wave * 68);
     return `<span style="--bar-height:${height}%"></span>`;

@@ -75,15 +75,17 @@
     <div class="playback-actions">
       <button class="transport-button replay" id="scope-replay-button" type="button" aria-keyshortcuts="R"><span>Replay now</span><kbd>R</kbd></button>
       <button class="transport-button" id="scope-previous-button" type="button" aria-keyshortcuts="ArrowLeft A"><span>Previous</span><kbd>← / A</kbd></button>
-      <button class="transport-button pause" id="scope-pause-button" type="button" aria-keyshortcuts="Space"><span>Start</span><kbd>Space</kbd></button>
       <button class="transport-button primary" id="scope-next-button" type="button" aria-keyshortcuts="ArrowRight D"><span>Next</span><kbd>→ / D</kbd></button>
       <button class="transport-button" id="scope-stop-button" type="button" aria-keyshortcuts="Escape"><span>Stop</span><kbd>Esc</kbd></button>
     </div>
     <div class="playback-count" id="scope-playback-count">0 / 0</div>
     <div class="rail-wavebar" id="rail-wavebar" aria-label="Current audio waveform">
       <div class="rail-wavebar-side">
+        <button class="rail-wavebar-play" id="scope-pause-button" type="button" aria-keyshortcuts="Space" aria-label="Play or pause current audio" title="Space: play / pause"><span>Start</span><kbd>Space</kbd></button>
+        <div class="rail-wavebar-side-copy">
         <span class="rail-wavebar-kicker">AUDIO</span>
         <span class="rail-wavebar-label" id="rail-wavebar-label">Waiting for a clip</span>
+        </div>
       </div>
       <div class="rail-wavebar-main">
         <div class="rail-wavebar-track" id="rail-wavebar-track">
