@@ -1,7 +1,7 @@
 import { updateMark, updateExampleStar } from "./api.js";
 import { ensureCardAudio, playClip, playScopeFromEntry, previewPlaybackVisual, setScopePlaybackWindow, updateScopePlaybackButton, wireAudioTarget, wireCardAudioPrepTarget } from "./audio.js";
 import { cardMeaningHTML, escapeHTML, exampleCategoryBadgeHTML, exampleTranslationHTML, rubyOrPlain, unitLabel } from "./format.js";
-import { elements, setBanner, state, showError, updateAudioExportButton } from "./state.js";
+import { applyStudyFocusVisual, elements, focusStudyEntry, setBanner, state, showError, updateAudioExportButton } from "./state.js";
 
 const callbacks = {
   loadSummary: null,
@@ -132,6 +132,8 @@ export function renderCards() {
       updateCoverAllButton();
     });
     card.addEventListener("click", event => {
+      const clickedPhase = event.target.closest(".main-sentence-row") ? "sentence" : "word";
+      focusStudyEntry(entry.entry_id, clickedPhase);
       if (event.target.closest("button")) return;
       if (state.scopePlaybackStatus !== "idle") {
         event.preventDefault();
@@ -165,6 +167,7 @@ export function renderCards() {
     }
     elements.grid.appendChild(fragment);
   });
+  applyStudyFocusVisual();
   if (playbackPreview === "word" || playbackPreview === "sentence") {
     state.scopePlaybackStatus = "playing";
     state.scopePlaybackPosition = Math.min(3, state.currentEntries.length);

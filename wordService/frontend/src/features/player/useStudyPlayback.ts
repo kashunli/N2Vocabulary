@@ -8,6 +8,7 @@ import {
   type PlaybackMode,
   type PlaybackPhase,
 } from "./playbackSettings";
+import { readStudyFocus, saveStudyFocus } from "../study/studyFocus";
 
 type PendingSilence = {
   remainingMs: number;
@@ -48,6 +49,16 @@ export function useStudyPlayback({entries, showStarred}: UseStudyPlaybackOptions
   const target = activeEntry ? targetFor(activeEntry, activePhase) : null;
 
   useEffect(() => {
+    if (!activeEntry || showStarred) return;
+    saveStudyFocus({
+      bookCode: activeEntry.book_code,
+      entryId: activeEntry.entry_id,
+      phase: activePhase,
+      unitNumber: activeEntry.unit.number,
+    });
+  }, [activeEntry, activePhase, showStarred]);
+
+  useEffect(() => {
     autoAdvanceRef.current = autoAdvance;
   }, [autoAdvance]);
 
@@ -56,8 +67,19 @@ export function useStudyPlayback({entries, showStarred}: UseStudyPlaybackOptions
   }, []);
 
   const resetPosition = useCallback((nextEntries: Entry[]) => {
-    setActiveIndex(0);
-    setActivePhase(playbackMode === "sentences" && nextEntries[0]?.sentence_audio_url ? "sentence" : "word");
+    const savedFocus = readStudyFocus();
+    const savedIndex = savedFocus && nextEntries[0]?.book_code === savedFocus.bookCode
+      ? nextEntries.findIndex((entry) => entry.entry_id === savedFocus.entryId)
+      : -1;
+    const nextIndex = savedIndex >= 0 ? savedIndex : 0;
+    const nextEntry = nextEntries[nextIndex];
+    const nextPhase = savedIndex >= 0 && savedFocus?.phase === "sentence" && nextEntry?.sentence_audio_url
+      ? "sentence"
+      : playbackMode === "sentences" && nextEntry?.sentence_audio_url
+        ? "sentence"
+        : "word";
+    setActiveIndex(nextIndex);
+    setActivePhase(nextPhase);
   }, [playbackMode]);
 
   const clearEndTimer = useCallback(() => {

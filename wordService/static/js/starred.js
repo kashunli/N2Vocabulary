@@ -1,7 +1,8 @@
 import { wireAudioTarget } from "./audio.js";
 import { toggleSentenceStar } from "./cards.js";
 import { escapeHTML, exampleKey, exampleSourceLabel, exampleTranslationHTML, markdownToHTML, meaningHTML, rubyOrPlain, unitLabel } from "./format.js";
-import { elements, saveViewState, showError, state } from "./state.js";
+import { saveStudyFocus } from "./studyFocus.js";
+import { elements, focusStudyEntry, saveViewState, showError, state } from "./state.js";
 
 const callbacks = {
   loadStarredSentences: null,
@@ -79,6 +80,14 @@ export function renderStarredView() {
     `;
     row.addEventListener("click", () => {
       state.selectedStarredKey = row.dataset.key;
+      if (!focusStudyEntry(item.entry_id, "sentence")) {
+        saveStudyFocus({
+          bookCode: state.selectedBook,
+          entryId: item.entry_id,
+          phase: "sentence",
+          unitNumber: item.unit?.number,
+        });
+      }
       saveViewState();
       renderStarredView();
     });

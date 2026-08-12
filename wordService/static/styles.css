@@ -361,6 +361,17 @@ main { max-width: 1420px; margin: 0 auto; padding: 1rem 1rem 8.6rem; }
 .card.known { border-left-color: var(--known); background: color-mix(in srgb, var(--known-bg) 35%, #fff); }
 .card.flagged { border-left-color: var(--flag); background: color-mix(in srgb, var(--flag-bg) 35%, #fff); }
 .card.known.flagged { border-left-color: var(--flag); }
+.card.study-focus:not(.scope-playing) {
+  border-color: color-mix(in srgb, var(--accent) 48%, var(--line));
+  border-left-color: var(--accent);
+  box-shadow: 0 3px 12px rgba(30, 58, 95, 0.1), var(--shadow);
+}
+.card.study-focus-word:not(.scope-playing) .card-kanji { color: var(--accent); }
+.card.study-focus-sentence:not(.scope-playing) .main-sentence-row {
+  background: #eaf3ff;
+  border-color: color-mix(in srgb, var(--accent) 32%, var(--line));
+  box-shadow: inset 3px 0 0 color-mix(in srgb, var(--accent) 68%, transparent);
+}
 .card-playback-progress {
   appearance: none;
   -webkit-appearance: none;

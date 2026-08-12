@@ -10,13 +10,14 @@ import { StudyWallView } from "./features/study/StudyWallView";
 import { useStudyActions } from "./features/study/useStudyActions";
 import { useStudyCatalog } from "./features/study/useStudyCatalog";
 import { useStudyEntries } from "./features/study/useStudyEntries";
+import { readStudyFocus } from "./features/study/studyFocus";
 import type { FilterState } from "./features/study/studyTypes";
 import type {
   Entry,
 } from "./types";
 
 export function App() {
-  const [selectedBook, setSelectedBook] = useState("N2");
+  const [selectedBook, setSelectedBook] = useState(() => readStudyFocus()?.bookCode || "N2");
   const [selectedUnit, setSelectedUnit] = useState<number | null>(null);
   const [filterState, setFilterState] = useState<FilterState>("all");
   const [search, setSearch] = useState("");

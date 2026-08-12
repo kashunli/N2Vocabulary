@@ -1,6 +1,6 @@
 import { generateEntryAudio, generateExampleAudio, exportUnitFlaggedAudio } from "./api.js";
 import { unitLabel } from "./format.js";
-import { clearSavedPlaybackState, elements, readSavedPlaybackState, savePlaybackState, setBanner, showError, state, updateAudioExportButton } from "./state.js";
+import { clearSavedPlaybackState, elements, focusStudyEntry, readSavedPlaybackState, savePlaybackState, setBanner, showError, state, updateAudioExportButton } from "./state.js";
 import { clearScopePlaybackWindow, setScopePlaybackWindow } from "./audioPlaybackWindow.js";
 import { clipTargetForOffset } from "./audioPlaybackNavigation.js";
 
@@ -209,10 +209,13 @@ export function wireCardAudioPrepTarget(target, url, entry, card, label) {
 export function playClip(target) {
   const src = target.dataset.src;
   if (!src) return;
+  const cardEntryId = Number(target.closest(".card")?.dataset.id);
+  if (Number.isFinite(cardEntryId)) {
+    focusStudyEntry(cardEntryId, playbackPhase(target));
+  }
   if (scopePlaybackIsActive()) {
     // Keyboard activation on card text should follow the same "start here"
     // rule as clicking the card while the visible queue is active.
-    const cardEntryId = Number(target.closest(".card")?.dataset.id);
     if (Number.isFinite(cardEntryId)) {
       playScopeFromEntry(cardEntryId).catch(showError);
       return;
@@ -420,6 +423,7 @@ async function playEntryCycle(card, token, startPhase = "word") {
 
   if (state.playbackMode !== "sentences" && startPhase !== "sentence") {
     state.scopePlaybackPhase = "word";
+    focusStudyEntry(state.scopePlaybackEntryId, "word");
     updateScopePlaybackButton();
     savePlaybackState();
     if (await playTargetAndWait(wordTarget, token)) clipsPlayed += 1;
@@ -431,6 +435,9 @@ async function playEntryCycle(card, token, startPhase = "word") {
   }
 
   state.scopePlaybackPhase = sentenceTarget?.dataset.src ? "sentence" : "card";
+  if (state.scopePlaybackPhase === "sentence") {
+    focusStudyEntry(state.scopePlaybackEntryId, "sentence");
+  }
   updateScopePlaybackButton();
   savePlaybackState();
   const sentencePlayed = await playTargetAndWait(sentenceTarget, token);
@@ -480,6 +487,7 @@ async function startScopePlayback(startIndex = 0, initialPhase = "word") {
     state.scopePlaybackPosition = index + 1;
     state.scopePlaybackEntryId = entry.entry_id;
     state.scopePlaybackPhase = "preparing";
+    focusStudyEntry(entry.entry_id, state.playbackMode === "sentences" ? "sentence" : "word");
     cardsVisited += 1;
     setScopePlaybackWindow(entry.entry_id);
     showPreparingVisual(card);
@@ -617,6 +625,7 @@ export async function resumeScopePlaybackFromSavedState(entries) {
   state.scopePlaybackTotal = saved.scopePlaybackTotal || entries.length;
   state.scopePlaybackEntryId = saved.scopePlaybackEntryId;
   state.scopePlaybackPhase = saved.scopePlaybackPhase || "idle";
+  focusStudyEntry(saved.scopePlaybackEntryId, saved.scopePlaybackPhase === "sentence" ? "sentence" : "word");
 
   // Show the card at the saved position as the current scope card.
   const card = elements.grid.querySelector(

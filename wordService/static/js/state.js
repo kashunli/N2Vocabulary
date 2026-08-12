@@ -1,4 +1,5 @@
 import { unitLabel } from "./format.js";
+import { readStudyFocus, saveStudyFocus } from "./studyFocus.js";
 
 export const elements = {
   pageTitle: document.getElementById("page-title"),
@@ -61,6 +62,8 @@ export const state = {
   search: "",
   view: "cards",
   starredScope: "all",
+  focusedEntryId: null,
+  focusedPhase: "word",
   savedScrollY: null,
   scrollSaveTimer: null,
   currentAudio: null,
@@ -166,6 +169,94 @@ export function clearSavedPlaybackState() {
   }
 }
 
+export function restoreSavedStudyFocus() {
+  const saved = readStudyFocus();
+  if (!saved) return;
+  state.focusedEntryId = saved.entryId;
+  state.focusedPhase = saved.phase;
+  // The focus record carries the book so changing walls does not silently
+  // reopen a different vocabulary set from the one the learner last read.
+  state.selectedBook = saved.bookCode;
+  // If the classic wall had a section filter that would hide the saved card,
+  // follow the focus record into that section. An explicit all-sections choice
+  // (`null`) remains all-sections so the card is still shown in context.
+  if (Number.isFinite(saved.unitNumber)
+    && (state.selectedUnit === undefined
+      || (Number.isFinite(state.selectedUnit) && state.selectedUnit !== saved.unitNumber))) {
+    state.selectedUnit = saved.unitNumber;
+  }
+}
+
+export function applyStudyFocusVisual() {
+  elements.grid.querySelectorAll(".card.study-focus").forEach(card => {
+    card.classList.remove("study-focus", "study-focus-word", "study-focus-sentence");
+    delete card.dataset.studyFocusPhase;
+  });
+  if (!Number.isFinite(state.focusedEntryId)) return;
+  const card = elements.grid.querySelector(`.card[data-id="${state.focusedEntryId}"]`);
+  if (!card) return;
+  card.classList.add("study-focus", `study-focus-${state.focusedPhase}`);
+  card.dataset.studyFocusPhase = state.focusedPhase;
+}
+
+export function focusStudyEntry(entryId, phase = "word") {
+  const entry = state.currentEntries.find(item => item.entry_id === Number(entryId));
+  if (!entry) return false;
+  const nextPhase = phase === "sentence" && entry.sentence_audio_url ? "sentence" : "word";
+  state.focusedEntryId = entry.entry_id;
+  state.focusedPhase = nextPhase;
+  applyStudyFocusVisual();
+  saveStudyFocus({
+    bookCode: entry.book_code || state.selectedBook,
+    entryId: entry.entry_id,
+    phase: nextPhase,
+    unitNumber: entry.unit?.number,
+  });
+  return true;
+}
+
+export function focusStudyEntryFromViewport() {
+  if (state.view !== "cards" || state.entriesLoading || !state.currentEntries.length) return;
+  const cards = Array.from(elements.grid.querySelectorAll(".card"));
+  if (!cards.length) return;
+  const viewportCenter = window.innerHeight / 2;
+  let closestCard = null;
+  let closestDistance = Number.POSITIVE_INFINITY;
+  cards.forEach(card => {
+    const bounds = card.getBoundingClientRect();
+    const distance = Math.abs((bounds.top + bounds.bottom) / 2 - viewportCenter);
+    if (distance < closestDistance) {
+      closestCard = card;
+      closestDistance = distance;
+    }
+  });
+  if (!closestCard) return;
+  const entryId = Number(closestCard.dataset.id);
+  const phase = entryId === state.focusedEntryId ? state.focusedPhase : "word";
+  if (entryId === state.focusedEntryId && phase === state.focusedPhase) {
+    applyStudyFocusVisual();
+    return;
+  }
+  focusStudyEntry(entryId, phase);
+}
+
+export function restoreStudyFocusPosition() {
+  const saved = readStudyFocus();
+  if (!saved || saved.bookCode !== state.selectedBook) return false;
+  state.focusedEntryId = saved.entryId;
+  state.focusedPhase = saved.phase;
+  applyStudyFocusVisual();
+  const card = elements.grid.querySelector(`.card[data-id="${saved.entryId}"]`);
+  if (!card) return false;
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      card.scrollIntoView({behavior: "auto", block: "center"});
+      applyStudyFocusVisual();
+    });
+  });
+  return true;
+}
+
 function readSavedViewState() {
   try {
     const raw = window.localStorage.getItem(VIEW_STATE_STORAGE_KEY);
@@ -228,11 +319,16 @@ export function scheduleScrollSave() {
   if (state.scrollSaveTimer) window.clearTimeout(state.scrollSaveTimer);
   state.scrollSaveTimer = window.setTimeout(() => {
     state.scrollSaveTimer = null;
+    focusStudyEntryFromViewport();
     saveViewState();
   }, 150);
 }
 
 export function restoreScrollPosition() {
+  if (restoreStudyFocusPosition()) {
+    state.savedScrollY = null;
+    return;
+  }
   if (!Number.isFinite(state.savedScrollY)) return;
   const targetY = state.savedScrollY;
   state.savedScrollY = null;

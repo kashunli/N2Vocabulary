@@ -7,6 +7,7 @@ import { configureStarred } from "./starred.js";
 import { updatePlaybackSettingsUI } from "./playbackSettings.js";
 import {
   restoreSavedViewState,
+  restoreSavedStudyFocus,
   restorePlaybackSettings,
   restoreScrollPosition,
   showError,
@@ -25,6 +26,7 @@ function configureModules() {
 
 async function init() {
   restoreSavedViewState();
+  restoreSavedStudyFocus();
   restorePlaybackSettings();
   updatePlaybackSettingsUI();
   const previewParams = new URLSearchParams(window.location.search);
