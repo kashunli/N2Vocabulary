@@ -1,5 +1,5 @@
 import { updateMark, updateExampleStar } from "./api.js";
-import { ensureCardAudio, playClip, playScopeFromEntry, previewPlaybackVisual, setScopePlaybackWindow, syncRailCurrentPanel, updateScopePlaybackButton, wireAudioTarget, wireCardAudioPrepTarget } from "./audio.js";
+import { ensureCardAudio, playClip, playScopeFromEntry, previewPlaybackVisual, setScopePlaybackWindow, updateScopePlaybackButton, wireAudioTarget, wireCardAudioPrepTarget } from "./audio.js";
 import { cardMeaningHTML, escapeHTML, exampleCategoryBadgeHTML, exampleTranslationHTML, rubyOrPlain, unitLabel } from "./format.js";
 import { elements, setBanner, state, showError, updateAudioExportButton } from "./state.js";
 
@@ -165,7 +165,6 @@ export function renderCards() {
     }
     elements.grid.appendChild(fragment);
   });
-  syncRailCurrentPanel(state.currentEntries[0]?.entry_id);
   if (playbackPreview === "word" || playbackPreview === "sentence") {
     state.scopePlaybackStatus = "playing";
     state.scopePlaybackPosition = Math.min(3, state.currentEntries.length);
@@ -319,7 +318,6 @@ export async function toggleCurrentPlaybackMark(key) {
   const card = entry && elements.grid.querySelector(`.card[data-id="${entry.entry_id}"]`);
   if (!entry || !card || (key !== "known" && key !== "flagged")) return false;
   await toggleMark(entry, key, card);
-  syncRailCurrentPanel(entry.entry_id);
   setBanner(`${entry.kanji} is ${entry.mark[key] ? key : `not ${key}`}. Playback continues.`);
   return true;
 }

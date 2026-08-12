@@ -9,14 +9,8 @@ use url::Url;
 
 pub(super) fn static_asset_path(static_dir: &Path, request_path: &str) -> Option<PathBuf> {
     match request_path {
-        "/styles.css"
-        | "/favicon.svg"
-        | "/app.js"
-        | "/audio-review.html"
-        | "/audio-review.css"
-        | "/audio-review.js"
-        | "/study-wall-rail.html"
-        | "/study-wall-rail.css" => Some(static_dir.join(request_path.trim_start_matches('/'))),
+        "/styles.css" | "/favicon.svg" | "/app.js" | "/audio-review.html" | "/audio-review.css"
+        | "/audio-review.js" => Some(static_dir.join(request_path.trim_start_matches('/'))),
         _ => {
             if let Some(asset_name) = request_path.strip_prefix("/study-wall-react/assets/") {
                 // Vite emits one-level hashed JS/CSS assets. Keep this route
@@ -176,14 +170,6 @@ mod tests {
             Some(Path::new("static/audio-review.js"))
         );
         assert_eq!(
-            static_asset_path(root, "/study-wall-rail.html").as_deref(),
-            Some(Path::new("static/study-wall-rail.html"))
-        );
-        assert_eq!(
-            static_asset_path(root, "/study-wall-rail.css").as_deref(),
-            Some(Path::new("static/study-wall-rail.css"))
-        );
-        assert_eq!(
             static_asset_path(root, "/study-wall-react/assets/index-abc123.js").as_deref(),
             Some(Path::new("static/react-rail/assets/index-abc123.js"))
         );
@@ -196,6 +182,8 @@ mod tests {
         assert!(static_asset_path(root, "/js/nested/main.js").is_none());
         assert!(static_asset_path(root, "/js/main.css").is_none());
         assert!(static_asset_path(root, "/api/summary").is_none());
+        assert!(static_asset_path(root, "/study-wall-rail.html").is_none());
+        assert!(static_asset_path(root, "/study-wall-rail.css").is_none());
         assert!(static_asset_path(root, "/study-wall-react/assets/../index.js").is_none());
         assert!(static_asset_path(root, "/study-wall-react/assets/index.html").is_none());
     }

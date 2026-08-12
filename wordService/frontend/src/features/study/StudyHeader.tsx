@@ -92,7 +92,6 @@ export function StudyHeader({
           <a href="/audio-review.html">Audio text review</a>
           <button type="button" onClick={exportFlaggedAudio} disabled={selectedUnit === null}>Export flagged audio</button>
           <a href="/">Classic study wall</a>
-          <a href="/study-wall-rail.html">Current rail</a>
           <button type="button" onClick={onToggleBlur} aria-pressed={blurred} title="B: blur / reveal the study content">B</button>
           <button type="button" className="react-settings-button" onClick={onOpenSettings} aria-label="Open playback settings" title="Playback settings">⚙</button>
         </div>

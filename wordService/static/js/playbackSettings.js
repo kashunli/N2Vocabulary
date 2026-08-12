@@ -15,15 +15,6 @@ export function updatePlaybackSettingsUI() {
   });
 }
 
-export function applyBlurUI() {
-  if (!elements.blurButton) return;
-  document.body.classList.toggle("is-blurred", state.blurred);
-  elements.blurButton.setAttribute("aria-pressed", state.blurred ? "true" : "false");
-  elements.blurButton.title = state.blurred
-    ? "B: reveal the list and panel"
-    : "B: blur the list and panel";
-}
-
 export function openPlaybackSettings() {
   updatePlaybackSettingsUI();
   elements.settingsBackdrop.classList.add("open");

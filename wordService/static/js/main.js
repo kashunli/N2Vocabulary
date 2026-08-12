@@ -4,12 +4,10 @@ import { loadBooks, loadEntries, loadStarredSentences, loadSummary, loadUnits, r
 import { configureDetail, openDetail } from "./detail.js";
 import { wireControls } from "./controls.js";
 import { configureStarred } from "./starred.js";
-import { applyBlurUI, updatePlaybackSettingsUI } from "./playbackSettings.js";
+import { updatePlaybackSettingsUI } from "./playbackSettings.js";
 import {
-  restoreRailLayoutSettings,
   restoreSavedViewState,
   restorePlaybackSettings,
-  restoreRailBlur,
   restoreScrollPosition,
   showError,
   state,
@@ -28,10 +26,7 @@ function configureModules() {
 async function init() {
   restoreSavedViewState();
   restorePlaybackSettings();
-  restoreRailLayoutSettings();
-  restoreRailBlur();
   updatePlaybackSettingsUI();
-  applyBlurUI();
   const previewParams = new URLSearchParams(window.location.search);
   const previewUnit = Number(previewParams.get("preview-unit"));
   if (Number.isFinite(previewUnit) && previewUnit > 0) state.selectedUnit = previewUnit;

@@ -1,9 +1,8 @@
-import { exportFlaggedAudio, moveScopePlayback, replayScopeImmediately, seekRailWavebar, stopScopePlayback, toggleScopePlayback } from "./audio.js";
+import { exportFlaggedAudio, moveScopePlayback, replayScopeImmediately, stopScopePlayback, toggleScopePlayback } from "./audio.js";
 import { renderCards, toggleCurrentPlaybackMark } from "./cards.js";
 import { loadEntries, loadStarredSentences, loadSummary, loadUnits, renderBooks, selectUnit, showCardView, showStarredView } from "./catalog.js";
 import { closeDetail } from "./detail.js";
-import { applyBlurUI, closePlaybackSettings, openPlaybackSettings, updatePlaybackSettingsUI } from "./playbackSettings.js";
-import { wireRailResizer } from "./railLayout.js";
+import { closePlaybackSettings, openPlaybackSettings, updatePlaybackSettingsUI } from "./playbackSettings.js";
 import {
   elements,
   resetPlaybackSettings,
@@ -12,7 +11,6 @@ import {
   saveViewState,
   scheduleScrollSave,
   setPlaybackMode,
-  setRailBlur,
   showError,
   state,
   updateFilterPills,
@@ -83,21 +81,10 @@ export function wireControls() {
     moveScopePlayback(1).catch(showError);
   });
   elements.scopeStopButton.addEventListener("click", () => stopScopePlayback({announce: true}));
-  if (elements.railWavebarSeek) {
-    elements.railWavebarSeek.addEventListener("input", event => {
-      seekRailWavebar(Number(event.target.value));
-    });
-  }
   elements.audioExportButton.addEventListener("click", () => {
     exportFlaggedAudio().catch(showError);
   });
   elements.settingsButton.addEventListener("click", openPlaybackSettings);
-  if (elements.blurButton) {
-    elements.blurButton.addEventListener("click", () => {
-      setRailBlur(!state.blurred);
-      applyBlurUI();
-    });
-  }
   elements.settingsClose.addEventListener("click", closePlaybackSettings);
   elements.settingsBackdrop.addEventListener("click", event => {
     if (event.target === elements.settingsBackdrop) closePlaybackSettings();
@@ -117,7 +104,6 @@ export function wireControls() {
     resetPlaybackSettings();
     updatePlaybackSettingsUI();
   });
-  wireRailResizer();
   elements.starredViewButton.addEventListener("click", () => {
     if (state.view === "starred") {
       showCardView().catch(showError);
@@ -139,11 +125,9 @@ export function wireControls() {
       return;
     }
     const target = event.target;
-    // The waveform slider remains a normal native range control for mouse
-    // and touch seeking, but it must not trap the study shortcuts after a
-    // click. Other text-entry controls still keep their usual behavior.
+    // Text-entry controls keep their usual browser behavior instead of
+    // trapping the study shortcuts after a click.
     if (target instanceof HTMLElement
-      && target !== elements.railWavebarSeek
       && target.closest("input, textarea, select, [contenteditable='true']")) {
       return;
     }
@@ -170,9 +154,6 @@ export function wireControls() {
       stopScopePlayback({announce: true});
     } else if (key === "r") {
       replayScopeImmediately().catch(showError);
-    } else if (key === "b" && elements.blurButton) {
-      setRailBlur(!state.blurred);
-      applyBlurUI();
     } else if (key === "f") {
       toggleCurrentPlaybackMark("flagged").catch(showError);
     } else if (key === "k") {

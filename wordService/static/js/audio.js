@@ -1,13 +1,12 @@
 import { generateEntryAudio, generateExampleAudio, exportUnitFlaggedAudio } from "./api.js";
 import { unitLabel } from "./format.js";
 import { clearSavedPlaybackState, elements, readSavedPlaybackState, savePlaybackState, setBanner, showError, state, updateAudioExportButton } from "./state.js";
-import { connectRailWavebar, releaseRailWavebar, seekRailWavebar } from "./audioWaveform.js";
-import { clearScopePlaybackWindow, setScopePlaybackWindow, syncRailCurrentPanel } from "./audioRailPanel.js";
+import { clearScopePlaybackWindow, setScopePlaybackWindow } from "./audioPlaybackWindow.js";
 import { clipTargetForOffset } from "./audioPlaybackNavigation.js";
 
-// Keep these exports stable for cards.js and the classic page while the
-// implementation is organized into focused audio modules.
-export { seekRailWavebar, setScopePlaybackWindow, syncRailCurrentPanel };
+// Keep this export stable for cards.js while the implementation is organized
+// into focused audio modules.
+export { setScopePlaybackWindow };
 
 let scopePlaybackToken = 0;
 let scopeResumeWaiters = [];
@@ -63,7 +62,6 @@ function showPlaybackVisual(target, options = {}) {
   // Three visual steps leave the line visibly in progress during both clips;
   // completion is represented by advancing to the next card.
   if (progress) progress.value = phase === "word" ? 1 : 2;
-  syncRailCurrentPanel(card.dataset.id);
 
   return () => {
     if (!retainCard) {
@@ -97,7 +95,6 @@ function updatePausedVisual(paused) {
     const label = card.querySelector(".card-playback-label");
     if (label) label.textContent = paused ? "Paused" : "Now playing";
   });
-  syncRailCurrentPanel(state.scopePlaybackEntryId);
 }
 
 function showPreparingVisual(card) {
@@ -106,14 +103,12 @@ function showPreparingVisual(card) {
   card.dataset.playbackPhase = "preparing";
   const label = card.querySelector(".card-playback-label");
   if (label) label.textContent = "Now playing";
-  syncRailCurrentPanel(card.dataset.id);
 }
 
 function stopCurrentAudio() {
   if (!state.currentAudio) return;
   const audio = state.currentAudio;
   audio.pause();
-  releaseRailWavebar(audio);
   if (audio._target) {
     audio._target.classList.remove("playing");
   }
@@ -135,7 +130,6 @@ function playTargetAndWait(target, token) {
     let settled = false;
     audio._target = target;
     state.currentAudio = audio;
-    connectRailWavebar(audio, `${target.closest(".card")?.querySelector(".card-kanji")?.textContent || "Current clip"} · ${playbackPhase(target)}`, `${target.dataset.src}:${playbackPhase(target)}`);
     target.classList.add("playing");
     const clearVisual = showPlaybackVisual(target, {retainCard: true});
     audio._clearVisual = clearVisual;
@@ -145,7 +139,6 @@ function playTargetAndWait(target, token) {
       settled = true;
       target.classList.remove("playing");
       clearVisual();
-      releaseRailWavebar(audio);
       if (state.currentAudio === audio) state.currentAudio = null;
       resolve(played);
     };
@@ -230,26 +223,22 @@ export function playClip(target) {
   const audio = new Audio(src);
   audio._target = target;
   target.classList.add("playing");
-  connectRailWavebar(audio, `${target.closest(".card")?.querySelector(".card-kanji")?.textContent || "Current clip"} · ${playbackPhase(target)}`, `${src}:${playbackPhase(target)}`);
   const clearVisual = showPlaybackVisual(target);
   audio._clearVisual = clearVisual;
   audio.addEventListener("ended", () => {
     target.classList.remove("playing");
     clearVisual();
-    releaseRailWavebar(audio);
     if (state.currentAudio === audio) state.currentAudio = null;
   });
   audio.addEventListener("error", () => {
     target.classList.remove("playing");
     clearVisual();
-    releaseRailWavebar(audio);
     if (state.currentAudio === audio) state.currentAudio = null;
     setBanner(`Audio not found: ${src}`);
   });
   audio.play().catch(() => {
     target.classList.remove("playing");
     clearVisual();
-    releaseRailWavebar(audio);
     if (state.currentAudio === audio) state.currentAudio = null;
   });
   state.currentAudio = audio;
@@ -455,25 +444,6 @@ async function playEntryCycle(card, token, startPhase = "word") {
   return {completed: token === scopePlaybackToken, clipsPlayed};
 }
 
-function scrollRailFocus(card, reducedMotion) {
-  if (!elements.railCurrentPanel || !document.body.classList.contains("rail-page")) return false;
-  const list = elements.grid;
-  const listBounds = list.getBoundingClientRect();
-  const cardBounds = card.getBoundingClientRect();
-  const target = list.scrollTop
-    + (cardBounds.top - listBounds.top)
-    - Math.max(0, (list.clientHeight - cardBounds.height) / 2);
-  const maxScroll = Math.max(0, list.scrollHeight - list.clientHeight);
-  const nextScrollTop = Math.min(maxScroll, Math.max(0, target));
-  if (Math.abs(nextScrollTop - list.scrollTop) > 1) {
-    list.scrollTo({
-      top: nextScrollTop,
-      behavior: reducedMotion ? "auto" : "smooth",
-    });
-  }
-  return true;
-}
-
 async function startScopePlayback(startIndex = 0, initialPhase = "word") {
   if (state.entriesLoading) {
     setBanner("The visible list is still loading. Playback will be ready in a moment.");
@@ -518,10 +488,6 @@ async function startScopePlayback(startIndex = 0, initialPhase = "word") {
     setBanner(`Playing ${index + 1} of ${entries.length}: ${entry.kanji}`);
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const bounds = card.getBoundingClientRect();
-    if (scrollRailFocus(card, reducedMotion)) {
-      // The rail owns its own scroll position; the right current panel stays
-      // fixed while the active word moves through the left list.
-    } else {
     const toolbarBottom = elements.scopePlayButton.closest(".controls")?.getBoundingClientRect().bottom || 0;
     const dockTop = elements.playbackDock.getBoundingClientRect().top || window.innerHeight;
     const visibleBottom = Math.min(window.innerHeight, dockTop);
@@ -535,7 +501,6 @@ async function startScopePlayback(startIndex = 0, initialPhase = "word") {
         left: 0,
         behavior: reducedMotion ? "auto" : "smooth",
       });
-    }
     }
 
     if (state.playbackMode !== "words" && (!entry.word_audio_url || (entry.sentence && !entry.sentence_audio_url))) {

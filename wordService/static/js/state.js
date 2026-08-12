@@ -19,17 +19,6 @@ export const elements = {
   scopeNextButton: document.getElementById("scope-next-button"),
   scopeStopButton: document.getElementById("scope-stop-button"),
   scopePlaybackCount: document.getElementById("scope-playback-count"),
-  railWavebar: document.getElementById("rail-wavebar"),
-  railWavebarTrack: document.getElementById("rail-wavebar-track"),
-  railWavebarSilence: document.getElementById("rail-wavebar-silence"),
-  railWavebarUnplayed: document.getElementById("rail-wavebar-unplayed"),
-  railWavebarPlayed: document.getElementById("rail-wavebar-played"),
-  railWavebarProgressRect: document.getElementById("rail-wavebar-progress-rect"),
-  railWavebarCursor: document.getElementById("rail-wavebar-cursor"),
-  railWavebarSeek: document.getElementById("rail-wavebar-seek"),
-  railWavebarCurrent: document.getElementById("rail-wavebar-current"),
-  railWavebarDuration: document.getElementById("rail-wavebar-duration"),
-  railWavebarLabel: document.getElementById("rail-wavebar-label"),
   starredViewButton: document.getElementById("starred-view-button"),
   audioExportButton: document.getElementById("audio-export-button"),
   counter: document.getElementById("counter"),
@@ -45,8 +34,6 @@ export const elements = {
   starredList: document.getElementById("starred-list"),
   starredEmpty: document.getElementById("starred-empty"),
   starredDetail: document.getElementById("starred-detail"),
-  railCurrentPanel: document.getElementById("rail-current-panel"),
-  railResizer: document.getElementById("rail-resizer"),
   template: document.getElementById("card-template"),
   backdrop: document.getElementById("backdrop"),
   modalClose: document.querySelector(".modal-close"),
@@ -59,7 +46,6 @@ export const elements = {
   settingsButton: document.getElementById("settings-button"),
   settingsBackdrop: document.getElementById("settings-backdrop"),
   settingsClose: document.getElementById("settings-close"),
-  blurButton: document.getElementById("blur-button"),
   playbackModeOptions: Array.from(document.querySelectorAll(".setting-option[data-playback-mode]")),
   postSentenceSilence: document.getElementById("post-sentence-silence"),
   postSentenceSilenceValue: document.getElementById("post-sentence-silence-value"),
@@ -93,8 +79,6 @@ export const state = {
   scopePlaybackPhase: "idle",
   postSentenceSilenceMs: 500,
   playbackMode: "both",
-  blurred: false,
-  railListWidthPx: 360,
   entriesLoading: false,
   exportingAudio: false,
 };
@@ -102,53 +86,11 @@ export const state = {
 const VIEW_STATE_STORAGE_KEY = "n2-word-service:view-state:v1";
 const PLAYBACK_STATE_KEY = "n2-word-service:playback-state:v1";
 const PLAYBACK_SETTINGS_KEY = "n2-word-service:playback-settings:v1";
-const RAIL_LAYOUT_SETTINGS_KEY = "n2-word-service:rail-layout-settings:v1";
-const RAIL_BLUR_KEY = "n2-word-service:rail-blurred:v1";
 const DEFAULT_POST_SENTENCE_SILENCE_MS = 500;
 const PLAYBACK_MODES = ["both", "words", "sentences"];
 
 function normalizePlaybackMode(value) {
   return PLAYBACK_MODES.includes(value) ? value : "both";
-}
-
-export function restoreRailLayoutSettings() {
-  try {
-    const raw = window.localStorage.getItem(RAIL_LAYOUT_SETTINGS_KEY);
-    const saved = raw ? JSON.parse(raw) : {};
-    const value = Number(saved.railListWidthPx);
-    if (Number.isFinite(value)) {
-      state.railListWidthPx = Math.min(620, Math.max(220, Math.round(value)));
-    }
-  } catch (error) {
-    console.warn("Could not read rail layout settings", error);
-  }
-}
-
-export function saveRailLayoutSettings() {
-  try {
-    window.localStorage.setItem(RAIL_LAYOUT_SETTINGS_KEY, JSON.stringify({
-      railListWidthPx: state.railListWidthPx,
-    }));
-  } catch (error) {
-    console.warn("Could not save rail layout settings", error);
-  }
-}
-
-export function restoreRailBlur() {
-  try {
-    state.blurred = window.localStorage.getItem(RAIL_BLUR_KEY) === "true";
-  } catch (error) {
-    console.warn("Could not read rail blur setting", error);
-  }
-}
-
-export function setRailBlur(blurred) {
-  state.blurred = !!blurred;
-  try {
-    window.localStorage.setItem(RAIL_BLUR_KEY, state.blurred ? "true" : "false");
-  } catch (error) {
-    console.warn("Could not save rail blur setting", error);
-  }
 }
 
 export function restorePlaybackSettings() {
