@@ -1,4 +1,4 @@
-import { MarkdownContent } from "../explanation/MarkdownContent";
+import { SentenceExplanation } from "../explanation/SentenceExplanation";
 import type { StarredSentence, UnitSummary } from "../../types";
 import { unitLabel } from "./unitLabel";
 
@@ -50,7 +50,7 @@ export function StarredView({
           <p className="react-starred-sentence">{selectedStarred.text}</p>
           <p>{selectedStarred.translation_en || selectedStarred.translation_zh}</p>
           <p className="react-meaning">{selectedStarred.meaning_en || selectedStarred.meaning_zh}</p>
-          {selectedStarred.explanation_md ? <details open><summary>Sentence explanation</summary><MarkdownContent value={selectedStarred.explanation_md} /></details> : null}
+          {selectedStarred.explanation_md ? <SentenceExplanation value={selectedStarred.explanation_md} /> : null}
           <button type="button" onClick={() => onFocusEntry(selectedStarred.entry_id)}>Focus in study wall</button>
         </> : <p className="react-empty">Pick a starred sentence to review it here.</p>}
       </aside>

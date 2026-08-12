@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
-import { MarkdownContent } from "../explanation/MarkdownContent";
+import { SentenceExplanation } from "../explanation/SentenceExplanation";
 import type { PlaybackPhase } from "../player/playbackSettings";
 import type { Entry } from "../../types";
 import { unitLabel } from "./unitLabel";
@@ -92,7 +92,7 @@ export function StudyWallView({
               <button type="button" className={activeEntry.sentence_starred ? "is-on" : ""} onClick={() => void onToggleSentenceStar()} aria-pressed={!!activeEntry.sentence_starred}>{activeEntry.sentence_starred ? "★" : "☆"} Sentence</button>
             </div>
             {detail?.sentence ? <div className="react-sentence"><strong>{detail.sentence}</strong><span>{detail.sentence_translation_en || detail.sentence_translation_zh}</span></div> : null}
-            {detail?.explanation_md ? <details><summary>Sentence explanation</summary><MarkdownContent value={detail.explanation_md} /></details> : null}
+            {detail?.explanation_md ? <SentenceExplanation value={detail.explanation_md} /> : null}
           </>}
         </> : <p className="react-empty">Loading vocabulary…</p>}
       </section>

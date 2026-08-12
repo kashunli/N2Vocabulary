@@ -136,8 +136,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .react-current-actions button.is-selected, .react-current-actions button.is-on { border-color: #9d3d2d; background: #eee4d6; color: #9d3d2d; }
 .react-current-actions button:disabled { cursor: not-allowed; opacity: .4; }
 .react-sentence { display: grid; gap: 6px; max-width: 760px; margin-top: 28px; font: 1rem/1.6 system-ui, sans-serif; }
-.react-sentence span, .react-current details, .react-explanation { color: #756d65; }
-.react-current details { max-width: 760px; margin-top: 25px; font: .88rem/1.6 system-ui, sans-serif; }
+.react-sentence span, .react-sentence-explanation, .react-explanation { color: #756d65; }
+.react-sentence-explanation { max-width: 760px; margin-top: 25px; font: .88rem/1.6 system-ui, sans-serif; }
+.react-sentence-explanation > h3 { margin: 0; color: inherit; font: inherit; font-weight: 400; }
 .react-markdown { margin-top: 10px; font: .88rem/1.6 system-ui, sans-serif; }
 .react-markdown p { margin: 0 0 12px; }
 .react-markdown h3, .react-markdown h4, .react-markdown h5 { margin: 14px 0 6px; color: #282421; font-family: Georgia, "Times New Roman", serif; line-height: 1.25; }
@@ -171,7 +172,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .react-starred-detail h2 { margin: 12px 0; font-size: clamp(2.6rem, 5vw, 5rem); font-weight: 400; }
 .react-starred-sentence { color: #282421; font-size: 1.15rem; line-height: 1.55; }
 .react-starred-detail p { color: #756d65; font: .9rem/1.55 system-ui, sans-serif; }
-.react-starred-detail details { margin-top: 22px; font: .82rem/1.55 system-ui, sans-serif; }
+.react-starred-detail .react-sentence-explanation { margin-top: 22px; font: .82rem/1.55 system-ui, sans-serif; }
 .react-starred-detail > button { margin-top: 18px; }
 
 .react-player { flex: 0 0 auto; position: relative; z-index: 3; border-top: 1px solid #b9aa99; background: rgba(247, 241, 230, .98); padding: 12px 0 16px; }
