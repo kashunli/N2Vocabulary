@@ -4,6 +4,7 @@ import { MarkdownContent } from "../explanation/MarkdownContent";
 import type { PlaybackPhase } from "../player/playbackSettings";
 import type { Entry } from "../../types";
 import { unitLabel } from "./unitLabel";
+import { WordDisplay } from "./WordDisplay";
 
 interface StudyWallViewProps {
   activeEntry?: Entry;
@@ -80,9 +81,8 @@ export function StudyWallView({
       <section ref={currentRef} className={`react-current${activeEntry && coveredEntryIds.has(activeEntry.entry_id) ? " is-covered" : ""}`} aria-live="polite" aria-label="Current vocabulary item">
         {activeEntry ? <>
           <span className="eyebrow">{activeEntry.book_code} #{String(activeEntry.source_index).padStart(3, "0")} · {unitLabel(activeEntry.unit)}</span>
-          <h2>{activeEntry.kanji}</h2>
+          <h2><WordDisplay word={activeEntry.kanji} reading={activeEntry.reading} /></h2>
           {coveredEntryIds.has(activeEntry.entry_id) ? <p className="react-covered-note">Answers covered. Press Uncover all or Cover all to reveal the study details.</p> : <>
-            <ruby>{activeEntry.kanji}<rt>{activeEntry.reading}</rt></ruby>
             <p className="react-meaning">{activeEntry.meaning_en || activeEntry.meaning_zh}</p>
             <div className="react-current-actions">
               <button type="button" onClick={() => onSelectPhase("word")} className={activePhase === "word" ? "is-selected" : ""}>Word</button>
