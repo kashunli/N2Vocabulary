@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
-  base: "/study-wall-react/",
+  base: "/",
   build: {
     outDir: "../static/react-rail",
     emptyOutDir: true,

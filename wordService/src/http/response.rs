@@ -12,9 +12,13 @@ pub(super) fn static_asset_path(static_dir: &Path, request_path: &str) -> Option
         "/styles.css" | "/favicon.svg" | "/app.js" | "/audio-review.html" | "/audio-review.css"
         | "/audio-review.js" => Some(static_dir.join(request_path.trim_start_matches('/'))),
         _ => {
-            if let Some(asset_name) = request_path.strip_prefix("/study-wall-react/assets/") {
-                // Vite emits one-level hashed JS/CSS assets. Keep this route
-                // narrow so the React bundle cannot expose arbitrary files.
+            if let Some(asset_name) = request_path
+                .strip_prefix("/assets/")
+                .or_else(|| request_path.strip_prefix("/study-wall-react/assets/"))
+            {
+                // Vite emits one-level hashed JS/CSS assets. Keep both the
+                // root deployment path and the former React path narrow so the
+                // bundle cannot expose arbitrary files.
                 if asset_name.is_empty()
                     || asset_name.contains('/')
                     || asset_name.contains('\\')
@@ -171,6 +175,10 @@ mod tests {
         );
         assert_eq!(
             static_asset_path(root, "/study-wall-react/assets/index-abc123.js").as_deref(),
+            Some(Path::new("static/react-rail/assets/index-abc123.js"))
+        );
+        assert_eq!(
+            static_asset_path(root, "/assets/index-abc123.js").as_deref(),
             Some(Path::new("static/react-rail/assets/index-abc123.js"))
         );
     }

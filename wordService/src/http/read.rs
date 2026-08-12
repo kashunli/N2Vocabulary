@@ -5,6 +5,7 @@ use crate::config::AppConfig;
 use crate::repository::WordRepository;
 use anyhow::{Context, Result};
 use serde_json::json;
+use std::path::{Path, PathBuf};
 use tiny_http::{Request, StatusCode};
 
 pub(super) fn handle_read(
@@ -24,22 +25,8 @@ pub(super) fn handle_read(
     // Static assets and read-only JSON endpoints are handled first because they
     // are exact paths. Parameterized routes such as `/api/entries/{id}` come
     // later.
-    if path == "/" || path == "/index.html" {
-        return send_file(
-            request,
-            &config.static_dir.join("index.html"),
-            "text/html; charset=utf-8",
-        );
-    }
-    if path == "/study-wall-react"
-        || path == "/study-wall-react/"
-        || path == "/study-wall-react.html"
-    {
-        return send_file(
-            request,
-            &config.static_dir.join("react-rail").join("index.html"),
-            "text/html; charset=utf-8",
-        );
+    if let Some(page_path) = static_page_path(&config.static_dir, &path) {
+        return send_file(request, &page_path, "text/html; charset=utf-8");
     }
     if let Some(asset_path) = static_asset_path(&config.static_dir, &path) {
         return send_file(request, &asset_path, "");
@@ -123,4 +110,42 @@ pub(super) fn handle_read(
 
     let _ = method;
     send_json(request, StatusCode(404), &json!({"error": "not found"}))
+}
+
+fn static_page_path(static_dir: &Path, request_path: &str) -> Option<PathBuf> {
+    match request_path {
+        // React is the default wall. Keep the former React URLs as aliases so
+        // existing bookmarks continue to open the same study experience.
+        "/"
+        | "/index.html"
+        | "/study-wall-react"
+        | "/study-wall-react/"
+        | "/study-wall-react.html" => Some(static_dir.join("react-rail").join("index.html")),
+        // The classic wall now has an explicit URL instead of owning `/`.
+        "/classic" | "/classic/" => Some(static_dir.join("index.html")),
+        _ => None,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::static_page_path;
+    use std::path::Path;
+
+    #[test]
+    fn study_wall_routes_assign_default_and_classic_pages() {
+        let root = Path::new("static");
+        let react_page = Some(Path::new("static/react-rail/index.html"));
+        let classic_page = Some(Path::new("static/index.html"));
+
+        assert_eq!(static_page_path(root, "/").as_deref(), react_page);
+        assert_eq!(static_page_path(root, "/index.html").as_deref(), react_page);
+        assert_eq!(
+            static_page_path(root, "/study-wall-react/").as_deref(),
+            react_page
+        );
+        assert_eq!(static_page_path(root, "/classic").as_deref(), classic_page);
+        assert_eq!(static_page_path(root, "/classic/").as_deref(), classic_page);
+        assert!(static_page_path(root, "/missing").is_none());
+    }
 }

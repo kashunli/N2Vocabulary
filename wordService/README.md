@@ -99,7 +99,8 @@ cargo run
 Then open:
 
 ```text
-http://127.0.0.1:8767/
+http://127.0.0.1:8767/           # React study wall (default)
+http://127.0.0.1:8767/classic   # classic study wall
 http://127.0.0.1:8767/audio-review.html
 ```
 
