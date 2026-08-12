@@ -1,6 +1,6 @@
 import unittest
 
-from import_mimikara_n1 import detail_markdown, structured_terms
+from import_mimikara_n1 import source_notes_markdown, source_reference, structured_terms
 
 
 class MimikaraN1StructuredTermTests(unittest.TestCase):
@@ -22,7 +22,7 @@ class MimikaraN1StructuredTermTests(unittest.TestCase):
             ],
         )
 
-    def test_structured_relationships_are_not_duplicated_in_markdown(self) -> None:
+    def test_source_metadata_is_structured_and_notes_are_not_source_text(self) -> None:
         entry = {
             "page": 10,
             "usage": "名詞",
@@ -31,10 +31,13 @@ class MimikaraN1StructuredTermTests(unittest.TestCase):
             "synonyms": ["葬儀"],
         }
 
-        markdown = detail_markdown(entry, "1-02")
+        reference = source_reference(entry, "1-02")
+        markdown = source_notes_markdown(entry)
 
+        self.assertEqual(reference, {"title": "N1語彙トレーニング", "page": 10, "cd_track": "1-02"})
         self.assertIn("Usage", markdown)
         self.assertIn("review note", markdown)
+        self.assertNotIn("Source", markdown)
         self.assertNotIn("Collocations", markdown)
         self.assertNotIn("Synonyms", markdown)
 

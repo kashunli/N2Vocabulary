@@ -30,6 +30,7 @@ from migrate import apply_all  # type: ignore[import-not-found]  # noqa: E402
 
 BOOK_CODE = "N1"
 BOOK_TITLE = "耳から覚える N1語彙トレーニング"
+SOURCE_TITLE = "N1語彙トレーニング"
 EXPECTED_ENTRIES = 1170
 DEFAULT_SOURCE = Path(r"D:\n2Prepare\minikaraWordN1")
 DEFAULT_DB = PROJECT_ROOT / "wordService" / "data" / "n2vocab.sqlite"
@@ -114,10 +115,20 @@ def source_payload(source_root: Path) -> tuple[list[dict[str, Any]], dict[int, d
     return entries, clips
 
 
-def detail_markdown(entry: dict[str, Any], track: str) -> str:
-    lines = [
-        f"**Source:** N1語彙トレーニング, page {entry['page']}, CD {track}",
-    ]
+def source_reference(entry: dict[str, Any], track: str) -> dict[str, Any]:
+    """Return structured provenance for one accepted N1 source occurrence."""
+
+    return {
+        "title": SOURCE_TITLE,
+        "page": int(entry["page"]),
+        "cd_track": track,
+    }
+
+
+def source_notes_markdown(entry: dict[str, Any]) -> str:
+    """Keep source-specific usage/notes separate from sentence explanations."""
+
+    lines: list[str] = []
     fields = [
         ("Usage", entry.get("usage") and [entry["usage"]]),
         ("Notes", entry.get("notes")),
@@ -226,7 +237,7 @@ def exact_item(conn: sqlite3.Connection, entry: dict[str, Any]) -> sqlite3.Row |
     ).fetchone()
 
 
-def ensure_item(conn: sqlite3.Connection, entry: dict[str, Any], explanation: str, word_clip: str) -> tuple[int, bool]:
+def ensure_item(conn: sqlite3.Connection, entry: dict[str, Any], word_clip: str) -> tuple[int, bool]:
     existing = exact_item(conn, entry)
     if existing:
         return int(existing["item_id"]), False
@@ -244,7 +255,7 @@ def ensure_item(conn: sqlite3.Connection, entry: dict[str, Any], explanation: st
             entry.get("usage") or None,
             entry["meaning"].get("english") or None,
             entry["meaning"].get("chinese") or None,
-            explanation,
+            "",
             word_clip,
         ),
     )
@@ -299,8 +310,10 @@ def import_book(
                     (sentence_source, clips_root / Path(sentence_clip).relative_to("clips")),
                 ]
             )
-            explanation = detail_markdown(entry, str(audio[index]["word"]["track"]))
-            item_id, created = ensure_item(conn, entry, explanation, word_clip)
+            track = str(audio[index]["word"]["track"])
+            reference = source_reference(entry, track)
+            source_notes = source_notes_markdown(entry)
+            item_id, created = ensure_item(conn, entry, word_clip)
             counters["new_items" if created else "exact_item_matches"] += 1
             row_uuid = stable_uuid("entry", index)
             conn.execute(
@@ -323,7 +336,7 @@ def import_book(
                     entry["headword"], entry["reading"], entry.get("usage") or None,
                     entry["meaning"].get("english") or None,
                     entry["meaning"].get("chinese") or None,
-                    entry["examples"][0], explanation, word_clip, sentence_clip,
+                    entry["examples"][0], "", word_clip, sentence_clip,
                 ),
             )
             entry_id = int(
@@ -350,7 +363,7 @@ def import_book(
                 """,
                 (
                     entry_id, item_id, row_uuid, BOOK_CODE, unit, index,
-                    position_by_unit[unit], entry["examples"][0], explanation,
+                    position_by_unit[unit], entry["examples"][0], "",
                     sentence_clip, word_clip, entry.get("usage") or None,
                     entry["meaning"].get("english") or None,
                     entry["meaning"].get("chinese") or None,
@@ -497,15 +510,20 @@ def import_book(
                 INSERT INTO item_source_notes(
                   item_id, source_book_code, source_entry_uuid, source_index,
                   source_reading, source_meaning_en, source_meaning_zh,
+                  source_title, source_page, source_cd_track, source_notes_md,
                   source_explanation_md, source_sentence, source_word_clip,
                   source_sentence_clip
-                ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(item_id, source_book_code, source_index) DO UPDATE SET
                   source_entry_uuid=excluded.source_entry_uuid,
                   source_reading=excluded.source_reading,
                   source_meaning_en=excluded.source_meaning_en,
                   source_meaning_zh=excluded.source_meaning_zh,
-                  source_explanation_md=excluded.source_explanation_md,
+                  source_title=excluded.source_title,
+                  source_page=excluded.source_page,
+                  source_cd_track=excluded.source_cd_track,
+                  source_notes_md=excluded.source_notes_md,
+                  source_explanation_md=NULL,
                   source_sentence=excluded.source_sentence,
                   source_word_clip=excluded.source_word_clip,
                   source_sentence_clip=excluded.source_sentence_clip
@@ -514,7 +532,8 @@ def import_book(
                     item_id, BOOK_CODE, row_uuid, index, entry["reading"],
                     entry["meaning"].get("english") or None,
                     entry["meaning"].get("chinese") or None,
-                    explanation, entry["examples"][0], word_clip, sentence_clip,
+                    reference["title"], reference["page"], reference["cd_track"],
+                    source_notes, None, entry["examples"][0], word_clip, sentence_clip,
                 ),
             )
         conn.execute("COMMIT")
