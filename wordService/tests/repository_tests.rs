@@ -395,7 +395,7 @@ fn detail_includes_merged_source_notes_and_example_provenance() {
     let fixture = Fixture::new();
     let conn = Connection::open(&fixture.db_path).unwrap();
     conn.execute(
-        "INSERT INTO item_source_notes(item_id,source_book_code,source_entry_uuid,source_index,source_reading,source_meaning_zh,source_explanation_md,source_sentence) VALUES(1,'GWB_N2','gwb-uuid',42,'じんせい','人生；生涯','source notes','GWB例文。')",
+        "INSERT INTO item_source_notes(item_id,source_book_code,source_entry_uuid,source_index,source_title,source_page,source_cd_track,source_reading,source_meaning_zh,source_notes_md,source_sentence) VALUES(1,'GWB_N2','gwb-uuid',42,'Green Word Book',12,'track-42','じんせい','人生；生涯','source notes','GWB例文。')",
         [],
     ).unwrap();
     conn.execute(
@@ -408,6 +408,10 @@ fn detail_includes_merged_source_notes_and_example_provenance() {
     let notes = entry.source_notes.expect("detail source notes");
     assert_eq!(notes[0].source_book_code, "GWB_N2");
     assert_eq!(notes[0].source_index, 42);
+    assert_eq!(notes[0].source_title.as_deref(), Some("Green Word Book"));
+    assert_eq!(notes[0].source_page, Some(12));
+    assert_eq!(notes[0].source_cd_track.as_deref(), Some("track-42"));
+    assert_eq!(notes[0].notes_md, "source notes");
     let examples = entry.examples.expect("detail examples");
     assert_eq!(examples[1].source_book_code.as_deref(), Some("GWB_N2"));
     assert_eq!(examples[1].source_index, Some(42));
@@ -901,4 +905,8 @@ fn create_test_db(db_path: &PathBuf) {
         "../../db/migrations/008_book_entry_word_clip.sql"
     ))
     .expect("create book-specific word audio schema");
+    conn.execute_batch(include_str!(
+        "../../db/migrations/009_n1_source_metadata.sql"
+    ))
+    .expect("create structured source metadata schema");
 }

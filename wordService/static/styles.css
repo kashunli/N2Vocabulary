@@ -883,6 +883,25 @@ main { max-width: 1420px; margin: 0 auto; padding: 1rem 1rem 8.6rem; }
   font-weight: 600;
 }
 
+.source-reference-line {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.source-reference-code {
+  color: var(--muted2);
+  font-weight: 500;
+}
+
+.source-notes-label {
+  margin-top: 7px;
+  color: var(--muted2);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .explanation-section + .explanation-section {
   border-top: 1px solid var(--line);
   margin-top: 16px;

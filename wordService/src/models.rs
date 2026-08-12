@@ -83,15 +83,21 @@ pub struct EntryExample {
     pub main_source_book_code: Option<String>,
 }
 
-/// Word-level material retained from a merged source book entry.
+/// Provenance and source-specific notes retained from a merged source-book
+/// occurrence. These fields are deliberately separate from sentence
+/// explanations: a page/CD reference describes where the material came from,
+/// not how to understand the sentence.
 #[derive(Clone, Debug, Serialize, PartialEq)]
 pub struct EntrySourceNote {
     pub source_book_code: String,
     pub source_index: i64,
+    pub source_title: Option<String>,
+    pub source_page: Option<i64>,
+    pub source_cd_track: Option<String>,
     pub reading: String,
     pub meaning_en: String,
     pub meaning_zh: String,
-    pub explanation_md: String,
+    pub notes_md: String,
 }
 
 /// One starred sentence row for the dedicated sentence-review page.

@@ -23,6 +23,7 @@ export interface Entry {
   explanation_md?: string;
   mark?: Mark;
   examples?: Example[];
+  source_notes?: SourceNote[];
 }
 
 export interface UnitSummary {
@@ -66,6 +67,18 @@ export interface Example {
   explanation_md?: string;
   audio_url?: string;
   starred?: boolean;
+}
+
+export interface SourceNote {
+  source_book_code: string;
+  source_index: number;
+  source_title?: string;
+  source_page?: number;
+  source_cd_track?: string;
+  reading?: string;
+  meaning_en?: string;
+  meaning_zh?: string;
+  notes_md?: string;
 }
 
 export interface StarredSentence {

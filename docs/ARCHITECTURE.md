@@ -49,7 +49,9 @@ wordService/data/n2vocab.sqlite
     sentence, explanation_md, sentence_clip compatibility fields
   item_examples        # kind names the row role; position is display order
   item_marks           # shared known/flagged state written by wordService
-  item_source_notes, item_example_sources
+  item_source_notes    # source_title/page/CD plus source-specific notes
+                       # provenance, not learner-facing sentence explanation
+  item_example_sources # provenance for normal example rows
   word_service_settings
 
 clips/
@@ -65,6 +67,13 @@ first. `item_examples.kind = 'main_sentence'` is the authoritative main
 sentence row; the older placement sentence fields are compatibility data. If
 corrected example text had generated audio, clear that example's `audio_clip`
 so the service can regenerate audio from the corrected sentence.
+
+Source references such as `N1語彙トレーニング, page 53, CD 1-17` belong to
+`item_source_notes.source_title`, `source_page`, and `source_cd_track`.
+Source-specific comments belong in `source_notes_md`; they must not be copied
+into `explanation_md`, which is reserved for learner-facing sentence
+explanation. A shared item may have multiple `item_source_notes` rows, so the
+source occurrence is kept separately from the shared vocabulary item.
 
 ## Target Layout
 

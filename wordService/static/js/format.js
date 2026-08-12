@@ -110,6 +110,18 @@ export function cardMeaningHTML(entry) {
   return parts.join("");
 }
 
+export function sourceReferenceHTML(note) {
+  const title = note.source_title || note.source_book_code || "Source";
+  const parts = [escapeHTML(title)];
+  if (note.source_page !== undefined && note.source_page !== null) {
+    parts.push(`page ${escapeHTML(note.source_page)}`);
+  }
+  if (note.source_cd_track) {
+    parts.push(`CD ${escapeHTML(note.source_cd_track)}`);
+  }
+  return `${parts.join(", ")} <span class="source-reference-code">(${escapeHTML(note.source_book_code)} #${escapeHTML(note.source_index)})</span>`;
+}
+
 export function detailExplanationHTML(entry) {
   const sections = [];
   if (entry.explanation_md) {
@@ -127,13 +139,18 @@ export function detailExplanationHTML(entry) {
     if (note.meaning_zh && note.meaning_zh !== entry.meaning_zh) {
       details.push(`<div><strong>中文释义:</strong> ${escapeHTML(note.meaning_zh)}</div>`);
     }
-    sections.push(`
-      <section class="explanation-section source-note">
-        <h4>GreenWordBook notes <span>#${escapeHTML(note.source_index)}</span></h4>
-        ${details.join("")}
-        ${note.explanation_md ? markdownToHTML(note.explanation_md) : ""}
-      </section>
-    `);
+    const source = sourceReferenceHTML(note);
+    const notes = note.notes_md ? markdownToHTML(note.notes_md) : "";
+    if (source || details.length || notes) {
+      sections.push(`
+        <section class="explanation-section source-note">
+          <h4>Source</h4>
+          <div class="source-reference-line">${source}</div>
+          ${details.join("")}
+          ${notes ? `<div class="source-notes-label">Source notes</div>${notes}` : ""}
+        </section>
+      `);
+    }
   });
   return sections.join("");
 }

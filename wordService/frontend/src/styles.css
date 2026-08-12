@@ -137,6 +137,14 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .react-current-actions button:disabled { cursor: not-allowed; opacity: .4; }
 .react-sentence { display: grid; gap: 6px; max-width: 760px; margin-top: 28px; font: 1rem/1.6 system-ui, sans-serif; }
 .react-sentence span, .react-sentence-explanation, .react-explanation { color: #756d65; }
+.react-source-metadata { max-width: 760px; margin-top: 25px; padding: 12px 14px; border: 1px solid #e4ddd4; border-radius: 10px; background: rgba(249, 246, 241, .72); font: .82rem/1.55 system-ui, sans-serif; color: #756d65; }
+.react-source-metadata > h3 { margin: 0 0 7px; color: #4f4943; font: inherit; font-weight: 700; }
+.react-source-reference + .react-source-reference { margin-top: 11px; padding-top: 11px; border-top: 1px solid #e4ddd4; }
+.react-source-reference p { margin: 0; }
+.react-source-reference p span { color: #968d83; }
+.react-source-notes { margin-top: 5px; }
+.react-source-notes > span { display: block; color: #968d83; font-size: .75rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.react-source-notes .react-explanation { margin-top: 2px; }
 .react-sentence-explanation { max-width: 760px; margin-top: 25px; font: .88rem/1.6 system-ui, sans-serif; }
 .react-sentence-explanation > h3 { margin: 0; color: inherit; font: inherit; font-weight: 400; }
 .react-markdown { margin-top: 10px; font: .88rem/1.6 system-ui, sans-serif; }

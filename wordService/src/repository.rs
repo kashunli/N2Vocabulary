@@ -214,6 +214,28 @@ impl WordRepository {
             );
             "#,
         )?;
+        // The canonical item/source table is normally created by migration
+        // 007 and enriched by migration 009. Keep older local databases
+        // readable during startup by adding only the optional metadata columns
+        // that this service needs.
+        let mut statement = conn.prepare("PRAGMA table_info(item_source_notes)")?;
+        let rows = statement.query_map([], |row| row.get::<_, String>(1))?;
+        let columns = collect_rows(rows)?
+            .into_iter()
+            .collect::<std::collections::HashSet<_>>();
+        for (name, definition) in [
+            ("source_title", "TEXT"),
+            ("source_page", "INTEGER"),
+            ("source_cd_track", "TEXT"),
+            ("source_notes_md", "TEXT"),
+        ] {
+            if !columns.contains(name) {
+                conn.execute(
+                    &format!("ALTER TABLE item_source_notes ADD COLUMN {name} {definition}"),
+                    [],
+                )?;
+            }
+        }
         Ok(())
     }
 
@@ -667,8 +689,9 @@ impl WordRepository {
     fn load_source_notes(&self, conn: &Connection, item_id: i64) -> Result<Vec<EntrySourceNote>> {
         let mut statement = conn.prepare(
             r#"
-            SELECT source_book_code, source_index, source_reading,
-                   source_meaning_en, source_meaning_zh, source_explanation_md
+            SELECT source_book_code, source_index, source_title, source_page,
+                   source_cd_track, source_reading, source_meaning_en,
+                   source_meaning_zh, COALESCE(source_notes_md, source_explanation_md)
             FROM item_source_notes
             WHERE item_id = ?
             ORDER BY source_book_code, source_index
@@ -678,10 +701,13 @@ impl WordRepository {
             Ok(EntrySourceNote {
                 source_book_code: row.get(0)?,
                 source_index: row.get(1)?,
-                reading: row.get::<_, Option<String>>(2)?.unwrap_or_default(),
-                meaning_en: row.get::<_, Option<String>>(3)?.unwrap_or_default(),
-                meaning_zh: row.get::<_, Option<String>>(4)?.unwrap_or_default(),
-                explanation_md: row.get::<_, Option<String>>(5)?.unwrap_or_default(),
+                source_title: row.get(2)?,
+                source_page: row.get(3)?,
+                source_cd_track: row.get(4)?,
+                reading: row.get::<_, Option<String>>(5)?.unwrap_or_default(),
+                meaning_en: row.get::<_, Option<String>>(6)?.unwrap_or_default(),
+                meaning_zh: row.get::<_, Option<String>>(7)?.unwrap_or_default(),
+                notes_md: row.get::<_, Option<String>>(8)?.unwrap_or_default(),
             })
         })?;
         collect_rows(rows)
@@ -749,6 +775,17 @@ impl WordRepository {
                     .flatten()
             });
 
+        let explanation_md = if detail {
+            let value = main_example
+                .map(|example| example.explanation_md.clone())
+                .filter(|value| !value.is_empty())
+                .or_else(|| row.explanation_md.clone())
+                .unwrap_or_default();
+            (!value.trim().is_empty()).then_some(value)
+        } else {
+            None
+        };
+
         EntryPayload {
             entry_id: row.entry_id,
             source_index: row.source_index,
@@ -810,13 +847,7 @@ impl WordRepository {
             },
             source_notes: detail.then(|| source_notes.unwrap_or_default()),
             search_matches,
-            explanation_md: detail.then(|| {
-                main_example
-                    .map(|example| example.explanation_md.clone())
-                    .filter(|value| !value.is_empty())
-                    .or_else(|| row.explanation_md.clone())
-                    .unwrap_or_default()
-            }),
+            explanation_md,
         }
     }
 
