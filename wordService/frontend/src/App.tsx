@@ -47,6 +47,7 @@ export function App() {
     playbackMode,
     postSentenceSilence,
     postWordSilence,
+    playbackRunMode,
     playRequest,
     replayFocused,
     replayRequest,
@@ -57,6 +58,7 @@ export function App() {
     stopPlayback,
     stopRequest,
     target,
+    togglePlaybackRunMode,
     togglePlayback,
   } = useStudyPlayback({entries, showStarred});
   const {
@@ -137,6 +139,7 @@ export function App() {
         filterState={filterState}
         isSilencePaused={isSilencePaused}
         playbackActive={playbackActive}
+        playbackRunMode={playbackRunMode}
         search={search}
         selectedBook={selectedBook}
         selectedUnit={selectedUnit}
@@ -187,6 +190,7 @@ export function App() {
         autoPlay={autoAdvance}
         isPlaybackActive={playbackActive}
         isSilencePlaying={isSilencePlaying}
+        playbackRunMode={playbackRunMode}
         onPlayingChange={handlePlayingChange}
         playRequest={playRequest}
         replayRequest={replayRequest}
@@ -194,6 +198,7 @@ export function App() {
         stopRequest={stopRequest}
         onEnded={handlePlaybackEnd}
         onTogglePlayback={togglePlayback}
+        onTogglePlaybackRunMode={togglePlaybackRunMode}
         onReplay={replayFocused}
         onPrevious={() => moveClip(-1)}
         onNext={() => moveClip(1)}

@@ -2,12 +2,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { AudioTarget, Entry } from "../../types";
 import {
+  DEFAULT_PLAYBACK_RUN_MODE,
   DEFAULT_SILENCE_MS,
   readPlaybackSettings,
   savePlaybackSettings,
   type PlaybackMode,
   type PlaybackPhase,
+  type PlaybackRunMode,
 } from "./playbackSettings";
+import { nextPlaybackStep } from "./playbackSequence.mjs";
 import { readStudyFocus, saveStudyFocus } from "../study/studyFocus";
 
 type PendingSilence = {
@@ -33,6 +36,7 @@ export function useStudyPlayback({entries, showStarred}: UseStudyPlaybackOptions
   const [postWordSilence, setPostWordSilence] = useState(savedSettings.postWordSilence);
   const [postSentenceSilence, setPostSentenceSilence] = useState(savedSettings.postSentenceSilence);
   const [playbackMode, setPlaybackMode] = useState<PlaybackMode>(savedSettings.mode);
+  const [playbackRunMode, setPlaybackRunMode] = useState<PlaybackRunMode>(savedSettings.runMode);
   const [autoAdvance, setAutoAdvance] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playRequest, setPlayRequest] = useState(0);
@@ -235,12 +239,24 @@ export function useStudyPlayback({entries, showStarred}: UseStudyPlaybackOptions
 
   const handlePlaybackEnd = useCallback(() => {
     if (!autoAdvanceRef.current) return;
-    if (playbackMode === "both" && activePhase === "word" && activeEntry?.sentence_audio_url) {
+    const nextStep = nextPlaybackStep({
+      playbackMode,
+      playbackRunMode,
+      phase: activePhase,
+      hasSentence: !!activeEntry?.sentence_audio_url,
+      hasNextEntry: activeIndex < entries.length - 1,
+    });
+    if (nextStep === "stop") {
+      autoAdvanceRef.current = false;
+      setAutoAdvance(false);
+      return;
+    }
+    if (nextStep === "sentence") {
       scheduleAfterSilence(postWordSilence, () => setActivePhase("sentence"));
       return;
     }
     scheduleAfterSilence(activePhase === "word" ? postWordSilence : postSentenceSilence, advanceAfterPlayback);
-  }, [activeEntry, activePhase, advanceAfterPlayback, playbackMode, postSentenceSilence, postWordSilence, scheduleAfterSilence]);
+  }, [activeEntry, activeIndex, activePhase, advanceAfterPlayback, entries.length, playbackMode, playbackRunMode, postSentenceSilence, postWordSilence, scheduleAfterSilence]);
 
   const handlePlayingChange = useCallback((playing: boolean) => {
     setIsPlaying(playing);
@@ -279,24 +295,35 @@ export function useStudyPlayback({entries, showStarred}: UseStudyPlaybackOptions
     cancelEndTimer();
     setPlaybackMode(mode);
     setActivePhase(mode === "sentences" && activeEntry?.sentence_audio_url ? "sentence" : "word");
-    savePlaybackSettings(postWordSilence, postSentenceSilence, mode);
-  }, [activeEntry, cancelEndTimer, postSentenceSilence, postWordSilence]);
+    savePlaybackSettings(postWordSilence, postSentenceSilence, mode, playbackRunMode);
+  }, [activeEntry, cancelEndTimer, playbackRunMode, postSentenceSilence, postWordSilence]);
+
+  const togglePlaybackRunMode = useCallback(() => {
+    const nextMode: PlaybackRunMode = playbackRunMode === "single" ? "consecutive" : "single";
+    cancelEndTimer();
+    setPlaybackRunMode(nextMode);
+    const continueCurrentClip = nextMode === "consecutive" && isPlaying;
+    autoAdvanceRef.current = continueCurrentClip;
+    setAutoAdvance(continueCurrentClip);
+    savePlaybackSettings(postWordSilence, postSentenceSilence, playbackMode, nextMode);
+  }, [cancelEndTimer, isPlaying, playbackMode, playbackRunMode, postSentenceSilence, postWordSilence]);
 
   const changePostWordSilence = useCallback((value: number) => {
     setPostWordSilence(value);
-    savePlaybackSettings(value, postSentenceSilence, playbackMode);
-  }, [playbackMode, postSentenceSilence]);
+    savePlaybackSettings(value, postSentenceSilence, playbackMode, playbackRunMode);
+  }, [playbackMode, playbackRunMode, postSentenceSilence]);
 
   const changePostSentenceSilence = useCallback((value: number) => {
     setPostSentenceSilence(value);
-    savePlaybackSettings(postWordSilence, value, playbackMode);
-  }, [playbackMode, postWordSilence]);
+    savePlaybackSettings(postWordSilence, value, playbackMode, playbackRunMode);
+  }, [playbackMode, playbackRunMode, postWordSilence]);
 
   const resetPlaybackSettings = useCallback(() => {
     setPostWordSilence(DEFAULT_SILENCE_MS);
     setPostSentenceSilence(DEFAULT_SILENCE_MS);
     setPlaybackMode("both");
-    savePlaybackSettings(DEFAULT_SILENCE_MS, DEFAULT_SILENCE_MS, "both");
+    setPlaybackRunMode(DEFAULT_PLAYBACK_RUN_MODE);
+    savePlaybackSettings(DEFAULT_SILENCE_MS, DEFAULT_SILENCE_MS, "both", DEFAULT_PLAYBACK_RUN_MODE);
   }, []);
 
   const selectPhase = useCallback((phase: PlaybackPhase) => {
@@ -328,6 +355,7 @@ export function useStudyPlayback({entries, showStarred}: UseStudyPlaybackOptions
     playbackMode,
     postSentenceSilence,
     postWordSilence,
+    playbackRunMode,
     playRequest,
     replayFocused,
     replayRequest,
@@ -339,6 +367,7 @@ export function useStudyPlayback({entries, showStarred}: UseStudyPlaybackOptions
     stopPlayback,
     stopRequest,
     target,
+    togglePlaybackRunMode,
     togglePlayback,
   };
 }

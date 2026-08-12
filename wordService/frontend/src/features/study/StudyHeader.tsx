@@ -1,4 +1,5 @@
 import type { AudioTarget, BookSummary, UnitSummary, VocabularySummary } from "../../types";
+import type { PlaybackRunMode } from "../player/playbackSettings";
 import { unitLabel } from "./unitLabel";
 import type { FilterState } from "./studyTypes";
 
@@ -14,6 +15,7 @@ interface StudyHeaderProps {
   filterState: FilterState;
   isSilencePaused: boolean;
   playbackActive: boolean;
+  playbackRunMode: PlaybackRunMode;
   search: string;
   selectedBook: string;
   selectedUnit: number | null;
@@ -42,6 +44,7 @@ export function StudyHeader({
   filterState,
   isSilencePaused,
   playbackActive,
+  playbackRunMode,
   search,
   selectedBook,
   selectedUnit,
@@ -87,7 +90,7 @@ export function StudyHeader({
         </div>
         <div className="react-toolbar-actions">
           <button type="button" onClick={onToggleCoverAll} disabled={!entriesCount} aria-pressed={allVisibleCovered}>{allVisibleCovered ? "Uncover all" : "Cover all"}</button>
-          <button type="button" onClick={onTogglePlayback} disabled={!target} aria-pressed={playbackActive}>{playbackActive ? "Pause visible" : isSilencePaused ? "Resume visible" : "Play visible"}</button>
+          <button type="button" onClick={onTogglePlayback} disabled={!target} aria-pressed={playbackActive}>{playbackActive ? "Pause" : isSilencePaused ? "Resume" : playbackRunMode === "single" ? "Play one" : "Play visible"}</button>
           <button type="button" className={showStarred ? "is-selected" : ""} onClick={onToggleStarred} aria-pressed={showStarred}>★ Starred sentences</button>
           <a href="/audio-review.html">Audio text review</a>
           <button type="button" onClick={exportFlaggedAudio} disabled={selectedUnit === null}>Export flagged audio</button>

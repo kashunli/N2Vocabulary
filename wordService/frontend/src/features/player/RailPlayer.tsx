@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAudioBufferPlayer } from "./useAudioBufferPlayer";
 import { LineWaveform } from "./LineWaveform";
 import { detectSilenceGapsMs } from "./waveform.mjs";
+import type { PlaybackRunMode } from "./playbackSettings";
 import type { AudioTarget } from "../../types";
 
 function formatTime(value: number) {
@@ -15,6 +16,7 @@ interface RailPlayerProps {
   autoPlay: boolean;
   isPlaybackActive: boolean;
   isSilencePlaying: boolean;
+  playbackRunMode: PlaybackRunMode;
   playRequest: number;
   replayRequest: number;
   pauseRequest: number;
@@ -22,6 +24,7 @@ interface RailPlayerProps {
   onEnded: () => void;
   onPlayingChange: (playing: boolean) => void;
   onTogglePlayback: () => void;
+  onTogglePlaybackRunMode: () => void;
   onReplay: () => void;
   onPrevious: () => void;
   onNext: () => void;
@@ -35,6 +38,7 @@ export function RailPlayer({
   autoPlay,
   isPlaybackActive,
   isSilencePlaying,
+  playbackRunMode,
   playRequest,
   replayRequest,
   pauseRequest,
@@ -42,6 +46,7 @@ export function RailPlayer({
   onEnded,
   onPlayingChange,
   onTogglePlayback,
+  onTogglePlaybackRunMode,
   onReplay,
   onPrevious,
   onNext,
@@ -163,7 +168,17 @@ export function RailPlayer({
         </button>
         <button type="button" onClick={onNext} disabled={!canNext} aria-label="Play next word or sentence">Next</button>
         <button type="button" onClick={onStop} disabled={!player.audioBuffer} aria-keyshortcuts="Escape">Stop</button>
-        <span className="react-player-status">{error || (isSilencePlaying ? `Playing silence after ${target?.phase || "audio"}` : isPlaybackActive ? "Playing focused audio" : "Click the wave to seek · Space to play")}</span>
+        <button
+          type="button"
+          className={playbackRunMode === "consecutive" ? "is-selected" : ""}
+          onClick={onTogglePlaybackRunMode}
+          aria-pressed={playbackRunMode === "consecutive"}
+          aria-label={playbackRunMode === "single" ? "Switch to consecutive playback" : "Switch to single clip playback"}
+          title={playbackRunMode === "single" ? "Switch to consecutive playback" : "Switch to single clip playback"}
+        >
+          {playbackRunMode === "single" ? "Single" : "Consecutive"}
+        </button>
+        <span className="react-player-status">{error || (isSilencePlaying ? `Playing silence after ${target?.phase || "audio"}` : isPlaybackActive ? "Playing focused audio" : `${playbackRunMode === "single" ? "Single clip" : "Play through list"} · Click the wave to seek · Space to play`)}</span>
       </div>
     </section>
   );

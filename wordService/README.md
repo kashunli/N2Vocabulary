@@ -166,6 +166,17 @@ During playback, the wall keeps the previously played card on the left, the
 current card enlarged in the center, and the next card on the right. Each card
 transition advances the page by one smooth vertical step.
 
+The player’s `Single` / `Consecutive` button controls the transport run:
+
+- `Single` plays only the currently focused word or sentence clip, then stops.
+- `Consecutive` follows the selected content mode through the visible list;
+  with `Word + sentence`, that sequence is word, sentence, then the next
+  word.
+
+This choice is saved in the browser together with the playback silence
+settings. The default remains `Consecutive` for compatibility with the
+original Study Wall behavior.
+
 - `Space`: start, pause immediately, or resume, even when a button has focus
 - `R`: immediately restart the current card from its word audio
 - `Left Arrow` / `A`: previous card
