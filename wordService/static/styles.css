@@ -361,6 +361,8 @@ main { max-width: 1420px; margin: 0 auto; padding: 1rem 1rem 8.6rem; }
 .card.known { border-left-color: var(--known); background: color-mix(in srgb, var(--known-bg) 35%, #fff); }
 .card.flagged { border-left-color: var(--flag); background: color-mix(in srgb, var(--flag-bg) 35%, #fff); }
 .card.known.flagged { border-left-color: var(--flag); }
+.card.reviewed { border-left-color: #2e765e; }
+.card.reviewed .card-index { color: #2e765e; }
 .card.study-focus:not(.scope-playing) {
   border-color: color-mix(in srgb, var(--accent) 48%, var(--line));
   border-left-color: var(--accent);

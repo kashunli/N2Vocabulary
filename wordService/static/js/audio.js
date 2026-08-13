@@ -3,6 +3,7 @@ import { unitLabel } from "./format.js";
 import { clearSavedPlaybackState, elements, focusStudyEntry, readSavedPlaybackState, savePlaybackState, setBanner, showError, state, updateAudioExportButton } from "./state.js";
 import { clearScopePlaybackWindow, setScopePlaybackWindow } from "./audioPlaybackWindow.js";
 import { clipTargetForOffset } from "./audioPlaybackNavigation.js";
+import { completeStudyReview, recordStudyCompleted } from "./studyState.js";
 
 // Keep this export stable for cards.js while the implementation is organized
 // into focused audio modules.
@@ -420,18 +421,24 @@ async function playEntryCycle(card, token, startPhase = "word") {
   const wordTarget = card.querySelector(".card-kanji");
   const sentenceTarget = card.querySelector(".main-sentence-row");
   let clipsPlayed = 0;
+  let wordPlayed = false;
+  let sentencePlayed = false;
 
   if (state.playbackMode !== "sentences" && startPhase !== "sentence") {
     state.scopePlaybackPhase = "word";
     focusStudyEntry(state.scopePlaybackEntryId, "word");
     updateScopePlaybackButton();
     savePlaybackState();
-    if (await playTargetAndWait(wordTarget, token)) clipsPlayed += 1;
-    if (!await waitForScopeResume(token)) return {completed: false, clipsPlayed};
+    if (await playTargetAndWait(wordTarget, token)) { clipsPlayed += 1; wordPlayed = true; }
+    if (!await waitForScopeResume(token)) return {completed: false, clipsPlayed, fullCard: false};
   }
 
   if (state.playbackMode === "words") {
-    return {completed: token === scopePlaybackToken, clipsPlayed};
+    return {completed: token === scopePlaybackToken, clipsPlayed, fullCard: false};
+  }
+
+  if (!sentenceTarget?.dataset.src) {
+    return {completed: token === scopePlaybackToken, clipsPlayed, fullCard: wordPlayed};
   }
 
   state.scopePlaybackPhase = sentenceTarget?.dataset.src ? "sentence" : "card";
@@ -440,15 +447,43 @@ async function playEntryCycle(card, token, startPhase = "word") {
   }
   updateScopePlaybackButton();
   savePlaybackState();
-  const sentencePlayed = await playTargetAndWait(sentenceTarget, token);
+  sentencePlayed = await playTargetAndWait(sentenceTarget, token);
   if (sentencePlayed) {
     clipsPlayed += 1;
     // Keep the configured silence between this sentence and the next card's
     // word audio. A token check lets stop/restart invalidate the wait.
-    if (!await waitAfterSentence(token)) return {completed: false, clipsPlayed};
-    if (!await waitForScopeResume(token)) return {completed: false, clipsPlayed};
+    if (!await waitAfterSentence(token)) return {completed: false, clipsPlayed, fullCard: false};
+    if (!await waitForScopeResume(token)) return {completed: false, clipsPlayed, fullCard: false};
   }
-  return {completed: token === scopePlaybackToken, clipsPlayed};
+  return {completed: token === scopePlaybackToken, clipsPlayed, fullCard: wordPlayed && sentencePlayed};
+}
+
+async function recordCompletedCard(entry, card) {
+  if (state.filterState !== "review") {
+    entry.mark = await recordStudyCompleted(entry);
+    return;
+  }
+  const session = state.reviewSession;
+  const expectedDueAt = session?.expectedDueAtByItemUuid[entry.item_uuid];
+  if (!session || !expectedDueAt || session.completedByItemUuid[entry.item_uuid] || session.completingItemUuids.has(entry.item_uuid)) return;
+  session.completingItemUuids.add(entry.item_uuid);
+  try {
+    const result = await completeStudyReview(entry, expectedDueAt);
+    if (!result.completed || !result.card?.due_at) {
+      setBanner("This review was already completed elsewhere. Re-enter Review to refresh the due list.");
+      return;
+    }
+    entry.mark = result.card;
+    entry.review_completed = true;
+    session.completedByItemUuid[entry.item_uuid] = {reviewLevel: result.card.review_level, nextDueAt: result.card.due_at};
+    card.classList.add("reviewed");
+    const index = card.querySelector(".card-index");
+    if (index && !index.textContent.includes("Reviewed")) index.textContent += " · Reviewed";
+    setBanner(`${entry.kanji} reviewed. Level ${result.card.review_level}; next review ${new Date(result.card.due_at).toLocaleDateString()}.`);
+  } catch (error) {
+    session.completingItemUuids.delete(entry.item_uuid);
+    throw error;
+  }
 }
 
 async function startScopePlayback(startIndex = 0, initialPhase = "word") {
@@ -523,6 +558,7 @@ async function startScopePlayback(startIndex = 0, initialPhase = "word") {
     const firstCycle = await playEntryCycle(card, token, index === startIndex ? initialPhase : "word");
     clipsPlayed += firstCycle.clipsPlayed;
     if (!firstCycle.completed) return;
+    if (firstCycle.fullCard) await recordCompletedCard(entry, card);
 
     clearPlaybackVisuals();
   }

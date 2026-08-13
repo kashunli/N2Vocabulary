@@ -86,7 +86,8 @@ export function renderCards() {
     const fragment = elements.template.content.cloneNode(true);
     const card = fragment.querySelector(".card");
     card.dataset.id = String(entry.entry_id);
-    card.querySelector(".card-index").textContent = `${entry.book_code} #${String(entry.source_index).padStart(3, "0")} · ${unitLabel(entry.unit)}`;
+    card.querySelector(".card-index").textContent = `${entry.book_code} #${String(entry.source_index).padStart(3, "0")} · ${unitLabel(entry.unit)}${entry.review_completed ? " · Reviewed" : ""}`;
+    card.classList.toggle("reviewed", !!entry.review_completed);
     card.querySelector(".card-kanji").innerHTML = rubyOrPlain(entry.kanji, entry.reading);
     card.querySelector(".card-meaning").innerHTML = cardMeaningHTML(entry);
     renderCardSentences(card, entry);

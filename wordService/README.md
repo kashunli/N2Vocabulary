@@ -146,6 +146,8 @@ Study state and account endpoints:
 - `GET /api/study/state` returns the authenticated user's complete snapshot.
 - `PUT /api/study/cards/<item_uuid>/marks` and
   `POST /api/study/cards/<item_uuid>/played` update one account card.
+- `POST /api/study/cards/<item_uuid>/review-complete` atomically advances one
+  due card when its supplied `expected_due_at` still matches the stored card.
 - `POST /api/study/import-guest` conservatively merges an explicitly selected
   guest snapshot. Authenticated mutations require `X-CSRF-Token`.
 
@@ -154,16 +156,28 @@ Study state and account endpoints:
 The React and Classic study walls expose `Review` beside `All`, `Unmarked`,
 `Known`, and `Flagged`. It shows cards whose playback-created `due_at` timestamp
 has arrived. Playback completion—not Known or Flagged—enrolls a shared
-vocabulary item, and a new card becomes reviewable after exactly 24 hours.
-Replaying an enrolled card updates its preferred book occurrence without
-changing its due time.
+vocabulary item at level 0, with its first review due after one day. A complete
+word-plus-available-sentence playback inside Review advances its level and sets
+the next due date to `2^level` days: 2, 4, 8, 16, 32, and so on. Replaying an
+enrolled card updates its preferred book occurrence without changing its level
+or due time.
+
+Entering Review captures the currently due cards for the selected book,
+section, and search scope. A completed card stays visible as `Reviewed` for the
+rest of that session; leave and re-enter Review to build a new due list. The
+completion endpoint compares the original due timestamp inside its SQLite
+transaction, so a second tab or a stale replay cannot advance a card twice.
 
 Known and Flagged are independent learner tags. Marking either tag never enrolls
 a card, changes its due time, or acts as a review grade. The old graded-review
 route and Again/Hard/Good controls were removed so the visible filter and the
 stored study state have one clear responsibility.
 
-Guest JSON is validated and normalized when loaded. Malformed input is copied
+Guest JSON is validated and normalized when loaded. The level-scheduler upgrade
+archives local version-1 state under `:pre-spaced-review:` before preserving
+only its tags and normal playback provenance; old review dates and grades are
+discarded. Registered accounts receive the same one-time schedule reset through
+the `spaced-review-v1` migration marker. Malformed input is copied
 to a timestamped `:malformed:` localStorage key before a fresh snapshot is
 started, and the `storage` event updates other same-origin tabs. On first guest
 launch, legacy Known and Flagged items retain only their tags; legacy marks do

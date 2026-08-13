@@ -61,6 +61,7 @@ export const state = {
   units: [],
   selectedUnit: undefined,
   filterState: "all",
+  reviewSession: undefined,
   search: "",
   view: "cards",
   starredScope: "all",

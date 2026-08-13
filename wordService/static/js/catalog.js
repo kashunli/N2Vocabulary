@@ -4,7 +4,7 @@ import { resumeScopePlaybackFromSavedState, stopScopePlayback, updateScopePlayba
 import { escapeHTML, exampleKey, unitLabel } from "./format.js";
 import { renderStarredView } from "./starred.js";
 import { elements, saveViewState, state } from "./state.js";
-import { applyStudyMarks, summarizeStudyMarks } from "./studyState.js";
+import { applyStudyMarks, startReviewSession, summarizeStudyMarks } from "./studyState.js";
 
 let entriesLoadToken = 0;
 
@@ -104,6 +104,7 @@ export function renderUnits() {
 export async function selectUnit(unitNumber) {
   const parsedUnit = Number(unitNumber);
   state.selectedUnit = Number.isFinite(parsedUnit) && parsedUnit > 0 ? parsedUnit : null;
+  state.reviewSession = undefined;
   saveViewState();
   renderUnits();
   await loadEntries();
@@ -127,7 +128,11 @@ export async function loadEntries() {
   try {
     const payload = await fetchEntries(params);
     if (loadToken !== entriesLoadToken) return;
-    state.currentEntries = applyStudyMarks(payload.items || [], state.filterState);
+    const scopeKey = JSON.stringify([state.selectedBook, state.selectedUnit, state.search]);
+    if (state.filterState === "review" && state.reviewSession?.scopeKey !== scopeKey) {
+      state.reviewSession = startReviewSession(payload.items || [], scopeKey);
+    }
+    state.currentEntries = applyStudyMarks(payload.items || [], state.filterState, state.reviewSession);
     renderCards();
   } finally {
     if (loadToken === entriesLoadToken) {

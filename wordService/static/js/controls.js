@@ -20,6 +20,7 @@ export function wireControls() {
   elements.bookSelect.addEventListener("change", event => {
     state.selectedBook = (event.target.value || "N2").toUpperCase();
     state.selectedUnit = undefined;
+    state.reviewSession = undefined;
     state.coveredEntryIds.clear();
     state.selectedStarredKey = null;
     saveViewState();
@@ -38,6 +39,7 @@ export function wireControls() {
   });
   elements.search.addEventListener("input", () => {
     state.search = elements.search.value.trim();
+    state.reviewSession = undefined;
     if (state.view !== "cards") {
       showCardView().catch(showError);
       return;
@@ -47,6 +49,7 @@ export function wireControls() {
   elements.statePills.forEach(pill => {
     pill.addEventListener("click", () => {
       state.filterState = pill.dataset.state || "all";
+      if (state.filterState !== "review") state.reviewSession = undefined;
       updateFilterPills();
       saveViewState();
       showCardView().catch(showError);
