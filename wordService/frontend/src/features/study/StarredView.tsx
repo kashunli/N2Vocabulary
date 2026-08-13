@@ -1,5 +1,6 @@
 import { SentenceExplanation } from "../explanation/SentenceExplanation";
 import type { StarredSentence, UnitSummary } from "../../types";
+import { MeaningDisplay } from "./MeaningDisplay";
 import { unitLabel } from "./unitLabel";
 
 interface StarredViewProps {
@@ -49,7 +50,7 @@ export function StarredView({
           <h2>{selectedStarred.word}</h2>
           <p className="react-starred-sentence">{selectedStarred.text}</p>
           <p>{selectedStarred.translation_en || selectedStarred.translation_zh}</p>
-          <p className="react-meaning">{selectedStarred.meaning_en || selectedStarred.meaning_zh}</p>
+          <MeaningDisplay meaningEn={selectedStarred.meaning_en} meaningZh={selectedStarred.meaning_zh} />
           {selectedStarred.explanation_md ? <SentenceExplanation value={selectedStarred.explanation_md} /> : null}
           <button type="button" onClick={() => onFocusEntry(selectedStarred.entry_id)}>Focus in study wall</button>
         </> : <p className="react-empty">Pick a starred sentence to review it here.</p>}
