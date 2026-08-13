@@ -4,6 +4,10 @@ Run commands from the project root unless a command says otherwise.
 
 ## Cut Audio With cutTwice
 
+For the full reasoning behind the N1 two-level silence workflow and a
+Luna-oriented adaptation for English word-learning recordings, see
+[`LUNA_ENGLISH_AUDIO_CUTTING_GUIDE.md`](LUNA_ENGLISH_AUDIO_CUTTING_GUIDE.md).
+
 Known count:
 
 ```bash
