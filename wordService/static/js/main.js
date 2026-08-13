@@ -6,7 +6,7 @@ import { wireControls } from "./controls.js";
 import { configureStarred } from "./starred.js";
 import { updatePlaybackSettingsUI } from "./playbackSettings.js";
 import { fetchLegacyMarkSeed } from "./api.js";
-import { seedLegacyStudyMarks } from "./studyState.js";
+import { initializeStudyState, seedLegacyStudyMarks } from "./studyState.js";
 import {
   restoreSavedViewState,
   restoreSavedStudyFocus,
@@ -40,7 +40,8 @@ async function init() {
   updateFilterPills();
   configureModules();
   wireControls();
-  seedLegacyStudyMarks((await fetchLegacyMarkSeed()).items || []);
+  const accountActive = await initializeStudyState();
+  if (!accountActive) seedLegacyStudyMarks((await fetchLegacyMarkSeed()).items || []);
   await loadBooks();
   await loadSummary();
   await loadUnits();

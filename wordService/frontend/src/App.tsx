@@ -6,6 +6,7 @@ import { useStudyKeyboardShortcuts } from "./features/player/useStudyKeyboardSho
 import { useStudyPlayback } from "./features/player/useStudyPlayback";
 import { StarredView } from "./features/study/StarredView";
 import { ReviewApp } from "./features/study/ReviewApp";
+import {AccountControls} from "./features/study/AccountControls";
 import { StudyHeader } from "./features/study/StudyHeader";
 import { StudyWallView } from "./features/study/StudyWallView";
 import { useStudyActions } from "./features/study/useStudyActions";
@@ -62,7 +63,7 @@ function StudyApp({store, snapshot, dueCount}: ReturnType<typeof useStudyState>)
     target,
     togglePlaybackRunMode,
     togglePlayback,
-  } = useStudyPlayback({entries, showStarred, onCompleteCard: entry => store.recordPlayed(entry)});
+  } = useStudyPlayback({entries, showStarred, onCompleteCard: entry => { void store.recordPlayed(entry).catch(error => setStatus(error instanceof Error ? error.message : "Could not save playback.")); }});
   const {
     books,
     detail,
@@ -228,7 +229,8 @@ function StudyApp({store, snapshot, dueCount}: ReturnType<typeof useStudyState>)
 
 export function App() {
   const studyState = useStudyState();
-  return window.location.pathname.replace(/\/$/, "") === "/review"
-    ? <ReviewApp store={studyState.store} />
-    : <StudyApp {...studyState} />;
+  if (!studyState.ready) return <main className="react-shell"><p className="react-empty">Loading study state…</p></main>;
+  return <><AccountControls state={studyState} />{window.location.pathname.replace(/\/$/, "") === "/review"
+    ? <ReviewApp key={studyState.session?.user.id ?? "guest"} store={studyState.store} accountEmail={studyState.session?.user.email} />
+    : <StudyApp {...studyState} />}</>;
 }

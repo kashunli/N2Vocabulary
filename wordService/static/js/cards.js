@@ -309,7 +309,7 @@ export async function toggleMark(entry, key, card) {
     flagged: !!(entry.mark && entry.mark.flagged),
   };
   next[key] = !next[key];
-  setStudyMark(entry.item_uuid, next);
+  await setStudyMark(entry.item_uuid, next);
   entry.mark = {...entry.mark, ...next};
   applyMarkClasses(card, entry.mark);
   updateScopePlaybackButton();

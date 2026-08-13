@@ -4,7 +4,7 @@ import { resumeScopePlaybackFromSavedState, stopScopePlayback, updateScopePlayba
 import { escapeHTML, exampleKey, unitLabel } from "./format.js";
 import { renderStarredView } from "./starred.js";
 import { elements, saveViewState, state } from "./state.js";
-import { applyStudyMarks } from "./studyState.js";
+import { applyStudyMarks, summarizeStudyMarks } from "./studyState.js";
 
 let entriesLoadToken = 0;
 
@@ -39,15 +39,16 @@ export function renderBooks() {
 }
 
 export async function loadSummary() {
-  const summary = await fetchSummary();
+  const [summary, entriesPayload] = await Promise.all([fetchSummary(), fetchEntries(new URLSearchParams({state: "all"}))]);
+  const active = summarizeStudyMarks(entriesPayload.items || []);
   const book = currentBook();
   elements.summaryMeta.innerHTML = [
     `<span>${escapeHTML(book.title)}</span>`,
     `<span>${summary.entries} entries</span>`,
     `<span>${summary.units} sections</span>`,
-    `<span>${summary.known} known</span>`,
-    `<span>${summary.flagged} flagged</span>`,
-    `<span>${summary.unmarked} unmarked</span>`,
+    `<span>${active.known} known</span>`,
+    `<span>${active.flagged} flagged</span>`,
+    `<span>${active.unmarked} unmarked</span>`,
   ].join("");
 }
 

@@ -11,9 +11,10 @@ import type {ReviewGrade, StudyCardState, StudyStateStore} from "./studyStateTyp
 
 interface ReviewAppProps {
   store: StudyStateStore;
+  accountEmail?: string;
 }
 
-export function ReviewApp({store}: ReviewAppProps) {
+export function ReviewApp({store, accountEmail}: ReviewAppProps) {
   const [sessionCards] = useState<StudyCardState[]>(() => store.dueCards());
   const [entries, setEntries] = useState<Entry[]>([]);
   const [position, setPosition] = useState(0);
@@ -38,7 +39,7 @@ export function ReviewApp({store}: ReviewAppProps) {
         const byUuid = new Map(response.items.map(entry => [entry.item_uuid, entry]));
         for (const card of page) {
           const entry = byUuid.get(card.item_uuid);
-          if (entry) resolved.push(entry);
+          if (entry) resolved.push({...entry, mark: {...entry.mark, known: card.known, flagged: card.flagged}});
         }
       }
       if (!cancelled) setEntries(resolved);
@@ -53,7 +54,7 @@ export function ReviewApp({store}: ReviewAppProps) {
   const commitAndAdvance = useCallback(async () => {
     if (!current) return;
     try {
-      store.grade(current.item_uuid, pendingGrade);
+      await store.grade(current.item_uuid, pendingGrade);
       setPosition(value => value + 1);
       setStatus("");
     } catch (error) {
@@ -65,7 +66,7 @@ export function ReviewApp({store}: ReviewAppProps) {
   const playback = useStudyPlayback({
     entries: activeEntries,
     showStarred: false,
-    onCompleteCard: entry => store.recordPlayed(entry),
+    onCompleteCard: entry => { void store.recordPlayed(entry).catch(error => setStatus(error instanceof Error ? error.message : "Could not save playback.")); },
     onConsecutiveSequenceComplete: () => { void commitAndAdvance(); },
   });
   const lastAutoStartedPosition = useRef(0);
@@ -102,7 +103,7 @@ export function ReviewApp({store}: ReviewAppProps) {
 
   return <main className="react-shell review-shell">
     <header className="react-header review-header">
-      <div className="react-brand"><span className="eyebrow">SPACED REVIEW · GUEST</span><h1>Review due vocabulary</h1><div className="react-summary-meta"><span>{entries.length} due</span><span>{completed} completed</span><span>{remaining} remaining</span></div></div>
+      <div className="react-brand"><span className="eyebrow">SPACED REVIEW · {accountEmail || "GUEST"}</span><h1>Review due vocabulary</h1><div className="react-summary-meta"><span>{entries.length} due</span><span>{completed} completed</span><span>{remaining} remaining</span></div></div>
       <div className="review-header-actions"><a href="/">Return to study wall</a><button type="button" onClick={() => setSettingsOpen(true)}>Playback settings</button></div>
     </header>
     {status ? <div className="react-status" role="alert">{status}</div> : null}

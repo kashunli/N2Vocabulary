@@ -24,9 +24,9 @@ export interface StudyStateStore {
   load(): StudySnapshot;
   subscribe(listener: (snapshot: StudySnapshot) => void): () => void;
   seedLegacy(items: Array<{item_uuid: string; known: boolean; flagged: boolean}>): StudySnapshot;
-  setMark(itemUuid: string, mark: {known: boolean; flagged: boolean}): StudyCardState;
-  recordPlayed(entry: {item_uuid: string; book_code: string; source_index: number}): StudyCardState;
-  grade(itemUuid: string, grade: ReviewGrade): StudyCardState;
+  setMark(itemUuid: string, mark: {known: boolean; flagged: boolean}): Promise<StudyCardState>;
+  recordPlayed(entry: {item_uuid: string; book_code: string; source_index: number}): Promise<StudyCardState>;
+  grade(itemUuid: string, grade: ReviewGrade): Promise<StudyCardState>;
   dueCards(at?: Date): StudyCardState[];
   nextDueAt(): string | undefined;
 }

@@ -5,6 +5,8 @@ import {LEGACY_MIGRATION_KEY, LocalStudyStateStore, STUDY_STATE_KEY} from "./loc
 
 class MemoryStorage {
   constructor() { this.values = new Map(); }
+  get length() { return this.values.size; }
+  key(index) { return [...this.values.keys()][index] ?? null; }
   getItem(key) { return this.values.get(key) ?? null; }
   setItem(key, value) { this.values.set(key, String(value)); }
   removeItem(key) { this.values.delete(key); }
@@ -24,26 +26,26 @@ test("legacy known cards are due now while flagged-only cards stay unenrolled", 
   assert.ok(storage.getItem(LEGACY_MIGRATION_KEY));
 });
 
-test("complete play enrolls once and later plays update only source and played time", () => {
+test("complete play enrolls once and later plays update only source and played time", async () => {
   const storage = new MemoryStorage();
   let date = new Date("2026-08-13T00:00:00.000Z");
   const store = new LocalStudyStateStore(storage, () => date);
-  store.recordPlayed({item_uuid: "shared", book_code: "N2", source_index: 4});
+  await store.recordPlayed({item_uuid: "shared", book_code: "N2", source_index: 4});
   const first = store.load().cards.shared;
   date = new Date("2026-08-20T00:00:00.000Z");
-  store.recordPlayed({item_uuid: "shared", book_code: "GWB_N2", source_index: 44});
+  await store.recordPlayed({item_uuid: "shared", book_code: "GWB_N2", source_index: 44});
   const replayed = store.load().cards.shared;
   assert.equal(replayed.due_at, first.due_at);
   assert.equal(replayed.preferred_book_code, "GWB_N2");
   assert.equal(replayed.preferred_source_index, 44);
 });
 
-test("grades update schedule and apply positive tags without toggling", () => {
+test("grades update schedule and apply positive tags without toggling", async () => {
   const store = new LocalStudyStateStore(new MemoryStorage(), now);
-  store.recordPlayed({item_uuid: "card", book_code: "N2", source_index: 1});
-  assert.equal(store.grade("card", "hard").flagged, true);
-  assert.equal(store.grade("card", "hard").flagged, true);
-  const good = store.grade("card", "good");
+  await store.recordPlayed({item_uuid: "card", book_code: "N2", source_index: 1});
+  assert.equal((await store.grade("card", "hard")).flagged, true);
+  assert.equal((await store.grade("card", "hard")).flagged, true);
+  const good = await store.grade("card", "good");
   assert.equal(good.known, true);
   assert.equal(good.flagged, true);
 });
@@ -54,4 +56,14 @@ test("malformed state is archived before recovery", () => {
   const store = new LocalStudyStateStore(storage, now);
   assert.deepEqual(store.load().cards, {});
   assert.ok([...storage.values.keys()].some(key => key.includes(":malformed:")));
+});
+
+test("guest import archive is retained when active state is cleared", async () => {
+  const storage = new MemoryStorage();
+  const store = new LocalStudyStateStore(storage, now);
+  await store.setMark("card", {known: true, flagged: false});
+  const archiveKey = store.archiveSnapshot("import-one", "checksum");
+  store.clearActive();
+  assert.equal(storage.getItem(STUDY_STATE_KEY), null);
+  assert.equal(JSON.parse(storage.getItem(archiveKey)).snapshot.cards.card.known, true);
 });

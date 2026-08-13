@@ -2,6 +2,7 @@ import {initialDueAt, REVIEW_STATE_VERSION, scheduleReview} from "./reviewSchedu
 
 export const STUDY_STATE_KEY = "n2-word-service:study-state:v1";
 export const LEGACY_MIGRATION_KEY = "n2-word-service:study-state:legacy-migrated:v1";
+export const GUEST_ARCHIVE_PREFIX = `${STUDY_STATE_KEY}:import-archive:`;
 
 export function emptyStudySnapshot() {
   return {version: REVIEW_STATE_VERSION, updated_at: new Date(0).toISOString(), cards: {}};
@@ -110,13 +111,13 @@ export class LocalStudyStateStore {
     return this.snapshot;
   }
 
-  setMark(itemUuid, mark) {
+  async setMark(itemUuid, mark) {
     const now = this.now().toISOString();
     const current = this.snapshot.cards[itemUuid] || {item_uuid: itemUuid, known: false, flagged: false, good_step: 0};
     return this.commit({...this.snapshot.cards, [itemUuid]: {...current, ...mark, updated_at: now}}).cards[itemUuid];
   }
 
-  recordPlayed(entry) {
+  async recordPlayed(entry) {
     const now = this.now().toISOString();
     const current = this.snapshot.cards[entry.item_uuid] || {
       item_uuid: entry.item_uuid, known: false, flagged: false, good_step: 0,
@@ -134,7 +135,7 @@ export class LocalStudyStateStore {
     return this.commit({...this.snapshot.cards, [entry.item_uuid]: next}).cards[entry.item_uuid];
   }
 
-  grade(itemUuid, grade) {
+  async grade(itemUuid, grade) {
     const current = this.snapshot.cards[itemUuid];
     if (!current?.enrolled_at) throw new Error("cannot grade an unenrolled card");
     const now = this.now().toISOString();
@@ -163,5 +164,23 @@ export class LocalStudyStateStore {
   nextDueAt() {
     return Object.values(this.snapshot.cards)
       .map(card => card.due_at).filter(Boolean).sort()[0];
+  }
+
+  exportSnapshot() { return JSON.parse(JSON.stringify(this.snapshot)); }
+
+  archiveSnapshot(importId, checksum) {
+    for (let index = this.storage.length - 1; index >= 0; index -= 1) {
+      const key = this.storage.key(index);
+      if (key?.startsWith(GUEST_ARCHIVE_PREFIX)) this.storage.removeItem(key);
+    }
+    const key = `${GUEST_ARCHIVE_PREFIX}${this.now().toISOString().replaceAll(":", "-")}:${importId}`;
+    this.storage.setItem(key, JSON.stringify({checksum, snapshot: this.snapshot}));
+    return key;
+  }
+
+  clearActive() {
+    this.storage.removeItem(STUDY_STATE_KEY);
+    this.snapshot = emptyStudySnapshot();
+    this.emit();
   }
 }

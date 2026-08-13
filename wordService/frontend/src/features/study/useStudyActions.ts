@@ -51,7 +51,7 @@ export function useStudyActions({
     };
     next[key] = !next[key];
     try {
-      studyStore.setMark(activeEntry.item_uuid, next);
+      await studyStore.setMark(activeEntry.item_uuid, next);
       setEntries((current) => current.map((entry) => entry.entry_id === activeEntry.entry_id
         ? {...entry, mark: {...entry.mark, ...next}}
         : entry));

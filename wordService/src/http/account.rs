@@ -1,15 +1,17 @@
 use super::response::{header, parse_local_url, send_json, send_json_with_headers};
 use crate::repository::WordRepository;
 use crate::scheduler::ReviewGrade;
-use crate::user_store::{AuthContext, SESSION_COOKIE, UserStore};
+use crate::user_store::{AuthContext, SESSION_COOKIE, StudyCard, UserStore};
 use anyhow::Result;
 use serde::Deserialize;
 use serde_json::json;
+use std::collections::HashMap;
 use tiny_http::{Request, StatusCode};
 
 pub(super) fn is_account_path(path: &str) -> bool {
     path.starts_with("/api/auth/")
         || path == "/api/study/state"
+        || path == "/api/study/import-guest"
         || path.starts_with("/api/study/cards/")
 }
 
@@ -112,6 +114,79 @@ pub(super) fn handle_post(
         );
     }
 
+    if path == "/api/study/import-guest" {
+        #[derive(Deserialize)]
+        struct GuestImport {
+            import_id: String,
+            snapshot_checksum: String,
+            cards: HashMap<String, StudyCard>,
+        }
+        let import: GuestImport = match serde_json::from_value(body) {
+            Ok(value) => value,
+            Err(_) => {
+                return send_json(
+                    request,
+                    StatusCode(400),
+                    &json!({"error": "invalid guest snapshot"}),
+                );
+            }
+        };
+        if import.snapshot_checksum.len() != 64
+            || !import
+                .snapshot_checksum
+                .bytes()
+                .all(|byte| byte.is_ascii_hexdigit())
+        {
+            return send_json(
+                request,
+                StatusCode(400),
+                &json!({"error": "invalid snapshot checksum"}),
+            );
+        }
+        for (key, card) in &import.cards {
+            if key != &card.item_uuid
+                || card.good_step > 6
+                || card.enrolled_at.is_some() != card.due_at.is_some()
+                || !valid_card_timestamps(card)
+                || repository
+                    .resolve_item_for_review(key, None, None)?
+                    .is_none()
+            {
+                return send_json(
+                    request,
+                    StatusCode(400),
+                    &json!({"error": format!("unknown item UUID: {key}")}),
+                );
+            }
+            if let (Some(book), Some(source_index)) =
+                (&card.preferred_book_code, card.preferred_source_index)
+                && repository
+                    .resolve_item_for_review(key, Some(book), Some(source_index))?
+                    .is_none()
+            {
+                return send_json(
+                    request,
+                    StatusCode(400),
+                    &json!({"error": format!("invalid preferred source for: {key}")}),
+                );
+            }
+        }
+        return match users.import_guest(
+            auth.user.id,
+            &import.import_id,
+            &import.snapshot_checksum,
+            import.cards.into_values().collect(),
+        ) {
+            Ok(snapshot) => send_json(request, StatusCode(200), &snapshot),
+            Err(error) if error.to_string().contains("already used") => send_json(
+                request,
+                StatusCode(409),
+                &json!({"error": error.to_string()}),
+            ),
+            Err(error) => Err(error),
+        };
+    }
+
     let Some(rest) = path.strip_prefix("/api/study/cards/") else {
         return send_json(request, StatusCode(404), &json!({"error": "not found"}));
     };
@@ -186,6 +261,19 @@ pub(super) fn handle_post(
         };
     }
     send_json(request, StatusCode(404), &json!({"error": "not found"}))
+}
+
+fn valid_card_timestamps(card: &StudyCard) -> bool {
+    [
+        card.enrolled_at.as_deref(),
+        card.due_at.as_deref(),
+        card.last_reviewed_at.as_deref(),
+        card.last_played_at.as_deref(),
+        Some(card.updated_at.as_str()),
+    ]
+    .into_iter()
+    .flatten()
+    .all(|value| chrono::DateTime::parse_from_rfc3339(value).is_ok())
 }
 
 pub(super) fn handle_put(

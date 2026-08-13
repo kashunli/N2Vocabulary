@@ -6,7 +6,7 @@ use argon2::Argon2;
 use argon2::password_hash::{
     PasswordHash, PasswordHasher, PasswordVerifier, SaltString, rand_core::OsRng,
 };
-use chrono::{Duration, Utc};
+use chrono::{DateTime, Duration, Utc};
 use rand::random;
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
@@ -61,7 +61,7 @@ pub struct StudyCard {
     pub updated_at: String,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct StudySnapshot {
     pub version: i64,
     pub updated_at: String,
@@ -363,6 +363,141 @@ impl UserStore {
         )?;
         get_card(&conn, user_id, item_uuid)
     }
+
+    pub fn import_guest(
+        &self,
+        user_id: i64,
+        import_id: &str,
+        checksum: &str,
+        guest_cards: Vec<StudyCard>,
+    ) -> Result<StudySnapshot> {
+        if import_id.trim().is_empty() || checksum.trim().is_empty() {
+            bail!("import ID and snapshot checksum are required");
+        }
+        let _guard = self.write_lock.lock().expect("user write lock");
+        let mut conn = self.connect()?;
+        let transaction = conn.transaction()?;
+        let prior: Option<String> = transaction
+            .query_row(
+                "SELECT snapshot_checksum FROM guest_imports WHERE user_id=? AND import_id=?",
+                params![user_id, import_id],
+                |row| row.get(0),
+            )
+            .optional()?;
+        if let Some(prior_checksum) = prior {
+            if prior_checksum != checksum {
+                bail!("import ID was already used for a different snapshot");
+            }
+            transaction.commit()?;
+            return self.snapshot(user_id);
+        }
+
+        let now = now_utc();
+        for guest in guest_cards {
+            let account = get_card_optional(&transaction, user_id, &guest.item_uuid)?;
+            let merged = match account {
+                Some(card) => merge_import_cards(card, guest, &now),
+                None => StudyCard {
+                    updated_at: now.clone(),
+                    ..guest
+                },
+            };
+            upsert_card(&transaction, user_id, &merged)?;
+        }
+        transaction.execute(
+            "INSERT INTO guest_imports(user_id,import_id,snapshot_checksum,imported_at) VALUES(?,?,?,?)",
+            params![user_id, import_id, checksum, now],
+        )?;
+        transaction.commit()?;
+        self.snapshot(user_id)
+    }
+}
+
+fn earlier(left: &Option<String>, right: &Option<String>) -> Option<String> {
+    match (left, right) {
+        (Some(left), Some(right)) => Some(
+            if parsed_at(left) <= parsed_at(right) {
+                left
+            } else {
+                right
+            }
+            .clone(),
+        ),
+        (Some(value), None) | (None, Some(value)) => Some(value.clone()),
+        (None, None) => None,
+    }
+}
+
+fn parsed_at(value: &str) -> DateTime<chrono::FixedOffset> {
+    DateTime::parse_from_rfc3339(value).unwrap_or(DateTime::UNIX_EPOCH.fixed_offset())
+}
+
+fn merge_import_cards(account: StudyCard, guest: StudyCard, now: &str) -> StudyCard {
+    let guest_schedule_wins = match (&account.due_at, &guest.due_at) {
+        (None, Some(_)) => true,
+        (Some(account_due), Some(guest_due)) => parsed_at(guest_due) < parsed_at(account_due),
+        _ => false,
+    };
+    let played_from_guest = match (&account.last_played_at, &guest.last_played_at) {
+        (None, Some(_)) => true,
+        (Some(account_played), Some(guest_played)) => {
+            parsed_at(guest_played) > parsed_at(account_played)
+        }
+        _ => false,
+    };
+    StudyCard {
+        item_uuid: account.item_uuid.clone(),
+        known: account.known || guest.known,
+        flagged: account.flagged || guest.flagged,
+        enrolled_at: earlier(&account.enrolled_at, &guest.enrolled_at),
+        due_at: if guest_schedule_wins {
+            guest.due_at.clone()
+        } else {
+            account.due_at.clone()
+        },
+        good_step: if guest_schedule_wins {
+            guest.good_step
+        } else {
+            account.good_step
+        },
+        last_reviewed_at: if guest_schedule_wins {
+            guest.last_reviewed_at.clone()
+        } else {
+            account.last_reviewed_at.clone()
+        },
+        last_played_at: if played_from_guest {
+            guest.last_played_at.clone()
+        } else {
+            account.last_played_at.clone()
+        },
+        preferred_book_code: if played_from_guest {
+            guest.preferred_book_code.clone()
+        } else {
+            account.preferred_book_code.clone()
+        },
+        preferred_source_index: if played_from_guest {
+            guest.preferred_source_index
+        } else {
+            account.preferred_source_index
+        },
+        updated_at: now.to_string(),
+    }
+}
+
+fn upsert_card(conn: &Connection, user_id: i64, card: &StudyCard) -> Result<()> {
+    conn.execute(
+        r#"INSERT INTO study_cards(user_id,item_uuid,known,flagged,enrolled_at,due_at,good_step,
+             last_reviewed_at,last_played_at,preferred_book_code,preferred_source_index,updated_at)
+           VALUES(?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(user_id,item_uuid) DO UPDATE SET
+             known=excluded.known,flagged=excluded.flagged,enrolled_at=excluded.enrolled_at,
+             due_at=excluded.due_at,good_step=excluded.good_step,last_reviewed_at=excluded.last_reviewed_at,
+             last_played_at=excluded.last_played_at,preferred_book_code=excluded.preferred_book_code,
+             preferred_source_index=excluded.preferred_source_index,updated_at=excluded.updated_at"#,
+        params![user_id, card.item_uuid, int(card.known), int(card.flagged), card.enrolled_at,
+            card.due_at, card.good_step, card.last_reviewed_at, card.last_played_at,
+            card.preferred_book_code, card.preferred_source_index, card.updated_at],
+    )?;
+    Ok(())
 }
 
 fn normalize_email(email: &str) -> Result<String> {
@@ -438,6 +573,22 @@ fn get_card(conn: &Connection, user_id: i64, item_uuid: &str) -> Result<StudyCar
     .context("study card not found")
 }
 
+fn get_card_optional(
+    conn: &Connection,
+    user_id: i64,
+    item_uuid: &str,
+) -> Result<Option<StudyCard>> {
+    conn.query_row(
+        r#"SELECT item_uuid,known,flagged,enrolled_at,due_at,good_step,last_reviewed_at,
+                  last_played_at,preferred_book_code,preferred_source_index,updated_at
+           FROM study_cards WHERE user_id=? AND item_uuid=?"#,
+        params![user_id, item_uuid],
+        row_to_card,
+    )
+    .optional()
+    .context("read optional study card")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -476,6 +627,23 @@ mod tests {
     }
 
     #[test]
+    fn expired_sessions_are_rejected_and_deleted() {
+        let (_dir, store) = fixture();
+        let session = store.register("expired@example.com", "password").unwrap();
+        let conn = Connection::open(store.db_path()).unwrap();
+        conn.execute(
+            "UPDATE sessions SET expires_at=? WHERE user_id=?",
+            params!["2000-01-01T00:00:00Z", session.user.id],
+        )
+        .unwrap();
+        assert!(store.authenticate(&session.token).unwrap().is_none());
+        let remaining: i64 = conn
+            .query_row("SELECT COUNT(*) FROM sessions", [], |row| row.get(0))
+            .unwrap();
+        assert_eq!(remaining, 0);
+    }
+
+    #[test]
     fn played_and_grade_updates_are_durable_and_atomic() {
         let (_dir, store) = fixture();
         let session = store.register("review@example.com", "password").unwrap();
@@ -491,5 +659,47 @@ mod tests {
             .grade(session.user.id, "item", ReviewGrade::Good)
             .unwrap();
         assert!(good.known && good.flagged);
+    }
+
+    #[test]
+    fn guest_import_is_conservative_and_idempotent() {
+        let (_dir, store) = fixture();
+        let session = store.register("import@example.com", "password").unwrap();
+        store
+            .set_marks(session.user.id, "item", false, true)
+            .unwrap();
+        let guest = StudyCard {
+            item_uuid: "item".into(),
+            known: true,
+            flagged: false,
+            enrolled_at: Some("2026-01-01T00:00:00Z".into()),
+            due_at: Some("2026-01-02T00:00:00Z".into()),
+            good_step: 3,
+            last_reviewed_at: Some("2026-01-01T00:00:00Z".into()),
+            last_played_at: Some("2026-01-01T00:00:00Z".into()),
+            preferred_book_code: Some("N2".into()),
+            preferred_source_index: Some(7),
+            updated_at: "2026-01-01T00:00:00Z".into(),
+        };
+        let snapshot = store
+            .import_guest(session.user.id, "once", "abc", vec![guest.clone()])
+            .unwrap();
+        let card = &snapshot.cards["item"];
+        assert!(card.known && card.flagged);
+        assert_eq!(card.good_step, 3);
+        assert_eq!(card.preferred_source_index, Some(7));
+        assert_eq!(
+            store
+                .import_guest(session.user.id, "once", "abc", vec![guest])
+                .unwrap()
+                .cards
+                .len(),
+            1
+        );
+        assert!(
+            store
+                .import_guest(session.user.id, "once", "different", vec![])
+                .is_err()
+        );
     }
 }
