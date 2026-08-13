@@ -1,6 +1,6 @@
 use super::response::{header, parse_local_url, send_json, send_json_with_headers};
 use crate::repository::WordRepository;
-use crate::user_store::{AuthContext, SESSION_COOKIE, StudyCard, UserStore};
+use crate::user_store::{AuthContext, ReviewCompletion, SESSION_COOKIE, StudyCard, UserStore};
 use anyhow::Result;
 use serde::Deserialize;
 use serde_json::json;
@@ -116,6 +116,8 @@ pub(super) fn handle_post(
     if path == "/api/study/import-guest" {
         #[derive(Deserialize)]
         struct GuestImport {
+            #[serde(default)]
+            version: i64,
             import_id: String,
             snapshot_checksum: String,
             cards: HashMap<String, StudyCard>,
@@ -144,7 +146,6 @@ pub(super) fn handle_post(
         }
         for (key, card) in &import.cards {
             if key != &card.item_uuid
-                || card.enrolled_at.is_some() != card.due_at.is_some()
                 || !valid_card_timestamps(card)
                 || repository
                     .resolve_item_for_review(key, None, None)?
@@ -173,6 +174,7 @@ pub(super) fn handle_post(
             auth.user.id,
             &import.import_id,
             &import.snapshot_checksum,
+            import.version,
             import.cards.into_values().collect(),
         ) {
             Ok(snapshot) => send_json(request, StatusCode(200), &snapshot),
@@ -225,8 +227,49 @@ pub(super) fn handle_post(
         return send_json(
             request,
             StatusCode(200),
-            &json!({"card": users.record_played(auth.user.id, item_uuid, book, source_index)?}),
+            &json!({"card": users.record_study_completed(auth.user.id, item_uuid, book, source_index)?}),
         );
+    }
+    if parts[1] == "review-complete" {
+        let expected_due_at = body
+            .get("expected_due_at")
+            .and_then(|value| value.as_str())
+            .unwrap_or("");
+        let book = body
+            .get("preferred_book_code")
+            .and_then(|value| value.as_str())
+            .unwrap_or("");
+        let source_index = body
+            .get("preferred_source_index")
+            .and_then(|value| value.as_i64())
+            .unwrap_or(-1);
+        if expected_due_at.is_empty()
+            || repository
+                .resolve_item_for_review(item_uuid, Some(book), Some(source_index))?
+                .is_none()
+        {
+            return send_json(
+                request,
+                StatusCode(400),
+                &json!({"error": "expected due time and preferred source are required"}),
+            );
+        }
+        return match users.complete_review(
+            auth.user.id,
+            item_uuid,
+            expected_due_at,
+            book,
+            source_index,
+        )? {
+            ReviewCompletion::Completed(card) => {
+                send_json(request, StatusCode(200), &json!({"card": card}))
+            }
+            ReviewCompletion::Conflict(card) => send_json(
+                request,
+                StatusCode(409),
+                &json!({"card": card, "error": "review state changed; refresh the review list"}),
+            ),
+        };
     }
     send_json(request, StatusCode(404), &json!({"error": "not found"}))
 }
@@ -235,6 +278,7 @@ fn valid_card_timestamps(card: &StudyCard) -> bool {
     [
         card.enrolled_at.as_deref(),
         card.due_at.as_deref(),
+        card.last_reviewed_at.as_deref(),
         card.last_played_at.as_deref(),
         Some(card.updated_at.as_str()),
     ]

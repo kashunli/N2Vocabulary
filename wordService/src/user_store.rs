@@ -17,7 +17,8 @@ use std::time::{Duration as StdDuration, Instant};
 
 pub const SESSION_COOKIE: &str = "n2_word_session";
 const SESSION_DAYS: i64 = 30;
-const REVIEW_ENROLLMENT_DAYS: i64 = 1;
+const STUDY_STATE_VERSION: i64 = 2;
+const SPACED_REVIEW_MIGRATION: &str = "spaced-review-v1";
 
 #[derive(Clone, Debug)]
 pub struct UserStore {
@@ -53,10 +54,20 @@ pub struct StudyCard {
     pub flagged: bool,
     pub enrolled_at: Option<String>,
     pub due_at: Option<String>,
+    #[serde(default)]
+    pub review_level: i64,
+    #[serde(default)]
+    pub last_reviewed_at: Option<String>,
     pub last_played_at: Option<String>,
     pub preferred_book_code: Option<String>,
     pub preferred_source_index: Option<i64>,
     pub updated_at: String,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum ReviewCompletion {
+    Completed(StudyCard),
+    Conflict(Option<StudyCard>),
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -112,6 +123,7 @@ impl UserStore {
               -- Retained for compatibility with existing user databases. The
               -- application no longer exposes or updates graded-review state.
               good_step INTEGER NOT NULL DEFAULT 0 CHECK(good_step BETWEEN 0 AND 6),
+              review_level INTEGER NOT NULL DEFAULT 0 CHECK(review_level >= 0),
               last_reviewed_at TEXT,
               last_played_at TEXT,
               preferred_book_code TEXT,
@@ -126,10 +138,46 @@ impl UserStore {
               imported_at TEXT NOT NULL,
               PRIMARY KEY(user_id, import_id)
             );
+            CREATE TABLE IF NOT EXISTS study_schema_migrations (
+              name TEXT PRIMARY KEY,
+              applied_at TEXT NOT NULL
+            );
             CREATE INDEX IF NOT EXISTS study_cards_due ON study_cards(user_id, due_at);
             CREATE INDEX IF NOT EXISTS sessions_expiry ON sessions(expires_at);
             "#,
         )?;
+        let has_review_level = conn
+            .prepare("PRAGMA table_info(study_cards)")?
+            .query_map([], |row| row.get::<_, String>(1))?
+            .collect::<std::result::Result<Vec<_>, _>>()?
+            .into_iter()
+            .any(|name| name == "review_level");
+        if !has_review_level {
+            conn.execute(
+                "ALTER TABLE study_cards ADD COLUMN review_level INTEGER NOT NULL DEFAULT 0 CHECK(review_level >= 0)",
+                [],
+            )?;
+        }
+        let migration_applied: Option<String> = conn
+            .query_row(
+                "SELECT applied_at FROM study_schema_migrations WHERE name=?",
+                [SPACED_REVIEW_MIGRATION],
+                |row| row.get(0),
+            )
+            .optional()?;
+        if migration_applied.is_none() {
+            // The prior scheduler had no compatible level semantics. Preserve
+            // tags and normal-playback provenance, but reset every schedule.
+            conn.execute(
+                r#"UPDATE study_cards SET enrolled_at=NULL,due_at=NULL,review_level=0,
+                   last_reviewed_at=NULL,good_step=0"#,
+                [],
+            )?;
+            conn.execute(
+                "INSERT INTO study_schema_migrations(name,applied_at) VALUES(?,?)",
+                params![SPACED_REVIEW_MIGRATION, now_utc()],
+            )?;
+        }
         Ok(())
     }
 
@@ -261,7 +309,7 @@ impl UserStore {
     pub fn snapshot(&self, user_id: i64) -> Result<StudySnapshot> {
         let conn = self.connect()?;
         let mut statement = conn.prepare(
-            r#"SELECT item_uuid,known,flagged,enrolled_at,due_at,
+            r#"SELECT item_uuid,known,flagged,enrolled_at,due_at,review_level,last_reviewed_at,
                       last_played_at,preferred_book_code,preferred_source_index,updated_at
                FROM study_cards WHERE user_id=? ORDER BY item_uuid"#,
         )?;
@@ -276,7 +324,7 @@ impl UserStore {
             cards.insert(card.item_uuid.clone(), card);
         }
         Ok(StudySnapshot {
-            version: 1,
+            version: STUDY_STATE_VERSION,
             updated_at,
             cards,
         })
@@ -301,7 +349,7 @@ impl UserStore {
         get_card(&conn, user_id, item_uuid)
     }
 
-    pub fn record_played(
+    pub fn record_study_completed(
         &self,
         user_id: i64,
         item_uuid: &str,
@@ -312,11 +360,11 @@ impl UserStore {
         let conn = self.connect()?;
         let now = Utc::now();
         let now_text = now.to_rfc3339();
-        let due = initial_review_due_at(now).to_rfc3339();
+        let due = next_review_due_at(now, 0)?.to_rfc3339();
         conn.execute(
-            r#"INSERT INTO study_cards(user_id,item_uuid,known,flagged,enrolled_at,due_at,
+            r#"INSERT INTO study_cards(user_id,item_uuid,known,flagged,enrolled_at,due_at,review_level,
                     last_played_at,preferred_book_code,preferred_source_index,updated_at)
-               VALUES(?,?,0,0,?,?,?,?,?,?)
+               VALUES(?,?,0,0,?,?,0,?,?,?,?)
                ON CONFLICT(user_id,item_uuid) DO UPDATE SET
                  enrolled_at=COALESCE(study_cards.enrolled_at,excluded.enrolled_at),
                  due_at=COALESCE(study_cards.due_at,excluded.due_at),
@@ -338,11 +386,94 @@ impl UserStore {
         get_card(&conn, user_id, item_uuid)
     }
 
+    pub fn complete_review(
+        &self,
+        user_id: i64,
+        item_uuid: &str,
+        expected_due_at: &str,
+        book: &str,
+        source_index: i64,
+    ) -> Result<ReviewCompletion> {
+        self.complete_review_at(
+            user_id,
+            item_uuid,
+            expected_due_at,
+            book,
+            source_index,
+            Utc::now(),
+        )
+    }
+
+    fn complete_review_at(
+        &self,
+        user_id: i64,
+        item_uuid: &str,
+        expected_due_at: &str,
+        book: &str,
+        source_index: i64,
+        now: DateTime<Utc>,
+    ) -> Result<ReviewCompletion> {
+        let expected_due = DateTime::parse_from_rfc3339(expected_due_at)
+            .context("expected due time must be RFC3339")?
+            .with_timezone(&Utc);
+        let _guard = self.write_lock.lock().expect("user write lock");
+        let mut conn = self.connect()?;
+        let transaction = conn.transaction()?;
+        let Some(current) = get_card_optional(&transaction, user_id, item_uuid)? else {
+            transaction.commit()?;
+            return Ok(ReviewCompletion::Conflict(None));
+        };
+        let Some(current_due_text) = current.due_at.as_deref() else {
+            transaction.commit()?;
+            return Ok(ReviewCompletion::Conflict(Some(current)));
+        };
+        let current_due = DateTime::parse_from_rfc3339(current_due_text)
+            .context("stored due time must be RFC3339")?
+            .with_timezone(&Utc);
+        if current_due != expected_due || current_due > now {
+            transaction.commit()?;
+            return Ok(ReviewCompletion::Conflict(Some(current)));
+        }
+
+        let next_level = current
+            .review_level
+            .checked_add(1)
+            .context("review level is too large to advance")?;
+        let next_due = next_review_due_at(now, next_level)?.to_rfc3339();
+        let now_text = now.to_rfc3339();
+        let rows = transaction.execute(
+            r#"UPDATE study_cards SET review_level=?,due_at=?,last_reviewed_at=?,last_played_at=?,
+                   preferred_book_code=?,preferred_source_index=?,updated_at=?
+               WHERE user_id=? AND item_uuid=? AND due_at=?"#,
+            params![
+                next_level,
+                next_due,
+                now_text,
+                now_text,
+                book,
+                source_index,
+                now_text,
+                user_id,
+                item_uuid,
+                expected_due_at,
+            ],
+        )?;
+        if rows != 1 {
+            let latest = get_card_optional(&transaction, user_id, item_uuid)?;
+            transaction.commit()?;
+            return Ok(ReviewCompletion::Conflict(latest));
+        }
+        let card = get_card(&transaction, user_id, item_uuid)?;
+        transaction.commit()?;
+        Ok(ReviewCompletion::Completed(card))
+    }
+
     pub fn import_guest(
         &self,
         user_id: i64,
         import_id: &str,
         checksum: &str,
+        guest_version: i64,
         guest_cards: Vec<StudyCard>,
     ) -> Result<StudySnapshot> {
         if import_id.trim().is_empty() || checksum.trim().is_empty() {
@@ -367,7 +498,15 @@ impl UserStore {
         }
 
         let now = now_utc();
-        for guest in guest_cards {
+        for mut guest in guest_cards {
+            if guest_version < STUDY_STATE_VERSION {
+                // A cached pre-level client can carry the old one-time due
+                // timestamps. Keep its tags and playback provenance only.
+                guest.enrolled_at = None;
+                guest.due_at = None;
+                guest.review_level = 0;
+                guest.last_reviewed_at = None;
+            }
             let account = get_card_optional(&transaction, user_id, &guest.item_uuid)?;
             let merged = match account {
                 Some(card) => merge_import_cards(card, guest, &now),
@@ -429,6 +568,16 @@ fn merge_import_cards(account: StudyCard, guest: StudyCard, now: &str) -> StudyC
         } else {
             account.due_at.clone()
         },
+        review_level: if guest_due_wins {
+            guest.review_level
+        } else {
+            account.review_level
+        },
+        last_reviewed_at: if guest_due_wins {
+            guest.last_reviewed_at.clone()
+        } else {
+            account.last_reviewed_at.clone()
+        },
         last_played_at: if played_from_guest {
             guest.last_played_at.clone()
         } else {
@@ -450,15 +599,15 @@ fn merge_import_cards(account: StudyCard, guest: StudyCard, now: &str) -> StudyC
 
 fn upsert_card(conn: &Connection, user_id: i64, card: &StudyCard) -> Result<()> {
     conn.execute(
-        r#"INSERT INTO study_cards(user_id,item_uuid,known,flagged,enrolled_at,due_at,
-             last_played_at,preferred_book_code,preferred_source_index,updated_at)
-           VALUES(?,?,?,?,?,?,?,?,?,?) ON CONFLICT(user_id,item_uuid) DO UPDATE SET
+        r#"INSERT INTO study_cards(user_id,item_uuid,known,flagged,enrolled_at,due_at,review_level,
+             last_reviewed_at,last_played_at,preferred_book_code,preferred_source_index,updated_at)
+           VALUES(?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(user_id,item_uuid) DO UPDATE SET
              known=excluded.known,flagged=excluded.flagged,enrolled_at=excluded.enrolled_at,
-             due_at=excluded.due_at,
+             due_at=excluded.due_at,review_level=excluded.review_level,last_reviewed_at=excluded.last_reviewed_at,
              last_played_at=excluded.last_played_at,preferred_book_code=excluded.preferred_book_code,
              preferred_source_index=excluded.preferred_source_index,updated_at=excluded.updated_at"#,
         params![user_id, card.item_uuid, int(card.known), int(card.flagged), card.enrolled_at,
-            card.due_at, card.last_played_at,
+            card.due_at, card.review_level, card.last_reviewed_at, card.last_played_at,
             card.preferred_book_code, card.preferred_source_index, card.updated_at],
     )?;
     Ok(())
@@ -507,8 +656,18 @@ fn now_utc() -> String {
     Utc::now().to_rfc3339()
 }
 
-fn initial_review_due_at(completed_at: DateTime<Utc>) -> DateTime<Utc> {
-    completed_at + Duration::days(REVIEW_ENROLLMENT_DAYS)
+fn next_review_due_at(completed_at: DateTime<Utc>, level: i64) -> Result<DateTime<Utc>> {
+    let shift = u32::try_from(level).context("review level must be non-negative")?;
+    let days = 1_i64
+        .checked_shl(shift)
+        .context("review interval is too large")?;
+    let seconds = days
+        .checked_mul(24 * 60 * 60)
+        .context("review interval is too large")?;
+    let interval = Duration::try_seconds(seconds).context("review interval is too large")?;
+    completed_at
+        .checked_add_signed(interval)
+        .context("next review date is out of range")
 }
 
 fn int(value: bool) -> i64 {
@@ -522,16 +681,18 @@ fn row_to_card(row: &rusqlite::Row<'_>) -> rusqlite::Result<StudyCard> {
         flagged: row.get::<_, i64>(2)? != 0,
         enrolled_at: row.get(3)?,
         due_at: row.get(4)?,
-        last_played_at: row.get(5)?,
-        preferred_book_code: row.get(6)?,
-        preferred_source_index: row.get(7)?,
-        updated_at: row.get(8)?,
+        review_level: row.get(5)?,
+        last_reviewed_at: row.get(6)?,
+        last_played_at: row.get(7)?,
+        preferred_book_code: row.get(8)?,
+        preferred_source_index: row.get(9)?,
+        updated_at: row.get(10)?,
     })
 }
 
 fn get_card(conn: &Connection, user_id: i64, item_uuid: &str) -> Result<StudyCard> {
     conn.query_row(
-        r#"SELECT item_uuid,known,flagged,enrolled_at,due_at,
+        r#"SELECT item_uuid,known,flagged,enrolled_at,due_at,review_level,last_reviewed_at,
                   last_played_at,preferred_book_code,preferred_source_index,updated_at
            FROM study_cards WHERE user_id=? AND item_uuid=?"#,
         params![user_id, item_uuid],
@@ -546,7 +707,7 @@ fn get_card_optional(
     item_uuid: &str,
 ) -> Result<Option<StudyCard>> {
     conn.query_row(
-        r#"SELECT item_uuid,known,flagged,enrolled_at,due_at,
+        r#"SELECT item_uuid,known,flagged,enrolled_at,due_at,review_level,last_reviewed_at,
                   last_played_at,preferred_book_code,preferred_source_index,updated_at
            FROM study_cards WHERE user_id=? AND item_uuid=?"#,
         params![user_id, item_uuid],
@@ -611,7 +772,7 @@ mod tests {
     }
 
     #[test]
-    fn marks_do_not_enroll_and_playback_creates_review_due_state() {
+    fn marks_do_not_enroll_and_normal_study_creates_level_zero_due_state() {
         let (_dir, store) = fixture();
         let session = store.register("review@example.com", "password").unwrap();
         let marked = store
@@ -621,10 +782,109 @@ mod tests {
         assert!(marked.enrolled_at.is_none());
         assert!(marked.due_at.is_none());
         let played = store
-            .record_played(session.user.id, "item", "N2", 7)
+            .record_study_completed(session.user.id, "item", "N2", 7)
             .unwrap();
         assert!(played.due_at.is_some());
+        assert_eq!(played.review_level, 0);
         assert!(played.known && played.flagged);
+    }
+
+    #[test]
+    fn normal_study_replay_does_not_postpone_an_existing_review() {
+        let (_dir, store) = fixture();
+        let session = store.register("replay@example.com", "password").unwrap();
+        let first = store
+            .record_study_completed(session.user.id, "item", "N2", 7)
+            .unwrap();
+        let replayed = store
+            .record_study_completed(session.user.id, "item", "GWB_N2", 44)
+            .unwrap();
+        assert_eq!(replayed.review_level, 0);
+        assert_eq!(replayed.due_at, first.due_at);
+        assert_eq!(replayed.preferred_book_code.as_deref(), Some("GWB_N2"));
+    }
+
+    #[test]
+    fn review_completion_advances_once_and_rejects_a_stale_due_time() {
+        let (_dir, store) = fixture();
+        let session = store.register("level@example.com", "password").unwrap();
+        store
+            .record_study_completed(session.user.id, "item", "N2", 7)
+            .unwrap();
+        let expected_due = "2026-08-12T00:00:00+00:00";
+        let conn = Connection::open(store.db_path()).unwrap();
+        conn.execute(
+            "UPDATE study_cards SET due_at=?, enrolled_at=?, review_level=0 WHERE user_id=? AND item_uuid=?",
+            params![expected_due, "2026-08-11T00:00:00+00:00", session.user.id, "item"],
+        )
+        .unwrap();
+        let now = DateTime::parse_from_rfc3339("2026-08-13T00:00:00+00:00")
+            .unwrap()
+            .with_timezone(&Utc);
+        let completed = store
+            .complete_review_at(session.user.id, "item", expected_due, "N2", 7, now)
+            .unwrap();
+        let ReviewCompletion::Completed(card) = completed else {
+            panic!("expected completion");
+        };
+        assert_eq!(card.review_level, 1);
+        assert_eq!(card.due_at.as_deref(), Some("2026-08-15T00:00:00+00:00"));
+        assert_eq!(
+            card.last_reviewed_at.as_deref(),
+            Some("2026-08-13T00:00:00+00:00")
+        );
+        assert!(matches!(
+            store
+                .complete_review_at(session.user.id, "item", expected_due, "N2", 7, now)
+                .unwrap(),
+            ReviewCompletion::Conflict(Some(_))
+        ));
+    }
+
+    #[test]
+    fn review_interval_doubles_with_checked_bounds() {
+        let start = DateTime::parse_from_rfc3339("2026-08-13T00:00:00+00:00")
+            .unwrap()
+            .with_timezone(&Utc);
+        assert_eq!(
+            next_review_due_at(start, 0).unwrap(),
+            start + Duration::days(1)
+        );
+        assert_eq!(
+            next_review_due_at(start, 1).unwrap(),
+            start + Duration::days(2)
+        );
+        assert_eq!(
+            next_review_due_at(start, 5).unwrap(),
+            start + Duration::days(32)
+        );
+        assert!(next_review_due_at(start, 63).is_err());
+    }
+
+    #[test]
+    fn migration_clears_old_schedules_but_preserves_tags() {
+        let (_dir, store) = fixture();
+        let session = store.register("migrate@example.com", "password").unwrap();
+        store
+            .set_marks(session.user.id, "item", true, true)
+            .unwrap();
+        let conn = Connection::open(store.db_path()).unwrap();
+        conn.execute(
+            "UPDATE study_cards SET enrolled_at=?,due_at=?,review_level=4,last_reviewed_at=?,good_step=4 WHERE user_id=? AND item_uuid=?",
+            params!["2026-08-01T00:00:00Z", "2026-08-02T00:00:00Z", "2026-08-01T00:00:00Z", session.user.id, "item"],
+        )
+        .unwrap();
+        conn.execute(
+            "DELETE FROM study_schema_migrations WHERE name=?",
+            [SPACED_REVIEW_MIGRATION],
+        )
+        .unwrap();
+        store.ensure_ready().unwrap();
+        let card = &store.snapshot(session.user.id).unwrap().cards["item"];
+        assert!(card.known && card.flagged);
+        assert!(card.enrolled_at.is_none() && card.due_at.is_none());
+        assert_eq!(card.review_level, 0);
+        assert!(card.last_reviewed_at.is_none());
     }
 
     #[test]
@@ -640,20 +900,34 @@ mod tests {
             flagged: false,
             enrolled_at: Some("2026-01-01T00:00:00Z".into()),
             due_at: Some("2026-01-02T00:00:00Z".into()),
+            review_level: 1,
+            last_reviewed_at: Some("2026-01-01T00:00:00Z".into()),
             last_played_at: Some("2026-01-01T00:00:00Z".into()),
             preferred_book_code: Some("N2".into()),
             preferred_source_index: Some(7),
             updated_at: "2026-01-01T00:00:00Z".into(),
         };
         let snapshot = store
-            .import_guest(session.user.id, "once", "abc", vec![guest.clone()])
+            .import_guest(
+                session.user.id,
+                "once",
+                "abc",
+                STUDY_STATE_VERSION,
+                vec![guest.clone()],
+            )
             .unwrap();
         let card = &snapshot.cards["item"];
         assert!(card.known && card.flagged);
         assert_eq!(card.preferred_source_index, Some(7));
         assert_eq!(
             store
-                .import_guest(session.user.id, "once", "abc", vec![guest])
+                .import_guest(
+                    session.user.id,
+                    "once",
+                    "abc",
+                    STUDY_STATE_VERSION,
+                    vec![guest]
+                )
                 .unwrap()
                 .cards
                 .len(),
@@ -661,7 +935,13 @@ mod tests {
         );
         assert!(
             store
-                .import_guest(session.user.id, "once", "different", vec![])
+                .import_guest(
+                    session.user.id,
+                    "once",
+                    "different",
+                    STUDY_STATE_VERSION,
+                    vec![]
+                )
                 .is_err()
         );
     }
