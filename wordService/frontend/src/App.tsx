@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { PlaybackSettingsModal } from "./features/player/PlaybackSettingsModal";
 import { RailPlayer } from "./features/player/RailPlayer";
@@ -40,7 +40,6 @@ function StudyApp({store, snapshot, dueCount}: ReturnType<typeof useStudyState>)
   const [pendingReviewGrade, setPendingReviewGrade] = useState<ReviewGrade>("again");
   const [reviewCompleted, setReviewCompleted] = useState<Set<string>>(() => new Set());
   const [reviewAutoplay, setReviewAutoplay] = useState(false);
-  const playbackRunModeRef = useRef<"single" | "consecutive">("single");
   const reviewCurrent = reviewMode ? entries[reviewPosition] : undefined;
   const playbackEntries = reviewMode ? (reviewCurrent ? [reviewCurrent] : []) : entries;
 
@@ -56,7 +55,9 @@ function StudyApp({store, snapshot, dueCount}: ReturnType<typeof useStudyState>)
       const nextPosition = reviewPosition + 1;
       setReviewPosition(nextPosition);
       setPendingReviewGrade("again");
-      setReviewAutoplay(playbackRunModeRef.current === "consecutive" && nextPosition < entries.length);
+      // Moving forward in review is an explicit navigation action, so the
+      // newly focused card should play in both Single and Consecutive modes.
+      setReviewAutoplay(nextPosition < entries.length);
       setStatus("");
     } catch (error: unknown) {
       setStatus(error instanceof Error ? error.message : "Could not save the review grade.");
@@ -88,7 +89,6 @@ function StudyApp({store, snapshot, dueCount}: ReturnType<typeof useStudyState>)
     replayFocused,
     replayRequest,
     resetPlaybackSettings,
-    requestPlayback,
     resetPosition,
     selectEntry: selectPlaybackEntry,
     selectPhase,
@@ -108,9 +108,11 @@ function StudyApp({store, snapshot, dueCount}: ReturnType<typeof useStudyState>)
   const activeIndex = reviewMode ? reviewPosition : playbackIndex;
   const reviewCurrentCard = reviewCurrent ? snapshot.cards[reviewCurrent.item_uuid] || reviewCards[reviewPosition] : undefined;
 
-  useEffect(() => {
-    playbackRunModeRef.current = playbackRunMode;
-  }, [playbackRunMode]);
+  const playCurrentReviewEntry = useCallback(() => {
+    if (!reviewCurrent) return;
+    const phase = playbackMode === "sentences" && reviewCurrent.sentence_audio_url ? "sentence" : "word";
+    selectPhase(phase);
+  }, [playbackMode, reviewCurrent, selectPhase]);
 
   const selectReviewEntry = useCallback((index: number) => {
     if (!reviewMode || index < 0 || index >= entries.length) return;
@@ -147,8 +149,8 @@ function StudyApp({store, snapshot, dueCount}: ReturnType<typeof useStudyState>)
   useEffect(() => {
     if (!reviewMode || !reviewCurrent || !reviewAutoplay) return;
     setReviewAutoplay(false);
-    requestPlayback();
-  }, [requestPlayback, reviewAutoplay, reviewCurrent?.item_uuid, reviewMode]);
+    playCurrentReviewEntry();
+  }, [playCurrentReviewEntry, reviewAutoplay, reviewCurrent?.item_uuid, reviewMode]);
 
   const moveClip = useCallback((direction: -1 | 1) => {
     if (reviewMode) {
@@ -188,7 +190,9 @@ function StudyApp({store, snapshot, dueCount}: ReturnType<typeof useStudyState>)
     setReviewPosition(0);
     setReviewCompleted(new Set());
     setPendingReviewGrade("again");
-    setReviewAutoplay(false);
+    // The first due card follows the same autoplay contract as a normal
+    // study-wall selection once the review list has finished loading.
+    setReviewAutoplay(true);
     setCoveredEntryIds(new Set());
     setShowStarred(false);
     setReviewMode(true);

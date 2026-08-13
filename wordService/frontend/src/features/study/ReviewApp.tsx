@@ -25,7 +25,10 @@ export function ReviewApp({store, accountEmail}: ReviewAppProps) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const current = entries[position];
   const currentCard = current ? store.load().cards[current.item_uuid] : undefined;
-  const playAfterFocusRef = useRef<number | null>(null);
+  // Start the first resolved due card through the same navigation path as a
+  // later row jump. This also makes initial autoplay explicit for this
+  // dedicated route rather than relying only on the player target effect.
+  const playAfterFocusRef = useRef<number | null>(0);
   const playAfterCommitRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -68,14 +71,16 @@ export function ReviewApp({store, accountEmail}: ReviewAppProps) {
       });
       setPosition(value => {
         const next = value + 1;
-        if (playbackRunModeRef.current === "consecutive") playAfterCommitRef.current = next;
+        // Advancing a review card is explicit navigation, so keep autoplay
+        // consistent with the regular wall in both run modes.
+        if (next < entries.length) playAfterCommitRef.current = next;
         return next;
       });
       setStatus("");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Could not save the review grade.");
     }
-  }, [current, pendingGrade, store]);
+  }, [current, entries.length, pendingGrade, store]);
 
   const activeEntries = useMemo(() => current ? [current] : [], [current]);
   const playback = useStudyPlayback({
@@ -84,10 +89,11 @@ export function ReviewApp({store, accountEmail}: ReviewAppProps) {
     onCompleteCard: entry => { void store.recordPlayed(entry).catch(error => setStatus(error instanceof Error ? error.message : "Could not save playback.")); },
     onConsecutiveSequenceComplete: () => { void commitAndAdvance(); },
   });
-  const playbackRunModeRef = useRef(playback.playbackRunMode);
-  useEffect(() => {
-    playbackRunModeRef.current = playback.playbackRunMode;
-  }, [playback.playbackRunMode]);
+  const playCurrentReviewEntry = useCallback(() => {
+    if (!current) return;
+    const phase = playback.playbackMode === "sentences" && current.sentence_audio_url ? "sentence" : "word";
+    playback.selectPhase(phase);
+  }, [current, playback.playbackMode, playback.selectPhase]);
   const selectReviewEntry = useCallback((index: number) => {
     if (index < 0 || index >= entries.length) return;
     playback.stopPlayback();
@@ -98,13 +104,13 @@ export function ReviewApp({store, accountEmail}: ReviewAppProps) {
   useEffect(() => {
     if (!current || playAfterFocusRef.current !== position) return;
     playAfterFocusRef.current = null;
-    playback.requestPlayback();
-  }, [current, playback.requestPlayback, position]);
+    playCurrentReviewEntry();
+  }, [current, playCurrentReviewEntry, position]);
   useEffect(() => {
     if (!current || playAfterCommitRef.current !== position) return;
     playAfterCommitRef.current = null;
-    playback.requestPlayback();
-  }, [current, playback.requestPlayback, position]);
+    playCurrentReviewEntry();
+  }, [current, playCurrentReviewEntry, position]);
 
   const toggleSentenceStar = useCallback(async () => {
     if (!current) return;
