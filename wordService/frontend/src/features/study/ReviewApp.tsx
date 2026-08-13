@@ -128,6 +128,15 @@ export function ReviewApp({store, accountEmail}: ReviewAppProps) {
     void commitAndAdvance();
   }, [commitAndAdvance, current, playback]);
 
+  const previous = useCallback(() => {
+    if (!current) return;
+    if (playback.playbackMode === "both" && playback.activePhase === "sentence") {
+      playback.moveClip(-1);
+      return;
+    }
+    if (position > 0) selectReviewEntry(position - 1);
+  }, [current, playback, position, selectReviewEntry]);
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.target instanceof HTMLSelectElement) return;
@@ -158,7 +167,7 @@ export function ReviewApp({store, accountEmail}: ReviewAppProps) {
         <button type="button" className={pendingGrade === "good" ? "is-selected" : ""} onClick={() => setPendingGrade("good")}>3 · ✓ Good · {nextGoodIntervalDays(currentCard?.good_step ?? 0)}d</button>
       </section>
       <div className="react-content-scroll review-content"><StudyWallView activeEntry={current} activeIndex={position} activePhase={playback.activePhase} bookCode={current.book_code} coveredEntryIds={new Set()} detail={current} entries={entries} entriesLoading={false} onSelectEntry={selectReviewEntry} onSelectPhase={playback.selectPhase} onToggleMark={key => setPendingGrade(key === "flagged" ? "hard" : "good")} onToggleSentenceStar={toggleSentenceStar} /></div>
-      <RailPlayer target={playback.target} autoPlay={playback.autoAdvance} isPlaybackActive={playback.playbackActive} isSilencePlaying={playback.isSilencePlaying} playbackRunMode={playback.playbackRunMode} onPlayingChange={playback.handlePlayingChange} playRequest={playback.playRequest} replayRequest={playback.replayRequest} pauseRequest={playback.pauseRequest} stopRequest={playback.stopRequest} onEnded={playback.handlePlaybackEnd} onTogglePlayback={playback.togglePlayback} onTogglePlaybackRunMode={playback.togglePlaybackRunMode} onReplay={playback.replayFocused} onPrevious={() => undefined} onNext={next} onStop={playback.stopPlayback} canPrevious={false} canNext={true} />
+      <RailPlayer target={playback.target} autoPlay={playback.autoAdvance} isPlaybackActive={playback.playbackActive} isSilencePlaying={playback.isSilencePlaying} playbackRunMode={playback.playbackRunMode} onPlayingChange={playback.handlePlayingChange} playRequest={playback.playRequest} replayRequest={playback.replayRequest} pauseRequest={playback.pauseRequest} stopRequest={playback.stopRequest} onEnded={playback.handlePlaybackEnd} onTogglePlayback={playback.togglePlayback} onTogglePlaybackRunMode={playback.togglePlaybackRunMode} onReplay={playback.replayFocused} onPrevious={previous} onNext={next} onStop={playback.stopPlayback} canPrevious={position > 0 || (playback.playbackMode === "both" && playback.activePhase === "sentence")} canNext={true} />
     </> : <section className="review-empty"><h2>Review complete</h2><p>No more cards from this due snapshot.</p>{nextDue ? <p>Next scheduled review: {new Date(nextDue).toLocaleString()}</p> : <p>Play vocabulary on the study wall to create review tasks.</p>}<a href="/">Return to study wall</a></section>}
     {settingsOpen ? <PlaybackSettingsModal playbackMode={playback.playbackMode} postSentenceSilence={playback.postSentenceSilence} postWordSilence={playback.postWordSilence} onChangePlaybackMode={playback.changePlaybackMode} onChangePostSentenceSilence={playback.changePostSentenceSilence} onChangePostWordSilence={playback.changePostWordSilence} onClose={() => setSettingsOpen(false)} onReset={playback.resetPlaybackSettings} /> : null}
   </main>;
