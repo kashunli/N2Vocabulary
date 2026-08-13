@@ -101,18 +101,31 @@ export function RailPlayer({
   // fast navigation can increment playRequest before the target is ready and
   // silently lose the autoplay request (most noticeable in Single mode).
   useEffect(() => {
-    if (!pendingTargetPlay.current || !autoPlay || !target || !activeUrl || activeUrl !== target.url || !player.audioBuffer || player.isPlaying) {
+    if (
+      !pendingTargetPlay.current
+      || !autoPlay
+      || !target
+      || !activeUrl
+      || activeUrl !== target.url
+      || player.loadedAudioUrl !== activeUrl
+      || !player.audioBuffer
+      || player.isPlaying
+    ) {
       return;
     }
     pendingTargetPlay.current = false;
+    // A navigation request may have already been observed by the effect
+    // below while the new buffer was decoding.  Mark it handled here so the
+    // ready-buffer transition starts the clip exactly once.
+    lastPlayRequest.current = playRequest;
     void playFrom(0);
-  }, [activeUrl, autoPlay, playFrom, player.audioBuffer, player.isPlaying, target?.url, targetKey]);
+  }, [activeUrl, autoPlay, playFrom, playRequest, player.audioBuffer, player.isPlaying, player.loadedAudioUrl, target?.url, targetKey]);
 
   useEffect(() => {
     if (playRequest === lastPlayRequest.current) return;
     lastPlayRequest.current = playRequest;
-    if (autoPlay && activeUrl === target?.url && player.audioBuffer) void playFrom();
-  }, [activeUrl, autoPlay, playFrom, playRequest, player.audioBuffer, target?.url]);
+    if (autoPlay && activeUrl === target?.url && player.loadedAudioUrl === activeUrl && player.audioBuffer) void playFrom();
+  }, [activeUrl, autoPlay, playFrom, playRequest, player.audioBuffer, player.loadedAudioUrl, target?.url]);
 
   useEffect(() => {
     if (replayRequest === lastReplayRequest.current) return;

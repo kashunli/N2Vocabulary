@@ -41,6 +41,11 @@ export function useAudioBufferPlayer(
   onRangeEndRef.current = onRangeEnd;
 
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
+  // Keep the URL that produced the visible buffer in React state as well as
+  // the ref used by the playback primitives.  The URL effect clears the old
+  // buffer asynchronously after RailPlayer has selected a new target, so a
+  // consumer must be able to distinguish a ready new buffer from a stale one.
+  const [loadedAudioUrl, setLoadedAudioUrl] = useState<string>();
   const [currentTime, setCurrentTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
@@ -106,6 +111,7 @@ export function useAudioBufferPlayer(
     decodePromiseRef.current = null;
     publishCurrentTime(0);
     setAudioBuffer(null);
+    setLoadedAudioUrl(undefined);
     setIsPlaying(false);
     setLoadFailed(false);
 
@@ -125,6 +131,7 @@ export function useAudioBufferPlayer(
       bufferRef.current = decodedAudio;
       loadedUrlRef.current = audioUrl;
       setAudioBuffer(decodedAudio);
+      setLoadedAudioUrl(audioUrl);
       return decodedAudio;
     })();
     decodePromiseRef.current = decodePromise;
@@ -238,6 +245,7 @@ export function useAudioBufferPlayer(
 
   return {
     audioBuffer,
+    loadedAudioUrl,
     currentTime,
     isPlaying,
     loadFailed,
