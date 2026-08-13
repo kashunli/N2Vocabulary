@@ -67,7 +67,7 @@ export function useStudyCatalog({
       return undefined;
     }
     let cancelled = false;
-    getEntry(activeEntry.entry_id, selectedBook)
+    getEntry(activeEntry.entry_id, activeEntry.book_code)
       .then((nextDetail) => { if (!cancelled) setDetail(nextDetail); })
       .catch((error: unknown) => { if (!cancelled) setStatus(error instanceof Error ? error.message : "Could not load word details."); });
     return () => { cancelled = true; };

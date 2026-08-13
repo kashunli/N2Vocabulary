@@ -22,6 +22,7 @@ type PendingSilence = {
 type UseStudyPlaybackOptions = {
   entries: Entry[];
   showStarred: boolean;
+  stopAfterEntry?: boolean;
   onCompleteCard?: (entry: Entry) => void;
   onConsecutiveSequenceComplete?: (entry: Entry) => void;
 };
@@ -31,7 +32,7 @@ function targetFor(entry: Entry, phase: PlaybackPhase): AudioTarget | null {
   return url ? {entry, phase, url} : null;
 }
 
-export function useStudyPlayback({entries, showStarred, onCompleteCard, onConsecutiveSequenceComplete}: UseStudyPlaybackOptions) {
+export function useStudyPlayback({entries, showStarred, stopAfterEntry = false, onCompleteCard, onConsecutiveSequenceComplete}: UseStudyPlaybackOptions) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [activePhase, setActivePhase] = useState<PlaybackPhase>("word");
   const [savedSettings] = useState(() => readPlaybackSettings());
@@ -54,6 +55,10 @@ export function useStudyPlayback({entries, showStarred, onCompleteCard, onConsec
   const autoAdvanceRef = useRef(autoAdvance);
   const activeEntry = entries[activeIndex];
   const target = activeEntry ? targetFor(activeEntry, activePhase) : null;
+
+  useEffect(() => {
+    if (activeIndex >= entries.length) setActiveIndex(0);
+  }, [activeIndex, entries.length]);
 
   useEffect(() => {
     if (completedPhasesRef.current.itemUuid === activeEntry?.item_uuid) return;
@@ -262,7 +267,7 @@ export function useStudyPlayback({entries, showStarred, onCompleteCard, onConsec
       playbackRunMode,
       phase: activePhase,
       hasSentence: !!activeEntry?.sentence_audio_url,
-      hasNextEntry: activeIndex < entries.length - 1,
+      hasNextEntry: !stopAfterEntry && activeIndex < entries.length - 1,
     });
     if (nextStep === "stop") {
       autoAdvanceRef.current = false;
@@ -277,7 +282,7 @@ export function useStudyPlayback({entries, showStarred, onCompleteCard, onConsec
       return;
     }
     scheduleAfterSilence(activePhase === "word" ? postWordSilence : postSentenceSilence, advanceAfterPlayback);
-  }, [activeEntry, activeIndex, activePhase, advanceAfterPlayback, entries.length, onCompleteCard, onConsecutiveSequenceComplete, playbackMode, playbackRunMode, postSentenceSilence, postWordSilence, scheduleAfterSilence]);
+  }, [activeEntry, activeIndex, activePhase, advanceAfterPlayback, entries.length, onCompleteCard, onConsecutiveSequenceComplete, playbackMode, playbackRunMode, postSentenceSilence, postWordSilence, scheduleAfterSilence, stopAfterEntry]);
 
   const handlePlayingChange = useCallback((playing: boolean) => {
     setIsPlaying(playing);

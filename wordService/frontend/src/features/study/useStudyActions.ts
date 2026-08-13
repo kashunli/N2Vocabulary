@@ -4,7 +4,7 @@ import { exportUnitFlaggedAudio, updateExampleStar } from "../../api";
 import type { Entry, StarredSentence, UnitSummary } from "../../types";
 import type { PlaybackPhase } from "../player/playbackSettings";
 import { unitLabel } from "./unitLabel";
-import type { StudyStateStore } from "./studyStateTypes";
+import type { ReviewGrade, StudyStateStore } from "./studyStateTypes";
 
 interface UseStudyActionsOptions {
   activeEntry?: Entry;
@@ -12,6 +12,7 @@ interface UseStudyActionsOptions {
   entries: Entry[];
   refreshCatalog: () => Promise<void>;
   refreshStarred: () => Promise<StarredSentence[]>;
+  reviewMode: boolean;
   selectedBook: string;
   selectedUnit: number | null;
   setCoveredEntryIds: Dispatch<SetStateAction<Set<number>>>;
@@ -23,6 +24,7 @@ interface UseStudyActionsOptions {
   showStarred: boolean;
   units: UnitSummary[];
   studyStore: StudyStateStore;
+  onSelectReviewGrade?: (grade: ReviewGrade) => void;
 }
 
 export function useStudyActions({
@@ -31,6 +33,7 @@ export function useStudyActions({
   entries,
   refreshCatalog,
   refreshStarred,
+  reviewMode,
   selectedBook,
   selectedUnit,
   setCoveredEntryIds,
@@ -42,9 +45,14 @@ export function useStudyActions({
   showStarred,
   units,
   studyStore,
+  onSelectReviewGrade,
 }: UseStudyActionsOptions) {
   const toggleMark = useCallback(async (key: "known" | "flagged") => {
     if (!activeEntry) return;
+    if (reviewMode && onSelectReviewGrade) {
+      onSelectReviewGrade(key === "known" ? "good" : "hard");
+      return;
+    }
     const next = {
       known: !!activeEntry.mark?.known,
       flagged: !!activeEntry.mark?.flagged,
@@ -62,13 +70,13 @@ export function useStudyActions({
     } catch (error: unknown) {
       setStatus(error instanceof Error ? error.message : "Could not update the study mark.");
     }
-  }, [activeEntry, setDetail, setEntries, setStatus, studyStore]);
+  }, [activeEntry, onSelectReviewGrade, reviewMode, setDetail, setEntries, setStatus, studyStore]);
 
   const toggleSentenceStar = useCallback(async () => {
     if (!activeEntry) return;
     const position = activeEntry.sentence_position ?? 0;
     try {
-      const payload = await updateExampleStar(activeEntry.entry_id, position, !activeEntry.sentence_starred, selectedBook);
+      const payload = await updateExampleStar(activeEntry.entry_id, position, !activeEntry.sentence_starred, activeEntry.book_code);
       setEntries((current) => current.map((entry) => entry.entry_id === activeEntry.entry_id
         ? {...entry, sentence_starred: payload.starred}
         : entry));
@@ -82,7 +90,7 @@ export function useStudyActions({
     } catch (error: unknown) {
       setStatus(error instanceof Error ? error.message : "Could not update the sentence star.");
     }
-  }, [activeEntry, refreshStarred, selectedBook, setDetail, setEntries, setStatus, showStarred]);
+  }, [activeEntry, refreshStarred, setDetail, setEntries, setStatus, showStarred]);
 
   const toggleCoverAll = useCallback(() => {
     setCoveredEntryIds((current) => {

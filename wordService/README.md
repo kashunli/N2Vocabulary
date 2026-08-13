@@ -172,6 +172,12 @@ Good ladder and schedules 10 minutes; `Hard` preserves the ladder, schedules
 one day, and sets Flagged; `Good` advances through 1, 3, 7, 14, 30, and 60-day
 intervals and sets Known. Further Good reviews remain at 60 days.
 
+On the normal `/` React wall, `Review due (N)` is an in-place mode switch: it
+keeps the header, detail pane, and RailPlayer mounted and replaces only the
+left playlist with the due snapshot. The URL does not change, and `Back to
+study list` restores the ordinary book/filter playlist. `/review` remains
+available as the direct route for bookmarks and compatibility.
+
 The selected grade is pending until forward movement leaves the final phase of
 the card. Previous, replay, stop, logout, page close, and navigation away do
 not grade it. A registered-user grade and its mark side effect are committed
