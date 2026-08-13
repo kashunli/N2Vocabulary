@@ -139,6 +139,8 @@ pub struct EntryPayload {
     pub entry_id: i64,
     pub source_index: i64,
     pub uuid: String,
+    /// Stable identity of the shared vocabulary item across book appearances.
+    pub item_uuid: String,
     pub book_code: String,
     pub unit: UnitRef,
     pub kanji: String,

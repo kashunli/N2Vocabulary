@@ -6,6 +6,7 @@ export interface UnitRef {
 
 export interface Entry {
   entry_id: number;
+  item_uuid: string;
   source_index: number;
   book_code: string;
   unit: UnitRef;

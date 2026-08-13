@@ -56,6 +56,7 @@ struct EntryRow {
     entry_id: i64,
     item_id: i64,
     uuid: String,
+    item_uuid: String,
     book_code: String,
     source_index: i64,
     unit_number: i64,
@@ -460,7 +461,8 @@ impl WordRepository {
         let sql = format!(
             r#"
             SELECT DISTINCT
-              be.entry_id, be.item_id, be.uuid, be.book_code, be.source_index, be.unit_number,
+              be.entry_id, be.item_id, be.uuid, v.uuid AS item_uuid,
+              be.book_code, be.source_index, be.unit_number,
               u.header AS unit_header, u.title AS unit_title, v.kanji, v.reading,
               COALESCE(NULLIF(be.verb_pattern, ''), v.verb_pattern) AS verb_pattern,
               COALESCE(NULLIF(be.meaning_en, ''), v.meaning_en) AS meaning_en,
@@ -510,7 +512,8 @@ impl WordRepository {
         let conn = self.connect()?;
         let sql = r#"
             SELECT
-              be.entry_id, be.item_id, be.uuid, be.book_code, be.source_index, be.unit_number,
+              be.entry_id, be.item_id, be.uuid, v.uuid AS item_uuid,
+              be.book_code, be.source_index, be.unit_number,
               u.header AS unit_header, u.title AS unit_title, v.kanji, v.reading,
               COALESCE(NULLIF(be.verb_pattern, ''), v.verb_pattern) AS verb_pattern,
               COALESCE(NULLIF(be.meaning_en, ''), v.meaning_en) AS meaning_en,
@@ -561,23 +564,24 @@ impl WordRepository {
                 entry_id: row.get(0)?,
                 item_id: row.get(1)?,
                 uuid: row.get(2)?,
-                book_code: row.get(3)?,
-                source_index: row.get(4)?,
-                unit_number: row.get(5)?,
-                unit_header: row.get(6)?,
-                unit_title: row.get(7)?,
-                kanji: row.get(8)?,
-                reading: row.get(9)?,
-                verb_pattern: row.get(10)?,
-                meaning_en: row.get(11)?,
-                meaning_zh: row.get(12)?,
-                sentence: row.get(13)?,
-                explanation_md: row.get(14)?,
-                word_clip: row.get(15)?,
-                sentence_clip: row.get(16)?,
-                known: row.get(17)?,
-                flagged: row.get(18)?,
-                mark_updated_at: row.get(19)?,
+                item_uuid: row.get(3)?,
+                book_code: row.get(4)?,
+                source_index: row.get(5)?,
+                unit_number: row.get(6)?,
+                unit_header: row.get(7)?,
+                unit_title: row.get(8)?,
+                kanji: row.get(9)?,
+                reading: row.get(10)?,
+                verb_pattern: row.get(11)?,
+                meaning_en: row.get(12)?,
+                meaning_zh: row.get(13)?,
+                sentence: row.get(14)?,
+                explanation_md: row.get(15)?,
+                word_clip: row.get(16)?,
+                sentence_clip: row.get(17)?,
+                known: row.get(18)?,
+                flagged: row.get(19)?,
+                mark_updated_at: row.get(20)?,
             })
         })?;
 
@@ -790,6 +794,7 @@ impl WordRepository {
             entry_id: row.entry_id,
             source_index: row.source_index,
             uuid: row.uuid.clone(),
+            item_uuid: row.item_uuid.clone(),
             book_code: row.book_code.clone(),
             unit: UnitRef {
                 number: row.unit_number,
