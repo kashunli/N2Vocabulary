@@ -105,18 +105,41 @@ export function StudyWallView({
       <section ref={currentRef} className={`react-current${activeEntry && coveredEntryIds.has(activeEntry.entry_id) ? " is-covered" : ""}`} aria-live="polite" aria-label="Current vocabulary item">
         {activeEntry ? <>
           <span className="eyebrow">{activeEntry.book_code} #{String(activeEntry.source_index).padStart(3, "0")} · {unitLabel(activeEntry.unit)}</span>
-          <h2><WordDisplay word={activeEntry.kanji} reading={activeEntry.reading} /></h2>
+          <h2>
+            <button
+              type="button"
+              className="react-word-trigger"
+              onClick={() => onSelectPhase("word")}
+              disabled={!activeEntry.word_audio_url}
+              aria-current={activePhase === "word" ? "true" : undefined}
+              aria-label={`Play word audio: ${activeEntry.kanji}`}
+              title="Play word audio"
+            >
+              <WordDisplay word={activeEntry.kanji} reading={activeEntry.reading} />
+            </button>
+          </h2>
           {reviewSession?.completedByItemUuid[activeEntry.item_uuid] ? <p className="react-review-completed">Reviewed · level {reviewSession.completedByItemUuid[activeEntry.item_uuid].reviewLevel} · next {new Date(reviewSession.completedByItemUuid[activeEntry.item_uuid].nextDueAt).toLocaleDateString()}</p> : null}
           {coveredEntryIds.has(activeEntry.entry_id) ? <p className="react-covered-note">Answers covered. Press Uncover all or Cover all to reveal the study details.</p> : <>
             <MeaningDisplay meaningEn={activeEntry.meaning_en} meaningZh={activeEntry.meaning_zh} />
             <div className="react-current-actions">
-              <button type="button" onClick={() => onSelectPhase("word")} className={activePhase === "word" ? "is-selected" : ""}>Word</button>
-              <button type="button" onClick={() => onSelectPhase("sentence")} className={activePhase === "sentence" ? "is-selected" : ""} disabled={!activeEntry.sentence_audio_url}>Sentence</button>
               <button type="button" className={activeEntry.mark?.known ? "is-on" : ""} onClick={() => void onToggleMark("known")} aria-pressed={!!activeEntry.mark?.known}>✓ Known</button>
               <button type="button" className={activeEntry.mark?.flagged ? "is-on" : ""} onClick={() => void onToggleMark("flagged")} aria-pressed={!!activeEntry.mark?.flagged}>⚑ Flag</button>
               <button type="button" className={activeEntry.sentence_starred ? "is-on" : ""} onClick={() => void onToggleSentenceStar()} aria-pressed={!!activeEntry.sentence_starred}>{activeEntry.sentence_starred ? "★" : "☆"} Sentence</button>
             </div>
-            {detail?.sentence ? <div className="react-sentence"><strong>{detail.sentence}</strong><span>{detail.sentence_translation_en || detail.sentence_translation_zh}</span></div> : null}
+            {detail?.sentence ? <div className="react-sentence">
+              <button
+                type="button"
+                className="react-sentence-trigger"
+                onClick={() => onSelectPhase("sentence")}
+                disabled={!activeEntry.sentence_audio_url}
+                aria-current={activePhase === "sentence" ? "true" : undefined}
+                aria-label="Play sentence audio"
+                title="Play sentence audio"
+              >
+                <strong>{detail.sentence}</strong>
+              </button>
+              <span>{detail.sentence_translation_en || detail.sentence_translation_zh}</span>
+            </div> : null}
             {detail?.source_notes ? <SourceMetadata notes={detail.source_notes} /> : null}
             {detail?.explanation_md ? <SentenceExplanation value={detail.explanation_md} /> : null}
           </>}

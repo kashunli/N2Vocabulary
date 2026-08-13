@@ -129,6 +129,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .react-divider:hover, .react-divider:focus-visible { background: #eee4d6; outline: none; }
 .react-current { min-width: 0; min-height: 0; overflow: auto; display: flex; flex-direction: column; justify-content: flex-start; justify-content: safe center; padding: clamp(24px, 6vw, 88px); scroll-padding-block: clamp(24px, 6vw, 88px); }
 .react-current h2 { margin: 11px 0 3px; font-size: clamp(2rem, 4vw, 4rem); font-weight: 400; line-height: 1.12; }
+.react-word-trigger, .react-sentence-trigger { appearance: none; border: 0; border-radius: 3px; background: transparent; color: inherit; cursor: pointer; font: inherit; padding: 0; text-align: inherit; }
+.react-word-trigger:hover, .react-word-trigger:focus-visible, .react-sentence-trigger:hover, .react-sentence-trigger:focus-visible { color: #9d3d2d; outline: none; }
+.react-word-trigger:focus-visible, .react-sentence-trigger:focus-visible { outline: 2px solid #9d3d2d; outline-offset: 4px; }
+.react-word-trigger:disabled, .react-sentence-trigger:disabled { cursor: not-allowed; opacity: .4; }
 .react-word-ruby { color: inherit; ruby-position: over; ruby-align: center; }
 .react-current h2 .react-word-ruby rt { color: #9d3d2d; font-family: system-ui, sans-serif; font-size: .3em; line-height: 1; }
 .react-meaning { max-width: 740px; color: #756d65; font: 1rem/1.6 system-ui, sans-serif; }
@@ -139,6 +143,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .react-current-actions button:disabled { cursor: not-allowed; opacity: .4; }
 .react-review-completed { color: #2e765e; font: .82rem/1.4 system-ui, sans-serif; }
 .react-sentence { display: grid; gap: 6px; max-width: 760px; margin-top: 28px; font: 1rem/1.6 system-ui, sans-serif; }
+.react-sentence-trigger { display: block; width: 100%; text-align: left; }
 .react-sentence span, .react-sentence-explanation, .react-explanation { color: #756d65; }
 .react-source-metadata { max-width: 760px; margin-top: 25px; padding: 12px 14px; border: 1px solid #e4ddd4; border-radius: 10px; background: rgba(249, 246, 241, .72); font: .82rem/1.55 system-ui, sans-serif; color: #756d65; }
 .react-source-metadata > h3 { margin: 0 0 7px; color: #4f4943; font: inherit; font-weight: 700; }
