@@ -20,6 +20,7 @@ pub struct AppConfig {
     pub db_path: PathBuf,
     pub static_dir: PathBuf,
     pub review_db_path: PathBuf,
+    pub users_db_path: PathBuf,
     pub review_evidence_path: PathBuf,
     pub review_seed_path: PathBuf,
     pub clips_dir: PathBuf,
@@ -55,6 +56,10 @@ impl AppConfig {
         let default_clips = project_root.join("clips");
 
         Ok(Self {
+            users_db_path: env_path(
+                "N2_WORD_SERVICE_USERS_DB",
+                word_service_dir.join("data").join("users.sqlite"),
+            ),
             review_db_path: env_path(
                 "N2_WORD_SERVICE_REVIEW_DB",
                 word_service_dir.join("data").join("audio_reviews.sqlite"),

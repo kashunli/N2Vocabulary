@@ -2,11 +2,13 @@ use crate::audio_review::AudioReviewStore;
 use crate::config::AppConfig;
 use crate::repository::WordRepository;
 use crate::tts::TtsService;
+use crate::user_store::UserStore;
 use anyhow::{Result, anyhow};
 use serde_json::json;
 use std::thread;
 use tiny_http::{Method, Request, Server, StatusCode};
 
+mod account;
 mod mutations;
 mod read;
 mod response;
@@ -27,6 +29,8 @@ pub fn run_server(config: AppConfig) -> Result<()> {
         &config.book_code,
     );
     repository.ensure_ready()?;
+    let user_store = UserStore::new(config.users_db_path.clone());
+    user_store.ensure_ready()?;
     let audio_review = AudioReviewStore::load(
         config.review_db_path.clone(),
         &config.review_evidence_path,
@@ -43,6 +47,7 @@ pub fn run_server(config: AppConfig) -> Result<()> {
     println!("  db: {}", config.db_path.display());
     println!("  clips: {}", config.clips_dir.display());
     println!("  audio review db: {}", config.review_db_path.display());
+    println!("  users db: {}", config.users_db_path.display());
     println!(
         "  generated word/sentence audio: {}",
         config.tts.generated_dir
@@ -57,6 +62,7 @@ pub fn run_server(config: AppConfig) -> Result<()> {
         let request_repository = repository.clone();
         let request_tts_service = tts_service.clone();
         let request_audio_review = audio_review.clone();
+        let request_user_store = user_store.clone();
         thread::spawn(move || {
             if let Err(error) = handle_request(
                 request,
@@ -64,6 +70,7 @@ pub fn run_server(config: AppConfig) -> Result<()> {
                 request_repository,
                 request_tts_service,
                 request_audio_review,
+                request_user_store,
             ) {
                 eprintln!("request failed: {error:#}");
             }
@@ -79,7 +86,27 @@ fn handle_request(
     repository: WordRepository,
     tts_service: TtsService,
     audio_review: AudioReviewStore,
+    user_store: UserStore,
 ) -> Result<()> {
+    let request_path = request
+        .url()
+        .split('?')
+        .next()
+        .unwrap_or("")
+        .trim_end_matches('/');
+    if account::is_account_path(request_path) {
+        return match request.method() {
+            Method::Get | Method::Head => account::handle_get(request, user_store),
+            Method::Post => account::handle_post(request, user_store, repository),
+            Method::Put => account::handle_put(request, user_store, repository),
+            Method::Options => send_options(request),
+            _ => send_json(
+                request,
+                StatusCode(405),
+                &json!({"error": "method not allowed"}),
+            ),
+        };
+    }
     // Keep method routing near the top so unsupported mutation methods fail
     // before any path-specific logic runs.
     match request.method() {

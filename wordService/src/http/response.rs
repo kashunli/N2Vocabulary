@@ -73,6 +73,24 @@ pub(super) fn send_json<T: Serialize>(
     Ok(())
 }
 
+pub(super) fn send_json_with_headers<T: Serialize>(
+    request: Request,
+    status: StatusCode,
+    payload: &T,
+    extra_headers: Vec<Header>,
+) -> Result<()> {
+    let data = serde_json::to_vec(payload)?;
+    let mut headers = cors_headers();
+    headers.push(header("Cache-Control", "no-store"));
+    headers.push(header("Content-Type", "application/json; charset=utf-8"));
+    headers.extend(extra_headers);
+    request.respond(add_headers(
+        Response::from_data(data).with_status_code(status),
+        headers,
+    ))?;
+    Ok(())
+}
+
 pub(super) fn send_file(request: Request, path: &Path, content_type: &str) -> Result<()> {
     if !path.exists() || !path.is_file() {
         return send_json(request, StatusCode(404), &json!({"error": "not found"}));
@@ -135,7 +153,7 @@ pub(super) fn cors_headers() -> Vec<Header> {
     ]
 }
 
-fn header(name: &str, value: &str) -> Header {
+pub(super) fn header(name: &str, value: &str) -> Header {
     Header::from_bytes(name.as_bytes(), value.as_bytes()).expect("static header should be valid")
 }
 

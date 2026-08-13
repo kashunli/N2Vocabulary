@@ -12,3 +12,4 @@ pub mod models;
 pub mod repository;
 pub mod scheduler;
 pub mod tts;
+pub mod user_store;
