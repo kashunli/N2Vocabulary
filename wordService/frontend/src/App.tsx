@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { PlaybackSettingsModal } from "./features/player/PlaybackSettingsModal";
 import { RailPlayer } from "./features/player/RailPlayer";
@@ -13,6 +13,7 @@ import { useStudyActions } from "./features/study/useStudyActions";
 import { useStudyCatalog } from "./features/study/useStudyCatalog";
 import { useStudyEntries } from "./features/study/useStudyEntries";
 import { readStudyFocus } from "./features/study/studyFocus";
+import { readStudyViewState, saveStudyViewState } from "./features/study/studyViewState.mjs";
 import { useStudyState } from "./features/study/useStudyState";
 import type { FilterState } from "./features/study/studyTypes";
 import type {
@@ -20,15 +21,16 @@ import type {
 } from "./types";
 
 function StudyApp({store, snapshot, dueCount}: ReturnType<typeof useStudyState>) {
-  const [selectedBook, setSelectedBook] = useState(() => readStudyFocus()?.bookCode || "N2");
-  const [selectedUnit, setSelectedUnit] = useState<number | null>(null);
-  const [filterState, setFilterState] = useState<FilterState>("all");
-  const [search, setSearch] = useState("");
+  const [initialView] = useState(() => readStudyViewState());
+  const [selectedBook, setSelectedBook] = useState(() => initialView.selectedBook || readStudyFocus()?.bookCode || "N2");
+  const [selectedUnit, setSelectedUnit] = useState<number | null>(() => initialView.selectedUnit ?? null);
+  const [filterState, setFilterState] = useState<FilterState>(() => initialView.filterState || "all");
+  const [search, setSearch] = useState(() => initialView.search || "");
   const [entries, setEntries] = useState<Entry[]>([]);
   const [entriesLoading, setEntriesLoading] = useState(false);
   const [coveredEntryIds, setCoveredEntryIds] = useState<Set<number>>(() => new Set());
   const [blurred, setBlurred] = useState(false);
-  const [showStarred, setShowStarred] = useState(false);
+  const [showStarred, setShowStarred] = useState(() => initialView.view === "starred");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const {
     activeEntry,
@@ -78,6 +80,21 @@ function StudyApp({store, snapshot, dueCount}: ReturnType<typeof useStudyState>)
     summary,
     units,
   } = useStudyCatalog({activeEntry, selectedBook, selectedUnit, showStarred, studySnapshot: snapshot});
+  useEffect(() => {
+    saveStudyViewState({
+      selectedBook,
+      selectedUnit,
+      filterState,
+      search,
+      view: showStarred ? "starred" : "cards",
+    });
+  }, [filterState, search, selectedBook, selectedUnit, showStarred]);
+
+  useEffect(() => {
+    if (selectedUnit !== null && units.length && !units.some((unit) => unit.number === selectedUnit)) {
+      setSelectedUnit(null);
+    }
+  }, [selectedUnit, units]);
   const currentBook = books.find((book) => book.code === selectedBook);
   const selectedStarred = starredSentences.find((item) => (
     `${item.entry_id}:${item.position}` === selectedStarredKey
