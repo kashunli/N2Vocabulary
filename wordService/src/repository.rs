@@ -1,7 +1,8 @@
 use crate::models::{
     AudioGenerationResponse, BookSummary, EntryExample, EntryListResponse, EntryPayload,
-    EntrySourceNote, FlaggedAudioExportResponse, MarkState, MarksResponse,
-    StarredSentenceListResponse, StarredSentencePayload, Summary, UnitRef, UnitSummary,
+    EntrySourceNote, FlaggedAudioExportResponse, LegacyMarkSeed, LegacyMarkSeedResponse, MarkState,
+    MarksResponse, StarredSentenceListResponse, StarredSentencePayload, Summary, UnitRef,
+    UnitSummary,
 };
 use anyhow::{Context, Result, bail};
 use chrono::Utc;
@@ -550,6 +551,82 @@ impl WordRepository {
             None,
             Some(source_notes),
         )))
+    }
+
+    /// Resolve a shared item to the best book occurrence for a review card.
+    pub fn resolve_item_for_review(
+        &self,
+        item_uuid: &str,
+        preferred_book_code: Option<&str>,
+        preferred_source_index: Option<i64>,
+    ) -> Result<Option<EntryPayload>> {
+        let conn = self.connect()?;
+        let sql = r#"
+            SELECT
+              be.entry_id, be.item_id, be.uuid, v.uuid AS item_uuid,
+              be.book_code, be.source_index, be.unit_number,
+              u.header, u.title, v.kanji, v.reading,
+              COALESCE(NULLIF(be.verb_pattern, ''), v.verb_pattern),
+              COALESCE(NULLIF(be.meaning_en, ''), v.meaning_en),
+              COALESCE(NULLIF(be.meaning_zh, ''), v.meaning_zh),
+              be.sentence, COALESCE(be.explanation_md, v.explanation_md),
+              COALESCE(be.word_clip, v.word_clip), be.sentence_clip,
+              m.known, m.flagged, m.updated_at
+            FROM vocabulary_items v
+            JOIN book_entries be ON be.item_id = v.item_id
+            JOIN units u ON u.book_code = be.book_code AND u.number = be.unit_number
+            LEFT JOIN item_marks m ON m.item_id = v.item_id
+            WHERE v.uuid = ?
+            ORDER BY
+              CASE WHEN be.book_code = ? AND be.source_index = ? THEN 0
+                   WHEN be.book_code = 'N2' THEN 1 ELSE 2 END,
+              be.book_code, be.source_index
+            LIMIT 1
+        "#;
+        let rows = self.query_entry_rows(
+            &conn,
+            sql,
+            vec![
+                Value::Text(item_uuid.to_string()),
+                Value::Text(preferred_book_code.unwrap_or("").to_string()),
+                Value::Integer(preferred_source_index.unwrap_or(-1)),
+            ],
+        )?;
+        let Some(row) = rows.first() else {
+            return Ok(None);
+        };
+        let examples = self.load_examples(&conn, &[row.item_id])?;
+        let source_notes = self.load_source_notes(&conn, row.item_id)?;
+        Ok(Some(self.serialize_entry(
+            row,
+            examples.get(&row.item_id),
+            true,
+            None,
+            Some(source_notes),
+        )))
+    }
+
+    pub fn legacy_mark_seed(&self) -> Result<LegacyMarkSeedResponse> {
+        let conn = self.connect()?;
+        let mut statement = conn.prepare(
+            r#"
+            SELECT v.uuid, m.known, m.flagged
+            FROM item_marks m
+            JOIN vocabulary_items v ON v.item_id = m.item_id
+            WHERE m.known = 1 OR m.flagged = 1
+            ORDER BY v.uuid
+            "#,
+        )?;
+        let rows = statement.query_map([], |row| {
+            Ok(LegacyMarkSeed {
+                item_uuid: row.get(0)?,
+                known: int_to_bool(row.get(1)?),
+                flagged: int_to_bool(row.get(2)?),
+            })
+        })?;
+        Ok(LegacyMarkSeedResponse {
+            items: collect_rows(rows)?,
+        })
     }
 
     fn query_entry_rows(

@@ -108,6 +108,28 @@ fn entry_listing_search_and_state_filters() {
 }
 
 #[test]
+fn review_resolution_uses_shared_uuid_and_legacy_seed_is_unique() {
+    let fixture = Fixture::new();
+    let listed = fixture.repo.list_entries(Some(1), "all", "").unwrap();
+    let shared_uuid = listed.items[0].item_uuid.clone();
+    assert_eq!(shared_uuid, "uuid-1");
+
+    let resolved = fixture
+        .repo
+        .resolve_item_for_review(&shared_uuid, Some("N2"), Some(1))
+        .unwrap()
+        .expect("shared review item");
+    assert_eq!(resolved.entry_id, 1);
+    assert_eq!(resolved.item_uuid, shared_uuid);
+
+    let seed = fixture.repo.legacy_mark_seed().unwrap();
+    assert_eq!(seed.items.len(), 1);
+    assert_eq!(seed.items[0].item_uuid, "uuid-1");
+    assert!(seed.items[0].known);
+    assert!(!seed.items[0].flagged);
+}
+
+#[test]
 fn entry_listing_can_search_current_unit_or_all_units() {
     let fixture = Fixture::new();
 

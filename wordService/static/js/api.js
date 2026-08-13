@@ -30,6 +30,10 @@ export function fetchEntries(params) {
   return fetchJson(withBookParam("/api/entries", params));
 }
 
+export function fetchLegacyMarkSeed() {
+  return fetchJson("/api/study/legacy-seed");
+}
+
 export function fetchStarredSentences(params) {
   return fetchJson(withBookParam("/api/starred-sentences", params));
 }

@@ -1,9 +1,10 @@
 import { useCallback, type Dispatch, type SetStateAction } from "react";
 
-import { exportUnitFlaggedAudio, updateExampleStar, updateMark } from "../../api";
+import { exportUnitFlaggedAudio, updateExampleStar } from "../../api";
 import type { Entry, StarredSentence, UnitSummary } from "../../types";
 import type { PlaybackPhase } from "../player/playbackSettings";
 import { unitLabel } from "./unitLabel";
+import type { StudyStateStore } from "./studyStateTypes";
 
 interface UseStudyActionsOptions {
   activeEntry?: Entry;
@@ -21,6 +22,7 @@ interface UseStudyActionsOptions {
   selectEntry: (index: number, phase?: PlaybackPhase) => void;
   showStarred: boolean;
   units: UnitSummary[];
+  studyStore: StudyStateStore;
 }
 
 export function useStudyActions({
@@ -39,6 +41,7 @@ export function useStudyActions({
   selectEntry,
   showStarred,
   units,
+  studyStore,
 }: UseStudyActionsOptions) {
   const toggleMark = useCallback(async (key: "known" | "flagged") => {
     if (!activeEntry) return;
@@ -48,19 +51,18 @@ export function useStudyActions({
     };
     next[key] = !next[key];
     try {
-      await updateMark(activeEntry.entry_id, next, selectedBook);
+      studyStore.setMark(activeEntry.item_uuid, next);
       setEntries((current) => current.map((entry) => entry.entry_id === activeEntry.entry_id
         ? {...entry, mark: {...entry.mark, ...next}}
         : entry));
       setDetail((current) => current && current.entry_id === activeEntry.entry_id
         ? {...current, mark: {...current.mark, ...next}}
         : current);
-      await refreshCatalog();
       setStatus(`${activeEntry.kanji} is ${next[key] ? key : `not ${key}`}.`);
     } catch (error: unknown) {
       setStatus(error instanceof Error ? error.message : "Could not update the study mark.");
     }
-  }, [activeEntry, refreshCatalog, selectedBook, setDetail, setEntries, setStatus]);
+  }, [activeEntry, setDetail, setEntries, setStatus, studyStore]);
 
   const toggleSentenceStar = useCallback(async () => {
     if (!activeEntry) return;

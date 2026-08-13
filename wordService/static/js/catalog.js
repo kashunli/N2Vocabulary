@@ -4,6 +4,7 @@ import { resumeScopePlaybackFromSavedState, stopScopePlayback, updateScopePlayba
 import { escapeHTML, exampleKey, unitLabel } from "./format.js";
 import { renderStarredView } from "./starred.js";
 import { elements, saveViewState, state } from "./state.js";
+import { applyStudyMarks } from "./studyState.js";
 
 let entriesLoadToken = 0;
 
@@ -114,7 +115,7 @@ export async function loadEntries() {
   state.entriesLoading = true;
   updateScopePlaybackButton();
   const params = new URLSearchParams({
-    state: state.filterState,
+    state: "all",
     search: state.search,
   });
   // Omitting `unit` is the public API contract for all-unit listing/filtering.
@@ -124,7 +125,7 @@ export async function loadEntries() {
   try {
     const payload = await fetchEntries(params);
     if (loadToken !== entriesLoadToken) return;
-    state.currentEntries = payload.items || [];
+    state.currentEntries = applyStudyMarks(payload.items || [], state.filterState);
     renderCards();
   } finally {
     if (loadToken === entriesLoadToken) {

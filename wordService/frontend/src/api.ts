@@ -39,7 +39,23 @@ export function getEntries(
 }
 
 export function getEntry(entryId: number, book = "N2") {
-  return getJson<Entry>(`/api/entries/${entryId}?book=${encodeURIComponent(book)}`);
+    return getJson<Entry>(`/api/entries/${entryId}?book=${encodeURIComponent(book)}`);
+}
+
+export function getLegacyMarkSeed() {
+  return getJson<{items: Array<{item_uuid: string; known: boolean; flagged: boolean}>}>("/api/study/legacy-seed");
+}
+
+export function resolveReviewEntries(items: Array<{
+  item_uuid: string;
+  preferred_book_code?: string;
+  preferred_source_index?: number;
+}>) {
+  return getJson<{items: Entry[]}>("/api/study/resolve", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({items}),
+  });
 }
 
 export function getStarredSentences(book = "N2", unit?: number) {

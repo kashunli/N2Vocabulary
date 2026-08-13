@@ -1,0 +1,121 @@
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+
+import {resolveReviewEntries} from "../../api";
+import type {Entry} from "../../types";
+import {PlaybackSettingsModal} from "../player/PlaybackSettingsModal";
+import {RailPlayer} from "../player/RailPlayer";
+import {useStudyPlayback} from "../player/useStudyPlayback";
+import {nextGoodIntervalDays} from "./reviewScheduler.mjs";
+import {StudyWallView} from "./StudyWallView";
+import type {ReviewGrade, StudyCardState, StudyStateStore} from "./studyStateTypes";
+
+interface ReviewAppProps {
+  store: StudyStateStore;
+}
+
+export function ReviewApp({store}: ReviewAppProps) {
+  const [sessionCards] = useState<StudyCardState[]>(() => store.dueCards());
+  const [entries, setEntries] = useState<Entry[]>([]);
+  const [position, setPosition] = useState(0);
+  const [pendingGrade, setPendingGrade] = useState<ReviewGrade>("again");
+  const [loading, setLoading] = useState(true);
+  const [status, setStatus] = useState("");
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const current = entries[position];
+  const currentCard = current ? store.load().cards[current.item_uuid] : undefined;
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      const resolved: Entry[] = [];
+      for (let offset = 0; offset < sessionCards.length; offset += 100) {
+        const page = sessionCards.slice(offset, offset + 100);
+        const response = await resolveReviewEntries(page.map(card => ({
+          item_uuid: card.item_uuid,
+          preferred_book_code: card.preferred_book_code,
+          preferred_source_index: card.preferred_source_index,
+        })));
+        const byUuid = new Map(response.items.map(entry => [entry.item_uuid, entry]));
+        for (const card of page) {
+          const entry = byUuid.get(card.item_uuid);
+          if (entry) resolved.push(entry);
+        }
+      }
+      if (!cancelled) setEntries(resolved);
+    }
+    load().catch(error => { if (!cancelled) setStatus(error instanceof Error ? error.message : "Could not load due cards."); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [sessionCards]);
+
+  useEffect(() => setPendingGrade("again"), [current?.item_uuid]);
+
+  const commitAndAdvance = useCallback(async () => {
+    if (!current) return;
+    try {
+      store.grade(current.item_uuid, pendingGrade);
+      setPosition(value => value + 1);
+      setStatus("");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Could not save the review grade.");
+    }
+  }, [current, pendingGrade, store]);
+
+  const activeEntries = useMemo(() => current ? [current] : [], [current]);
+  const playback = useStudyPlayback({
+    entries: activeEntries,
+    showStarred: false,
+    onCompleteCard: entry => store.recordPlayed(entry),
+    onConsecutiveSequenceComplete: () => { void commitAndAdvance(); },
+  });
+  const lastAutoStartedPosition = useRef(0);
+  useEffect(() => {
+    if (!current || playback.playbackRunMode !== "consecutive" || position <= lastAutoStartedPosition.current) return;
+    lastAutoStartedPosition.current = position;
+    playback.requestPlayback();
+  }, [current, playback, position]);
+
+  const next = useCallback(() => {
+    if (!current) return;
+    if (playback.playbackMode === "both" && playback.activePhase === "word" && current.sentence_audio_url) {
+      playback.selectPhase("sentence");
+      return;
+    }
+    void commitAndAdvance();
+  }, [commitAndAdvance, current, playback]);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.target instanceof HTMLSelectElement) return;
+      const grade = event.key === "1" ? "again" : event.key === "2" || event.key.toLowerCase() === "f" ? "hard" : event.key === "3" || event.key === "Enter" || event.key.toLowerCase() === "k" ? "good" : undefined;
+      if (!grade) return;
+      event.preventDefault();
+      setPendingGrade(grade);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  const remaining = Math.max(0, entries.length - position);
+  const completed = Math.min(position, entries.length);
+  const nextDue = store.nextDueAt();
+
+  return <main className="react-shell review-shell">
+    <header className="react-header review-header">
+      <div className="react-brand"><span className="eyebrow">SPACED REVIEW · GUEST</span><h1>Review due vocabulary</h1><div className="react-summary-meta"><span>{entries.length} due</span><span>{completed} completed</span><span>{remaining} remaining</span></div></div>
+      <div className="review-header-actions"><a href="/">Return to study wall</a><button type="button" onClick={() => setSettingsOpen(true)}>Playback settings</button></div>
+    </header>
+    {status ? <div className="react-status" role="alert">{status}</div> : null}
+    {loading ? <p className="react-empty">Loading due cards…</p> : current ? <>
+      <section className="review-grade-bar" aria-label="Pending review grade">
+        <span>Pending grade</span>
+        <button type="button" className={pendingGrade === "again" ? "is-selected" : ""} onClick={() => setPendingGrade("again")}>1 · Again · 10m</button>
+        <button type="button" className={pendingGrade === "hard" ? "is-selected" : ""} onClick={() => setPendingGrade("hard")}>2 · ⚑ Hard · 1d</button>
+        <button type="button" className={pendingGrade === "good" ? "is-selected" : ""} onClick={() => setPendingGrade("good")}>3 · ✓ Good · {nextGoodIntervalDays(currentCard?.good_step ?? 0)}d</button>
+      </section>
+      <div className="react-content-scroll review-content"><StudyWallView activeEntry={current} activeIndex={0} activePhase={playback.activePhase} bookCode={current.book_code} coveredEntryIds={new Set()} detail={current} entries={[current]} entriesLoading={false} onSelectEntry={() => undefined} onSelectPhase={playback.selectPhase} onToggleMark={key => setPendingGrade(key === "flagged" ? "hard" : "good")} onToggleSentenceStar={() => undefined} /></div>
+      <RailPlayer target={playback.target} autoPlay={playback.autoAdvance} isPlaybackActive={playback.playbackActive} isSilencePlaying={playback.isSilencePlaying} playbackRunMode={playback.playbackRunMode} onPlayingChange={playback.handlePlayingChange} playRequest={playback.playRequest} replayRequest={playback.replayRequest} pauseRequest={playback.pauseRequest} stopRequest={playback.stopRequest} onEnded={playback.handlePlaybackEnd} onTogglePlayback={playback.togglePlayback} onTogglePlaybackRunMode={playback.togglePlaybackRunMode} onReplay={playback.replayFocused} onPrevious={() => undefined} onNext={next} onStop={playback.stopPlayback} canPrevious={false} canNext={true} />
+    </> : <section className="review-empty"><h2>Review complete</h2><p>No more cards from this due snapshot.</p>{nextDue ? <p>Next scheduled review: {new Date(nextDue).toLocaleString()}</p> : <p>Play vocabulary on the study wall to create review tasks.</p>}<a href="/">Return to study wall</a></section>}
+    {settingsOpen ? <PlaybackSettingsModal playbackMode={playback.playbackMode} postSentenceSilence={playback.postSentenceSilence} postWordSilence={playback.postWordSilence} onChangePlaybackMode={playback.changePlaybackMode} onChangePostSentenceSilence={playback.changePostSentenceSilence} onChangePostWordSilence={playback.changePostWordSilence} onClose={() => setSettingsOpen(false)} onReset={playback.resetPlaybackSettings} /> : null}
+  </main>;
+}

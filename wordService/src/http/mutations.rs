@@ -4,12 +4,13 @@ use crate::config::AppConfig;
 use crate::repository::WordRepository;
 use crate::tts::TtsService;
 use anyhow::Result;
+use serde::Deserialize;
 use serde_json::json;
 use std::collections::HashMap;
 use tiny_http::{Request, StatusCode};
 
 pub(super) fn handle_post(
-    request: Request,
+    mut request: Request,
     config: AppConfig,
     repository: WordRepository,
     tts_service: TtsService,
@@ -18,6 +19,49 @@ pub(super) fn handle_post(
     let path = parsed.path().trim_end_matches('/').to_string();
     let params = query_map(&parsed);
     let repository = repository_for_params(&repository, &params);
+    if path == "/api/study/resolve" {
+        #[derive(Deserialize)]
+        struct ResolveItem {
+            item_uuid: String,
+            preferred_book_code: Option<String>,
+            preferred_source_index: Option<i64>,
+        }
+        #[derive(Deserialize)]
+        struct ResolveRequest {
+            items: Vec<ResolveItem>,
+        }
+
+        let mut body = String::new();
+        request.as_reader().read_to_string(&mut body)?;
+        let payload: ResolveRequest = match serde_json::from_str::<ResolveRequest>(&body) {
+            Ok(value) if value.items.len() <= 100 => value,
+            Ok(_) => {
+                return send_json(
+                    request,
+                    StatusCode(400),
+                    &json!({"error": "at most 100 items may be resolved"}),
+                );
+            }
+            Err(_) => {
+                return send_json(
+                    request,
+                    StatusCode(400),
+                    &json!({"error": "invalid review resolution payload"}),
+                );
+            }
+        };
+        let mut items = Vec::new();
+        for item in payload.items {
+            if let Some(entry) = repository.resolve_item_for_review(
+                &item.item_uuid,
+                item.preferred_book_code.as_deref(),
+                item.preferred_source_index,
+            )? {
+                items.push(entry);
+            }
+        }
+        return send_json(request, StatusCode(200), &json!({"items": items}));
+    }
     if let Some(rest) = path.strip_prefix("/api/units/") {
         let parts = rest.split('/').collect::<Vec<_>>();
         if parts.len() == 2 && parts[1] == "flagged-audio" {

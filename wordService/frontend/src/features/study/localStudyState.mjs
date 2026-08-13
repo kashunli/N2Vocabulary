@@ -1,0 +1,167 @@
+import {initialDueAt, REVIEW_STATE_VERSION, scheduleReview} from "./reviewScheduler.mjs";
+
+export const STUDY_STATE_KEY = "n2-word-service:study-state:v1";
+export const LEGACY_MIGRATION_KEY = "n2-word-service:study-state:legacy-migrated:v1";
+
+export function emptyStudySnapshot() {
+  return {version: REVIEW_STATE_VERSION, updated_at: new Date(0).toISOString(), cards: {}};
+}
+
+function optionalIso(value) {
+  if (typeof value !== "string" || !Number.isFinite(Date.parse(value))) return undefined;
+  return new Date(value).toISOString();
+}
+
+function normalizeCard(value, key) {
+  if (!value || typeof value !== "object") return null;
+  const itemUuid = typeof value.item_uuid === "string" ? value.item_uuid.trim() : key;
+  if (!itemUuid || itemUuid !== key) return null;
+  const goodStep = Number.isInteger(value.good_step) ? Math.max(0, Math.min(6, value.good_step)) : 0;
+  return {
+    item_uuid: itemUuid,
+    known: value.known === true,
+    flagged: value.flagged === true,
+    enrolled_at: optionalIso(value.enrolled_at),
+    due_at: optionalIso(value.due_at),
+    good_step: goodStep,
+    last_reviewed_at: optionalIso(value.last_reviewed_at),
+    last_played_at: optionalIso(value.last_played_at),
+    preferred_book_code: typeof value.preferred_book_code === "string" ? value.preferred_book_code : undefined,
+    preferred_source_index: Number.isInteger(value.preferred_source_index) ? value.preferred_source_index : undefined,
+    updated_at: optionalIso(value.updated_at) || new Date(0).toISOString(),
+  };
+}
+
+export function normalizeStudySnapshot(value) {
+  const result = emptyStudySnapshot();
+  if (!value || typeof value !== "object" || value.version !== REVIEW_STATE_VERSION) return result;
+  if (value.cards && typeof value.cards === "object") {
+    for (const [key, candidate] of Object.entries(value.cards)) {
+      const card = normalizeCard(candidate, key);
+      if (card) result.cards[key] = card;
+    }
+  }
+  result.updated_at = optionalIso(value.updated_at) || result.updated_at;
+  return result;
+}
+
+export class LocalStudyStateStore {
+  constructor(storage = window.localStorage, now = () => new Date()) {
+    this.storage = storage;
+    this.now = now;
+    this.listeners = new Set();
+    this.snapshot = this.read();
+    this.onStorage = event => {
+      if (event.key !== STUDY_STATE_KEY) return;
+      this.snapshot = this.read();
+      this.emit();
+    };
+    if (typeof window !== "undefined") window.addEventListener("storage", this.onStorage);
+  }
+
+  read() {
+    const raw = this.storage.getItem(STUDY_STATE_KEY);
+    if (!raw) return emptyStudySnapshot();
+    try {
+      return normalizeStudySnapshot(JSON.parse(raw));
+    } catch {
+      const suffix = this.now().toISOString().replaceAll(":", "-");
+      this.storage.setItem(`${STUDY_STATE_KEY}:malformed:${suffix}`, raw);
+      this.storage.removeItem(STUDY_STATE_KEY);
+      return emptyStudySnapshot();
+    }
+  }
+
+  load() { return this.snapshot; }
+
+  subscribe(listener) {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  }
+
+  emit() { for (const listener of this.listeners) listener(this.snapshot); }
+
+  commit(cards) {
+    const updatedAt = this.now().toISOString();
+    this.snapshot = {version: REVIEW_STATE_VERSION, updated_at: updatedAt, cards};
+    this.storage.setItem(STUDY_STATE_KEY, JSON.stringify(this.snapshot));
+    this.emit();
+    return this.snapshot;
+  }
+
+  seedLegacy(items) {
+    if (this.storage.getItem(LEGACY_MIGRATION_KEY)) return this.snapshot;
+    const now = this.now().toISOString();
+    const cards = {...this.snapshot.cards};
+    for (const item of items) {
+      if (!item?.item_uuid || cards[item.item_uuid]) continue;
+      cards[item.item_uuid] = {
+        item_uuid: item.item_uuid,
+        known: item.known === true,
+        flagged: item.flagged === true,
+        enrolled_at: item.known ? now : undefined,
+        due_at: item.known ? now : undefined,
+        good_step: 0,
+        updated_at: now,
+      };
+    }
+    this.commit(cards);
+    this.storage.setItem(LEGACY_MIGRATION_KEY, now);
+    return this.snapshot;
+  }
+
+  setMark(itemUuid, mark) {
+    const now = this.now().toISOString();
+    const current = this.snapshot.cards[itemUuid] || {item_uuid: itemUuid, known: false, flagged: false, good_step: 0};
+    return this.commit({...this.snapshot.cards, [itemUuid]: {...current, ...mark, updated_at: now}}).cards[itemUuid];
+  }
+
+  recordPlayed(entry) {
+    const now = this.now().toISOString();
+    const current = this.snapshot.cards[entry.item_uuid] || {
+      item_uuid: entry.item_uuid, known: false, flagged: false, good_step: 0,
+    };
+    const enrolledAt = current.enrolled_at || now;
+    const next = {
+      ...current,
+      enrolled_at: enrolledAt,
+      due_at: current.due_at || initialDueAt(now),
+      last_played_at: now,
+      preferred_book_code: entry.book_code,
+      preferred_source_index: entry.source_index,
+      updated_at: now,
+    };
+    return this.commit({...this.snapshot.cards, [entry.item_uuid]: next}).cards[entry.item_uuid];
+  }
+
+  grade(itemUuid, grade) {
+    const current = this.snapshot.cards[itemUuid];
+    if (!current?.enrolled_at) throw new Error("cannot grade an unenrolled card");
+    const now = this.now().toISOString();
+    const result = scheduleReview(current.good_step, grade, now);
+    const next = {
+      ...current,
+      known: current.known || result.setKnown,
+      flagged: current.flagged || result.setFlagged,
+      good_step: result.goodStep,
+      due_at: result.dueAt,
+      last_reviewed_at: now,
+      updated_at: now,
+    };
+    return this.commit({...this.snapshot.cards, [itemUuid]: next}).cards[itemUuid];
+  }
+
+  dueCards(at = this.now()) {
+    const timestamp = at.getTime();
+    return Object.values(this.snapshot.cards)
+      .filter(card => card.due_at && Date.parse(card.due_at) <= timestamp)
+      .sort((left, right) => left.due_at.localeCompare(right.due_at)
+        || (left.enrolled_at || "").localeCompare(right.enrolled_at || "")
+        || left.item_uuid.localeCompare(right.item_uuid));
+  }
+
+  nextDueAt() {
+    return Object.values(this.snapshot.cards)
+      .map(card => card.due_at).filter(Boolean).sort()[0];
+  }
+}

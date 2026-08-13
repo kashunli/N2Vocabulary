@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { getBooks, getEntry, getStarredSentences, getSummary, getUnits } from "../../api";
+import { getBooks, getEntries, getEntry, getStarredSentences, getSummary, getUnits } from "../../api";
 import type { BookSummary, Entry, StarredSentence, UnitSummary, VocabularySummary } from "../../types";
+import type { StudySnapshot } from "./studyStateTypes";
 
 interface UseStudyCatalogOptions {
   activeEntry?: Entry;
   selectedBook: string;
   selectedUnit: number | null;
   showStarred: boolean;
+  studySnapshot: StudySnapshot;
 }
 
 export function useStudyCatalog({
@@ -15,6 +17,7 @@ export function useStudyCatalog({
   selectedBook,
   selectedUnit,
   showStarred,
+  studySnapshot,
 }: UseStudyCatalogOptions) {
   const [books, setBooks] = useState<BookSummary[]>([]);
   const [summary, setSummary] = useState<VocabularySummary>();
@@ -32,17 +35,31 @@ export function useStudyCatalog({
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([getSummary(selectedBook), getUnits(selectedBook)])
-      .then(([nextSummary, nextUnits]) => {
+    Promise.all([getSummary(selectedBook), getUnits(selectedBook), getEntries(selectedBook)])
+      .then(([nextSummary, nextUnits, allEntries]) => {
         if (cancelled) return;
-        setSummary(nextSummary);
-        setUnits(nextUnits.items);
+        const marks = allEntries.items.map(entry => studySnapshot.cards[entry.item_uuid]);
+        const known = marks.filter(mark => mark?.known).length;
+        const flagged = marks.filter(mark => mark?.flagged).length;
+        setSummary({...nextSummary, known, flagged, unmarked: marks.filter(mark => !mark?.known && !mark?.flagged).length});
+        setUnits(nextUnits.items.map(unit => {
+          const unitEntries = allEntries.items.filter(entry => entry.unit.number === unit.number);
+          return {
+            ...unit,
+            known: unitEntries.filter(entry => studySnapshot.cards[entry.item_uuid]?.known).length,
+            flagged: unitEntries.filter(entry => studySnapshot.cards[entry.item_uuid]?.flagged).length,
+            unmarked: unitEntries.filter(entry => {
+              const mark = studySnapshot.cards[entry.item_uuid];
+              return !mark?.known && !mark?.flagged;
+            }).length,
+          };
+        }));
       })
       .catch((error: unknown) => {
         if (!cancelled) setStatus(error instanceof Error ? error.message : "Could not load sections.");
       });
     return () => { cancelled = true; };
-  }, [selectedBook]);
+  }, [selectedBook, studySnapshot]);
 
   useEffect(() => {
     if (!activeEntry) {

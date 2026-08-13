@@ -5,18 +5,20 @@ import { RailPlayer } from "./features/player/RailPlayer";
 import { useStudyKeyboardShortcuts } from "./features/player/useStudyKeyboardShortcuts";
 import { useStudyPlayback } from "./features/player/useStudyPlayback";
 import { StarredView } from "./features/study/StarredView";
+import { ReviewApp } from "./features/study/ReviewApp";
 import { StudyHeader } from "./features/study/StudyHeader";
 import { StudyWallView } from "./features/study/StudyWallView";
 import { useStudyActions } from "./features/study/useStudyActions";
 import { useStudyCatalog } from "./features/study/useStudyCatalog";
 import { useStudyEntries } from "./features/study/useStudyEntries";
 import { readStudyFocus } from "./features/study/studyFocus";
+import { useStudyState } from "./features/study/useStudyState";
 import type { FilterState } from "./features/study/studyTypes";
 import type {
   Entry,
 } from "./types";
 
-export function App() {
+function StudyApp({store, snapshot, dueCount}: ReturnType<typeof useStudyState>) {
   const [selectedBook, setSelectedBook] = useState(() => readStudyFocus()?.bookCode || "N2");
   const [selectedUnit, setSelectedUnit] = useState<number | null>(null);
   const [filterState, setFilterState] = useState<FilterState>("all");
@@ -60,7 +62,7 @@ export function App() {
     target,
     togglePlaybackRunMode,
     togglePlayback,
-  } = useStudyPlayback({entries, showStarred});
+  } = useStudyPlayback({entries, showStarred, onCompleteCard: entry => store.recordPlayed(entry)});
   const {
     books,
     detail,
@@ -74,7 +76,7 @@ export function App() {
     status,
     summary,
     units,
-  } = useStudyCatalog({activeEntry, selectedBook, selectedUnit, showStarred});
+  } = useStudyCatalog({activeEntry, selectedBook, selectedUnit, showStarred, studySnapshot: snapshot});
   const currentBook = books.find((book) => book.code === selectedBook);
   const selectedStarred = starredSentences.find((item) => (
     `${item.entry_id}:${item.position}` === selectedStarredKey
@@ -103,6 +105,7 @@ export function App() {
     selectEntry,
     showStarred,
     units,
+    studyStore: store,
   });
 
   useStudyEntries({
@@ -115,6 +118,7 @@ export function App() {
     setEntries,
     setEntriesLoading,
     setStatus,
+    studySnapshot: snapshot,
   });
 
   useStudyKeyboardShortcuts({
@@ -147,6 +151,7 @@ export function App() {
         summary={summary}
         target={target}
         units={units}
+        dueCount={dueCount}
         onOpenSettings={() => setSettingsOpen(true)}
         onSearch={setSearch}
         onSelectBook={(book) => { setSelectedBook(book); setSelectedUnit(null); setShowStarred(false); }}
@@ -219,4 +224,11 @@ export function App() {
       /> : null}
     </main>
   );
+}
+
+export function App() {
+  const studyState = useStudyState();
+  return window.location.pathname.replace(/\/$/, "") === "/review"
+    ? <ReviewApp store={studyState.store} />
+    : <StudyApp {...studyState} />;
 }

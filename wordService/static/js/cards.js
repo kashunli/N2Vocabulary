@@ -1,7 +1,8 @@
-import { updateMark, updateExampleStar } from "./api.js";
+import { updateExampleStar } from "./api.js";
 import { ensureCardAudio, playClip, playScopeFromEntry, previewPlaybackVisual, setScopePlaybackWindow, updateScopePlaybackButton, wireAudioTarget, wireCardAudioPrepTarget } from "./audio.js";
 import { cardMeaningHTML, escapeHTML, exampleCategoryBadgeHTML, exampleTranslationHTML, rubyOrPlain, unitLabel } from "./format.js";
 import { applyStudyFocusVisual, elements, focusStudyEntry, setBanner, state, showError, updateAudioExportButton } from "./state.js";
+import { setStudyMark } from "./studyState.js";
 
 const callbacks = {
   loadSummary: null,
@@ -308,7 +309,7 @@ export async function toggleMark(entry, key, card) {
     flagged: !!(entry.mark && entry.mark.flagged),
   };
   next[key] = !next[key];
-  await updateMark(entry.entry_id, next);
+  setStudyMark(entry.item_uuid, next);
   entry.mark = {...entry.mark, ...next};
   applyMarkClasses(card, entry.mark);
   updateScopePlaybackButton();

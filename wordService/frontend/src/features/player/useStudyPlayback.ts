@@ -22,6 +22,8 @@ type PendingSilence = {
 type UseStudyPlaybackOptions = {
   entries: Entry[];
   showStarred: boolean;
+  onCompleteCard?: (entry: Entry) => void;
+  onConsecutiveSequenceComplete?: (entry: Entry) => void;
 };
 
 function targetFor(entry: Entry, phase: PlaybackPhase): AudioTarget | null {
@@ -29,7 +31,7 @@ function targetFor(entry: Entry, phase: PlaybackPhase): AudioTarget | null {
   return url ? {entry, phase, url} : null;
 }
 
-export function useStudyPlayback({entries, showStarred}: UseStudyPlaybackOptions) {
+export function useStudyPlayback({entries, showStarred, onCompleteCard, onConsecutiveSequenceComplete}: UseStudyPlaybackOptions) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [activePhase, setActivePhase] = useState<PlaybackPhase>("word");
   const [savedSettings] = useState(() => readPlaybackSettings());
@@ -48,9 +50,15 @@ export function useStudyPlayback({entries, showStarred}: UseStudyPlaybackOptions
   const endTimerRef = useRef<number | null>(null);
   const endGenerationRef = useRef(0);
   const pendingSilenceRef = useRef<PendingSilence | null>(null);
+  const completedPhasesRef = useRef<{itemUuid?: string; word: boolean; sentence: boolean}>({word: false, sentence: false});
   const autoAdvanceRef = useRef(autoAdvance);
   const activeEntry = entries[activeIndex];
   const target = activeEntry ? targetFor(activeEntry, activePhase) : null;
+
+  useEffect(() => {
+    if (completedPhasesRef.current.itemUuid === activeEntry?.item_uuid) return;
+    completedPhasesRef.current = {itemUuid: activeEntry?.item_uuid, word: false, sentence: false};
+  }, [activeEntry?.item_uuid]);
 
   useEffect(() => {
     if (!activeEntry || showStarred) return;
@@ -238,6 +246,16 @@ export function useStudyPlayback({entries, showStarred}: UseStudyPlaybackOptions
   }, [activeEntry, activeIndex, entries.length, playbackMode]);
 
   const handlePlaybackEnd = useCallback(() => {
+    if (activeEntry) {
+      const progress = completedPhasesRef.current.itemUuid === activeEntry.item_uuid
+        ? completedPhasesRef.current
+        : {itemUuid: activeEntry.item_uuid, word: false, sentence: false};
+      progress[activePhase] = true;
+      completedPhasesRef.current = progress;
+      if (progress.word && (progress.sentence || !activeEntry.sentence_audio_url)) {
+        onCompleteCard?.(activeEntry);
+      }
+    }
     if (!autoAdvanceRef.current) return;
     const nextStep = nextPlaybackStep({
       playbackMode,
@@ -249,6 +267,9 @@ export function useStudyPlayback({entries, showStarred}: UseStudyPlaybackOptions
     if (nextStep === "stop") {
       autoAdvanceRef.current = false;
       setAutoAdvance(false);
+      if (playbackRunMode === "consecutive" && activeEntry) {
+        onConsecutiveSequenceComplete?.(activeEntry);
+      }
       return;
     }
     if (nextStep === "sentence") {
@@ -256,7 +277,7 @@ export function useStudyPlayback({entries, showStarred}: UseStudyPlaybackOptions
       return;
     }
     scheduleAfterSilence(activePhase === "word" ? postWordSilence : postSentenceSilence, advanceAfterPlayback);
-  }, [activeEntry, activeIndex, activePhase, advanceAfterPlayback, entries.length, playbackMode, playbackRunMode, postSentenceSilence, postWordSilence, scheduleAfterSilence]);
+  }, [activeEntry, activeIndex, activePhase, advanceAfterPlayback, entries.length, onCompleteCard, onConsecutiveSequenceComplete, playbackMode, playbackRunMode, postSentenceSilence, postWordSilence, scheduleAfterSilence]);
 
   const handlePlayingChange = useCallback((playing: boolean) => {
     setIsPlaying(playing);

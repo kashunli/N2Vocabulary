@@ -180,6 +180,18 @@ pub struct EntryListResponse {
     pub total: usize,
 }
 
+#[derive(Debug, Serialize, PartialEq)]
+pub struct LegacyMarkSeed {
+    pub item_uuid: String,
+    pub known: bool,
+    pub flagged: bool,
+}
+
+#[derive(Debug, Serialize, PartialEq)]
+pub struct LegacyMarkSeedResponse {
+    pub items: Vec<LegacyMarkSeed>,
+}
+
 /// Response for lazy sentence-audio generation.
 ///
 /// `generated` tells the UI whether the backend reused an existing clip or made
