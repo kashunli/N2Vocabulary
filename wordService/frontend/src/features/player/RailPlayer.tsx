@@ -143,10 +143,6 @@ export function RailPlayer({
   return (
     <section className="react-player" aria-label="Playback controls">
       <div className="react-player-heading">
-        <div>
-          <span className="eyebrow">AUDIO · DECODED TIMELINE</span>
-          <strong>{target ? `${target.entry.kanji} · ${target.phase}` : "Select a word or sentence"}</strong>
-        </div>
         <span className="audio-time">{progressLabel}</span>
       </div>
       <LineWaveform
