@@ -417,7 +417,7 @@ fn detail_includes_merged_source_notes_and_example_provenance() {
     let fixture = Fixture::new();
     let conn = Connection::open(&fixture.db_path).unwrap();
     conn.execute(
-        "INSERT INTO item_source_notes(item_id,source_book_code,source_entry_uuid,source_index,source_title,source_page,source_cd_track,source_reading,source_meaning_zh,source_notes_md,source_sentence) VALUES(1,'GWB_N2','gwb-uuid',42,'Green Word Book',12,'track-42','じんせい','人生；生涯','source notes','GWB例文。')",
+        "INSERT INTO item_source_notes(item_id,source_book_code,source_entry_uuid,source_index,source_title,source_page,source_cd_track,source_reading,source_meaning_zh,source_explanation_md,source_notes_md,source_sentence) VALUES(1,'GWB_N2','gwb-uuid',42,'Green Word Book',12,'track-42','じんせい','人生；生涯','legacy explanation','source notes','GWB例文。')",
         [],
     ).unwrap();
     conn.execute(
@@ -437,6 +437,20 @@ fn detail_includes_merged_source_notes_and_example_provenance() {
     let examples = entry.examples.expect("detail examples");
     assert_eq!(examples[1].source_book_code.as_deref(), Some("GWB_N2"));
     assert_eq!(examples[1].source_index, Some(42));
+}
+
+#[test]
+fn legacy_source_explanation_is_not_exposed_as_source_note() {
+    let fixture = Fixture::new();
+    let conn = Connection::open(&fixture.db_path).unwrap();
+    conn.execute(
+        "INSERT INTO item_source_notes(item_id,source_book_code,source_entry_uuid,source_index,source_reading,source_meaning_zh,source_explanation_md,source_sentence) VALUES(1,'N2','n2-legacy',74,'にっちゅう','白天；日中','learner sentence explanation copied into legacy source field','朝晩は冷え込むが、日中は穏やかな天気が続いている。')",
+        [],
+    ).unwrap();
+    drop(conn);
+
+    let entry = fixture.repo.get_entry(1).unwrap().expect("entry exists");
+    assert!(entry.source_notes.unwrap().is_empty());
 }
 
 #[test]

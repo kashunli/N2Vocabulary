@@ -1,7 +1,7 @@
 import { generateExampleAudio, fetchEntry, updateMark } from "./api.js";
 import { playClip, wireAudioTarget } from "./audio.js";
 import { applySentenceStarButton, toggleSentenceStar } from "./cards.js";
-import { detailExplanationHTML, escapeHTML, exampleBadgeHTML, exampleTranslationHTML, meaningHTML, rubyOrPlain, unitLabel } from "./format.js";
+import { detailExplanationHTML, escapeHTML, exampleBadgeHTML, exampleTranslationHTML, meaningHTML, rubyOrPlain, sourceMetadataHTML, unitLabel } from "./format.js";
 import { elements, state, showError } from "./state.js";
 
 const callbacks = {
@@ -25,14 +25,13 @@ export async function openDetail(entryId) {
   elements.modalSentences.innerHTML = sentenceRowsHTML(entry);
   wireModalSentenceRows(entry);
 
+  const sourceHTML = sourceMetadataHTML(entry);
+  elements.modalSource.innerHTML = sourceHTML;
+  elements.modalSourceWrap.hidden = !sourceHTML;
+
   const explanationHTML = detailExplanationHTML(entry);
-  if (explanationHTML) {
-    elements.modalExplanation.innerHTML = explanationHTML;
-    elements.modalExplanationWrap.style.display = "";
-  } else {
-    elements.modalExplanation.innerHTML = "";
-    elements.modalExplanationWrap.style.display = "none";
-  }
+  elements.modalExplanation.innerHTML = explanationHTML;
+  elements.modalExplanationWrap.hidden = !explanationHTML;
 
   const knownButton = document.querySelector(".modal-actions .icon-btn.known");
   const flaggedButton = document.querySelector(".modal-actions .icon-btn.flagged");

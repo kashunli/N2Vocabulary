@@ -72,8 +72,12 @@ Source references such as `N1語彙トレーニング, page 53, CD 1-17` belong 
 `item_source_notes.source_title`, `source_page`, and `source_cd_track`.
 Source-specific comments belong in `source_notes_md`; they must not be copied
 into `explanation_md`, which is reserved for learner-facing sentence
-explanation. A shared item may have multiple `item_source_notes` rows, so the
-source occurrence is kept separately from the shared vocabulary item.
+explanation. The legacy `source_explanation_md` column is retained for
+compatibility and historical provenance, but the web-service API never
+promotes it to `source_notes`; only structured source metadata or explicit
+`source_notes_md` is exposed. A shared item may have multiple
+`item_source_notes` rows, so the source occurrence is kept separately from the
+shared vocabulary item.
 
 ## Target Layout
 

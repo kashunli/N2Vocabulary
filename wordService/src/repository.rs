@@ -772,9 +772,20 @@ impl WordRepository {
             r#"
             SELECT source_book_code, source_index, source_title, source_page,
                    source_cd_track, source_reading, source_meaning_en,
-                   source_meaning_zh, COALESCE(source_notes_md, source_explanation_md)
+                   source_meaning_zh, source_notes_md
             FROM item_source_notes
             WHERE item_id = ?
+              -- `source_explanation_md` is a legacy compatibility column. It
+              -- contains copied learner explanations and old source-book
+              -- bookkeeping, so it must never become a learner-visible
+              -- source-note block. Only explicitly structured provenance or
+              -- `source_notes_md` belongs in the source metadata API.
+              AND (
+                NULLIF(TRIM(COALESCE(source_title, '')), '') IS NOT NULL
+                OR source_page IS NOT NULL
+                OR NULLIF(TRIM(COALESCE(source_cd_track, '')), '') IS NOT NULL
+                OR NULLIF(TRIM(COALESCE(source_notes_md, '')), '') IS NOT NULL
+              )
             ORDER BY source_book_code, source_index
             "#,
         )?;

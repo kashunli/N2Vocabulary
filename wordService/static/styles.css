@@ -893,6 +893,11 @@ main { max-width: 1420px; margin: 0 auto; padding: 1rem 1rem 8.6rem; }
   font-weight: 500;
 }
 
+.source-metadata {
+  display: grid;
+  gap: 10px;
+}
+
 .source-notes-label {
   margin-top: 7px;
   color: var(--muted2);

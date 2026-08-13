@@ -95,11 +95,6 @@ export function meaningHTML(entry) {
   const parts = [];
   if (entry.meaning_en) parts.push(`<span class="en">${escapeHTML(entry.meaning_en)}</span>`);
   if (entry.meaning_zh) parts.push(`<span class="zh">${escapeHTML(entry.meaning_zh)}</span>`);
-  (entry.source_notes || []).forEach(note => {
-    if (note.meaning_zh && note.meaning_zh !== entry.meaning_zh) {
-      parts.push(`<span class="zh source-meaning"><strong>GWB:</strong> ${escapeHTML(note.meaning_zh)}</span>`);
-    }
-  });
   return parts.join(" · ");
 }
 
@@ -122,13 +117,19 @@ export function sourceReferenceHTML(note) {
   return `${parts.join(", ")} <span class="source-reference-code">(${escapeHTML(note.source_book_code)} #${escapeHTML(note.source_index)})</span>`;
 }
 
-export function detailExplanationHTML(entry) {
+function hasVisibleSourceNote(note) {
+  return Boolean(
+    note.source_title
+      || note.source_page !== undefined && note.source_page !== null
+      || note.source_cd_track
+      || note.notes_md
+  );
+}
+
+export function sourceMetadataHTML(entry) {
   const sections = [];
-  if (entry.explanation_md) {
-    const heading = entry.book_code === "GWB_N2" ? "Study notes" : "Sentence explanation";
-    sections.push(`<section class="explanation-section"><h4>${heading}</h4>${markdownToHTML(entry.explanation_md)}</section>`);
-  }
   (entry.source_notes || []).forEach(note => {
+    if (!hasVisibleSourceNote(note)) return;
     const details = [];
     if (note.reading && note.reading !== entry.reading) {
       details.push(`<div><strong>Reading:</strong> ${escapeHTML(note.reading)}</div>`);
@@ -141,18 +142,21 @@ export function detailExplanationHTML(entry) {
     }
     const source = sourceReferenceHTML(note);
     const notes = note.notes_md ? markdownToHTML(note.notes_md) : "";
-    if (source || details.length || notes) {
-      sections.push(`
-        <section class="explanation-section source-note">
-          <h4>Source</h4>
-          <div class="source-reference-line">${source}</div>
-          ${details.join("")}
-          ${notes ? `<div class="source-notes-label">Source notes</div>${notes}` : ""}
-        </section>
-      `);
-    }
+    sections.push(`
+      <article class="source-note">
+        <div class="source-reference-line">${source}</div>
+        ${details.join("")}
+        ${notes ? `<div class="source-notes-label">Source notes</div>${notes}` : ""}
+      </article>
+    `);
   });
   return sections.join("");
+}
+
+export function detailExplanationHTML(entry) {
+  if (!entry.explanation_md) return "";
+  const heading = entry.book_code === "GWB_N2" ? "Study notes" : "Sentence explanation";
+  return `<section class="explanation-section"><h4>${heading}</h4>${markdownToHTML(entry.explanation_md)}</section>`;
 }
 
 export function translationHTML(entry) {
