@@ -3,7 +3,7 @@ import {useCallback, useEffect, useMemo, useState} from "react";
 import {getAccountStudyState, getCurrentUser, getLegacyMarkSeed, importGuestStudyState, loginAccount, logoutAccount, registerAccount, type AuthSession} from "../../api";
 import {AccountStudyStateStore} from "./AccountStudyStateStore";
 import {LocalStudyStateStore} from "./localStudyState.mjs";
-import type {StudySnapshot, StudyStateStore} from "./studyStateTypes";
+import type {ReviewGrade, StudyCardState, StudySnapshot, StudyStateStore} from "./studyStateTypes";
 
 export type ImportDecision = {account: AuthSession; accountSnapshot: StudySnapshot; guestChecksum: string};
 
@@ -11,6 +11,18 @@ async function checksum(snapshot: StudySnapshot) {
   const bytes = new TextEncoder().encode(JSON.stringify(snapshot));
   const digest = await crypto.subtle.digest("SHA-256", bytes);
   return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+}
+
+class DecisionBlockedStudyStateStore implements StudyStateStore {
+  constructor(private readonly source: StudyStateStore) {}
+  load() { return this.source.load(); }
+  subscribe(listener: (snapshot: StudySnapshot) => void) { return this.source.subscribe(listener); }
+  seedLegacy() { return this.load(); }
+  async setMark(_itemUuid: string, _mark: {known: boolean; flagged: boolean}): Promise<StudyCardState> { throw new Error("Choose how to handle guest progress before studying."); }
+  async recordPlayed(_entry: {item_uuid: string; book_code: string; source_index: number}): Promise<StudyCardState> { throw new Error("Choose how to handle guest progress before studying."); }
+  async grade(_itemUuid: string, _grade: ReviewGrade): Promise<StudyCardState> { throw new Error("Choose how to handle guest progress before studying."); }
+  dueCards(at?: Date) { return this.source.dueCards(at); }
+  nextDueAt() { return this.source.nextDueAt(); }
 }
 
 export function useStudyState() {
@@ -34,7 +46,9 @@ export function useStudyState() {
     const guestChecksum = await checksum(guest);
     const dismissal = localStorage.getItem(`n2-word-service:guest-import-dismissed:${account.user.id}`);
     if (dismissal === guestChecksum) { activateAccount(account, accountSnapshot); return; }
-    setSession(account); setPendingImport({account, accountSnapshot, guestChecksum});
+    setSession(account);
+    setStore(new DecisionBlockedStudyStateStore(localStore as StudyStateStore));
+    setPendingImport({account, accountSnapshot, guestChecksum});
   }, [activateAccount, localStore]);
 
   useEffect(() => store.subscribe(setSnapshot), [store]);
