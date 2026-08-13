@@ -25,7 +25,8 @@ The code is intentionally split into a few small learning-oriented modules:
 - Audio clips: `../clips/`; original N2 playback uses flat aliases while
   imported books can use explicit book-scoped paths such as `../clips/n1/`
 - Frontend assets: `static/`
-- Study marks: `item_marks` table in the same SQLite DB
+- Guest study state: browser localStorage key `n2-word-service:study-state:v1`
+- Account study state: `data/users.sqlite` (or `N2_WORD_SERVICE_USERS_DB`)
 - Generated sentence audio: `../clips/generated_sentences/edge_tts/`
 - Review candidates: `../reviews/vocabulary_audio/n2_all_both_candidates.json`
 - Seeded human decisions: `../reviews/vocabulary_audio/n2_all_both.json`
@@ -55,7 +56,8 @@ Important tables:
   source book row.
 - `item_example_sources`: provenance linking a normal example row back to its
   merged source record.
-- `item_marks`: shared known/flagged state written by the study UI.
+- `item_marks`: preserved read-only legacy Known/Flagged evidence. New learner
+  state is never written here.
 
 Exact GWB duplicates are merged into N2/N3 with a dry-run-first command:
 
@@ -100,13 +102,15 @@ Then open:
 
 ```text
 http://127.0.0.1:8767/           # React study wall (default)
-http://127.0.0.1:8767/classic   # classic study wall
+http://127.0.0.1:8767/review     # due review task
+http://127.0.0.1:8767/classic    # classic study wall
 http://127.0.0.1:8767/audio-review.html
 ```
 
 Optional environment variables:
 
 - `N2_WORD_SERVICE_DB`
+- `N2_WORD_SERVICE_USERS_DB` defaults to `data/users.sqlite`
 - `N2_WORD_SERVICE_CLIPS`
 - `N2_WORD_SERVICE_STATIC`
 - `N2_WORD_SERVICE_HOST`
@@ -126,12 +130,76 @@ Optional environment variables:
 - `GET /api/entries?unit=1&state=all|known|flagged|unmarked&search=...`
   (`unit` is optional; omit it to search/list all units)
 - `GET /api/entries/<entry_id>`
-- `GET /api/marks`
-- `PUT /api/marks/<entry_id>` with `{"known": true|false, "flagged": true|false}`
+- `GET /api/marks` and `PUT /api/marks/<entry_id>` are legacy compatibility
+  endpoints; the active walls use the study-state APIs below
 - `POST /api/entries/<entry_id>/audio`
 - `POST /api/entries/<entry_id>/examples/<position>/audio`
 - `POST /api/units/<unit_number>/flagged-audio`
 - `GET /audio/<clips/...>`
+
+Study state and account endpoints:
+
+- `GET /api/study/legacy-seed` returns unique shared item UUIDs and legacy
+  marks for the one-time guest migration.
+- `POST /api/study/resolve` resolves up to 100 shared item UUIDs, in requested
+  order, to ordinary entry payloads and preferred book occurrences.
+- `POST /api/auth/register`, `POST /api/auth/login`, and
+  `POST /api/auth/logout` manage local email/password sessions.
+- `GET /api/auth/me` returns the active user and CSRF token.
+- `GET /api/study/state` returns the authenticated user's complete snapshot.
+- `PUT /api/study/cards/<item_uuid>/marks`,
+  `POST /api/study/cards/<item_uuid>/played`, and
+  `POST /api/study/cards/<item_uuid>/grade` update one account card.
+- `POST /api/study/import-guest` conservatively merges an explicitly selected
+  guest snapshot. Authenticated mutations require `X-CSRF-Token`.
+
+## Spaced review state
+
+Playback completion—not Known or Flagged—enrolls a shared vocabulary item.
+A word-plus-sentence card enrolls after both phases complete while it remains
+focused; a word-only card enrolls after its word completes. New cards are due
+after exactly 24 hours. Replaying an enrolled card updates its preferred book
+occurrence without changing its schedule.
+
+`/review` snapshots every card due when the page opens. The queue is ordered by
+due time, enrollment time, and shared item UUID, and content is internally
+resolved in pages of 100 without a learner-visible limit. `Again` resets the
+Good ladder and schedules 10 minutes; `Hard` preserves the ladder, schedules
+one day, and sets Flagged; `Good` advances through 1, 3, 7, 14, 30, and 60-day
+intervals and sets Known. Further Good reviews remain at 60 days.
+
+The selected grade is pending until forward movement leaves the final phase of
+the card. Previous, replay, stop, logout, page close, and navigation away do
+not grade it. A registered-user grade and its mark side effect are committed
+in one SQLite operation; a failed write prevents review advancement.
+
+Guest JSON is validated and normalized when loaded. Malformed input is copied
+to a timestamped `:malformed:` localStorage key before a fresh snapshot is
+started, and the `storage` event updates other same-origin tabs. On first guest
+launch, legacy Known items are enrolled due immediately and Flagged-only items
+retain their tag without enrollment. The migration marker is
+`n2-word-service:study-state:legacy-migrated:v1`.
+
+After account login, guest progress is never uploaded silently. Import creates
+one recoverable `n2-word-service:study-state:v1:import-archive:` copy before
+upload, uses a client import ID and checksum for retry safety, and clears the
+active guest snapshot only after the server transaction succeeds. **Keep
+account progress** leaves guest state available for later logged-out use;
+**Cancel** logs out and keeps guest mode active. Registered changes go only to
+`users.sqlite`; localStorage is not an offline account write queue.
+
+`users.sqlite` stores normalized emails, Argon2id password hashes, hashed
+session tokens, CSRF tokens, card schedules, and import receipts. Raw session
+tokens exist only in HttpOnly, SameSite=Lax cookies. The local HTTP cookie
+intentionally omits `Secure`: do not expose this account service publicly
+until it is behind HTTPS and Secure cookies. There is no email verification,
+password recovery, OAuth, or administrator interface in this version.
+
+To recover from a guest-import problem, inspect the one retained import archive
+in the same browser profile before making further progress changes. To back up
+registered progress, stop the service and copy `data/users.sqlite` (or the path
+configured by `N2_WORD_SERVICE_USERS_DB`). Never copy a live SQLite database
+without its active WAL/sidecar files.
 
 Audio/text review endpoints:
 
@@ -207,6 +275,10 @@ complete and unambiguous.
 cd wordService
 cargo fmt --check
 cargo test
+cd frontend
+pnpm test
+pnpm exec tsc --noEmit
+pnpm exec vite build
 ```
 
 The Rust tests build a temporary SQLite database and do not touch the real
