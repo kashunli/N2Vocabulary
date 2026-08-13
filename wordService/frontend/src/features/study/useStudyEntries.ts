@@ -4,7 +4,7 @@ import { getEntries } from "../../api";
 import type { Entry } from "../../types";
 import type { PlaybackMode } from "../player/playbackSettings";
 import type { FilterState } from "./studyTypes";
-import type { StudySnapshot } from "./studyStateTypes";
+import { isReviewDue, type StudySnapshot } from "./studyStateTypes";
 
 interface UseStudyEntriesOptions {
   filterState: FilterState;
@@ -53,7 +53,9 @@ export function useStudyEntries({
             const card = studySnapshot.cards[entry.item_uuid];
             return {...entry, mark: {known: !!card?.known, flagged: !!card?.flagged, due_at: card?.due_at, updated_at: card?.updated_at}};
           });
+        const reviewNow = Date.now();
         const filteredItems = loadedItems.filter(entry => filterState === "all"
+          || (filterState === "review" && isReviewDue(entry.mark.due_at, reviewNow))
           || (filterState === "known" && entry.mark.known)
           || (filterState === "flagged" && entry.mark.flagged)
           || (filterState === "unmarked" && !entry.mark.known && !entry.mark.flagged));

@@ -20,7 +20,6 @@ class DecisionBlockedStudyStateStore implements StudyStateStore {
   seedLegacy() { return this.load(); }
   async setMark(_itemUuid: string, _mark: {known: boolean; flagged: boolean}): Promise<StudyCardState> { throw new Error("Choose how to handle guest progress before studying."); }
   async recordPlayed(_entry: {item_uuid: string; book_code: string; source_index: number}): Promise<StudyCardState> { throw new Error("Choose how to handle guest progress before studying."); }
-  dueCards(at?: Date) { return this.source.dueCards(at); }
 }
 
 export function useStudyState() {
@@ -100,7 +99,7 @@ export function useStudyState() {
 
   const cancelImport = useCallback(async () => { await logout(); }, [logout]);
 
-  return {store, snapshot, ready, dueCount: store.dueCards().length, session, pendingImport, accountError,
+  return {store, snapshot, ready, session, pendingImport, accountError,
     login: (email: string, password: string) => authenticate("login", email, password),
     register: (email: string, password: string) => authenticate("register", email, password),
     logout, importGuest, keepAccount, cancelImport};

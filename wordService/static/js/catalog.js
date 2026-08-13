@@ -48,6 +48,7 @@ export async function loadSummary() {
     `<span>${summary.units} sections</span>`,
     `<span>${active.known} known</span>`,
     `<span>${active.flagged} flagged</span>`,
+    `<span>${active.review} review</span>`,
     `<span>${active.unmarked} unmarked</span>`,
   ].join("");
 }

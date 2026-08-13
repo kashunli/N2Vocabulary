@@ -61,6 +61,12 @@ test("an explicit all-sections selection is preserved and Classic fields remain 
   });
 });
 
+test("Review is a shared study-state filter", () => {
+  const storage = new MemoryStorage();
+  saveStudyViewState({filterState: "review", view: "cards"}, storage);
+  assert.deepEqual(readStudyViewState(storage), {filterState: "review", view: "cards"});
+});
+
 test("invalid saved selections are ignored instead of poisoning the next view", () => {
   const storage = new MemoryStorage();
   storage.setItem(STUDY_VIEW_STORAGE_KEY, JSON.stringify({

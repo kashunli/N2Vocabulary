@@ -86,7 +86,14 @@ export function StudyHeader({
       <section className="react-toolbar" aria-label="Study controls">
         <div className="react-toolbar-search"><input type="search" value={search} onChange={(event) => onSearch(event.target.value)} placeholder="Search kanji, reading, meaning, sentence…" aria-label="Search vocabulary" /></div>
         <div className="react-pill-group" role="group" aria-label="Study state filter">
-          {(["all", "unmarked", "known", "flagged"] as FilterState[]).map((filter) => <button type="button" key={filter} className={`${filterState === filter ? "is-selected " : ""}react-pill react-pill-${filter}`} onClick={() => onSelectFilter(filter)}>{filter[0].toUpperCase() + filter.slice(1)}{filter !== "all" && summary ? <small>{summary[filter]}</small> : null}</button>)}
+          {(["all", "review", "unmarked", "known", "flagged"] as FilterState[]).map((filter) => {
+            const count = filter === "review" ? summary?.review
+              : filter === "known" ? summary?.known
+                : filter === "flagged" ? summary?.flagged
+                  : filter === "unmarked" ? summary?.unmarked
+                    : undefined;
+            return <button type="button" key={filter} className={`${filterState === filter ? "is-selected " : ""}react-pill react-pill-${filter}`} onClick={() => onSelectFilter(filter)}>{filter[0].toUpperCase() + filter.slice(1)}{count !== undefined ? <small>{count}</small> : null}</button>;
+          })}
         </div>
         <div className="react-toolbar-actions">
           <button type="button" onClick={onToggleCoverAll} disabled={!entriesCount} aria-pressed={allVisibleCovered}>{allVisibleCovered ? "Uncover all" : "Cover all"}</button>

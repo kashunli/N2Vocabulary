@@ -135,15 +135,6 @@ export class LocalStudyStateStore {
     return this.commit({...this.snapshot.cards, [entry.item_uuid]: next}).cards[entry.item_uuid];
   }
 
-  dueCards(at = this.now()) {
-    const timestamp = at.getTime();
-    return Object.values(this.snapshot.cards)
-      .filter(card => card.due_at && Date.parse(card.due_at) <= timestamp)
-      .sort((left, right) => left.due_at.localeCompare(right.due_at)
-        || (left.enrolled_at || "").localeCompare(right.enrolled_at || "")
-        || left.item_uuid.localeCompare(right.item_uuid));
-  }
-
   exportSnapshot() { return JSON.parse(JSON.stringify(this.snapshot)); }
 
   archiveSnapshot(importId, checksum) {

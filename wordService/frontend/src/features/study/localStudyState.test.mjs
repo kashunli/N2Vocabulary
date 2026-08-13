@@ -21,7 +21,6 @@ test("legacy marks stay independent from review enrollment", () => {
     {item_uuid: "known", known: true, flagged: false},
     {item_uuid: "flagged", known: false, flagged: true},
   ]);
-  assert.deepEqual(store.dueCards(), []);
   assert.equal(store.load().cards.known.enrolled_at, undefined);
   assert.equal(store.load().cards.known.due_at, undefined);
   assert.equal(store.load().cards.flagged.enrolled_at, undefined);

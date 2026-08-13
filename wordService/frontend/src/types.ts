@@ -34,6 +34,7 @@ export interface UnitSummary {
   entry_count: number;
   known?: number;
   flagged?: number;
+  review?: number;
   unmarked?: number;
 }
 
@@ -49,6 +50,7 @@ export interface VocabularySummary {
   units: number;
   known: number;
   flagged: number;
+  review?: number;
   unmarked: number;
 }
 

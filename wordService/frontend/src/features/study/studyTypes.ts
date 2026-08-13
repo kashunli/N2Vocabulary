@@ -1,1 +1,1 @@
-export type FilterState = "all" | "unmarked" | "known" | "flagged";
+export type FilterState = "all" | "review" | "unmarked" | "known" | "flagged";

@@ -51,14 +51,25 @@ export async function setStudyMark(itemUuid, mark) {
 }
 
 export function summarizeStudyMarks(items) {
-  let known = 0; let flagged = 0;
-  for (const item of items) { const mark = studyMark(item.item_uuid); known += Number(mark.known); flagged += Number(mark.flagged); }
-  return {known, flagged, unmarked: items.length - new Set(items.filter(item => { const mark = studyMark(item.item_uuid); return mark.known || mark.flagged; }).map(item => item.entry_id)).size};
+  let known = 0; let flagged = 0; let review = 0;
+  for (const item of items) {
+    const mark = studyMark(item.item_uuid);
+    known += Number(mark.known);
+    flagged += Number(mark.flagged);
+    review += Number(isReviewDue(mark));
+  }
+  return {known, flagged, review, unmarked: items.length - new Set(items.filter(item => { const mark = studyMark(item.item_uuid); return mark.known || mark.flagged; }).map(item => item.entry_id)).size};
+}
+
+export function isReviewDue(mark, now = Date.now()) {
+  const timestamp = Date.parse(mark?.due_at || "");
+  return Number.isFinite(timestamp) && timestamp <= now;
 }
 
 export function applyStudyMarks(items, filterState = "all") {
   return items.map(entry => ({...entry, mark: studyMark(entry.item_uuid)})).filter(entry => (
     filterState === "all"
+    || (filterState === "review" && isReviewDue(entry.mark))
     || (filterState === "known" && entry.mark.known)
     || (filterState === "flagged" && entry.mark.flagged)
     || (filterState === "unmarked" && !entry.mark.known && !entry.mark.flagged)

@@ -3,10 +3,10 @@
 // visible filters without changing the word currently being played.
 export const STUDY_VIEW_STORAGE_KEY = "n2-word-service:view-state:v1";
 
-const FILTER_STATES = new Set(["all", "known", "flagged", "unmarked"]);
+const FILTER_STATES = new Set(["all", "review", "known", "flagged", "unmarked"]);
 const VIEWS = new Set(["cards", "starred"]);
 
-/** @typedef {"all" | "known" | "flagged" | "unmarked"} FilterState */
+/** @typedef {"all" | "review" | "known" | "flagged" | "unmarked"} FilterState */
 /** @typedef {"cards" | "starred"} StudyView */
 /**
  * @typedef {Object} StudyViewState

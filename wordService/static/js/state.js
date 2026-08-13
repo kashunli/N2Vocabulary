@@ -300,7 +300,7 @@ export function restoreSavedViewState() {
   if (typeof saved.selectedBook === "string" && saved.selectedBook.trim()) {
     state.selectedBook = saved.selectedBook.trim().toUpperCase();
   }
-  if (["all", "known", "flagged", "unmarked"].includes(saved.filterState)) {
+  if (["all", "review", "known", "flagged", "unmarked"].includes(saved.filterState)) {
     state.filterState = saved.filterState;
   }
   if (saved.view === "starred" || saved.view === "cards") {

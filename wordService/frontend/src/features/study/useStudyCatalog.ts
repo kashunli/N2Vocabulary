@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { getBooks, getEntries, getEntry, getStarredSentences, getSummary, getUnits } from "../../api";
 import type { BookSummary, Entry, StarredSentence, UnitSummary, VocabularySummary } from "../../types";
-import type { StudySnapshot } from "./studyStateTypes";
+import { isReviewDue, type StudySnapshot } from "./studyStateTypes";
 
 interface UseStudyCatalogOptions {
   activeEntry?: Entry;
@@ -41,13 +41,15 @@ export function useStudyCatalog({
         const marks = allEntries.items.map(entry => studySnapshot.cards[entry.item_uuid]);
         const known = marks.filter(mark => mark?.known).length;
         const flagged = marks.filter(mark => mark?.flagged).length;
-        setSummary({...nextSummary, known, flagged, unmarked: marks.filter(mark => !mark?.known && !mark?.flagged).length});
+        const review = marks.filter(mark => isReviewDue(mark?.due_at)).length;
+        setSummary({...nextSummary, known, flagged, review, unmarked: marks.filter(mark => !mark?.known && !mark?.flagged).length});
         setUnits(nextUnits.items.map(unit => {
           const unitEntries = allEntries.items.filter(entry => entry.unit.number === unit.number);
           return {
             ...unit,
             known: unitEntries.filter(entry => studySnapshot.cards[entry.item_uuid]?.known).length,
             flagged: unitEntries.filter(entry => studySnapshot.cards[entry.item_uuid]?.flagged).length,
+            review: unitEntries.filter(entry => isReviewDue(studySnapshot.cards[entry.item_uuid]?.due_at)).length,
             unmarked: unitEntries.filter(entry => {
               const mark = studySnapshot.cards[entry.item_uuid];
               return !mark?.known && !mark?.flagged;

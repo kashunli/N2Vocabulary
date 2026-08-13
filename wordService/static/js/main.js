@@ -34,7 +34,7 @@ async function init() {
   const previewParams = new URLSearchParams(window.location.search);
   const previewUnit = Number(previewParams.get("preview-unit"));
   if (Number.isFinite(previewUnit) && previewUnit > 0) state.selectedUnit = previewUnit;
-  if (["all", "known", "flagged", "unmarked"].includes(previewParams.get("preview-state"))) {
+  if (["all", "review", "known", "flagged", "unmarked"].includes(previewParams.get("preview-state"))) {
     state.filterState = previewParams.get("preview-state");
   }
   updateFilterPills();
