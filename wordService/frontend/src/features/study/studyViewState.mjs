@@ -6,10 +6,29 @@ export const STUDY_VIEW_STORAGE_KEY = "n2-word-service:view-state:v1";
 const FILTER_STATES = new Set(["all", "known", "flagged", "unmarked"]);
 const VIEWS = new Set(["cards", "starred"]);
 
+/** @typedef {"all" | "known" | "flagged" | "unmarked"} FilterState */
+/** @typedef {"cards" | "starred"} StudyView */
+/**
+ * @typedef {Object} StudyViewState
+ * @property {string} [selectedBook]
+ * @property {number | null} [selectedUnit]
+ * @property {FilterState} [filterState]
+ * @property {string} [search]
+ * @property {StudyView} [view]
+ * @property {"all" | "unit"} [starredScope]
+ * @property {string} [selectedStarredKey]
+ */
+/**
+ * @typedef {Object} StorageLike
+ * @property {(key: string) => string | null} getItem
+ * @property {(key: string, value: string) => void} setItem
+ */
+
 function isRecord(value) {
   return !!value && typeof value === "object";
 }
 
+/** @param {unknown} value @returns {StudyViewState} */
 export function normalizeStudyViewState(value) {
   if (!isRecord(value)) return {};
 
@@ -36,6 +55,7 @@ export function normalizeStudyViewState(value) {
   return normalized;
 }
 
+/** @param {StorageLike} [storage] @returns {StudyViewState} */
 export function readStudyViewState(storage = window.localStorage) {
   try {
     const raw = storage.getItem(STUDY_VIEW_STORAGE_KEY);
@@ -45,6 +65,7 @@ export function readStudyViewState(storage = window.localStorage) {
   }
 }
 
+/** @param {StudyViewState} view @param {StorageLike} [storage] */
 export function saveStudyViewState(view, storage = window.localStorage) {
   try {
     storage.setItem(STUDY_VIEW_STORAGE_KEY, JSON.stringify(normalizeStudyViewState(view)));
