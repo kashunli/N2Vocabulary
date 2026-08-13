@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 
-import {resolveReviewEntries} from "../../api";
+import {resolveReviewEntries, updateExampleStar} from "../../api";
 import type {Entry} from "../../types";
 import {PlaybackSettingsModal} from "../player/PlaybackSettingsModal";
 import {RailPlayer} from "../player/RailPlayer";
@@ -18,12 +18,15 @@ export function ReviewApp({store, accountEmail}: ReviewAppProps) {
   const [sessionCards] = useState<StudyCardState[]>(() => store.dueCards());
   const [entries, setEntries] = useState<Entry[]>([]);
   const [position, setPosition] = useState(0);
+  const [completedItems, setCompletedItems] = useState<Set<string>>(() => new Set());
   const [pendingGrade, setPendingGrade] = useState<ReviewGrade>("again");
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState("");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const current = entries[position];
   const currentCard = current ? store.load().cards[current.item_uuid] : undefined;
+  const playAfterFocusRef = useRef<number | null>(null);
+  const playAfterCommitRef = useRef<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -54,8 +57,20 @@ export function ReviewApp({store, accountEmail}: ReviewAppProps) {
   const commitAndAdvance = useCallback(async () => {
     if (!current) return;
     try {
-      await store.grade(current.item_uuid, pendingGrade);
-      setPosition(value => value + 1);
+      const updatedCard = await store.grade(current.item_uuid, pendingGrade);
+      setEntries(previous => previous.map(entry => entry.item_uuid === current.item_uuid
+        ? {...entry, mark: {...entry.mark, known: updatedCard.known, flagged: updatedCard.flagged}}
+        : entry));
+      setCompletedItems(previous => {
+        const next = new Set(previous);
+        next.add(current.item_uuid);
+        return next;
+      });
+      setPosition(value => {
+        const next = value + 1;
+        if (playbackRunModeRef.current === "consecutive") playAfterCommitRef.current = next;
+        return next;
+      });
       setStatus("");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Could not save the review grade.");
@@ -69,12 +84,40 @@ export function ReviewApp({store, accountEmail}: ReviewAppProps) {
     onCompleteCard: entry => { void store.recordPlayed(entry).catch(error => setStatus(error instanceof Error ? error.message : "Could not save playback.")); },
     onConsecutiveSequenceComplete: () => { void commitAndAdvance(); },
   });
-  const lastAutoStartedPosition = useRef(0);
+  const playbackRunModeRef = useRef(playback.playbackRunMode);
   useEffect(() => {
-    if (!current || playback.playbackRunMode !== "consecutive" || position <= lastAutoStartedPosition.current) return;
-    lastAutoStartedPosition.current = position;
+    playbackRunModeRef.current = playback.playbackRunMode;
+  }, [playback.playbackRunMode]);
+  const selectReviewEntry = useCallback((index: number) => {
+    if (index < 0 || index >= entries.length) return;
+    playback.stopPlayback();
+    playAfterFocusRef.current = index;
+    setPosition(index);
+    setStatus("");
+  }, [entries.length, playback.stopPlayback]);
+  useEffect(() => {
+    if (!current || playAfterFocusRef.current !== position) return;
+    playAfterFocusRef.current = null;
     playback.requestPlayback();
-  }, [current, playback, position]);
+  }, [current, playback.requestPlayback, position]);
+  useEffect(() => {
+    if (!current || playAfterCommitRef.current !== position) return;
+    playAfterCommitRef.current = null;
+    playback.requestPlayback();
+  }, [current, playback.requestPlayback, position]);
+
+  const toggleSentenceStar = useCallback(async () => {
+    if (!current) return;
+    const position = current.sentence_position ?? 0;
+    try {
+      const payload = await updateExampleStar(current.entry_id, position, !current.sentence_starred, current.book_code);
+      setEntries(previous => previous.map(entry => entry.item_uuid === current.item_uuid
+        ? {...entry, sentence_starred: payload.starred}
+        : entry));
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Could not update the sentence star.");
+    }
+  }, [current]);
 
   const next = useCallback(() => {
     if (!current) return;
@@ -97,8 +140,8 @@ export function ReviewApp({store, accountEmail}: ReviewAppProps) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  const remaining = Math.max(0, entries.length - position);
-  const completed = Math.min(position, entries.length);
+  const remaining = Math.max(0, entries.length - completedItems.size);
+  const completed = completedItems.size;
   const nextDue = store.nextDueAt();
 
   return <main className="react-shell review-shell">
@@ -114,7 +157,7 @@ export function ReviewApp({store, accountEmail}: ReviewAppProps) {
         <button type="button" className={pendingGrade === "hard" ? "is-selected" : ""} onClick={() => setPendingGrade("hard")}>2 · ⚑ Hard · 1d</button>
         <button type="button" className={pendingGrade === "good" ? "is-selected" : ""} onClick={() => setPendingGrade("good")}>3 · ✓ Good · {nextGoodIntervalDays(currentCard?.good_step ?? 0)}d</button>
       </section>
-      <div className="react-content-scroll review-content"><StudyWallView activeEntry={current} activeIndex={0} activePhase={playback.activePhase} bookCode={current.book_code} coveredEntryIds={new Set()} detail={current} entries={[current]} entriesLoading={false} onSelectEntry={() => undefined} onSelectPhase={playback.selectPhase} onToggleMark={key => setPendingGrade(key === "flagged" ? "hard" : "good")} onToggleSentenceStar={() => undefined} /></div>
+      <div className="react-content-scroll review-content"><StudyWallView activeEntry={current} activeIndex={position} activePhase={playback.activePhase} bookCode={current.book_code} coveredEntryIds={new Set()} detail={current} entries={entries} entriesLoading={false} onSelectEntry={selectReviewEntry} onSelectPhase={playback.selectPhase} onToggleMark={key => setPendingGrade(key === "flagged" ? "hard" : "good")} onToggleSentenceStar={toggleSentenceStar} /></div>
       <RailPlayer target={playback.target} autoPlay={playback.autoAdvance} isPlaybackActive={playback.playbackActive} isSilencePlaying={playback.isSilencePlaying} playbackRunMode={playback.playbackRunMode} onPlayingChange={playback.handlePlayingChange} playRequest={playback.playRequest} replayRequest={playback.replayRequest} pauseRequest={playback.pauseRequest} stopRequest={playback.stopRequest} onEnded={playback.handlePlaybackEnd} onTogglePlayback={playback.togglePlayback} onTogglePlaybackRunMode={playback.togglePlaybackRunMode} onReplay={playback.replayFocused} onPrevious={() => undefined} onNext={next} onStop={playback.stopPlayback} canPrevious={false} canNext={true} />
     </> : <section className="review-empty"><h2>Review complete</h2><p>No more cards from this due snapshot.</p>{nextDue ? <p>Next scheduled review: {new Date(nextDue).toLocaleString()}</p> : <p>Play vocabulary on the study wall to create review tasks.</p>}<a href="/">Return to study wall</a></section>}
     {settingsOpen ? <PlaybackSettingsModal playbackMode={playback.playbackMode} postSentenceSilence={playback.postSentenceSilence} postWordSilence={playback.postWordSilence} onChangePlaybackMode={playback.changePlaybackMode} onChangePostSentenceSilence={playback.changePostSentenceSilence} onChangePostWordSilence={playback.changePostWordSilence} onClose={() => setSettingsOpen(false)} onReset={playback.resetPlaybackSettings} /> : null}

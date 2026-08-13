@@ -161,8 +161,12 @@ focused; a word-only card enrolls after its word completes. New cards are due
 after exactly 24 hours. Replaying an enrolled card updates its preferred book
 occurrence without changing its schedule.
 
-`/review` snapshots every card due when the page opens. The queue is ordered by
-due time, enrollment time, and shared item UUID, and content is internally
+`/review` snapshots every card due when the page opens. It deliberately reuses
+the normal study-wall list/detail layout: every due word stays in the left
+column, clicking a row focuses that word in the existing detail pane, and the
+same word/sentence controls, sentence star, explanations, and RailPlayer are
+available. Review-only grade buttons sit above that shared layout. The queue is
+ordered by due time, enrollment time, and shared item UUID, and content is internally
 resolved in pages of 100 without a learner-visible limit. `Again` resets the
 Good ladder and schedules 10 minutes; `Hard` preserves the ladder, schedules
 one day, and sets Flagged; `Good` advances through 1, 3, 7, 14, 30, and 60-day
