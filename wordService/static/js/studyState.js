@@ -28,7 +28,7 @@ function readSnapshot() {
 
 export function studyMark(itemUuid) {
   const card = readSnapshot().cards[itemUuid];
-  return {known: !!card?.known, flagged: !!card?.flagged, updated_at: card?.updated_at};
+  return {known: !!card?.known, flagged: !!card?.flagged, due_at: card?.due_at, updated_at: card?.updated_at};
 }
 
 export async function setStudyMark(itemUuid, mark) {
@@ -43,7 +43,7 @@ export async function setStudyMark(itemUuid, mark) {
   }
   const snapshot = readSnapshot();
   const now = new Date().toISOString();
-  const current = snapshot.cards[itemUuid] || {item_uuid: itemUuid, good_step: 0};
+  const current = snapshot.cards[itemUuid] || {item_uuid: itemUuid};
   snapshot.cards[itemUuid] = {...current, known: !!mark.known, flagged: !!mark.flagged, updated_at: now};
   snapshot.updated_at = now;
   window.localStorage.setItem(STUDY_STATE_KEY, JSON.stringify(snapshot));
@@ -74,8 +74,7 @@ export function seedLegacyStudyMarks(items) {
     if (!item.item_uuid || snapshot.cards[item.item_uuid]) return;
     snapshot.cards[item.item_uuid] = {
       item_uuid: item.item_uuid, known: !!item.known, flagged: !!item.flagged,
-      enrolled_at: item.known ? now : undefined, due_at: item.known ? now : undefined,
-      good_step: 0, updated_at: now,
+      updated_at: now,
     };
   });
   snapshot.updated_at = now;

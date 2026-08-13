@@ -1,13 +1,9 @@
-export type ReviewGrade = "again" | "hard" | "good";
-
 export interface StudyCardState {
   item_uuid: string;
   known: boolean;
   flagged: boolean;
   enrolled_at?: string;
   due_at?: string;
-  good_step: number;
-  last_reviewed_at?: string;
   last_played_at?: string;
   preferred_book_code?: string;
   preferred_source_index?: number;
@@ -26,7 +22,5 @@ export interface StudyStateStore {
   seedLegacy(items: Array<{item_uuid: string; known: boolean; flagged: boolean}>): StudySnapshot;
   setMark(itemUuid: string, mark: {known: boolean; flagged: boolean}): Promise<StudyCardState>;
   recordPlayed(entry: {item_uuid: string; book_code: string; source_index: number}): Promise<StudyCardState>;
-  grade(itemUuid: string, grade: ReviewGrade): Promise<StudyCardState>;
   dueCards(at?: Date): StudyCardState[];
-  nextDueAt(): string | undefined;
 }

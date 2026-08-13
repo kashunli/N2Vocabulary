@@ -123,9 +123,7 @@ fn static_page_path(static_dir: &Path, request_path: &str) -> Option<PathBuf> {
         | "/index.html"
         | "/study-wall-react"
         | "/study-wall-react/"
-        | "/study-wall-react.html"
-        | "/review"
-        | "/review/" => Some(static_dir.join("react-rail").join("index.html")),
+        | "/study-wall-react.html" => Some(static_dir.join("react-rail").join("index.html")),
         // The classic wall now has an explicit URL instead of owning `/`.
         "/classic" | "/classic/" => Some(static_dir.join("index.html")),
         _ => None,
@@ -151,7 +149,6 @@ mod tests {
         );
         assert_eq!(static_page_path(root, "/classic").as_deref(), classic_page);
         assert_eq!(static_page_path(root, "/classic/").as_deref(), classic_page);
-        assert_eq!(static_page_path(root, "/review").as_deref(), react_page);
         assert!(static_page_path(root, "/missing").is_none());
     }
 }

@@ -102,7 +102,6 @@ Then open:
 
 ```text
 http://127.0.0.1:8767/           # React study wall (default)
-http://127.0.0.1:8767/review     # due review task
 http://127.0.0.1:8767/classic    # classic study wall
 http://127.0.0.1:8767/audio-review.html
 ```
@@ -141,53 +140,34 @@ Study state and account endpoints:
 
 - `GET /api/study/legacy-seed` returns unique shared item UUIDs and legacy
   marks for the one-time guest migration.
-- `POST /api/study/resolve` resolves up to 100 shared item UUIDs, in requested
-  order, to ordinary entry payloads and preferred book occurrences.
 - `POST /api/auth/register`, `POST /api/auth/login`, and
   `POST /api/auth/logout` manage local email/password sessions.
 - `GET /api/auth/me` returns the active user and CSRF token.
 - `GET /api/study/state` returns the authenticated user's complete snapshot.
-- `PUT /api/study/cards/<item_uuid>/marks`,
-  `POST /api/study/cards/<item_uuid>/played`, and
-  `POST /api/study/cards/<item_uuid>/grade` update one account card.
+- `PUT /api/study/cards/<item_uuid>/marks` and
+  `POST /api/study/cards/<item_uuid>/played` update one account card.
 - `POST /api/study/import-guest` conservatively merges an explicitly selected
   guest snapshot. Authenticated mutations require `X-CSRF-Token`.
 
-## Spaced review state
+## Review filter
 
-Playback completion—not Known or Flagged—enrolls a shared vocabulary item.
-A word-plus-sentence card enrolls after both phases complete while it remains
-focused; a word-only card enrolls after its word completes. New cards are due
-after exactly 24 hours. Replaying an enrolled card updates its preferred book
-occurrence without changing its schedule.
+The React and Classic study walls expose `Review` beside `All`, `Unmarked`,
+`Known`, and `Flagged`. It shows cards whose playback-created `due_at` timestamp
+has arrived. Playback completion—not Known or Flagged—enrolls a shared
+vocabulary item, and a new card becomes reviewable after exactly 24 hours.
+Replaying an enrolled card updates its preferred book occurrence without
+changing its due time.
 
-`/review` snapshots every card due when the page opens. It deliberately reuses
-the normal study-wall list/detail layout: every due word stays in the left
-column, clicking a row focuses that word in the existing detail pane, and the
-same word/sentence controls, sentence star, explanations, and RailPlayer are
-available. Review-only grade buttons sit above that shared layout. The queue is
-ordered by due time, enrollment time, and shared item UUID, and content is internally
-resolved in pages of 100 without a learner-visible limit. `Again` resets the
-Good ladder and schedules 10 minutes; `Hard` preserves the ladder, schedules
-one day, and sets Flagged; `Good` advances through 1, 3, 7, 14, 30, and 60-day
-intervals and sets Known. Further Good reviews remain at 60 days.
-
-On the normal `/` React wall, `Review due (N)` is an in-place mode switch: it
-keeps the header, detail pane, and RailPlayer mounted and replaces only the
-left playlist with the due snapshot. The URL does not change, and `Back to
-study list` restores the ordinary book/filter playlist. `/review` remains
-available as the direct route for bookmarks and compatibility.
-
-The selected grade is pending until forward movement leaves the final phase of
-the card. Previous, replay, stop, logout, page close, and navigation away do
-not grade it. A registered-user grade and its mark side effect are committed
-in one SQLite operation; a failed write prevents review advancement.
+Known and Flagged are independent learner tags. Marking either tag never enrolls
+a card, changes its due time, or acts as a review grade. The old graded-review
+route and Again/Hard/Good controls were removed so the visible filter and the
+stored study state have one clear responsibility.
 
 Guest JSON is validated and normalized when loaded. Malformed input is copied
 to a timestamped `:malformed:` localStorage key before a fresh snapshot is
 started, and the `storage` event updates other same-origin tabs. On first guest
-launch, legacy Known items are enrolled due immediately and Flagged-only items
-retain their tag without enrollment. The migration marker is
+launch, legacy Known and Flagged items retain only their tags; legacy marks do
+not create review enrollment. The migration marker is
 `n2-word-service:study-state:legacy-migrated:v1`.
 
 After account login, guest progress is never uploaded silently. Import creates

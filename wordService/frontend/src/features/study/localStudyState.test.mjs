@@ -14,14 +14,16 @@ class MemoryStorage {
 
 const now = () => new Date("2026-08-13T00:00:00.000Z");
 
-test("legacy known cards are due now while flagged-only cards stay unenrolled", () => {
+test("legacy marks stay independent from review enrollment", () => {
   const storage = new MemoryStorage();
   const store = new LocalStudyStateStore(storage, now);
   store.seedLegacy([
     {item_uuid: "known", known: true, flagged: false},
     {item_uuid: "flagged", known: false, flagged: true},
   ]);
-  assert.deepEqual(store.dueCards().map(card => card.item_uuid), ["known"]);
+  assert.deepEqual(store.dueCards(), []);
+  assert.equal(store.load().cards.known.enrolled_at, undefined);
+  assert.equal(store.load().cards.known.due_at, undefined);
   assert.equal(store.load().cards.flagged.enrolled_at, undefined);
   assert.ok(storage.getItem(LEGACY_MIGRATION_KEY));
 });
@@ -40,14 +42,13 @@ test("complete play enrolls once and later plays update only source and played t
   assert.equal(replayed.preferred_source_index, 44);
 });
 
-test("grades update schedule and apply positive tags without toggling", async () => {
+test("marking a card does not enroll or schedule it", async () => {
   const store = new LocalStudyStateStore(new MemoryStorage(), now);
-  await store.recordPlayed({item_uuid: "card", book_code: "N2", source_index: 1});
-  assert.equal((await store.grade("card", "hard")).flagged, true);
-  assert.equal((await store.grade("card", "hard")).flagged, true);
-  const good = await store.grade("card", "good");
-  assert.equal(good.known, true);
-  assert.equal(good.flagged, true);
+  const marked = await store.setMark("card", {known: true, flagged: true});
+  assert.equal(marked.known, true);
+  assert.equal(marked.flagged, true);
+  assert.equal(marked.enrolled_at, undefined);
+  assert.equal(marked.due_at, undefined);
 });
 
 test("malformed state is archived before recovery", () => {

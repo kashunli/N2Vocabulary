@@ -23,10 +23,7 @@ interface StudyHeaderProps {
   summary?: VocabularySummary;
   target: AudioTarget | null;
   units: UnitSummary[];
-  dueCount: number;
-  reviewMode: boolean;
   onOpenSettings: () => void;
-  onToggleReview: () => void;
   onSearch: (value: string) => void;
   onSelectBook: (book: string) => void;
   onSelectFilter: (filter: FilterState) => void;
@@ -55,10 +52,7 @@ export function StudyHeader({
   summary,
   target,
   units,
-  dueCount,
-  reviewMode,
   onOpenSettings,
-  onToggleReview,
   onSearch,
   onSelectBook,
   onSelectFilter,
@@ -98,7 +92,6 @@ export function StudyHeader({
           <button type="button" onClick={onToggleCoverAll} disabled={!entriesCount} aria-pressed={allVisibleCovered}>{allVisibleCovered ? "Uncover all" : "Cover all"}</button>
           <button type="button" onClick={onTogglePlayback} disabled={!target} aria-pressed={playbackActive}>{playbackActive ? "Pause" : isSilencePaused ? "Resume" : playbackRunMode === "single" ? "Play one" : "Play visible"}</button>
           <button type="button" className={showStarred ? "is-selected" : ""} onClick={onToggleStarred} aria-pressed={showStarred}>★ Starred sentences</button>
-          <button type="button" className={`${dueCount || reviewMode ? "is-selected" : ""}`} onClick={onToggleReview} aria-pressed={reviewMode} disabled={!dueCount && !reviewMode}>{reviewMode ? "Back to study list" : `Review due (${dueCount})`}</button>
           <a href="/audio-review.html">Audio text review</a>
           <button type="button" onClick={exportFlaggedAudio} disabled={selectedUnit === null}>Export flagged audio</button>
           <a href="/classic">Classic study wall</a>

@@ -1,6 +1,5 @@
 //! Per-user authentication and study state stored separately from vocabulary.
 
-use crate::scheduler::{ReviewGrade, initial_due_at, schedule_review};
 use anyhow::{Context, Result, bail};
 use argon2::Argon2;
 use argon2::password_hash::{
@@ -18,6 +17,7 @@ use std::time::{Duration as StdDuration, Instant};
 
 pub const SESSION_COOKIE: &str = "n2_word_session";
 const SESSION_DAYS: i64 = 30;
+const REVIEW_ENROLLMENT_DAYS: i64 = 1;
 
 #[derive(Clone, Debug)]
 pub struct UserStore {
@@ -53,8 +53,6 @@ pub struct StudyCard {
     pub flagged: bool,
     pub enrolled_at: Option<String>,
     pub due_at: Option<String>,
-    pub good_step: u8,
-    pub last_reviewed_at: Option<String>,
     pub last_played_at: Option<String>,
     pub preferred_book_code: Option<String>,
     pub preferred_source_index: Option<i64>,
@@ -111,6 +109,8 @@ impl UserStore {
               flagged INTEGER NOT NULL DEFAULT 0 CHECK(flagged IN (0,1)),
               enrolled_at TEXT,
               due_at TEXT,
+              -- Retained for compatibility with existing user databases. The
+              -- application no longer exposes or updates graded-review state.
               good_step INTEGER NOT NULL DEFAULT 0 CHECK(good_step BETWEEN 0 AND 6),
               last_reviewed_at TEXT,
               last_played_at TEXT,
@@ -261,7 +261,7 @@ impl UserStore {
     pub fn snapshot(&self, user_id: i64) -> Result<StudySnapshot> {
         let conn = self.connect()?;
         let mut statement = conn.prepare(
-            r#"SELECT item_uuid,known,flagged,enrolled_at,due_at,good_step,last_reviewed_at,
+            r#"SELECT item_uuid,known,flagged,enrolled_at,due_at,
                       last_played_at,preferred_book_code,preferred_source_index,updated_at
                FROM study_cards WHERE user_id=? ORDER BY item_uuid"#,
         )?;
@@ -293,8 +293,8 @@ impl UserStore {
         let conn = self.connect()?;
         let now = now_utc();
         conn.execute(
-            r#"INSERT INTO study_cards(user_id,item_uuid,known,flagged,good_step,updated_at)
-               VALUES(?,?,?,?,0,?) ON CONFLICT(user_id,item_uuid) DO UPDATE SET
+            r#"INSERT INTO study_cards(user_id,item_uuid,known,flagged,updated_at)
+               VALUES(?,?,?,?,?) ON CONFLICT(user_id,item_uuid) DO UPDATE SET
                known=excluded.known, flagged=excluded.flagged, updated_at=excluded.updated_at"#,
             params![user_id, item_uuid, int(known), int(flagged), now],
         )?;
@@ -312,11 +312,11 @@ impl UserStore {
         let conn = self.connect()?;
         let now = Utc::now();
         let now_text = now.to_rfc3339();
-        let due = initial_due_at(now).to_rfc3339();
+        let due = initial_review_due_at(now).to_rfc3339();
         conn.execute(
-            r#"INSERT INTO study_cards(user_id,item_uuid,known,flagged,enrolled_at,due_at,good_step,
+            r#"INSERT INTO study_cards(user_id,item_uuid,known,flagged,enrolled_at,due_at,
                     last_played_at,preferred_book_code,preferred_source_index,updated_at)
-               VALUES(?,?,0,0,?,?,0,?,?,?,?)
+               VALUES(?,?,0,0,?,?,?,?,?,?)
                ON CONFLICT(user_id,item_uuid) DO UPDATE SET
                  enrolled_at=COALESCE(study_cards.enrolled_at,excluded.enrolled_at),
                  due_at=COALESCE(study_cards.due_at,excluded.due_at),
@@ -333,32 +333,6 @@ impl UserStore {
                 book,
                 source_index,
                 now_text
-            ],
-        )?;
-        get_card(&conn, user_id, item_uuid)
-    }
-
-    pub fn grade(&self, user_id: i64, item_uuid: &str, grade: ReviewGrade) -> Result<StudyCard> {
-        let _guard = self.write_lock.lock().expect("user write lock");
-        let conn = self.connect()?;
-        let current = get_card(&conn, user_id, item_uuid)?;
-        if current.enrolled_at.is_none() {
-            bail!("cannot grade an unenrolled card");
-        }
-        let reviewed_at = Utc::now();
-        let result = schedule_review(current.good_step, grade, reviewed_at);
-        conn.execute(
-            r#"UPDATE study_cards SET known=?,flagged=?,good_step=?,due_at=?,
-                    last_reviewed_at=?,updated_at=? WHERE user_id=? AND item_uuid=?"#,
-            params![
-                int(current.known || result.set_known),
-                int(current.flagged || result.set_flagged),
-                result.good_step,
-                result.due_at.to_rfc3339(),
-                reviewed_at.to_rfc3339(),
-                reviewed_at.to_rfc3339(),
-                user_id,
-                item_uuid
             ],
         )?;
         get_card(&conn, user_id, item_uuid)
@@ -433,7 +407,7 @@ fn parsed_at(value: &str) -> DateTime<chrono::FixedOffset> {
 }
 
 fn merge_import_cards(account: StudyCard, guest: StudyCard, now: &str) -> StudyCard {
-    let guest_schedule_wins = match (&account.due_at, &guest.due_at) {
+    let guest_due_wins = match (&account.due_at, &guest.due_at) {
         (None, Some(_)) => true,
         (Some(account_due), Some(guest_due)) => parsed_at(guest_due) < parsed_at(account_due),
         _ => false,
@@ -450,20 +424,10 @@ fn merge_import_cards(account: StudyCard, guest: StudyCard, now: &str) -> StudyC
         known: account.known || guest.known,
         flagged: account.flagged || guest.flagged,
         enrolled_at: earlier(&account.enrolled_at, &guest.enrolled_at),
-        due_at: if guest_schedule_wins {
+        due_at: if guest_due_wins {
             guest.due_at.clone()
         } else {
             account.due_at.clone()
-        },
-        good_step: if guest_schedule_wins {
-            guest.good_step
-        } else {
-            account.good_step
-        },
-        last_reviewed_at: if guest_schedule_wins {
-            guest.last_reviewed_at.clone()
-        } else {
-            account.last_reviewed_at.clone()
         },
         last_played_at: if played_from_guest {
             guest.last_played_at.clone()
@@ -486,15 +450,15 @@ fn merge_import_cards(account: StudyCard, guest: StudyCard, now: &str) -> StudyC
 
 fn upsert_card(conn: &Connection, user_id: i64, card: &StudyCard) -> Result<()> {
     conn.execute(
-        r#"INSERT INTO study_cards(user_id,item_uuid,known,flagged,enrolled_at,due_at,good_step,
-             last_reviewed_at,last_played_at,preferred_book_code,preferred_source_index,updated_at)
-           VALUES(?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(user_id,item_uuid) DO UPDATE SET
+        r#"INSERT INTO study_cards(user_id,item_uuid,known,flagged,enrolled_at,due_at,
+             last_played_at,preferred_book_code,preferred_source_index,updated_at)
+           VALUES(?,?,?,?,?,?,?,?,?,?) ON CONFLICT(user_id,item_uuid) DO UPDATE SET
              known=excluded.known,flagged=excluded.flagged,enrolled_at=excluded.enrolled_at,
-             due_at=excluded.due_at,good_step=excluded.good_step,last_reviewed_at=excluded.last_reviewed_at,
+             due_at=excluded.due_at,
              last_played_at=excluded.last_played_at,preferred_book_code=excluded.preferred_book_code,
              preferred_source_index=excluded.preferred_source_index,updated_at=excluded.updated_at"#,
         params![user_id, card.item_uuid, int(card.known), int(card.flagged), card.enrolled_at,
-            card.due_at, card.good_step, card.last_reviewed_at, card.last_played_at,
+            card.due_at, card.last_played_at,
             card.preferred_book_code, card.preferred_source_index, card.updated_at],
     )?;
     Ok(())
@@ -542,6 +506,11 @@ fn hash_token(value: &str) -> String {
 fn now_utc() -> String {
     Utc::now().to_rfc3339()
 }
+
+fn initial_review_due_at(completed_at: DateTime<Utc>) -> DateTime<Utc> {
+    completed_at + Duration::days(REVIEW_ENROLLMENT_DAYS)
+}
+
 fn int(value: bool) -> i64 {
     if value { 1 } else { 0 }
 }
@@ -553,18 +522,16 @@ fn row_to_card(row: &rusqlite::Row<'_>) -> rusqlite::Result<StudyCard> {
         flagged: row.get::<_, i64>(2)? != 0,
         enrolled_at: row.get(3)?,
         due_at: row.get(4)?,
-        good_step: row.get(5)?,
-        last_reviewed_at: row.get(6)?,
-        last_played_at: row.get(7)?,
-        preferred_book_code: row.get(8)?,
-        preferred_source_index: row.get(9)?,
-        updated_at: row.get(10)?,
+        last_played_at: row.get(5)?,
+        preferred_book_code: row.get(6)?,
+        preferred_source_index: row.get(7)?,
+        updated_at: row.get(8)?,
     })
 }
 
 fn get_card(conn: &Connection, user_id: i64, item_uuid: &str) -> Result<StudyCard> {
     conn.query_row(
-        r#"SELECT item_uuid,known,flagged,enrolled_at,due_at,good_step,last_reviewed_at,
+        r#"SELECT item_uuid,known,flagged,enrolled_at,due_at,
                   last_played_at,preferred_book_code,preferred_source_index,updated_at
            FROM study_cards WHERE user_id=? AND item_uuid=?"#,
         params![user_id, item_uuid],
@@ -579,7 +546,7 @@ fn get_card_optional(
     item_uuid: &str,
 ) -> Result<Option<StudyCard>> {
     conn.query_row(
-        r#"SELECT item_uuid,known,flagged,enrolled_at,due_at,good_step,last_reviewed_at,
+        r#"SELECT item_uuid,known,flagged,enrolled_at,due_at,
                   last_played_at,preferred_book_code,preferred_source_index,updated_at
            FROM study_cards WHERE user_id=? AND item_uuid=?"#,
         params![user_id, item_uuid],
@@ -644,21 +611,20 @@ mod tests {
     }
 
     #[test]
-    fn played_and_grade_updates_are_durable_and_atomic() {
+    fn marks_do_not_enroll_and_playback_creates_review_due_state() {
         let (_dir, store) = fixture();
         let session = store.register("review@example.com", "password").unwrap();
+        let marked = store
+            .set_marks(session.user.id, "item", true, true)
+            .unwrap();
+        assert!(marked.known && marked.flagged);
+        assert!(marked.enrolled_at.is_none());
+        assert!(marked.due_at.is_none());
         let played = store
             .record_played(session.user.id, "item", "N2", 7)
             .unwrap();
         assert!(played.due_at.is_some());
-        let hard = store
-            .grade(session.user.id, "item", ReviewGrade::Hard)
-            .unwrap();
-        assert!(hard.flagged);
-        let good = store
-            .grade(session.user.id, "item", ReviewGrade::Good)
-            .unwrap();
-        assert!(good.known && good.flagged);
+        assert!(played.known && played.flagged);
     }
 
     #[test]
@@ -674,8 +640,6 @@ mod tests {
             flagged: false,
             enrolled_at: Some("2026-01-01T00:00:00Z".into()),
             due_at: Some("2026-01-02T00:00:00Z".into()),
-            good_step: 3,
-            last_reviewed_at: Some("2026-01-01T00:00:00Z".into()),
             last_played_at: Some("2026-01-01T00:00:00Z".into()),
             preferred_book_code: Some("N2".into()),
             preferred_source_index: Some(7),
@@ -686,7 +650,6 @@ mod tests {
             .unwrap();
         let card = &snapshot.cards["item"];
         assert!(card.known && card.flagged);
-        assert_eq!(card.good_step, 3);
         assert_eq!(card.preferred_source_index, Some(7));
         assert_eq!(
             store

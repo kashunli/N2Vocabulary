@@ -1,11 +1,17 @@
-import {initialDueAt, REVIEW_STATE_VERSION, scheduleReview} from "./reviewScheduler.mjs";
-
 export const STUDY_STATE_KEY = "n2-word-service:study-state:v1";
+export const STUDY_STATE_VERSION = 1;
 export const LEGACY_MIGRATION_KEY = "n2-word-service:study-state:legacy-migrated:v1";
 export const GUEST_ARCHIVE_PREFIX = `${STUDY_STATE_KEY}:import-archive:`;
+const REVIEW_ENROLLMENT_DELAY_MS = 24 * 60 * 60 * 1000;
+
+function initialReviewDueAt(completedAt) {
+  const date = new Date(completedAt);
+  if (!Number.isFinite(date.getTime())) throw new Error("completedAt must be a valid timestamp");
+  return new Date(date.getTime() + REVIEW_ENROLLMENT_DELAY_MS).toISOString();
+}
 
 export function emptyStudySnapshot() {
-  return {version: REVIEW_STATE_VERSION, updated_at: new Date(0).toISOString(), cards: {}};
+  return {version: STUDY_STATE_VERSION, updated_at: new Date(0).toISOString(), cards: {}};
 }
 
 function optionalIso(value) {
@@ -17,15 +23,12 @@ function normalizeCard(value, key) {
   if (!value || typeof value !== "object") return null;
   const itemUuid = typeof value.item_uuid === "string" ? value.item_uuid.trim() : key;
   if (!itemUuid || itemUuid !== key) return null;
-  const goodStep = Number.isInteger(value.good_step) ? Math.max(0, Math.min(6, value.good_step)) : 0;
   return {
     item_uuid: itemUuid,
     known: value.known === true,
     flagged: value.flagged === true,
     enrolled_at: optionalIso(value.enrolled_at),
     due_at: optionalIso(value.due_at),
-    good_step: goodStep,
-    last_reviewed_at: optionalIso(value.last_reviewed_at),
     last_played_at: optionalIso(value.last_played_at),
     preferred_book_code: typeof value.preferred_book_code === "string" ? value.preferred_book_code : undefined,
     preferred_source_index: Number.isInteger(value.preferred_source_index) ? value.preferred_source_index : undefined,
@@ -35,7 +38,7 @@ function normalizeCard(value, key) {
 
 export function normalizeStudySnapshot(value) {
   const result = emptyStudySnapshot();
-  if (!value || typeof value !== "object" || value.version !== REVIEW_STATE_VERSION) return result;
+  if (!value || typeof value !== "object" || value.version !== STUDY_STATE_VERSION) return result;
   if (value.cards && typeof value.cards === "object") {
     for (const [key, candidate] of Object.entries(value.cards)) {
       const card = normalizeCard(candidate, key);
@@ -84,7 +87,7 @@ export class LocalStudyStateStore {
 
   commit(cards) {
     const updatedAt = this.now().toISOString();
-    this.snapshot = {version: REVIEW_STATE_VERSION, updated_at: updatedAt, cards};
+    this.snapshot = {version: STUDY_STATE_VERSION, updated_at: updatedAt, cards};
     this.storage.setItem(STUDY_STATE_KEY, JSON.stringify(this.snapshot));
     this.emit();
     return this.snapshot;
@@ -100,9 +103,6 @@ export class LocalStudyStateStore {
         item_uuid: item.item_uuid,
         known: item.known === true,
         flagged: item.flagged === true,
-        enrolled_at: item.known ? now : undefined,
-        due_at: item.known ? now : undefined,
-        good_step: 0,
         updated_at: now,
       };
     }
@@ -113,43 +113,26 @@ export class LocalStudyStateStore {
 
   async setMark(itemUuid, mark) {
     const now = this.now().toISOString();
-    const current = this.snapshot.cards[itemUuid] || {item_uuid: itemUuid, known: false, flagged: false, good_step: 0};
+    const current = this.snapshot.cards[itemUuid] || {item_uuid: itemUuid, known: false, flagged: false};
     return this.commit({...this.snapshot.cards, [itemUuid]: {...current, ...mark, updated_at: now}}).cards[itemUuid];
   }
 
   async recordPlayed(entry) {
     const now = this.now().toISOString();
     const current = this.snapshot.cards[entry.item_uuid] || {
-      item_uuid: entry.item_uuid, known: false, flagged: false, good_step: 0,
+      item_uuid: entry.item_uuid, known: false, flagged: false,
     };
     const enrolledAt = current.enrolled_at || now;
     const next = {
       ...current,
       enrolled_at: enrolledAt,
-      due_at: current.due_at || initialDueAt(now),
+      due_at: current.due_at || initialReviewDueAt(now),
       last_played_at: now,
       preferred_book_code: entry.book_code,
       preferred_source_index: entry.source_index,
       updated_at: now,
     };
     return this.commit({...this.snapshot.cards, [entry.item_uuid]: next}).cards[entry.item_uuid];
-  }
-
-  async grade(itemUuid, grade) {
-    const current = this.snapshot.cards[itemUuid];
-    if (!current?.enrolled_at) throw new Error("cannot grade an unenrolled card");
-    const now = this.now().toISOString();
-    const result = scheduleReview(current.good_step, grade, now);
-    const next = {
-      ...current,
-      known: current.known || result.setKnown,
-      flagged: current.flagged || result.setFlagged,
-      good_step: result.goodStep,
-      due_at: result.dueAt,
-      last_reviewed_at: now,
-      updated_at: now,
-    };
-    return this.commit({...this.snapshot.cards, [itemUuid]: next}).cards[itemUuid];
   }
 
   dueCards(at = this.now()) {
@@ -159,11 +142,6 @@ export class LocalStudyStateStore {
       .sort((left, right) => left.due_at.localeCompare(right.due_at)
         || (left.enrolled_at || "").localeCompare(right.enrolled_at || "")
         || left.item_uuid.localeCompare(right.item_uuid));
-  }
-
-  nextDueAt() {
-    return Object.values(this.snapshot.cards)
-      .map(card => card.due_at).filter(Boolean).sort()[0];
   }
 
   exportSnapshot() { return JSON.parse(JSON.stringify(this.snapshot)); }

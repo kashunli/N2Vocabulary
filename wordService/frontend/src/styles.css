@@ -20,13 +20,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
   padding: 20px clamp(16px, 3.5vw, 60px) 0;
 }
 
-.review-header-actions, .review-grade-bar { display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap; }
-.review-header-actions a, .review-empty a { color: var(--ink, #17212b); font-weight: 700; }
-.review-grade-bar { padding: 0.8rem 1rem; border-bottom: 1px solid rgba(20, 35, 50, 0.12); background: #fffaf0; }
-.review-grade-bar > span { font-weight: 700; margin-right: 0.3rem; }
-.review-grade-bar button.is-selected { background: #19354d; color: white; border-color: #19354d; }
-.review-content { top: auto; }
-.review-empty { margin: 4rem auto; max-width: 38rem; padding: 2rem; text-align: center; background: white; border-radius: 1rem; }
 
 .react-header,
 .react-unit-strip,

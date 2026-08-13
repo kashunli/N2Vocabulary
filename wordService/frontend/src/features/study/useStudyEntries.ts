@@ -1,17 +1,15 @@
 import { useEffect, useRef, type Dispatch, type SetStateAction } from "react";
 
-import { getEntries, resolveReviewEntries } from "../../api";
+import { getEntries } from "../../api";
 import type { Entry } from "../../types";
 import type { PlaybackMode } from "../player/playbackSettings";
 import type { FilterState } from "./studyTypes";
-import type { StudyCardState, StudySnapshot } from "./studyStateTypes";
+import type { StudySnapshot } from "./studyStateTypes";
 
 interface UseStudyEntriesOptions {
   filterState: FilterState;
   playbackMode: PlaybackMode;
   resetPosition: (entries: Entry[]) => void;
-  reviewCards: StudyCardState[];
-  reviewMode: boolean;
   search: string;
   selectedBook: string;
   selectedUnit: number | null;
@@ -25,8 +23,6 @@ export function useStudyEntries({
   filterState,
   playbackMode,
   resetPosition,
-  reviewCards,
-  reviewMode,
   search,
   selectedBook,
   selectedUnit,
@@ -44,46 +40,20 @@ export function useStudyEntries({
       search,
       selectedBook,
       selectedUnit,
-      reviewMode,
-      reviewCards.map(card => [card.item_uuid, card.due_at, card.preferred_book_code, card.preferred_source_index]),
     ]);
     const preserveLoadedPlaylist = loadedQueryRef.current === queryKey;
     // Playing a card updates studySnapshot so its progress can be saved. Keep
     // the current rows mounted during that background refresh; replacing them
     // with the loading message empties the scroll pane and resets it to row 1.
     if (loadedQueryRef.current !== queryKey) setEntriesLoading(true);
-    const loadEntries = reviewMode
-      ? (async () => {
-        const resolved: Entry[] = [];
-        for (let offset = 0; offset < reviewCards.length; offset += 100) {
-          const page = reviewCards.slice(offset, offset + 100);
-          const payload = await resolveReviewEntries(page.map(card => ({
-            item_uuid: card.item_uuid,
-            preferred_book_code: card.preferred_book_code,
-            preferred_source_index: card.preferred_source_index,
-          })));
-          const byUuid = new Map(payload.items.map(entry => [entry.item_uuid, entry]));
-          for (const card of page) {
-            const entry = byUuid.get(card.item_uuid);
-            if (entry) {
-              resolved.push({
-                ...entry,
-                mark: {...entry.mark, known: card.known, flagged: card.flagged},
-              });
-            }
-          }
-        }
-        return {items: resolved};
-      })()
-      : getEntries(selectedBook, selectedUnit ?? undefined, "all", search);
-    loadEntries.then((payload) => {
+    getEntries(selectedBook, selectedUnit ?? undefined, "all", search).then((payload) => {
         if (cancelled) return;
         const loadedItems = payload.items
           .map(entry => {
             const card = studySnapshot.cards[entry.item_uuid];
-            return {...entry, mark: {known: !!card?.known, flagged: !!card?.flagged, updated_at: card?.updated_at}};
+            return {...entry, mark: {known: !!card?.known, flagged: !!card?.flagged, due_at: card?.due_at, updated_at: card?.updated_at}};
           });
-        const filteredItems = reviewMode ? loadedItems : loadedItems.filter(entry => filterState === "all"
+        const filteredItems = loadedItems.filter(entry => filterState === "all"
           || (filterState === "known" && entry.mark.known)
           || (filterState === "flagged" && entry.mark.flagged)
           || (filterState === "unmarked" && !entry.mark.known && !entry.mark.flagged));
@@ -108,5 +78,5 @@ export function useStudyEntries({
         if (!cancelled) setEntriesLoading(false);
       });
     return () => { cancelled = true; };
-  }, [filterState, playbackMode, resetPosition, reviewCards, reviewMode, search, selectedBook, selectedUnit, setEntries, setEntriesLoading, setStatus, studySnapshot]);
+  }, [filterState, playbackMode, resetPosition, search, selectedBook, selectedUnit, setEntries, setEntriesLoading, setStatus, studySnapshot]);
 }

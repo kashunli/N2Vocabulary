@@ -1,6 +1,5 @@
 use super::response::{header, parse_local_url, send_json, send_json_with_headers};
 use crate::repository::WordRepository;
-use crate::scheduler::ReviewGrade;
 use crate::user_store::{AuthContext, SESSION_COOKIE, StudyCard, UserStore};
 use anyhow::Result;
 use serde::Deserialize;
@@ -145,7 +144,6 @@ pub(super) fn handle_post(
         }
         for (key, card) in &import.cards {
             if key != &card.item_uuid
-                || card.good_step > 6
                 || card.enrolled_at.is_some() != card.due_at.is_some()
                 || !valid_card_timestamps(card)
                 || repository
@@ -230,36 +228,6 @@ pub(super) fn handle_post(
             &json!({"card": users.record_played(auth.user.id, item_uuid, book, source_index)?}),
         );
     }
-    if parts[1] == "grade" {
-        let grade: ReviewGrade = match body
-            .get("grade")
-            .cloned()
-            .and_then(|value| serde_json::from_value(value).ok())
-        {
-            Some(value) => value,
-            None => {
-                return send_json(
-                    request,
-                    StatusCode(400),
-                    &json!({"error": "grade must be again, hard, or good"}),
-                );
-            }
-        };
-        return match users.grade(auth.user.id, item_uuid, grade) {
-            Ok(card) => send_json(request, StatusCode(200), &json!({"card": card})),
-            Err(error)
-                if error.to_string().contains("unenrolled")
-                    || error.to_string().contains("not found") =>
-            {
-                send_json(
-                    request,
-                    StatusCode(400),
-                    &json!({"error": error.to_string()}),
-                )
-            }
-            Err(error) => Err(error),
-        };
-    }
     send_json(request, StatusCode(404), &json!({"error": "not found"}))
 }
 
@@ -267,7 +235,6 @@ fn valid_card_timestamps(card: &StudyCard) -> bool {
     [
         card.enrolled_at.as_deref(),
         card.due_at.as_deref(),
-        card.last_reviewed_at.as_deref(),
         card.last_played_at.as_deref(),
         Some(card.updated_at.as_str()),
     ]

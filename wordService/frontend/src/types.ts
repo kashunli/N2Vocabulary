@@ -55,6 +55,7 @@ export interface VocabularySummary {
 export interface Mark {
   known: boolean;
   flagged: boolean;
+  due_at?: string;
   updated_at?: string;
 }
 
