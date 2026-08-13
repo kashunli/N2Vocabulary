@@ -43,8 +43,11 @@ export function StudyWallView({
   const currentRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    activeRef.current?.scrollIntoView({behavior: "smooth", block: "center"});
-  }, [activeIndex, entries]);
+    // Advancing playback is a queue step, so keep the list still while the
+    // next row is already visible. Only reveal an off-screen row, without a
+    // center-seeking scroll that can look like the app is searching the list.
+    activeRef.current?.scrollIntoView({behavior: "auto", block: "nearest"});
+  }, [activeEntry?.entry_id]);
 
   useLayoutEffect(() => {
     const current = currentRef.current;
