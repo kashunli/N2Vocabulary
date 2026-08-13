@@ -40,13 +40,24 @@ export function StudyWallView({
   const [draggingDivider, setDraggingDivider] = useState(false);
   const activeRef = useRef<HTMLButtonElement | null>(null);
   const layoutRef = useRef<HTMLDivElement | null>(null);
+  const listRef = useRef<HTMLElement | null>(null);
   const currentRef = useRef<HTMLElement | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    const list = listRef.current;
+    const active = activeRef.current;
+    if (!list || !active) return;
+
     // Advancing playback is a queue step, so keep the list still while the
-    // next row is already visible. Only reveal an off-screen row, without a
-    // center-seeking scroll that can look like the app is searching the list.
-    activeRef.current?.scrollIntoView({behavior: "auto", block: "nearest"});
+    // next row is already visible. Adjust only this pane when the row crosses
+    // an edge; scrollIntoView can also move ancestors and reset the list.
+    const listBounds = list.getBoundingClientRect();
+    const activeBounds = active.getBoundingClientRect();
+    if (activeBounds.bottom > listBounds.bottom) {
+      list.scrollTop += activeBounds.bottom - listBounds.bottom;
+    } else if (activeBounds.top < listBounds.top) {
+      list.scrollTop -= listBounds.top - activeBounds.top;
+    }
   }, [activeEntry?.entry_id]);
 
   useLayoutEffect(() => {
@@ -78,7 +89,7 @@ export function StudyWallView({
 
   return (
     <div className="react-layout" ref={layoutRef} style={{gridTemplateColumns: `${listWidth}px 12px minmax(0, 1fr)`}}>
-      <section className="react-list" aria-label="Vocabulary playback list">
+      <section ref={listRef} className="react-list" aria-label="Vocabulary playback list">
         {entriesLoading ? <p className="react-empty">Loading vocabulary…</p> : entries.length ? entries.map((entry, index) => <button key={entry.entry_id} ref={index === activeIndex ? activeRef : null} className={`${index === activeIndex ? "is-active " : ""}${coveredEntryIds.has(entry.entry_id) ? "is-covered" : ""}`} aria-current={index === activeIndex ? "true" : undefined} onClick={() => onSelectEntry(index)}><span className="react-row-index">{String(index + 1).padStart(3, "0")}</span><span className="react-row-kanji">{entry.kanji}</span><span className="react-row-status" aria-label={`${entry.mark?.known ? "known" : ""}${entry.mark?.flagged ? " flagged" : ""}`}>{entry.mark?.known ? "✓" : ""}{entry.mark?.flagged ? " ⚑" : ""}</span></button>) : <p className="react-empty">No words match the current filters.</p>}
       </section>
       <button className="react-divider" type="button" role="separator" aria-orientation="vertical" aria-label="Adjust playback list width" aria-valuemin={220} aria-valuemax={620} aria-valuenow={listWidth} tabIndex={0} onPointerDown={(event) => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); setDraggingDivider(true); }} onKeyDown={(event) => { if (event.key === "ArrowLeft") setListWidth((value) => Math.max(220, value - (event.shiftKey ? 50 : 20))); else if (event.key === "ArrowRight") setListWidth((value) => Math.min(620, value + (event.shiftKey ? 50 : 20))); else return; event.preventDefault(); }}> </button>

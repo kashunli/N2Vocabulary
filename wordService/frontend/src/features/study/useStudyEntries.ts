@@ -1,4 +1,4 @@
-import { useEffect, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useRef, type Dispatch, type SetStateAction } from "react";
 
 import { getEntries } from "../../api";
 import type { Entry } from "../../types";
@@ -31,9 +31,15 @@ export function useStudyEntries({
   setStatus,
   studySnapshot,
 }: UseStudyEntriesOptions) {
+  const loadedQueryRef = useRef<string | undefined>(undefined);
+
   useEffect(() => {
     let cancelled = false;
-    setEntriesLoading(true);
+    const queryKey = JSON.stringify([filterState, search, selectedBook, selectedUnit]);
+    // Playing a card updates studySnapshot so its progress can be saved. Keep
+    // the current rows mounted during that background refresh; replacing them
+    // with the loading message empties the scroll pane and resets it to row 1.
+    if (loadedQueryRef.current !== queryKey) setEntriesLoading(true);
     getEntries(selectedBook, selectedUnit ?? undefined, "all", search)
       .then((payload) => {
         if (cancelled) return;
@@ -48,6 +54,7 @@ export function useStudyEntries({
             || (filterState === "unmarked" && !entry.mark.known && !entry.mark.flagged));
         setEntries(items);
         resetPosition(items);
+        loadedQueryRef.current = queryKey;
       })
       .catch((error: unknown) => {
         if (!cancelled) setStatus(error instanceof Error ? error.message : "Could not load vocabulary.");
