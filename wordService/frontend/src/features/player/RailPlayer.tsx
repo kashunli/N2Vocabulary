@@ -63,16 +63,24 @@ export function RailPlayer({
   const lastReplayRequest = useRef(replayRequest);
   const lastPauseRequest = useRef(pauseRequest);
   const lastStopRequest = useRef(stopRequest);
+  const lastTargetKey = useRef<string | undefined>(undefined);
+  const pendingTargetPlay = useRef(false);
   currentTimeRef.current = player.currentTime;
 
   useEffect(() => {
     onPlayingChange(player.isPlaying);
   }, [onPlayingChange, player.isPlaying]);
 
+  const targetKey = target ? `${target.entry.item_uuid}:${target.phase}:${target.url}` : "";
+
   useEffect(() => {
     setError("");
     setActiveUrl(target?.url);
-  }, [target?.url]);
+    if (targetKey !== lastTargetKey.current) {
+      pendingTargetPlay.current = !!target && autoPlay;
+      lastTargetKey.current = targetKey;
+    }
+  }, [autoPlay, target?.url, targetKey]);
 
   const playFrom = useCallback(async (offset?: number) => {
     if (!target || !activeUrl || !player.audioBuffer) return;
@@ -89,18 +97,22 @@ export function RailPlayer({
   }, [activeUrl, player.audioBuffer, player.playRange, target]);
 
   // A newly selected target starts only when visible-list playback is active.
-  // Manual controls can still request the same decoded clip explicitly below.
+  // Keep this request pending until the new buffer has decoded; otherwise a
+  // fast navigation can increment playRequest before the target is ready and
+  // silently lose the autoplay request (most noticeable in Single mode).
   useEffect(() => {
-    if (autoPlay && target && activeUrl && player.audioBuffer && !player.isPlaying && player.currentTime === 0) {
-      void playFrom();
+    if (!pendingTargetPlay.current || !autoPlay || !target || !activeUrl || activeUrl !== target.url || !player.audioBuffer || player.isPlaying) {
+      return;
     }
-  }, [activeUrl, autoPlay, playFrom, player.audioBuffer, player.isPlaying, target]);
+    pendingTargetPlay.current = false;
+    void playFrom(0);
+  }, [activeUrl, autoPlay, playFrom, player.audioBuffer, player.isPlaying, target?.url, targetKey]);
 
   useEffect(() => {
     if (playRequest === lastPlayRequest.current) return;
     lastPlayRequest.current = playRequest;
-    if (autoPlay && player.audioBuffer) void playFrom();
-  }, [autoPlay, playFrom, playRequest, player.audioBuffer]);
+    if (autoPlay && activeUrl === target?.url && player.audioBuffer) void playFrom();
+  }, [activeUrl, autoPlay, playFrom, playRequest, player.audioBuffer, target?.url]);
 
   useEffect(() => {
     if (replayRequest === lastReplayRequest.current) return;
@@ -142,9 +154,6 @@ export function RailPlayer({
 
   return (
     <section className="react-player" aria-label="Playback controls">
-      <div className="react-player-heading">
-        <span className="audio-time">{progressLabel}</span>
-      </div>
       <LineWaveform
         audioBuffer={player.audioBuffer}
         loadFailed={player.loadFailed}
@@ -157,6 +166,7 @@ export function RailPlayer({
         onNavigationPointsChange={() => {}}
       />
       <div className="react-player-controls">
+        <span className="audio-time" aria-label="Playback time">{progressLabel}</span>
         <button type="button" onClick={onPrevious} disabled={!canPrevious} aria-label="Play previous word or sentence">Previous</button>
         <button type="button" onClick={onReplay} disabled={!player.audioBuffer} aria-label="Replay focused word or sentence">Replay</button>
         <button type="button" className="react-player-primary" onClick={onTogglePlayback} disabled={!player.audioBuffer} aria-keyshortcuts="Space">
@@ -174,6 +184,7 @@ export function RailPlayer({
         >
           {playbackRunMode === "single" ? "Single" : "Consecutive"}
         </button>
+        <span className="react-player-shortcuts" aria-label="Keyboard shortcuts">A previous · D next</span>
         <span className="react-player-status">{error || (isSilencePlaying ? `Playing silence after ${target?.phase || "audio"}` : isPlaybackActive ? "Playing focused audio" : `${playbackRunMode === "single" ? "Single clip" : "Play through list"} · Click the wave to seek · Space to play`)}</span>
       </div>
     </section>
