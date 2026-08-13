@@ -36,6 +36,7 @@ export function useStudyEntries({
   useEffect(() => {
     let cancelled = false;
     const queryKey = JSON.stringify([filterState, search, selectedBook, selectedUnit]);
+    const preserveLoadedPlaylist = loadedQueryRef.current === queryKey;
     // Playing a card updates studySnapshot so its progress can be saved. Keep
     // the current rows mounted during that background refresh; replacing them
     // with the loading message empties the scroll pane and resets it to row 1.
@@ -43,17 +44,27 @@ export function useStudyEntries({
     getEntries(selectedBook, selectedUnit ?? undefined, "all", search)
       .then((payload) => {
         if (cancelled) return;
-        const items = payload.items
+        const loadedItems = payload.items
           .map(entry => {
             const card = studySnapshot.cards[entry.item_uuid];
             return {...entry, mark: {known: !!card?.known, flagged: !!card?.flagged, updated_at: card?.updated_at}};
-          })
-          .filter(entry => filterState === "all"
-            || (filterState === "known" && entry.mark.known)
-            || (filterState === "flagged" && entry.mark.flagged)
-            || (filterState === "unmarked" && !entry.mark.known && !entry.mark.flagged));
-        setEntries(items);
-        resetPosition(items);
+          });
+        const filteredItems = loadedItems.filter(entry => filterState === "all"
+          || (filterState === "known" && entry.mark.known)
+          || (filterState === "flagged" && entry.mark.flagged)
+          || (filterState === "unmarked" && !entry.mark.known && !entry.mark.flagged));
+        if (preserveLoadedPlaylist) {
+          // A mark change should update the visible icon without changing the
+          // learner's current queue. The next full reload reapplies the filter.
+          const marksByItemUuid = new Map(loadedItems.map(entry => [entry.item_uuid, entry.mark]));
+          setEntries(current => current.map(entry => {
+            const mark = marksByItemUuid.get(entry.item_uuid);
+            return mark ? {...entry, mark} : entry;
+          }));
+        } else {
+          setEntries(filteredItems);
+          resetPosition(filteredItems);
+        }
         loadedQueryRef.current = queryKey;
       })
       .catch((error: unknown) => {
