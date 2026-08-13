@@ -16,6 +16,7 @@ interface StudyHeaderProps {
   isSilencePaused: boolean;
   playbackActive: boolean;
   playbackRunMode: PlaybackRunMode;
+  reviewSessionCount?: number;
   search: string;
   selectedBook: string;
   selectedUnit: number | null;
@@ -45,6 +46,7 @@ export function StudyHeader({
   isSilencePaused,
   playbackActive,
   playbackRunMode,
+  reviewSessionCount,
   search,
   selectedBook,
   selectedUnit,
@@ -87,7 +89,7 @@ export function StudyHeader({
         <div className="react-toolbar-search"><input type="search" value={search} onChange={(event) => onSearch(event.target.value)} placeholder="Search kanji, reading, meaning, sentence…" aria-label="Search vocabulary" /></div>
         <div className="react-pill-group" role="group" aria-label="Study state filter">
           {(["all", "review", "unmarked", "known", "flagged"] as FilterState[]).map((filter) => {
-            const count = filter === "review" ? summary?.review
+            const count = filter === "review" ? reviewSessionCount ?? summary?.review
               : filter === "known" ? summary?.known
                 : filter === "flagged" ? summary?.flagged
                   : filter === "unmarked" ? summary?.unmarked

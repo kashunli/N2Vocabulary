@@ -7,6 +7,7 @@ import type { Entry } from "../../types";
 import { unitLabel } from "./unitLabel";
 import { MeaningDisplay } from "./MeaningDisplay";
 import { WordDisplay } from "./WordDisplay";
+import type { ReviewSession } from "./studyStateTypes";
 
 interface StudyWallViewProps {
   activeEntry?: Entry;
@@ -22,6 +23,7 @@ interface StudyWallViewProps {
   onSelectPhase: (phase: PlaybackPhase) => void;
   onToggleMark: (key: "known" | "flagged") => void | Promise<void>;
   onToggleSentenceStar: () => void | Promise<void>;
+  reviewSession?: ReviewSession;
 }
 
 export function StudyWallView({
@@ -38,6 +40,7 @@ export function StudyWallView({
   onSelectPhase,
   onToggleMark,
   onToggleSentenceStar,
+  reviewSession,
 }: StudyWallViewProps) {
   const [listWidth, setListWidth] = useState(320);
   const [draggingDivider, setDraggingDivider] = useState(false);
@@ -93,13 +96,17 @@ export function StudyWallView({
   return (
     <div className="react-layout" ref={layoutRef} style={{gridTemplateColumns: `${listWidth}px 12px minmax(0, 1fr)`}}>
       <section ref={listRef} className="react-list" aria-label="Vocabulary playback list">
-        {entries.length ? entries.map((entry, index) => <button key={entry.entry_id} ref={index === activeIndex ? activeRef : null} className={`${index === activeIndex ? "is-active " : ""}${coveredEntryIds.has(entry.entry_id) ? "is-covered" : ""}`} aria-current={index === activeIndex ? "true" : undefined} onClick={() => onSelectEntry(index)}><span className="react-row-index">{String(index + 1).padStart(3, "0")}</span><span className="react-row-kanji">{entry.kanji}</span><span className="react-row-status" aria-label={`${entry.mark?.known ? "known" : ""}${entry.mark?.flagged ? " flagged" : ""}`}>{entry.mark?.known ? "✓" : ""}{entry.mark?.flagged ? " ⚑" : ""}</span></button>) : entriesLoading ? <p className="react-empty">{emptyMessage}</p> : <p className="react-empty">No words match the current filters.</p>}
+        {entries.length ? entries.map((entry, index) => {
+          const reviewCompleted = reviewSession?.completedByItemUuid[entry.item_uuid];
+          return <button key={entry.entry_id} ref={index === activeIndex ? activeRef : null} className={`${index === activeIndex ? "is-active " : ""}${coveredEntryIds.has(entry.entry_id) ? "is-covered" : ""}${reviewCompleted ? " is-reviewed" : ""}`} aria-current={index === activeIndex ? "true" : undefined} onClick={() => onSelectEntry(index)}><span className="react-row-index">{String(index + 1).padStart(3, "0")}</span><span className="react-row-kanji">{entry.kanji}</span><span className="react-row-status" aria-label={`${entry.mark?.known ? "known" : ""}${entry.mark?.flagged ? " flagged" : ""}${reviewCompleted ? " reviewed" : ""}`}>{entry.mark?.known ? "✓" : ""}{entry.mark?.flagged ? " ⚑" : ""}{reviewCompleted ? " Reviewed" : ""}</span></button>;
+        }) : entriesLoading ? <p className="react-empty">{emptyMessage}</p> : <p className="react-empty">No words match the current filters.</p>}
       </section>
       <button className="react-divider" type="button" role="separator" aria-orientation="vertical" aria-label="Adjust playback list width" aria-valuemin={220} aria-valuemax={620} aria-valuenow={listWidth} tabIndex={0} onPointerDown={(event) => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); setDraggingDivider(true); }} onKeyDown={(event) => { if (event.key === "ArrowLeft") setListWidth((value) => Math.max(220, value - (event.shiftKey ? 50 : 20))); else if (event.key === "ArrowRight") setListWidth((value) => Math.min(620, value + (event.shiftKey ? 50 : 20))); else return; event.preventDefault(); }}> </button>
       <section ref={currentRef} className={`react-current${activeEntry && coveredEntryIds.has(activeEntry.entry_id) ? " is-covered" : ""}`} aria-live="polite" aria-label="Current vocabulary item">
         {activeEntry ? <>
           <span className="eyebrow">{activeEntry.book_code} #{String(activeEntry.source_index).padStart(3, "0")} · {unitLabel(activeEntry.unit)}</span>
           <h2><WordDisplay word={activeEntry.kanji} reading={activeEntry.reading} /></h2>
+          {reviewSession?.completedByItemUuid[activeEntry.item_uuid] ? <p className="react-review-completed">Reviewed · level {reviewSession.completedByItemUuid[activeEntry.item_uuid].reviewLevel} · next {new Date(reviewSession.completedByItemUuid[activeEntry.item_uuid].nextDueAt).toLocaleDateString()}</p> : null}
           {coveredEntryIds.has(activeEntry.entry_id) ? <p className="react-covered-note">Answers covered. Press Uncover all or Cover all to reveal the study details.</p> : <>
             <MeaningDisplay meaningEn={activeEntry.meaning_en} meaningZh={activeEntry.meaning_zh} />
             <div className="react-current-actions">

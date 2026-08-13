@@ -6,7 +6,7 @@ import type {
   UnitSummary,
   VocabularySummary,
 } from "./types";
-import type {StudyCardState, StudySnapshot} from "./features/study/studyStateTypes";
+import type {ReviewCompletionResult, StudyCardState, StudySnapshot} from "./features/study/studyStateTypes";
 
 async function getJson<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, init);
@@ -66,7 +66,18 @@ export function updateAccountMarks(csrfToken: string, itemUuid: string, mark: {k
 export function recordAccountPlayback(csrfToken: string, entry: {item_uuid: string; book_code: string; source_index: number}) {
   return getJson<{card: StudyCardState}>(`/api/study/cards/${encodeURIComponent(entry.item_uuid)}/played`, {method: "POST", headers: {"Content-Type": "application/json", "X-CSRF-Token": csrfToken}, body: JSON.stringify({preferred_book_code: entry.book_code, preferred_source_index: entry.source_index})});
 }
-export function importGuestStudyState(csrfToken: string, payload: {import_id: string; snapshot_checksum: string; cards: StudySnapshot["cards"]}) {
+export async function completeAccountReview(csrfToken: string, entry: {item_uuid: string; book_code: string; source_index: number}, expectedDueAt: string): Promise<ReviewCompletionResult> {
+  const response = await fetch(`/api/study/cards/${encodeURIComponent(entry.item_uuid)}/review-complete`, {
+    method: "POST",
+    headers: {"Content-Type": "application/json", "X-CSRF-Token": csrfToken},
+    body: JSON.stringify({expected_due_at: expectedDueAt, preferred_book_code: entry.book_code, preferred_source_index: entry.source_index}),
+  });
+  const payload = await response.json().catch(() => ({})) as {card?: StudyCardState; error?: string};
+  if (response.status === 409) return {completed: false, card: payload.card};
+  if (!response.ok) throw new Error(payload.error || `Request failed: ${response.status}`);
+  return {completed: true, card: payload.card};
+}
+export function importGuestStudyState(csrfToken: string, payload: {version: number; import_id: string; snapshot_checksum: string; cards: StudySnapshot["cards"]}) {
   return getJson<StudySnapshot>("/api/study/import-guest", {method: "POST", headers: {"Content-Type": "application/json", "X-CSRF-Token": csrfToken}, body: JSON.stringify(payload)});
 }
 

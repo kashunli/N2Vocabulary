@@ -58,6 +58,8 @@ export interface Mark {
   known: boolean;
   flagged: boolean;
   due_at?: string;
+  review_level?: number;
+  last_reviewed_at?: string;
   updated_at?: string;
 }
 

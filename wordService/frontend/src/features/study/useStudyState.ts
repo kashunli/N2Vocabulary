@@ -3,7 +3,7 @@ import {useCallback, useEffect, useMemo, useState} from "react";
 import {getAccountStudyState, getCurrentUser, getLegacyMarkSeed, importGuestStudyState, loginAccount, logoutAccount, registerAccount, type AuthSession} from "../../api";
 import {AccountStudyStateStore} from "./AccountStudyStateStore";
 import {LocalStudyStateStore} from "./localStudyState.mjs";
-import type {StudyCardState, StudySnapshot, StudyStateStore} from "./studyStateTypes";
+import type {ReviewCompletionResult, StudyCardState, StudySnapshot, StudyStateStore} from "./studyStateTypes";
 
 export type ImportDecision = {account: AuthSession; accountSnapshot: StudySnapshot; guestChecksum: string};
 
@@ -19,7 +19,8 @@ class DecisionBlockedStudyStateStore implements StudyStateStore {
   subscribe(listener: (snapshot: StudySnapshot) => void) { return this.source.subscribe(listener); }
   seedLegacy() { return this.load(); }
   async setMark(_itemUuid: string, _mark: {known: boolean; flagged: boolean}): Promise<StudyCardState> { throw new Error("Choose how to handle guest progress before studying."); }
-  async recordPlayed(_entry: {item_uuid: string; book_code: string; source_index: number}): Promise<StudyCardState> { throw new Error("Choose how to handle guest progress before studying."); }
+  async recordStudyCompleted(_entry: {item_uuid: string; book_code: string; source_index: number}): Promise<StudyCardState> { throw new Error("Choose how to handle guest progress before studying."); }
+  async completeReview(_entry: {item_uuid: string; book_code: string; source_index: number}, _expectedDueAt: string): Promise<ReviewCompletionResult> { throw new Error("Choose how to handle guest progress before studying."); }
 }
 
 export function useStudyState() {
@@ -85,7 +86,7 @@ export function useStudyState() {
     const importId = crypto.randomUUID();
     localStore.archiveSnapshot(importId, pendingImport.guestChecksum);
     try {
-      const merged = await importGuestStudyState(pendingImport.account.csrf_token, {import_id: importId, snapshot_checksum: pendingImport.guestChecksum, cards: guest.cards});
+      const merged = await importGuestStudyState(pendingImport.account.csrf_token, {version: guest.version, import_id: importId, snapshot_checksum: pendingImport.guestChecksum, cards: guest.cards});
       localStore.clearActive();
       activateAccount(pendingImport.account, merged);
     } catch (error) { setAccountError(error instanceof Error ? error.message : "Guest import failed."); throw error; }

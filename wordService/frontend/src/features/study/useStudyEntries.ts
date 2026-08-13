@@ -4,7 +4,7 @@ import { getEntries } from "../../api";
 import type { Entry } from "../../types";
 import type { PlaybackMode } from "../player/playbackSettings";
 import type { FilterState } from "./studyTypes";
-import { isReviewDue, type StudySnapshot } from "./studyStateTypes";
+import { isReviewDue, type ReviewSession, type StudySnapshot } from "./studyStateTypes";
 
 interface UseStudyEntriesOptions {
   filterState: FilterState;
@@ -16,6 +16,8 @@ interface UseStudyEntriesOptions {
   setEntries: Dispatch<SetStateAction<Entry[]>>;
   setEntriesLoading: Dispatch<SetStateAction<boolean>>;
   setStatus: (status: string) => void;
+  reviewSession?: ReviewSession;
+  setReviewSession: Dispatch<SetStateAction<ReviewSession | undefined>>;
   studySnapshot: StudySnapshot;
 }
 
@@ -29,18 +31,16 @@ export function useStudyEntries({
   setEntries,
   setEntriesLoading,
   setStatus,
+  reviewSession,
+  setReviewSession,
   studySnapshot,
 }: UseStudyEntriesOptions) {
   const loadedQueryRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     let cancelled = false;
-    const queryKey = JSON.stringify([
-      filterState,
-      search,
-      selectedBook,
-      selectedUnit,
-    ]);
+    const scopeKey = JSON.stringify([search, selectedBook, selectedUnit]);
+    const queryKey = JSON.stringify([filterState, scopeKey]);
     const preserveLoadedPlaylist = loadedQueryRef.current === queryKey;
     // Playing a card updates studySnapshot so its progress can be saved. Keep
     // the current rows mounted during that background refresh; replacing them
@@ -51,11 +51,21 @@ export function useStudyEntries({
         const loadedItems = payload.items
           .map(entry => {
             const card = studySnapshot.cards[entry.item_uuid];
-            return {...entry, mark: {known: !!card?.known, flagged: !!card?.flagged, due_at: card?.due_at, updated_at: card?.updated_at}};
+            return {...entry, mark: {known: !!card?.known, flagged: !!card?.flagged, due_at: card?.due_at, review_level: card?.review_level, last_reviewed_at: card?.last_reviewed_at, updated_at: card?.updated_at}};
           });
         const reviewNow = Date.now();
+        const session = filterState === "review" && reviewSession?.scopeKey === scopeKey
+          ? reviewSession
+          : undefined;
+        const dueItems = loadedItems.filter(entry => isReviewDue(entry.mark.due_at, reviewNow));
+        if (filterState === "review" && !session) {
+          const expectedDueAtByItemUuid = Object.fromEntries(dueItems.flatMap(entry => entry.mark.due_at ? [[entry.item_uuid, entry.mark.due_at]] : []));
+          setReviewSession({scopeKey, expectedDueAtByItemUuid, completedByItemUuid: {}});
+        }
         const filteredItems = loadedItems.filter(entry => filterState === "all"
-          || (filterState === "review" && isReviewDue(entry.mark.due_at, reviewNow))
+          || (filterState === "review" && (session
+            ? Object.hasOwn(session.expectedDueAtByItemUuid, entry.item_uuid)
+            : isReviewDue(entry.mark.due_at, reviewNow)))
           || (filterState === "known" && entry.mark.known)
           || (filterState === "flagged" && entry.mark.flagged)
           || (filterState === "unmarked" && !entry.mark.known && !entry.mark.flagged));
@@ -80,5 +90,5 @@ export function useStudyEntries({
         if (!cancelled) setEntriesLoading(false);
       });
     return () => { cancelled = true; };
-  }, [filterState, playbackMode, resetPosition, search, selectedBook, selectedUnit, setEntries, setEntriesLoading, setStatus, studySnapshot]);
+  }, [filterState, playbackMode, resetPosition, reviewSession, search, selectedBook, selectedUnit, setEntries, setEntriesLoading, setReviewSession, setStatus, studySnapshot]);
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { PlaybackSettingsModal } from "./features/player/PlaybackSettingsModal";
 import { RailPlayer } from "./features/player/RailPlayer";
@@ -14,6 +14,7 @@ import { useStudyEntries } from "./features/study/useStudyEntries";
 import { readStudyFocus } from "./features/study/studyFocus";
 import { readStudyViewState, saveStudyViewState } from "./features/study/studyViewState.mjs";
 import { useStudyState } from "./features/study/useStudyState";
+import type { ReviewSession } from "./features/study/studyStateTypes";
 import type { FilterState } from "./features/study/studyTypes";
 import type { Entry } from "./types";
 
@@ -29,6 +30,13 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
   const [blurred, setBlurred] = useState(false);
   const [showStarred, setShowStarred] = useState(() => initialView.view === "starred");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [reviewSession, setReviewSession] = useState<ReviewSession>();
+  const reviewCompletionInFlight = useRef(new Set<string>());
+
+  useEffect(() => {
+    if (filterState !== "review") setReviewSession(undefined);
+    reviewCompletionInFlight.current.clear();
+  }, [filterState, search, selectedBook, selectedUnit]);
 
   const {
     activeEntry: playbackEntry,
@@ -66,7 +74,31 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
   } = useStudyPlayback({
     entries,
     showStarred,
-    onCompleteCard: entry => { void store.recordPlayed(entry).catch(error => setStatus(error instanceof Error ? error.message : "Could not save playback.")); },
+    onCompleteCard: entry => {
+      if (filterState !== "review") {
+        void store.recordStudyCompleted(entry).catch(error => setStatus(error instanceof Error ? error.message : "Could not save study playback."));
+        return;
+      }
+      const session = reviewSession;
+      const expectedDueAt = session?.expectedDueAtByItemUuid[entry.item_uuid];
+      if (!expectedDueAt || !session || session.completedByItemUuid[entry.item_uuid] || reviewCompletionInFlight.current.has(entry.item_uuid)) return;
+      reviewCompletionInFlight.current.add(entry.item_uuid);
+      void store.completeReview(entry, expectedDueAt).then((result) => {
+        const card = result.card;
+        const nextDueAt = card?.due_at;
+        if (!result.completed || !card || !nextDueAt) {
+          setStatus("This review was already completed elsewhere. Re-enter Review to refresh the due list.");
+          return;
+        }
+        setReviewSession(current => current?.scopeKey === session.scopeKey
+          ? {...current, completedByItemUuid: {...current.completedByItemUuid, [entry.item_uuid]: {reviewLevel: card.review_level, nextDueAt}}}
+          : current);
+        setStatus(`${entry.kanji} reviewed. Level ${card.review_level}; next review ${new Date(nextDueAt).toLocaleDateString()}.`);
+      }).catch(error => {
+        reviewCompletionInFlight.current.delete(entry.item_uuid);
+        setStatus(error instanceof Error ? error.message : "Could not save review completion.");
+      });
+    },
   });
   const activeEntry = playbackEntry;
   const activeIndex = playbackIndex;
@@ -141,6 +173,8 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
     selectedUnit,
     setEntries,
     setEntriesLoading,
+    reviewSession,
+    setReviewSession,
     setStatus,
     studySnapshot: snapshot,
   });
@@ -173,13 +207,14 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
         selectedUnit={selectedUnit}
         showStarred={showStarred}
         summary={summary}
+        reviewSessionCount={filterState === "review" ? Object.keys(reviewSession?.expectedDueAtByItemUuid || {}).length : undefined}
         target={target}
         units={units}
         onOpenSettings={() => setSettingsOpen(true)}
         onSearch={setSearch}
-        onSelectBook={(book) => { setSelectedBook(book); setSelectedUnit(null); setShowStarred(false); }}
-        onSelectFilter={(filter) => { setFilterState(filter); setShowStarred(false); }}
-        onSelectUnit={setSelectedUnit}
+        onSelectBook={(book) => { setSelectedBook(book); setSelectedUnit(null); setShowStarred(false); setReviewSession(undefined); }}
+        onSelectFilter={(filter) => { setFilterState(filter); setShowStarred(false); if (filter !== "review") setReviewSession(undefined); }}
+        onSelectUnit={(unit) => { setSelectedUnit(unit); setReviewSession(undefined); }}
         onToggleBlur={() => setBlurred((current) => !current)}
         onToggleCoverAll={toggleCoverAll}
         onTogglePlayback={togglePlayback}
@@ -210,6 +245,7 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
           onSelectPhase={selectPhase}
           onToggleMark={toggleMark}
           onToggleSentenceStar={toggleSentenceStar}
+          reviewSession={reviewSession}
         />}
       </div>
 

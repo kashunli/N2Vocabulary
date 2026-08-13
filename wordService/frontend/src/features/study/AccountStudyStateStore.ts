@@ -1,4 +1,4 @@
-import {recordAccountPlayback, updateAccountMarks} from "../../api";
+import {completeAccountReview, recordAccountPlayback, updateAccountMarks} from "../../api";
 import type {StudyCardState, StudySnapshot, StudyStateStore} from "./studyStateTypes";
 
 export class AccountStudyStateStore implements StudyStateStore {
@@ -17,7 +17,12 @@ export class AccountStudyStateStore implements StudyStateStore {
   async setMark(itemUuid: string, mark: {known: boolean; flagged: boolean}) {
     return this.update((await updateAccountMarks(this.csrfToken, itemUuid, mark)).card);
   }
-  async recordPlayed(entry: {item_uuid: string; book_code: string; source_index: number}) {
+  async recordStudyCompleted(entry: {item_uuid: string; book_code: string; source_index: number}) {
     return this.update((await recordAccountPlayback(this.csrfToken, entry)).card);
+  }
+  async completeReview(entry: {item_uuid: string; book_code: string; source_index: number}, expectedDueAt: string) {
+    const result = await completeAccountReview(this.csrfToken, entry, expectedDueAt);
+    if (result.card) this.update(result.card);
+    return result;
   }
 }

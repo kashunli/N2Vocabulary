@@ -122,6 +122,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
    background move, so focus glides without the previous font-size jump. */
 .react-list button.is-active .react-row-kanji { font-size: 1.2rem; }
 .react-row-status { min-height: 1em; color: #9d3d2d; text-align: right; font: .76rem/1.2 system-ui, sans-serif; }
+.react-list button.is-reviewed .react-row-status { color: #2e765e; }
 .react-empty { color: #aaa096; padding: 28px 8px; font: .84rem/1.5 system-ui, sans-serif; }
 
 .react-divider { border: 0; border-left: 1px solid #cfc5b5; border-right: 1px solid #cfc5b5; background: transparent; cursor: col-resize; padding: 0; }
@@ -136,6 +137,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .react-current-actions button:hover, .react-current-actions button:focus-visible, .react-starred-detail > button:hover, .react-starred-detail > button:focus-visible { border-color: #9d3d2d; color: #9d3d2d; outline: none; }
 .react-current-actions button.is-selected, .react-current-actions button.is-on { border-color: #9d3d2d; background: #eee4d6; color: #9d3d2d; }
 .react-current-actions button:disabled { cursor: not-allowed; opacity: .4; }
+.react-review-completed { color: #2e765e; font: .82rem/1.4 system-ui, sans-serif; }
 .react-sentence { display: grid; gap: 6px; max-width: 760px; margin-top: 28px; font: 1rem/1.6 system-ui, sans-serif; }
 .react-sentence span, .react-sentence-explanation, .react-explanation { color: #756d65; }
 .react-source-metadata { max-width: 760px; margin-top: 25px; padding: 12px 14px; border: 1px solid #e4ddd4; border-radius: 10px; background: rgba(249, 246, 241, .72); font: .82rem/1.55 system-ui, sans-serif; color: #756d65; }
