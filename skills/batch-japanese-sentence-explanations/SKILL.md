@@ -7,7 +7,40 @@ description: Generate batch Japanese sentence explanations through the DeepSeek 
 
 Use this skill to generate reviewable Markdown explanations for Japanese sentences in batches, especially for N2Vocabulary data. The default English prompt/style contract lives in `references/explanation_prompt.md`; the all-Chinese prompt lives in `references/explanation_prompt_zh.md`. The Python script reads the chosen Markdown file so prompt edits do not need code edits.
 
-The current repair workflow targets weak main-sentence explanations in `wordService/data/n2vocab.sqlite`. Generation writes JSON review files first; database writes require an explicit `--apply` and create backups.
+The external-API workflow remains available for historical/review runs. For
+native ChatGPT generation, produce the same Markdown contract in a JSON array
+and apply it with `scripts/apply_native_explanations.py`; this path does not
+call DeepSeek or any other external API. The native applicator validates the
+book/source/sentence identity, writes canonical `item_examples.explanation_md`,
+creates a timestamped SQLite backup, and runs integrity checks.
+
+Native input shape:
+
+```json
+[
+  {
+    "source_index": 1,
+    "item_id": 123,
+    "position": 0,
+    "sentence": "日本語の例文。",
+    "new_explanation_md": "**An English translation.**\n\n---\n\n- **語（ご）** — ...\n- **文法** — ..."
+  }
+]
+```
+
+Apply a native-generated batch directly to canonical SQLite:
+
+```powershell
+python .\skills\batch-japanese-sentence-explanations\scripts\apply_native_explanations.py `
+  .\work\native_n1_batch_0001.json `
+  --db .\wordService\data\n2vocab.sqlite `
+  --book-code N1 `
+  --output-dir .\output\native_n1_sentence_explanations
+```
+
+Use `--dry-run` first when checking a new batch. The default refuses to
+overwrite a non-empty explanation; use `--overwrite` only after an explicit
+review decision.
 
 ## Quick Start
 
