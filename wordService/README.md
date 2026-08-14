@@ -56,8 +56,42 @@ Important tables:
   source book row.
 - `item_example_sources`: provenance linking a normal example row back to its
   merged source record.
-- `item_marks`: preserved read-only legacy Known/Flagged evidence. New learner
-  state is never written here.
+- `item_marks` and `word_marks`: preserved legacy Known/Flagged evidence used
+  only to seed guest study state during the transition. Startup migration
+  `word_service_migrations/exclusive-mark-v1` normalizes dual rows with
+  Flagged precedence. New learner state is never written here.
+
+## Study-state database design
+
+The content database and learner database now have separate responsibilities:
+
+- `data/n2vocab.sqlite` is vocabulary content and immutable legacy migration
+  evidence. It is not the account study-state source of truth.
+- `data/users.sqlite` is the account study-state source of truth. The
+  `study_cards` primary key is `(user_id, item_uuid)`, so the same vocabulary
+  item can have different progress for different learners.
+- Each `study_cards` row stores one `status`: `unmarked`, `known`, or `flagged`.
+  The SQLite `CHECK` constraint makes the allowed values explicit; there are
+  no account-level `known` and `flagged` booleans anymore.
+- `enrolled_at`, `due_at`, `review_level`, playback provenance, and mark
+  timestamps remain on the same card, but marking is not a review grade.
+
+When old data contains both booleans, the migration rule is deterministic:
+`flagged` wins over `known`; otherwise a lone `known` becomes `known`; neither
+becomes `unmarked`. The same rule is used by the React localStorage migration,
+guest import, account migration, and the legacy content seed.
+
+For an explicit maintenance run, stop the service, make recoverable copies of
+both SQLite files, then run from the project root:
+
+```powershell
+cargo run --manifest-path wordService/Cargo.toml --bin migrate_local_databases
+```
+
+The command is idempotent and uses the normal `N2_WORD_SERVICE_*` path
+environment variables. It runs the content bridge migration and the account
+`study_cards` migration without starting the HTTP server. Verify the database
+invariants before restarting the service.
 
 Exact GWB duplicates are merged into N2/N3 with a dry-run-first command:
 
@@ -102,7 +136,7 @@ Then open:
 
 ```text
 http://127.0.0.1:8767/           # React study wall (default)
-http://127.0.0.1:8767/classic    # classic study wall
+http://127.0.0.1:8767/classic    # deprecated compatibility wall; do not extend
 http://127.0.0.1:8767/audio-review.html
 ```
 
@@ -153,14 +187,14 @@ Study state and account endpoints:
 
 ## Review filter
 
-The React and Classic study walls expose `Review` beside `All`, `Unmarked`,
-`Known`, and `Flagged`. It shows cards whose playback-created `due_at` timestamp
-has arrived. Playback completion—not Known or Flagged—enrolls a shared
-vocabulary item at level 0, with its first review due after one day. A complete
-word-plus-available-sentence playback inside Review advances its level and sets
-the next due date to `2^level` days: 2, 4, 8, 16, 32, and so on. Replaying an
-enrolled card updates its preferred book occurrence without changing its level
-or due time.
+The active React study wall exposes `Review` beside `All`, `Unmarked`, `Known`,
+and `Flagged`. The Classic wall is deprecated and is not part of this contract.
+Review shows cards whose playback-created `due_at` timestamp has arrived.
+Playback completion—not a mark—enrolls a shared vocabulary item at level 0,
+with its first review due after one day. A complete word-plus-available-sentence
+playback inside Review advances its level and sets the next due date to
+`2^level` days: 2, 4, 8, 16, 32, and so on. Replaying an enrolled card updates
+its preferred book occurrence without changing its level or due time.
 
 Entering Review captures the currently due cards for the selected book,
 section, and search scope. A completed card stays visible as `Reviewed` for the
@@ -168,16 +202,22 @@ rest of that session; leave and re-enter Review to build a new due list. The
 completion endpoint compares the original due timestamp inside its SQLite
 transaction, so a second tab or a stale replay cannot advance a card twice.
 
-Known and Flagged are independent learner tags. Marking either tag never enrolls
-a card, changes its due time, or acts as a review grade. The old graded-review
-route and Again/Hard/Good controls were removed so the visible filter and the
-stored study state have one clear responsibility.
+Known and Flagged are mutually exclusive learner statuses. Selecting Flagged
+clears Known; selecting Known clears Flagged; selecting the active status clears
+the mark. If old data contains both, Flagged is always the effective status.
+Marking never enrolls a card, changes its due time, or acts as a review grade.
+The old graded-review route and Again/Hard/Good controls were removed so the
+visible filter and the stored study state have one clear responsibility.
 
-Guest JSON is validated and normalized when loaded. The level-scheduler upgrade
-archives local version-1 state under `:pre-spaced-review:` before preserving
-only its tags and normal playback provenance; old review dates and grades are
-discarded. Registered accounts receive the same one-time schedule reset through
-the `spaced-review-v1` migration marker. Malformed input is copied
+Guest JSON is validated and normalized when loaded. The exclusive-status upgrade
+archives local version-2 state under `:pre-exclusive-mark:` before preserving
+its schedule and playback provenance while converting legacy booleans to one
+status. The level-scheduler upgrade archives local version-1 state under
+`:pre-spaced-review:` before preserving only its tags and normal playback
+provenance; old review dates and grades are discarded. Registered accounts
+receive the exclusive-status migration through `exclusive-mark-v1`; the
+existing `spaced-review-v1` marker remains responsible only for the earlier
+scheduler reset. Malformed input is copied
 to a timestamped `:malformed:` localStorage key before a fresh snapshot is
 started, and the `storage` event updates other same-origin tabs. On first guest
 launch, legacy Known and Flagged items retain only their tags; legacy marks do

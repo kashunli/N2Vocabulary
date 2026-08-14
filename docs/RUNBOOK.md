@@ -43,8 +43,23 @@ cargo run
 ```
 
 This starts the local SQLite-backed word service at `http://127.0.0.1:8767/`.
-It reads `wordService/data/n2vocab.sqlite`, serves audio from `clips/`, and persists
-known/flagged card marks back into the same SQLite database.
+It reads vocabulary content from `wordService/data/n2vocab.sqlite`, serves audio
+from `clips/`, and persists account study state in `wordService/data/users.sqlite`.
+Known and Flagged are one mutually exclusive `study_cards.status` value; the
+content database is not the account mark store.
+
+Before deploying the exclusive-status schema to an existing local checkout,
+stop the service and back up both SQLite files, then run the idempotent
+maintenance migration:
+
+```powershell
+cargo run --manifest-path wordService/Cargo.toml --bin migrate_local_databases
+```
+
+The migration gives Flagged precedence when old rows contain both booleans and
+preserves account schedules, playback provenance, and timestamps. Restart the
+service only after checking the migration markers and confirming that no dual
+rows remain.
 
 Useful routes:
 
