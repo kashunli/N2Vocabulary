@@ -33,6 +33,7 @@ use text::word_text_for_tts;
 pub use text::clean_sentence_text_for_tts;
 
 const STATE_VALUES: [&str; 4] = ["all", "known", "flagged", "unmarked"];
+const EXCLUSIVE_MARK_DATA_MIGRATION: &str = "exclusive-mark-v1";
 
 /// Data-access layer for the word study service.
 ///
@@ -107,13 +108,66 @@ impl WordRepository {
         if !self.db_path.exists() {
             bail!("Database not found: {}", self.db_path.display());
         }
-        let conn = self.connect()?;
+        let mut conn = self.connect()?;
+        self.ensure_exclusive_mark_data(&mut conn)?;
         self.ensure_source_provenance_schema(&conn)?;
         self.ensure_example_metadata_schema(&conn)?;
         // rusqlite separates row-returning statements from mutation-style
         // execute calls. query_row is the right startup probe for SELECT.
         conn.query_row("SELECT 1 FROM book_entries LIMIT 1", [], |_| Ok(()))?;
         conn.query_row("SELECT 1 FROM vocabulary_items LIMIT 1", [], |_| Ok(()))?;
+        Ok(())
+    }
+
+    /// Normalize the shared legacy mark tables before they are used as a
+    /// guest-import seed. Account study state lives in `users.sqlite`; these
+    /// tables remain only as a compatibility bridge while the old study wall
+    /// is retired. The migration deliberately keeps the old columns so an
+    /// older browser can still read the seed, but guarantees that one item
+    /// cannot be both Known and Flagged.
+    fn ensure_exclusive_mark_data(&self, conn: &mut Connection) -> Result<()> {
+        conn.execute_batch(
+            r#"
+            CREATE TABLE IF NOT EXISTS word_service_migrations (
+              name TEXT PRIMARY KEY,
+              applied_at TEXT NOT NULL
+            );
+            "#,
+        )?;
+
+        let already_applied: Option<String> = conn
+            .query_row(
+                "SELECT applied_at FROM word_service_migrations WHERE name = ?",
+                [EXCLUSIVE_MARK_DATA_MIGRATION],
+                |row| row.get(0),
+            )
+            .optional()?;
+        if already_applied.is_some() {
+            return Ok(());
+        }
+
+        let has_item_marks = sqlite_table_exists(conn, "item_marks")?;
+        let has_word_marks = sqlite_table_exists(conn, "word_marks")?;
+        let migrated_at = now_utc();
+        let transaction = conn.transaction()?;
+
+        if has_item_marks {
+            transaction.execute(
+                "UPDATE item_marks SET known = 0, updated_at = ? WHERE known = 1 AND flagged = 1",
+                [&migrated_at],
+            )?;
+        }
+        if has_word_marks {
+            transaction.execute(
+                "UPDATE word_marks SET known = 0, updated_at = ? WHERE known = 1 AND flagged = 1",
+                [&migrated_at],
+            )?;
+        }
+        transaction.execute(
+            "INSERT INTO word_service_migrations(name, applied_at) VALUES(?, ?)",
+            params![EXCLUSIVE_MARK_DATA_MIGRATION, migrated_at],
+        )?;
+        transaction.commit()?;
         Ok(())
     }
 
@@ -944,6 +998,11 @@ impl WordRepository {
         // Mark writes go through a temporary DB copy because stale WAL sidecars
         // on this Windows workspace have made direct writes fragile. The mutex
         // makes that copy-mutate-copy-back sequence one-at-a-time.
+        // Keep the deprecated boolean endpoint safe during the transition.
+        // Once Flagged is requested it wins, so this path cannot create a
+        // dual-mark row even if an older browser sends both values.
+        let known = known && !flagged;
+
         let _guard = self
             .write_lock
             .lock()
@@ -1421,6 +1480,14 @@ fn int_to_bool(value: i64) -> bool {
 
 fn bool_to_int(value: bool) -> i64 {
     if value { 1 } else { 0 }
+}
+
+fn sqlite_table_exists(conn: &Connection, table_name: &str) -> Result<bool> {
+    Ok(conn.query_row(
+        "SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?)",
+        [table_name],
+        |row| row.get(0),
+    )?)
 }
 
 fn now_utc() -> String {

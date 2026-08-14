@@ -62,6 +62,82 @@ fn summary_and_units_include_mark_counts() {
 }
 
 #[test]
+fn ensure_ready_normalizes_legacy_dual_marks_and_is_idempotent() {
+    let fixture = Fixture::new();
+    {
+        let conn = Connection::open(&fixture.db_path).unwrap();
+        conn.execute(
+            "UPDATE item_marks SET known = 1, flagged = 1 WHERE item_id = 1",
+            [],
+        )
+        .unwrap();
+        conn.execute(
+            "UPDATE word_marks SET known = 1, flagged = 1 WHERE entry_id = 1",
+            [],
+        )
+        .unwrap();
+    }
+
+    fixture.repo.ensure_ready().unwrap();
+    let conn = Connection::open(&fixture.db_path).unwrap();
+    let item_mark: (i64, i64) = conn
+        .query_row(
+            "SELECT known, flagged FROM item_marks WHERE item_id = 1",
+            [],
+            |row| Ok((row.get(0)?, row.get(1)?)),
+        )
+        .unwrap();
+    let word_mark: (i64, i64) = conn
+        .query_row(
+            "SELECT known, flagged FROM word_marks WHERE entry_id = 1",
+            [],
+            |row| Ok((row.get(0)?, row.get(1)?)),
+        )
+        .unwrap();
+    assert_eq!(item_mark, (0, 1));
+    assert_eq!(word_mark, (0, 1));
+    assert_eq!(
+        conn.query_row(
+            "SELECT COUNT(*) FROM word_service_migrations WHERE name = 'exclusive-mark-v1'",
+            [],
+            |row| row.get::<_, i64>(0),
+        )
+        .unwrap(),
+        1
+    );
+
+    drop(conn);
+    fixture.repo.ensure_ready().unwrap();
+    let conn = Connection::open(&fixture.db_path).unwrap();
+    assert_eq!(
+        conn.query_row(
+            "SELECT COUNT(*) FROM item_marks WHERE known = 1 AND flagged = 1",
+            [],
+            |row| row.get::<_, i64>(0),
+        )
+        .unwrap(),
+        0
+    );
+}
+
+#[test]
+fn deprecated_mark_writer_gives_flagged_precedence() {
+    let fixture = Fixture::new();
+
+    fixture.repo.set_mark(1, true, true).unwrap();
+
+    let conn = Connection::open(&fixture.db_path).unwrap();
+    let mark: (i64, i64) = conn
+        .query_row(
+            "SELECT known, flagged FROM item_marks WHERE item_id = 1",
+            [],
+            |row| Ok((row.get(0)?, row.get(1)?)),
+        )
+        .unwrap();
+    assert_eq!(mark, (0, 1));
+}
+
+#[test]
 fn entry_listing_search_and_state_filters() {
     let fixture = Fixture::new();
 
