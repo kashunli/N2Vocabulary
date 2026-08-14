@@ -38,7 +38,7 @@ test("React view selections round-trip through the shared wall state", () => {
   });
 });
 
-test("an explicit all-sections selection is preserved and Classic fields remain readable", () => {
+test("an explicit all-sections selection is preserved", () => {
   const storage = new MemoryStorage();
   storage.setItem(STUDY_VIEW_STORAGE_KEY, JSON.stringify({
     selectedBook: "n2",
