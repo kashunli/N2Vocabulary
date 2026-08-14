@@ -22,7 +22,6 @@ interface StudyWallViewProps {
   onSelectEntry: (index: number) => void;
   onSelectPhase: (phase: PlaybackPhase) => void;
   onToggleMark: (key: "known" | "flagged") => void | Promise<void>;
-  onToggleSentenceStar: () => void | Promise<void>;
   reviewSession?: ReviewSession;
 }
 
@@ -39,7 +38,6 @@ export function StudyWallView({
   onSelectEntry,
   onSelectPhase,
   onToggleMark,
-  onToggleSentenceStar,
   reviewSession,
 }: StudyWallViewProps) {
   const [listWidth, setListWidth] = useState(320);
@@ -124,7 +122,6 @@ export function StudyWallView({
             <div className="react-current-actions">
               <button type="button" className={activeEntry.mark?.known ? "is-on" : ""} onClick={() => void onToggleMark("known")} aria-pressed={!!activeEntry.mark?.known}>✓ Known</button>
               <button type="button" className={activeEntry.mark?.flagged ? "is-on" : ""} onClick={() => void onToggleMark("flagged")} aria-pressed={!!activeEntry.mark?.flagged}>⚑ Flag</button>
-              <button type="button" className={activeEntry.sentence_starred ? "is-on" : ""} onClick={() => void onToggleSentenceStar()} aria-pressed={!!activeEntry.sentence_starred}>{activeEntry.sentence_starred ? "★" : "☆"} Sentence</button>
             </div>
             {detail?.sentence ? <div className="react-sentence">
               <button

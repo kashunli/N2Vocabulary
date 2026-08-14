@@ -17,8 +17,6 @@ export interface Entry {
   sentence: string;
   sentence_translation_en: string;
   sentence_translation_zh: string;
-  sentence_position?: number;
-  sentence_starred?: boolean;
   word_audio_url?: string;
   sentence_audio_url?: string;
   explanation_md?: string;

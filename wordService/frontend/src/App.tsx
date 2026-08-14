@@ -107,7 +107,6 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
     books,
     detail,
     refreshCatalog,
-    refreshStarred,
     selectedStarredKey,
     setDetail,
     setSelectedStarredKey,
@@ -144,13 +143,11 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
     focusStarredEntry,
     toggleCoverAll,
     toggleMark,
-    toggleSentenceStar,
   } = useStudyActions({
     activeEntry,
     allVisibleCovered,
     entries,
     refreshCatalog,
-    refreshStarred,
     selectedBook,
     selectedUnit,
     setCoveredEntryIds,
@@ -159,7 +156,6 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
     setShowStarred,
     setStatus,
     selectEntry,
-    showStarred,
     units,
     studyStore: store,
   });
@@ -244,7 +240,6 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
           onSelectEntry={selectEntry}
           onSelectPhase={selectPhase}
           onToggleMark={toggleMark}
-          onToggleSentenceStar={toggleSentenceStar}
           reviewSession={reviewSession}
         />}
       </div>

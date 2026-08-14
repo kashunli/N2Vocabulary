@@ -1,7 +1,7 @@
 import { useCallback, type Dispatch, type SetStateAction } from "react";
 
-import { exportUnitFlaggedAudio, updateExampleStar } from "../../api";
-import type { Entry, StarredSentence, UnitSummary } from "../../types";
+import { exportUnitFlaggedAudio } from "../../api";
+import type { Entry, UnitSummary } from "../../types";
 import type { PlaybackPhase } from "../player/playbackSettings";
 import { unitLabel } from "./unitLabel";
 import type { StudyStateStore } from "./studyStateTypes";
@@ -11,7 +11,6 @@ interface UseStudyActionsOptions {
   allVisibleCovered: boolean;
   entries: Entry[];
   refreshCatalog: () => Promise<void>;
-  refreshStarred: () => Promise<StarredSentence[]>;
   selectedBook: string;
   selectedUnit: number | null;
   setCoveredEntryIds: Dispatch<SetStateAction<Set<number>>>;
@@ -20,7 +19,6 @@ interface UseStudyActionsOptions {
   setShowStarred: Dispatch<SetStateAction<boolean>>;
   setStatus: (status: string) => void;
   selectEntry: (index: number, phase?: PlaybackPhase) => void;
-  showStarred: boolean;
   units: UnitSummary[];
   studyStore: StudyStateStore;
 }
@@ -30,7 +28,6 @@ export function useStudyActions({
   allVisibleCovered,
   entries,
   refreshCatalog,
-  refreshStarred,
   selectedBook,
   selectedUnit,
   setCoveredEntryIds,
@@ -39,7 +36,6 @@ export function useStudyActions({
   setShowStarred,
   setStatus,
   selectEntry,
-  showStarred,
   units,
   studyStore,
 }: UseStudyActionsOptions) {
@@ -63,26 +59,6 @@ export function useStudyActions({
       setStatus(error instanceof Error ? error.message : "Could not update the study mark.");
     }
   }, [activeEntry, setDetail, setEntries, setStatus, studyStore]);
-
-  const toggleSentenceStar = useCallback(async () => {
-    if (!activeEntry) return;
-    const position = activeEntry.sentence_position ?? 0;
-    try {
-      const payload = await updateExampleStar(activeEntry.entry_id, position, !activeEntry.sentence_starred, activeEntry.book_code);
-      setEntries((current) => current.map((entry) => entry.entry_id === activeEntry.entry_id
-        ? {...entry, sentence_starred: payload.starred}
-        : entry));
-      setDetail((current) => current && current.entry_id === activeEntry.entry_id
-        ? {...current, sentence_starred: payload.starred}
-        : current);
-      setStatus(payload.starred ? "Main sentence starred." : "Main sentence unstarred.");
-      if (showStarred) {
-        await refreshStarred();
-      }
-    } catch (error: unknown) {
-      setStatus(error instanceof Error ? error.message : "Could not update the sentence star.");
-    }
-  }, [activeEntry, refreshStarred, setDetail, setEntries, setStatus, showStarred]);
 
   const toggleCoverAll = useCallback(() => {
     setCoveredEntryIds((current) => {
@@ -127,6 +103,5 @@ export function useStudyActions({
     focusStarredEntry,
     toggleCoverAll,
     toggleMark,
-    toggleSentenceStar,
   };
 }

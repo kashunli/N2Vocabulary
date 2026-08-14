@@ -95,17 +95,6 @@ export function updateMark(entryId: number, mark: Pick<Mark, "known" | "flagged"
   });
 }
 
-export function updateExampleStar(entryId: number, position: number, starred: boolean, book = "N2") {
-  return getJson<{ starred: boolean }>(
-    `/api/entries/${entryId}/examples/${position}/star?book=${encodeURIComponent(book)}`,
-    {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ starred }),
-    },
-  );
-}
-
 export function exportUnitFlaggedAudio(unitNumber: number, book = "N2") {
   return getJson<{ audio_url: string; file_name?: string; unit: number; word_count: number }>(
     `/api/units/${unitNumber}/flagged-audio?book=${encodeURIComponent(book)}`,
