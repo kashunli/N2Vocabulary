@@ -1,5 +1,5 @@
 use n2_word_service_rust::repository::{WordRepository, clean_sentence_text_for_tts};
-use rusqlite::Connection;
+use rusqlite::{Connection, OptionalExtension};
 use serde_json::Value as JsonValue;
 use std::fs;
 use std::path::PathBuf;
@@ -340,6 +340,24 @@ fn detail_includes_examples_and_audio_urls() {
         entry.sentence_audio_url.as_deref(),
         Some("/audio/clips/sentences/sentence1.mp3")
     );
+}
+
+#[test]
+fn retired_sentence_star_tables_are_absent() {
+    let fixture = Fixture::new();
+    let conn = Connection::open(&fixture.db_path).unwrap();
+
+    for table in ["sentence_stars", "item_sentence_stars"] {
+        let present: Option<String> = conn
+            .query_row(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+                [table],
+                |row| row.get(0),
+            )
+            .optional()
+            .unwrap();
+        assert_eq!(present, None, "retired table {table} should stay absent");
+    }
 }
 
 #[test]
