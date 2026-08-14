@@ -1,8 +1,7 @@
-import { fetchBooks, fetchEntries, fetchStarredSentences, fetchSummary, fetchUnits } from "./api.js";
+import { fetchBooks, fetchEntries, fetchSummary, fetchUnits } from "./api.js";
 import { renderCards } from "./cards.js";
 import { resumeScopePlaybackFromSavedState, stopScopePlayback, updateScopePlaybackButton } from "./audio.js";
-import { escapeHTML, exampleKey, unitLabel } from "./format.js";
-import { renderStarredView } from "./starred.js";
+import { escapeHTML, unitLabel } from "./format.js";
 import { elements, saveViewState, state } from "./state.js";
 import { applyStudyMarks, startReviewSession, summarizeStudyMarks } from "./studyState.js";
 
@@ -142,40 +141,8 @@ export async function loadEntries() {
   }
 }
 
-export async function loadStarredSentences() {
-  const params = new URLSearchParams();
-  if (state.starredScope === "unit" && state.selectedUnit) {
-    params.set("unit", String(state.selectedUnit));
-  }
-  const payload = await fetchStarredSentences(params);
-  state.starredSentences = payload.items || [];
-  if (!state.starredSentences.some(item => exampleKey(item.entry_id, item.position) === state.selectedStarredKey)) {
-    const first = state.starredSentences[0];
-    state.selectedStarredKey = first ? exampleKey(first.entry_id, first.position) : null;
-    saveViewState();
-  }
-  renderStarredView();
-}
-
 export async function showCardView() {
-  state.view = "cards";
   saveViewState();
-  elements.cardView.hidden = false;
-  elements.starredView.hidden = true;
-  elements.starredViewButton.classList.remove("active");
-  elements.starredViewButton.setAttribute("aria-pressed", "false");
   await loadEntries();
   await resumeScopePlaybackFromSavedState(state.currentEntries);
-}
-
-export async function showStarredView(options = {}) {
-  stopScopePlayback();
-  state.view = "starred";
-  if (options.resetScope) state.starredScope = "all";
-  saveViewState();
-  elements.cardView.hidden = true;
-  elements.starredView.hidden = false;
-  elements.starredViewButton.classList.add("active");
-  elements.starredViewButton.setAttribute("aria-pressed", "true");
-  await loadStarredSentences();
 }

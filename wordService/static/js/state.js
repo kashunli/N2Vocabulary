@@ -20,21 +20,11 @@ export const elements = {
   scopeNextButton: document.getElementById("scope-next-button"),
   scopeStopButton: document.getElementById("scope-stop-button"),
   scopePlaybackCount: document.getElementById("scope-playback-count"),
-  starredViewButton: document.getElementById("starred-view-button"),
   audioExportButton: document.getElementById("audio-export-button"),
   counter: document.getElementById("counter"),
   banner: document.getElementById("status-banner"),
   cardView: document.getElementById("card-view"),
   grid: document.getElementById("card-grid"),
-  starredView: document.getElementById("starred-view"),
-  starredUnitList: document.getElementById("starred-unit-list"),
-  starredListPanel: document.getElementById("starred-list-panel"),
-  starredTitle: document.getElementById("starred-title"),
-  starredSubtitle: document.getElementById("starred-subtitle"),
-  starredCount: document.getElementById("starred-count"),
-  starredList: document.getElementById("starred-list"),
-  starredEmpty: document.getElementById("starred-empty"),
-  starredDetail: document.getElementById("starred-detail"),
   template: document.getElementById("card-template"),
   backdrop: document.getElementById("backdrop"),
   modalClose: document.querySelector(".modal-close"),
@@ -63,16 +53,12 @@ export const state = {
   filterState: "all",
   reviewSession: undefined,
   search: "",
-  view: "cards",
-  starredScope: "all",
   focusedEntryId: null,
   focusedPhase: "word",
   savedScrollY: null,
   scrollSaveTimer: null,
   currentAudio: null,
   currentEntries: [],
-  starredSentences: [],
-  selectedStarredKey: null,
   detailEntry: null,
   coveredEntryIds: new Set(),
   generatingAudioKeys: new Set(),
@@ -219,7 +205,7 @@ export function focusStudyEntry(entryId, phase = "word") {
 }
 
 export function focusStudyEntryFromViewport() {
-  if (state.view !== "cards" || state.entriesLoading || !state.currentEntries.length) return;
+  if (state.entriesLoading || !state.currentEntries.length) return;
   const cards = Array.from(elements.grid.querySelectorAll(".card"));
   if (!cards.length) return;
   const viewportCenter = window.innerHeight / 2;
@@ -278,9 +264,6 @@ export function saveViewState(scrollY) {
     selectedUnit: state.selectedUnit,
     selectedBook: state.selectedBook,
     filterState: state.filterState,
-    view: state.view,
-    starredScope: state.starredScope,
-    selectedStarredKey: state.selectedStarredKey,
     scrollY: Math.max(0, Math.round(nextScrollY || 0)),
   };
 
@@ -303,15 +286,6 @@ export function restoreSavedViewState() {
   }
   if (["all", "review", "known", "flagged", "unmarked"].includes(saved.filterState)) {
     state.filterState = saved.filterState;
-  }
-  if (saved.view === "starred" || saved.view === "cards") {
-    state.view = saved.view;
-  }
-  if (saved.starredScope === "unit" || saved.starredScope === "all") {
-    state.starredScope = saved.starredScope;
-  }
-  if (typeof saved.selectedStarredKey === "string") {
-    state.selectedStarredKey = saved.selectedStarredKey;
   }
   if (Number.isFinite(saved.scrollY)) {
     state.savedScrollY = Math.max(0, Number(saved.scrollY));

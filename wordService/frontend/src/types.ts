@@ -70,7 +70,6 @@ export interface Example {
   translation_zh?: string;
   explanation_md?: string;
   audio_url?: string;
-  starred?: boolean;
 }
 
 export interface SourceNote {
@@ -83,22 +82,6 @@ export interface SourceNote {
   meaning_en?: string;
   meaning_zh?: string;
   notes_md?: string;
-}
-
-export interface StarredSentence {
-  entry_id: number;
-  position: number;
-  text: string;
-  reading?: string;
-  translation_en?: string;
-  translation_zh?: string;
-  explanation_md?: string;
-  audio_url?: string;
-  word: string;
-  meaning_en: string;
-  meaning_zh: string;
-  source_index: number;
-  unit: UnitRef;
 }
 
 export interface AudioTarget {

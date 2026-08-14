@@ -107,8 +107,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   scrollbar-color: #cfc5b5 transparent;
 }
 .react-content-scroll.is-blurred .react-list,
-.react-content-scroll.is-blurred .react-current,
-.react-content-scroll.is-blurred .react-starred-view { filter: blur(8px); transition: filter 160ms ease; }
+.react-content-scroll.is-blurred .react-current { filter: blur(8px); transition: filter 160ms ease; }
 
 .react-layout { display: grid; grid-template-rows: minmax(0, 1fr); height: 100%; min-height: 0; }
 .react-list { min-width: 0; min-height: 0; overflow: auto; padding: 2px 20px 10px 0; scrollbar-width: thin; }
@@ -137,8 +136,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .react-current h2 .react-word-ruby rt { color: #9d3d2d; font-family: system-ui, sans-serif; font-size: .3em; line-height: 1; }
 .react-meaning { max-width: 740px; color: #756d65; font: 1rem/1.6 system-ui, sans-serif; }
 .react-current-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 22px; }
-.react-current-actions button, .react-starred-detail > button { border: 1px solid #cfc5b5; border-radius: 2px; background: #fffaf2; color: #756d65; cursor: pointer; padding: 7px 11px; font: .76rem/1.2 system-ui, sans-serif; }
-.react-current-actions button:hover, .react-current-actions button:focus-visible, .react-starred-detail > button:hover, .react-starred-detail > button:focus-visible { border-color: #9d3d2d; color: #9d3d2d; outline: none; }
+.react-current-actions button { border: 1px solid #cfc5b5; border-radius: 2px; background: #fffaf2; color: #756d65; cursor: pointer; padding: 7px 11px; font: .76rem/1.2 system-ui, sans-serif; }
+.react-current-actions button:hover, .react-current-actions button:focus-visible { border-color: #9d3d2d; color: #9d3d2d; outline: none; }
 .react-current-actions button.is-selected, .react-current-actions button.is-on { border-color: #9d3d2d; background: #eee4d6; color: #9d3d2d; }
 .react-current-actions button:disabled { cursor: not-allowed; opacity: .4; }
 .react-review-completed { color: #2e765e; font: .82rem/1.4 system-ui, sans-serif; }
@@ -167,29 +166,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .react-markdown strong { color: #4f3a32; }
 .react-covered-note { color: #aaa096; font: .9rem/1.5 system-ui, sans-serif; }
 
-.react-starred-view { display: grid; grid-template-columns: 210px minmax(260px, 1fr) minmax(260px, .9fr); height: 100%; min-height: 0; overflow: auto; gap: 18px; }
-.react-starred-filter { padding-right: 14px; border-right: 1px solid #cfc5b5; }
 .section-label { color: #9d3d2d; font: 700 .68rem/1.2 system-ui, sans-serif; letter-spacing: .12em; text-transform: uppercase; }
-.react-starred-filter button { display: flex; width: 100%; justify-content: space-between; gap: 10px; border: 0; border-bottom: 1px solid #e0d8cd; background: transparent; color: #756d65; cursor: pointer; padding: 12px 4px; text-align: left; }
-.react-starred-filter button span { color: #aaa096; font: .75rem/1.2 system-ui, sans-serif; }
-.react-starred-filter button.is-selected { color: #9d3d2d; }
-.react-starred-list-panel { min-width: 0; }
-.react-starred-heading { display: flex; align-items: end; justify-content: space-between; gap: 12px; border-bottom: 1px solid #cfc5b5; padding-bottom: 12px; }
-.react-starred-heading h2 { margin: 6px 0 0; font-size: 1.8rem; font-weight: 500; }
-.react-starred-heading > span { color: #756d65; font: .78rem/1.2 system-ui, sans-serif; }
-.react-starred-row { display: grid; grid-template-columns: 32px minmax(0, 1fr) 22px; gap: 8px; width: 100%; border: 0; border-bottom: 1px solid #e0d8cd; background: transparent; color: #756d65; cursor: pointer; padding: 12px 2px; text-align: left; }
-.react-starred-row > span { color: #b9aa99; font: .7rem/1.3 system-ui, sans-serif; }
-.react-starred-row strong { min-width: 0; color: #282421; font-weight: 400; }
-.react-starred-row small { grid-column: 2 / 3; overflow: hidden; color: #aaa096; font: .78rem/1.35 system-ui, sans-serif; text-overflow: ellipsis; white-space: nowrap; }
-.react-starred-row em { color: #9d3d2d; font-style: normal; }
-.react-starred-row:hover, .react-starred-row:focus-visible, .react-starred-row.is-selected { background: #eee4d6; outline: none; }
-.react-starred-detail { min-width: 0; border-left: 1px solid #cfc5b5; padding-left: 20px; }
-.react-starred-detail h2 { margin: 12px 0; font-size: clamp(2.6rem, 5vw, 5rem); font-weight: 400; }
-.react-starred-sentence { color: #282421; font-size: 1.15rem; line-height: 1.55; }
-.react-starred-detail p { color: #756d65; font: .9rem/1.55 system-ui, sans-serif; }
-.react-starred-detail .react-sentence-explanation { margin-top: 22px; font: .82rem/1.55 system-ui, sans-serif; }
-.react-starred-detail > button { margin-top: 18px; }
-
 .react-player { flex: 0 0 auto; position: relative; z-index: 3; border-top: 1px solid #b9aa99; background: rgba(247, 241, 230, .98); padding: 12px 0 16px; }
 .react-player-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; font-family: system-ui, sans-serif; }
 .audio-time { color: #756d65; font-size: .8rem; white-space: nowrap; }
@@ -239,8 +216,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
 @media (max-width: 900px) {
   .react-header { grid-template-columns: 1fr; gap: 14px; }
   .react-pickers { max-width: 620px; }
-  .react-starred-view { grid-template-columns: 170px minmax(240px, 1fr); }
-  .react-starred-detail { grid-column: 1 / -1; border-top: 1px solid #cfc5b5; border-left: 0; padding: 22px 0 0; }
 }
 
 @media (max-width: 700px) {
@@ -257,9 +232,5 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .react-toolbar-actions { max-width: 100%; overflow-x: auto; padding-bottom: 2px; }
   .react-player-controls { flex-wrap: wrap; }
   .react-player-status { flex-basis: 100%; margin-left: 0; }
-  .react-starred-view { grid-template-columns: 1fr; }
-  .react-starred-filter { border-right: 0; border-bottom: 1px solid #cfc5b5; padding: 0 0 12px; }
-  .react-starred-filter button { display: inline-flex; width: auto; margin-right: 6px; border: 1px solid #e0d8cd; padding: 7px 9px; }
-  .react-starred-detail { grid-column: auto; }
   .react-setting-options { grid-template-columns: 1fr; }
 }

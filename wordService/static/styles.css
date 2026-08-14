@@ -217,21 +217,6 @@ rt { font-size: 0.4em; line-height: 1; color: var(--muted2); }
   cursor: not-allowed;
   opacity: 0.65;
 }
-.starred-view-button {
-  padding: 0.32rem 0.75rem;
-  border: 1px solid color-mix(in srgb, #b7791f 55%, var(--line));
-  border-radius: 6px;
-  background: #fff;
-  color: #8a5a13;
-  font-size: 0.82rem;
-  font-weight: 700;
-}
-.starred-view-button:hover,
-.starred-view-button.active {
-  background: #fff7df;
-  border-color: #b7791f;
-  color: #7a4a08;
-}
 .audio-review-link {
   padding: 0.32rem 0.75rem;
   border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--line));
@@ -494,12 +479,6 @@ main { max-width: 1420px; margin: 0 auto; padding: 1rem 1rem 8.6rem; }
   border-color: rgba(255, 255, 255, 0.58);
   background: rgba(255, 255, 255, 0.14);
   color: #fff;
-}
-.icon-btn.sentence-star.on,
-.sentence-row-star.on {
-  background: #fff7df;
-  border-color: #d9b45d;
-  color: #b7791f;
 }
 .card-kanji {
   font-family: "Iowan Old Style", "Hiragino Mincho ProN", "Yu Mincho", serif;
@@ -1050,201 +1029,6 @@ main { max-width: 1420px; margin: 0 auto; padding: 1rem 1rem 8.6rem; }
   color: var(--ink);
 }
 
-.starred-view {
-  display: grid;
-  grid-template-columns: 250px minmax(0, 1fr) 330px;
-  gap: 16px;
-  align-items: start;
-}
-.starred-view[hidden] { display: none; }
-.starred-filter,
-.starred-list-panel,
-.starred-detail {
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  box-shadow: var(--shadow);
-  min-width: 0;
-}
-.starred-filter,
-.starred-detail {
-  position: sticky;
-  top: 78px;
-}
-.starred-filter {
-  padding: 14px;
-}
-.starred-unit-list {
-  display: grid;
-  gap: 6px;
-}
-.starred-unit-button {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  align-items: center;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: #fff;
-  color: var(--muted);
-  padding: 8px 10px;
-  font-size: 0.84rem;
-  text-align: left;
-}
-.starred-unit-button.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-}
-.starred-hint {
-  margin-top: 12px;
-  color: var(--muted);
-  font-size: 0.82rem;
-  line-height: 1.45;
-}
-.starred-list-panel {
-  overflow: hidden;
-}
-.starred-list-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 14px 16px 12px;
-  border-bottom: 1px solid var(--line);
-}
-.starred-title {
-  font-family: "Iowan Old Style", "Hiragino Mincho ProN", "Yu Mincho", serif;
-  font-size: 1.32rem;
-  line-height: 1.15;
-  font-weight: 600;
-}
-.starred-subtitle,
-.starred-count {
-  color: var(--muted2);
-  font-size: 0.8rem;
-}
-.starred-subtitle { margin-top: 4px; }
-.starred-count { white-space: nowrap; padding-top: 4px; }
-.starred-list {
-  display: flex;
-  flex-direction: column;
-}
-.starred-sentence-row {
-  border: 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--line) 76%, transparent);
-  background: #fff;
-  color: inherit;
-  display: grid;
-  grid-template-columns: 34px minmax(0, 1fr) auto;
-  gap: 11px;
-  padding: 13px 16px;
-  text-align: left;
-}
-.starred-sentence-row:hover,
-.starred-sentence-row.selected {
-  background: #fffaf0;
-}
-.starred-sentence-row:last-child { border-bottom: 0; }
-.starred-row-number {
-  color: var(--muted2);
-  font-size: 0.72rem;
-  font-weight: 800;
-  padding-top: 6px;
-}
-.starred-row-main {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-.starred-jp {
-  font-family: "Iowan Old Style", "Hiragino Mincho ProN", "Yu Mincho", serif;
-  font-size: 1.08rem;
-  line-height: 1.55;
-  overflow-wrap: anywhere;
-}
-.starred-translation {
-  color: var(--muted);
-  font-size: 0.83rem;
-  line-height: 1.45;
-  overflow-wrap: anywhere;
-}
-.starred-translation .en { color: var(--ink); font-weight: 500; }
-.starred-translation .zh { color: var(--muted2); }
-.starred-source {
-  width: fit-content;
-  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line));
-  border-radius: 6px;
-  padding: 3px 7px;
-  color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 5%, #fff);
-  font-size: 0.76rem;
-  font-weight: 700;
-}
-.starred-row-star {
-  color: #b7791f;
-  border: 1px solid #d9b45d;
-  border-radius: 7px;
-  background: #fff7df;
-  width: 32px;
-  height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-.starred-empty { display: none; }
-.starred-list-panel.empty .starred-empty { display: block; }
-.starred-detail {
-  overflow: hidden;
-}
-.starred-detail-head {
-  padding: 15px 16px 12px;
-  border-bottom: 1px solid var(--line);
-  background: #e8f3ee;
-}
-.starred-detail-word {
-  font-family: "Iowan Old Style", "Hiragino Mincho ProN", "Yu Mincho", serif;
-  font-size: 1.42rem;
-  line-height: 1.15;
-  font-weight: 600;
-}
-.starred-detail-meta {
-  color: var(--muted);
-  font-size: 0.78rem;
-  margin-top: 5px;
-}
-.starred-detail-body {
-  padding: 15px 16px 17px;
-  display: grid;
-  gap: 14px;
-}
-.starred-detail-sentence {
-  border-left: 3px solid #b7791f;
-  padding-left: 11px;
-}
-.starred-meaning {
-  color: var(--muted);
-  font-size: 0.86rem;
-}
-.starred-missing-explanation,
-.starred-detail-empty {
-  border: 1px dashed var(--line);
-  border-radius: 8px;
-  padding: 12px 13px;
-  color: var(--muted);
-  font-size: 0.86rem;
-  line-height: 1.55;
-  background: #fff;
-}
-.starred-detail-empty {
-  margin: 14px;
-}
-.starred-detail-actions {
-  display: flex;
-  gap: 7px;
-  flex-wrap: wrap;
-}
-
 .playback-dock {
   position: fixed;
   z-index: 40;
@@ -1356,18 +1140,6 @@ main { max-width: 1420px; margin: 0 auto; padding: 1rem 1rem 8.6rem; }
   main { padding: 1rem 0.8rem 12.5rem; }
   .controls { padding: 0.65rem 0.8rem; }
   .counter { width: 100%; margin-left: 0; }
-  .starred-view { grid-template-columns: 1fr; }
-  .starred-filter,
-  .starred-detail {
-    position: static;
-  }
-  .starred-unit-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .starred-sentence-row {
-    grid-template-columns: minmax(0, 1fr) 32px;
-  }
-  .starred-row-number { display: none; }
   .playback-dock {
     left: 0.5rem;
     right: 0.5rem;

@@ -2,7 +2,6 @@ import type {
   BookSummary,
   Entry,
   Mark,
-  StarredSentence,
   UnitSummary,
   VocabularySummary,
 } from "./types";
@@ -79,12 +78,6 @@ export async function completeAccountReview(csrfToken: string, entry: {item_uuid
 }
 export function importGuestStudyState(csrfToken: string, payload: {version: number; import_id: string; snapshot_checksum: string; cards: StudySnapshot["cards"]}) {
   return getJson<StudySnapshot>("/api/study/import-guest", {method: "POST", headers: {"Content-Type": "application/json", "X-CSRF-Token": csrfToken}, body: JSON.stringify(payload)});
-}
-
-export function getStarredSentences(book = "N2", unit?: number) {
-  const params = new URLSearchParams({ book });
-  if (unit !== undefined) params.set("unit", String(unit));
-  return getJson<{ items: StarredSentence[] }>(`/api/starred-sentences?${params}`);
 }
 
 export function updateMark(entryId: number, mark: Pick<Mark, "known" | "flagged">, book = "N2") {

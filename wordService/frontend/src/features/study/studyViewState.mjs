@@ -4,19 +4,14 @@
 export const STUDY_VIEW_STORAGE_KEY = "n2-word-service:view-state:v1";
 
 const FILTER_STATES = new Set(["all", "review", "known", "flagged", "unmarked"]);
-const VIEWS = new Set(["cards", "starred"]);
 
 /** @typedef {"all" | "review" | "known" | "flagged" | "unmarked"} FilterState */
-/** @typedef {"cards" | "starred"} StudyView */
 /**
  * @typedef {Object} StudyViewState
  * @property {string} [selectedBook]
  * @property {number | null} [selectedUnit]
  * @property {FilterState} [filterState]
  * @property {string} [search]
- * @property {StudyView} [view]
- * @property {"all" | "unit"} [starredScope]
- * @property {string} [selectedStarredKey]
  */
 /**
  * @typedef {Object} StorageLike
@@ -47,11 +42,6 @@ export function normalizeStudyViewState(value) {
   }
   if (FILTER_STATES.has(raw.filterState)) normalized.filterState = raw.filterState;
   if (typeof raw.search === "string") normalized.search = raw.search;
-  if (VIEWS.has(raw.view)) normalized.view = raw.view;
-  if (raw.starredScope === "all" || raw.starredScope === "unit") normalized.starredScope = raw.starredScope;
-  if (typeof raw.selectedStarredKey === "string" && raw.selectedStarredKey) {
-    normalized.selectedStarredKey = raw.selectedStarredKey;
-  }
   return normalized;
 }
 

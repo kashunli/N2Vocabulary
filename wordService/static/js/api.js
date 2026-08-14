@@ -34,10 +34,6 @@ export function fetchLegacyMarkSeed() {
   return fetchJson("/api/study/legacy-seed");
 }
 
-export function fetchStarredSentences(params) {
-  return fetchJson(withBookParam("/api/starred-sentences", params));
-}
-
 export function fetchEntry(entryId) {
   return fetchJson(withBookParam(`/api/entries/${entryId}`));
 }
@@ -47,14 +43,6 @@ export function updateMark(entryId, mark) {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(mark),
-  });
-}
-
-export function updateExampleStar(entryId, position, starred) {
-  return fetchJson(withBookParam(`/api/entries/${entryId}/examples/${position}/star`), {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({starred}),
   });
 }
 

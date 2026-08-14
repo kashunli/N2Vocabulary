@@ -1,6 +1,5 @@
 import { generateExampleAudio, fetchEntry, updateMark } from "./api.js";
 import { playClip, wireAudioTarget } from "./audio.js";
-import { applySentenceStarButton, toggleSentenceStar } from "./cards.js";
 import { detailExplanationHTML, escapeHTML, exampleBadgeHTML, exampleTranslationHTML, meaningHTML, rubyOrPlain, sourceMetadataHTML, unitLabel } from "./format.js";
 import { elements, state, showError } from "./state.js";
 
@@ -48,7 +47,7 @@ export async function openDetail(entryId) {
 function sentenceRowsHTML(entry) {
   const examples = entry.examples && entry.examples.length
     ? entry.examples
-    : [{position: 0, text: entry.sentence, translation_en: entry.sentence_translation_en, translation_zh: entry.sentence_translation_zh, starred: entry.sentence_starred}];
+    : [{position: 0, text: entry.sentence, translation_en: entry.sentence_translation_en, translation_zh: entry.sentence_translation_zh}];
   return examples.map(item => {
     const translation = exampleTranslationHTML(item);
     const isMainRow = item.kind === "main_sentence" || (item.position === 0 && !item.category);
@@ -57,7 +56,6 @@ function sentenceRowsHTML(entry) {
         <div class="sentence-row-head">
           ${exampleBadgeHTML(item)}
           ${item.source_book_code === "GWB_N2" ? `<span class="badge source-badge">GWB #${escapeHTML(item.source_index)}</span>` : ""}
-          <button class="sentence-row-star" type="button" aria-pressed="${item.starred ? "true" : "false"}" title="Star sentence">${item.starred ? "★" : "☆"}</button>
         </div>
         <span class="sentence-text">${escapeHTML(item.text)}</span>
         ${item.reading ? `<span class="sentence-reading">${escapeHTML(item.reading)}</span>` : ""}
@@ -78,24 +76,6 @@ function wireModalSentenceRows(entry) {
     };
     row.dataset.position = String(item.position);
     row.dataset.src = item.audio_url || "";
-    const starButton = row.querySelector(".sentence-row-star");
-    applySentenceStarButton(starButton, !!item.starred);
-    starButton.addEventListener("click", event => {
-      event.stopPropagation();
-      toggleSentenceStar(entry.entry_id, item.position, !item.starred).then(starred => {
-        item.starred = starred;
-        if (item.position === 0) {
-          entry.sentence_starred = starred;
-        }
-        applySentenceStarButton(starButton, starred);
-        const cardEntry = state.currentEntries.find(current => current.entry_id === entry.entry_id);
-        if (cardEntry && item.position === 0) {
-          cardEntry.sentence_starred = starred;
-          const card = elements.grid.querySelector(`.card[data-id="${entry.entry_id}"]`);
-          if (card) applySentenceStarButton(card.querySelector(".sentence-star"), starred);
-        }
-      }).catch(showError);
-    });
 
     if (item.audio_url) {
       row.classList.remove("generatable", "generating");

@@ -41,7 +41,6 @@
     </div>
     <button class="cover-all" id="cover-all" type="button" aria-pressed="false">cover all</button>
     <button class="scope-play-button" id="scope-play-button" type="button" aria-pressed="false" aria-keyshortcuts="Space">play visible</button>
-    <button class="starred-view-button" id="starred-view-button" type="button" aria-pressed="false">★ starred sentences</button>
     <a class="audio-review-link" href="/audio-review.html">audio text review</a>
     <button class="audio-export-button" id="audio-export-button" type="button">export flagged audio</button>
     <a class="layout-switch-button" href="/">React study wall</a>
@@ -56,27 +55,6 @@
       <div class="grid" id="card-grid"></div>
     </section>
 
-    <section class="starred-view" id="starred-view" hidden>
-      <aside class="starred-filter">
-        <div class="section-label">Section filter</div>
-        <div class="starred-unit-list" id="starred-unit-list"></div>
-        <p class="starred-hint">Default review shows starred sentences across all sections. Section view keeps the same starred-only rule.</p>
-      </aside>
-
-      <section class="starred-list-panel" id="starred-list-panel">
-        <div class="starred-list-head">
-          <div>
-            <div class="starred-title" id="starred-title">Starred sentences</div>
-            <div class="starred-subtitle" id="starred-subtitle"></div>
-          </div>
-          <div class="starred-count" id="starred-count"></div>
-        </div>
-        <div class="starred-list" id="starred-list"></div>
-        <div class="empty starred-empty" id="starred-empty">No starred sentences yet.</div>
-      </section>
-
-      <aside class="starred-detail" id="starred-detail"></aside>
-    </section>
   </main>
 
   <section class="playback-dock" id="playback-dock" aria-label="Playback controls">
@@ -174,7 +152,6 @@
     <article class="card">
       <div class="card-top">
         <span class="card-actions">
-          <button class="icon-btn sentence-star" type="button" title="Star main sentence">☆</button>
           <button class="icon-btn flagged" type="button" title="Flag for review" aria-keyshortcuts="F"><span aria-hidden="true">⚑</span><span class="card-action-text">Flag</span><kbd>F</kbd></button>
           <button class="icon-btn known" type="button" title="Mark as known" aria-keyshortcuts="Enter K"><span aria-hidden="true">✓</span><span class="card-action-text">Known</span><kbd>Enter</kbd></button>
         </span>

@@ -1,6 +1,6 @@
 import { exportFlaggedAudio, moveScopePlayback, replayScopeImmediately, stopScopePlayback, toggleScopePlayback } from "./audio.js";
 import { renderCards, toggleCurrentPlaybackMark } from "./cards.js";
-import { loadEntries, loadStarredSentences, loadSummary, loadUnits, renderBooks, selectUnit, showCardView, showStarredView } from "./catalog.js";
+import { loadEntries, loadSummary, loadUnits, renderBooks, selectUnit, showCardView } from "./catalog.js";
 import { closeDetail } from "./detail.js";
 import { closePlaybackSettings, openPlaybackSettings, updatePlaybackSettingsUI } from "./playbackSettings.js";
 import {
@@ -22,28 +22,19 @@ export function wireControls() {
     state.selectedUnit = undefined;
     state.reviewSession = undefined;
     state.coveredEntryIds.clear();
-    state.selectedStarredKey = null;
     saveViewState();
     renderBooks();
     loadSummary()
       .then(loadUnits)
-      .then(() => state.view === "starred" ? loadStarredSentences() : loadEntries())
+      .then(loadEntries)
       .catch(showError);
   });
   elements.unitSelect.addEventListener("change", event => {
-    selectUnit(event.target.value).then(() => {
-      if (state.view === "starred" && state.starredScope === "unit") {
-        return loadStarredSentences();
-      }
-    }).catch(showError);
+    selectUnit(event.target.value).catch(showError);
   });
   elements.search.addEventListener("input", () => {
     state.search = elements.search.value.trim();
     state.reviewSession = undefined;
-    if (state.view !== "cards") {
-      showCardView().catch(showError);
-      return;
-    }
     loadEntries().catch(showError);
   });
   elements.statePills.forEach(pill => {
@@ -56,10 +47,6 @@ export function wireControls() {
     });
   });
   elements.coverAll.addEventListener("click", () => {
-    if (state.view !== "cards") {
-      showCardView().catch(showError);
-      return;
-    }
     const shouldCover = state.currentEntries.some(entry => !state.coveredEntryIds.has(entry.entry_id));
     state.currentEntries.forEach(entry => {
       if (shouldCover) {
@@ -106,13 +93,6 @@ export function wireControls() {
   elements.resetPlaybackSettings.addEventListener("click", () => {
     resetPlaybackSettings();
     updatePlaybackSettingsUI();
-  });
-  elements.starredViewButton.addEventListener("click", () => {
-    if (state.view === "starred") {
-      showCardView().catch(showError);
-    } else {
-      showStarredView({resetScope: true}).catch(showError);
-    }
   });
   elements.modalClose.addEventListener("click", closeDetail);
   elements.backdrop.addEventListener("click", event => {

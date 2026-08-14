@@ -1,4 +1,3 @@
-import { updateExampleStar } from "./api.js";
 import { ensureCardAudio, playClip, playScopeFromEntry, previewPlaybackVisual, setScopePlaybackWindow, updateScopePlaybackButton, wireAudioTarget, wireCardAudioPrepTarget } from "./audio.js";
 import { cardMeaningHTML, escapeHTML, exampleCategoryBadgeHTML, exampleTranslationHTML, rubyOrPlain, unitLabel } from "./format.js";
 import { applyStudyFocusVisual, elements, focusStudyEntry, setBanner, state, showError, updateAudioExportButton } from "./state.js";
@@ -7,7 +6,6 @@ import { setStudyMark } from "./studyState.js";
 const callbacks = {
   loadSummary: null,
   loadUnits: null,
-  loadStarredSentences: null,
   openDetail: null,
 };
 
@@ -24,12 +22,6 @@ export function applyMarkClasses(card, mark) {
   flaggedButton.classList.toggle("on", !!mark.flagged);
   knownButton.setAttribute("aria-pressed", mark.known ? "true" : "false");
   flaggedButton.setAttribute("aria-pressed", mark.flagged ? "true" : "false");
-}
-
-export function applySentenceStarButton(button, starred) {
-  button.classList.toggle("on", !!starred);
-  button.textContent = starred ? "★" : "☆";
-  button.setAttribute("aria-pressed", starred ? "true" : "false");
 }
 
 export function applyCoverState(card, entry, covered) {
@@ -100,16 +92,6 @@ export function renderCards() {
     wireCardAudioPrepTarget(wordTarget, entry.word_audio_url, entry, card, "Generate word and sentence audio");
     if (sentenceTarget) wireCardAudioPrepTarget(sentenceTarget, entry.sentence_audio_url, entry, card, "Generate word and sentence audio");
 
-    const sentenceStar = card.querySelector(".icon-btn.sentence-star");
-    applySentenceStarButton(sentenceStar, entry.sentence_starred);
-    sentenceStar.addEventListener("click", event => {
-      event.stopPropagation();
-      const position = Number(sentenceTarget?.dataset.position || 0);
-      toggleSentenceStar(entry.entry_id, position, !entry.sentence_starred).then(starred => {
-        entry.sentence_starred = starred;
-        applySentenceStarButton(sentenceStar, starred);
-      }).catch(showError);
-    });
     card.querySelector(".icon-btn.known").addEventListener("click", event => {
       event.stopPropagation();
       toggleMark(entry, "known", card).catch(showError);
@@ -325,12 +307,4 @@ export async function toggleCurrentPlaybackMark(key) {
   await toggleMark(entry, key, card);
   setBanner(`${entry.kanji} is ${entry.mark[key] ? key : `not ${key}`}. Playback continues.`);
   return true;
-}
-
-export async function toggleSentenceStar(entryId, position, starred) {
-  const payload = await updateExampleStar(entryId, position, starred);
-  if (state.view === "starred") {
-    await callbacks.loadStarredSentences();
-  }
-  return !!payload.starred;
 }

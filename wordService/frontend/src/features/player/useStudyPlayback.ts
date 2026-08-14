@@ -21,7 +21,6 @@ type PendingSilence = {
 
 type UseStudyPlaybackOptions = {
   entries: Entry[];
-  showStarred: boolean;
   stopAfterEntry?: boolean;
   onCompleteCard?: (entry: Entry) => void;
   onConsecutiveSequenceComplete?: (entry: Entry) => void;
@@ -32,7 +31,7 @@ function targetFor(entry: Entry, phase: PlaybackPhase): AudioTarget | null {
   return url ? {entry, phase, url} : null;
 }
 
-export function useStudyPlayback({entries, showStarred, stopAfterEntry = false, onCompleteCard, onConsecutiveSequenceComplete}: UseStudyPlaybackOptions) {
+export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCard, onConsecutiveSequenceComplete}: UseStudyPlaybackOptions) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [activePhase, setActivePhase] = useState<PlaybackPhase>("word");
   const [savedSettings] = useState(() => readPlaybackSettings());
@@ -66,14 +65,14 @@ export function useStudyPlayback({entries, showStarred, stopAfterEntry = false, 
   }, [activeEntry?.item_uuid]);
 
   useEffect(() => {
-    if (!activeEntry || showStarred) return;
+    if (!activeEntry) return;
     saveStudyFocus({
       bookCode: activeEntry.book_code,
       entryId: activeEntry.entry_id,
       phase: activePhase,
       unitNumber: activeEntry.unit.number,
     });
-  }, [activeEntry, activePhase, showStarred]);
+  }, [activeEntry, activePhase]);
 
   useEffect(() => {
     autoAdvanceRef.current = autoAdvance;
@@ -212,7 +211,7 @@ export function useStudyPlayback({entries, showStarred, stopAfterEntry = false, 
   }, [cancelEndTimer, entries, playbackMode, requestPlayback]);
 
   const moveClip = useCallback((direction: -1 | 1) => {
-    if (!activeEntry || showStarred) return;
+    if (!activeEntry) return;
     let nextIndex = activeIndex;
     let nextPhase: PlaybackPhase = activePhase;
     if (playbackMode === "words") {
@@ -239,7 +238,7 @@ export function useStudyPlayback({entries, showStarred, stopAfterEntry = false, 
     setActiveIndex(nextIndex);
     setActivePhase(nextPhase);
     requestPlayback();
-  }, [activeEntry, activeIndex, activePhase, cancelEndTimer, entries, playbackMode, requestPlayback, showStarred]);
+  }, [activeEntry, activeIndex, activePhase, cancelEndTimer, entries, playbackMode, requestPlayback]);
 
   const advanceAfterPlayback = useCallback(() => {
     if (!activeEntry || activeIndex >= entries.length - 1) {
@@ -358,8 +357,8 @@ export function useStudyPlayback({entries, showStarred, stopAfterEntry = false, 
   }, [requestPlayback]);
 
   const playbackActive = isPlaying || isSilencePlaying;
-  const canPrevious = !showStarred && (activeIndex > 0 || (playbackMode === "both" && activePhase === "sentence"));
-  const canNext = !showStarred && (activeIndex < entries.length - 1 || (playbackMode === "both" && activePhase === "word" && !!activeEntry?.sentence_audio_url));
+  const canPrevious = activeIndex > 0 || (playbackMode === "both" && activePhase === "sentence");
+  const canNext = activeIndex < entries.length - 1 || (playbackMode === "both" && activePhase === "word" && !!activeEntry?.sentence_audio_url);
 
   return {
     activeEntry,

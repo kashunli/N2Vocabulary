@@ -2,7 +2,6 @@ import { useCallback, type Dispatch, type SetStateAction } from "react";
 
 import { exportUnitFlaggedAudio } from "../../api";
 import type { Entry, UnitSummary } from "../../types";
-import type { PlaybackPhase } from "../player/playbackSettings";
 import { unitLabel } from "./unitLabel";
 import type { StudyStateStore } from "./studyStateTypes";
 
@@ -10,15 +9,12 @@ interface UseStudyActionsOptions {
   activeEntry?: Entry;
   allVisibleCovered: boolean;
   entries: Entry[];
-  refreshCatalog: () => Promise<void>;
   selectedBook: string;
   selectedUnit: number | null;
   setCoveredEntryIds: Dispatch<SetStateAction<Set<number>>>;
   setDetail: Dispatch<SetStateAction<Entry | undefined>>;
   setEntries: Dispatch<SetStateAction<Entry[]>>;
-  setShowStarred: Dispatch<SetStateAction<boolean>>;
   setStatus: (status: string) => void;
-  selectEntry: (index: number, phase?: PlaybackPhase) => void;
   units: UnitSummary[];
   studyStore: StudyStateStore;
 }
@@ -27,15 +23,12 @@ export function useStudyActions({
   activeEntry,
   allVisibleCovered,
   entries,
-  refreshCatalog,
   selectedBook,
   selectedUnit,
   setCoveredEntryIds,
   setDetail,
   setEntries,
-  setShowStarred,
   setStatus,
-  selectEntry,
   units,
   studyStore,
 }: UseStudyActionsOptions) {
@@ -88,19 +81,8 @@ export function useStudyActions({
     }
   }, [selectedBook, selectedUnit, setStatus, units]);
 
-  const focusStarredEntry = useCallback((entryId: number) => {
-    const index = entries.findIndex((entry) => entry.entry_id === entryId);
-    if (index >= 0) {
-      setShowStarred(false);
-      selectEntry(index, "sentence");
-    } else {
-      setStatus("The starred sentence is outside the current filtered list. Clear the search or filter to focus it.");
-    }
-  }, [entries, selectEntry, setShowStarred, setStatus]);
-
   return {
     exportFlaggedAudio,
-    focusStarredEntry,
     toggleCoverAll,
     toggleMark,
   };

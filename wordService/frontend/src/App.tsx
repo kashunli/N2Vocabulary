@@ -4,7 +4,6 @@ import { PlaybackSettingsModal } from "./features/player/PlaybackSettingsModal";
 import { RailPlayer } from "./features/player/RailPlayer";
 import { useStudyKeyboardShortcuts } from "./features/player/useStudyKeyboardShortcuts";
 import { useStudyPlayback } from "./features/player/useStudyPlayback";
-import { StarredView } from "./features/study/StarredView";
 import {AccountControls} from "./features/study/AccountControls";
 import { StudyHeader } from "./features/study/StudyHeader";
 import { StudyWallView } from "./features/study/StudyWallView";
@@ -28,7 +27,6 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
   const [entriesLoading, setEntriesLoading] = useState(false);
   const [coveredEntryIds, setCoveredEntryIds] = useState<Set<number>>(() => new Set());
   const [blurred, setBlurred] = useState(false);
-  const [showStarred, setShowStarred] = useState(() => initialView.view === "starred");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [reviewSession, setReviewSession] = useState<ReviewSession>();
   const reviewCompletionInFlight = useRef(new Set<string>());
@@ -73,7 +71,6 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
     togglePlayback,
   } = useStudyPlayback({
     entries,
-    showStarred,
     onCompleteCard: entry => {
       if (filterState !== "review") {
         void store.recordStudyCompleted(entry).catch(error => setStatus(error instanceof Error ? error.message : "Could not save study playback."));
@@ -106,16 +103,12 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
   const {
     books,
     detail,
-    refreshCatalog,
-    selectedStarredKey,
     setDetail,
-    setSelectedStarredKey,
     setStatus,
-    starredSentences,
     status,
     summary,
     units,
-  } = useStudyCatalog({activeEntry, selectedBook, selectedUnit, showStarred, studySnapshot: snapshot});
+  } = useStudyCatalog({activeEntry, selectedBook, selectedUnit, studySnapshot: snapshot});
 
   useEffect(() => {
     saveStudyViewState({
@@ -123,9 +116,8 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
       selectedUnit,
       filterState,
       search,
-      view: showStarred ? "starred" : "cards",
     });
-  }, [filterState, search, selectedBook, selectedUnit, showStarred]);
+  }, [filterState, search, selectedBook, selectedUnit]);
 
   useEffect(() => {
     if (selectedUnit !== null && units.length && !units.some((unit) => unit.number === selectedUnit)) {
@@ -133,29 +125,22 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
     }
   }, [selectedUnit, units]);
   const currentBook = books.find((book) => book.code === selectedBook);
-  const selectedStarred = starredSentences.find((item) => (
-    `${item.entry_id}:${item.position}` === selectedStarredKey
-  ));
   const allVisibleCovered = entries.length > 0 && entries.every((entry) => coveredEntryIds.has(entry.entry_id));
 
   const {
     exportFlaggedAudio,
-    focusStarredEntry,
     toggleCoverAll,
     toggleMark,
   } = useStudyActions({
     activeEntry,
     allVisibleCovered,
     entries,
-    refreshCatalog,
     selectedBook,
     selectedUnit,
     setCoveredEntryIds,
     setDetail,
     setEntries,
-    setShowStarred,
     setStatus,
-    selectEntry,
     units,
     studyStore: store,
   });
@@ -201,34 +186,23 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
         search={search}
         selectedBook={selectedBook}
         selectedUnit={selectedUnit}
-        showStarred={showStarred}
         summary={summary}
         reviewSessionCount={filterState === "review" ? Object.keys(reviewSession?.expectedDueAtByItemUuid || {}).length : undefined}
         target={target}
         units={units}
         onOpenSettings={() => setSettingsOpen(true)}
         onSearch={setSearch}
-        onSelectBook={(book) => { setSelectedBook(book); setSelectedUnit(null); setShowStarred(false); setReviewSession(undefined); }}
-        onSelectFilter={(filter) => { setFilterState(filter); setShowStarred(false); if (filter !== "review") setReviewSession(undefined); }}
+        onSelectBook={(book) => { setSelectedBook(book); setSelectedUnit(null); setReviewSession(undefined); }}
+        onSelectFilter={(filter) => { setFilterState(filter); if (filter !== "review") setReviewSession(undefined); }}
         onSelectUnit={(unit) => { setSelectedUnit(unit); setReviewSession(undefined); }}
         onToggleBlur={() => setBlurred((current) => !current)}
         onToggleCoverAll={toggleCoverAll}
         onTogglePlayback={togglePlayback}
-        onToggleStarred={() => setShowStarred((current) => !current)}
       />
       {status ? <div className="react-status" role="status" aria-live="polite">{status}</div> : null}
 
       <div className={`react-content-scroll${blurred ? " is-blurred" : ""}`}>
-        {showStarred ? <StarredView
-          selectedStarred={selectedStarred}
-          selectedStarredKey={selectedStarredKey}
-          selectedUnit={selectedUnit}
-          starredSentences={starredSentences}
-          units={units}
-          onFocusEntry={focusStarredEntry}
-          onSelectStarred={setSelectedStarredKey}
-          onSelectUnit={setSelectedUnit}
-        /> : <StudyWallView
+        <StudyWallView
           activeEntry={activeEntry}
           activeIndex={activeIndex}
           activePhase={activePhase}
@@ -241,7 +215,7 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
           onSelectPhase={selectPhase}
           onToggleMark={toggleMark}
           reviewSession={reviewSession}
-        />}
+        />
       </div>
 
       <RailPlayer

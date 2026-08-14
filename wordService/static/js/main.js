@@ -1,9 +1,8 @@
 import { configureCards } from "./cards.js";
 import { updateScopePlaybackButton } from "./audio.js";
-import { loadBooks, loadEntries, loadStarredSentences, loadSummary, loadUnits, renderUnits, showCardView, showStarredView } from "./catalog.js";
+import { loadBooks, loadEntries, loadSummary, loadUnits, showCardView } from "./catalog.js";
 import { configureDetail, openDetail } from "./detail.js";
 import { wireControls } from "./controls.js";
-import { configureStarred } from "./starred.js";
 import { updatePlaybackSettingsUI } from "./playbackSettings.js";
 import { fetchLegacyMarkSeed } from "./api.js";
 import { initializeStudyState, seedLegacyStudyMarks } from "./studyState.js";
@@ -21,9 +20,8 @@ import {
 function configureModules() {
   // Feature modules receive loader callbacks instead of importing this startup
   // module back, which keeps the ES module graph acyclic and easy to inspect.
-  configureCards({loadSummary, loadUnits, loadStarredSentences, openDetail});
+  configureCards({loadSummary, loadUnits, openDetail});
   configureDetail({loadEntries, loadSummary, loadUnits});
-  configureStarred({loadStarredSentences, renderUnits, openDetail});
 }
 
 async function init() {
@@ -47,11 +45,7 @@ async function init() {
   await loadUnits();
   updateAudioExportButton();
   updateScopePlaybackButton();
-  if (state.view === "starred") {
-    await showStarredView();
-  } else {
-    await showCardView();
-  }
+  await showCardView();
   if (previewParams.has("playback-preview")) {
     window.scrollTo({top: 0, left: 0, behavior: "auto"});
   } else {

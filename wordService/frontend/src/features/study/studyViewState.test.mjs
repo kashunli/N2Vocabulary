@@ -28,7 +28,6 @@ test("React view selections round-trip through the shared wall state", () => {
     selectedUnit: 7,
     filterState: "known",
     search: "覆う",
-    view: "cards",
   }, storage);
 
   assert.deepEqual(readStudyViewState(storage), {
@@ -36,7 +35,6 @@ test("React view selections round-trip through the shared wall state", () => {
     selectedUnit: 7,
     filterState: "known",
     search: "覆う",
-    view: "cards",
   });
 });
 
@@ -46,25 +44,19 @@ test("an explicit all-sections selection is preserved and Classic fields remain 
     selectedBook: "n2",
     selectedUnit: null,
     filterState: "unmarked",
-    view: "starred",
-    starredScope: "unit",
-    selectedStarredKey: "42:1",
   }));
 
   assert.deepEqual(readStudyViewState(storage), {
     selectedBook: "N2",
     selectedUnit: null,
     filterState: "unmarked",
-    view: "starred",
-    starredScope: "unit",
-    selectedStarredKey: "42:1",
   });
 });
 
 test("Review is a shared study-state filter", () => {
   const storage = new MemoryStorage();
-  saveStudyViewState({filterState: "review", view: "cards"}, storage);
-  assert.deepEqual(readStudyViewState(storage), {filterState: "review", view: "cards"});
+  saveStudyViewState({filterState: "review"}, storage);
+  assert.deepEqual(readStudyViewState(storage), {filterState: "review"});
 });
 
 test("invalid saved selections are ignored instead of poisoning the next view", () => {
@@ -74,7 +66,6 @@ test("invalid saved selections are ignored instead of poisoning the next view", 
     selectedUnit: -3,
     filterState: "not-a-filter",
     search: 12,
-    view: "unknown",
   }));
 
   assert.deepEqual(readStudyViewState(storage), {});
