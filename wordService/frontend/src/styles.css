@@ -89,11 +89,37 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .react-toolbar-actions .react-settings-button { min-width: 34px; padding-inline: 7px; font-size: 1rem; line-height: 1; }
 
 .react-status {
-  flex: 0 0 auto;
-  min-height: 0;
-  color: #9d3d2d;
-  padding: 7px 0 0;
-  font: .76rem/1.3 system-ui, sans-serif;
+  position: fixed;
+  z-index: 30;
+  inset-block-start: max(12px, env(safe-area-inset-top));
+  inset-inline-end: clamp(16px, 3.5vw, 60px);
+  width: min(360px, calc(100vw - 32px));
+  max-width: calc(100vw - 32px);
+  margin: 0;
+  border: 1px solid rgba(207, 197, 181, .9);
+  border-radius: 4px;
+  background: rgba(255, 250, 242, .94);
+  box-shadow: 0 8px 24px rgba(40, 36, 33, .08);
+  color: #756d65;
+  padding: 8px 11px;
+  font: .74rem/1.35 system-ui, sans-serif;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+  animation: react-status-in 160ms ease-out both, react-status-out 240ms ease-in 2.45s forwards;
+}
+
+@keyframes react-status-in {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes react-status-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-3px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .react-status { animation: none; }
 }
 
 .react-content-scroll {

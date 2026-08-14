@@ -110,6 +110,15 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
     units,
   } = useStudyCatalog({activeEntry, selectedBook, selectedUnit, studySnapshot: snapshot});
 
+  // Status messages are transient feedback, not part of the study layout.
+  // Removing them after a short pause keeps an error or save confirmation from
+  // permanently consuming a row of vertical space above the vocabulary wall.
+  useEffect(() => {
+    if (!status) return undefined;
+    const timeoutId = window.setTimeout(() => setStatus(""), 2900);
+    return () => window.clearTimeout(timeoutId);
+  }, [setStatus, status]);
+
   useEffect(() => {
     saveStudyViewState({
       selectedBook,
@@ -199,7 +208,7 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
         onToggleCoverAll={toggleCoverAll}
         onTogglePlayback={togglePlayback}
       />
-      {status ? <div className="react-status" role="status" aria-live="polite">{status}</div> : null}
+      {status ? <div key={status} className="react-status" role="status" aria-live="polite" aria-atomic="true">{status}</div> : null}
 
       <div className={`react-content-scroll${blurred ? " is-blurred" : ""}`}>
         <StudyWallView
