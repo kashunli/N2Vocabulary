@@ -290,20 +290,6 @@ def _merge_example(
         """,
         (mapping.destination_entry_id, position, SOURCE_BOOK, mapping.source_index),
     )
-    starred = conn.execute(
-        "SELECT updated_at FROM sentence_stars WHERE entry_id = ? AND position = 0",
-        (mapping.source_entry_id,),
-    ).fetchone()
-    if starred is not None:
-        conn.execute(
-            """
-            INSERT INTO sentence_stars(entry_id, position, updated_at)
-            VALUES(?, ?, ?)
-            ON CONFLICT(entry_id, position) DO UPDATE SET
-              updated_at = MAX(sentence_stars.updated_at, excluded.updated_at)
-            """,
-            (mapping.destination_entry_id, position, starred["updated_at"]),
-        )
     return True, deduplicated
 
 

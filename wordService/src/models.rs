@@ -72,7 +72,6 @@ pub struct EntryExample {
     pub translation_zh: String,
     pub explanation_md: String,
     pub audio_url: Option<String>,
-    pub starred: bool,
     pub source_book_code: Option<String>,
     pub source_index: Option<i64>,
     pub category: Option<String>,
@@ -100,35 +99,6 @@ pub struct EntrySourceNote {
     pub notes_md: String,
 }
 
-/// One starred sentence row for the dedicated sentence-review page.
-///
-/// This is intentionally sentence-first. It includes just enough source-word
-/// context to jump back to the word detail without showing unrelated examples.
-#[derive(Clone, Debug, Serialize, PartialEq)]
-pub struct StarredSentencePayload {
-    pub entry_id: i64,
-    pub position: i64,
-    pub source_index: i64,
-    pub unit: UnitRef,
-    pub word: String,
-    pub reading: String,
-    pub meaning_en: String,
-    pub meaning_zh: String,
-    pub text: String,
-    pub translation_en: String,
-    pub translation_zh: String,
-    pub explanation_md: String,
-    pub audio_url: Option<String>,
-    pub word_audio_url: Option<String>,
-    pub starred_at: Option<String>,
-}
-
-#[derive(Debug, Serialize, PartialEq)]
-pub struct StarredSentenceListResponse {
-    pub items: Vec<StarredSentencePayload>,
-    pub total: usize,
-}
-
 /// The main entry payload served to the browser.
 ///
 /// List views and detail views share this shape. Detail-only fields are
@@ -152,7 +122,6 @@ pub struct EntryPayload {
     pub sentence_translation_en: String,
     pub sentence_translation_zh: String,
     pub sentence_position: i64,
-    pub sentence_starred: bool,
     pub word_audio_url: Option<String>,
     pub sentence_audio_url: Option<String>,
     pub mark: MarkState,

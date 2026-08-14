@@ -48,7 +48,6 @@ def main() -> None:
                 "book_entries",
                 "item_examples",
                 "item_marks",
-                "item_sentence_stars",
                 "item_source_notes",
             ):
                 count = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]

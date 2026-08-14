@@ -179,7 +179,7 @@ def remove_previous_n1_terms(conn: sqlite3.Connection, item_id: int, source_inde
         f"DELETE FROM item_example_sources WHERE item_id=? AND source_book_code=? AND source_index=? AND position IN ({placeholders})",
         (item_id, BOOK_CODE, source_index, *positions),
     )
-    # Preserve rows still linked to another source, as well as starred rows.
+    # Preserve rows still linked to another source.
     result = conn.execute(
         f"""
         DELETE FROM item_examples
@@ -187,10 +187,6 @@ def remove_previous_n1_terms(conn: sqlite3.Connection, item_id: int, source_inde
           AND NOT EXISTS (
             SELECT 1 FROM item_example_sources p
             WHERE p.item_id=item_examples.item_id AND p.position=item_examples.position
-          )
-          AND NOT EXISTS (
-            SELECT 1 FROM item_sentence_stars s
-            WHERE s.item_id=item_examples.item_id AND s.position=item_examples.position
           )
         """,
         (item_id, *positions),

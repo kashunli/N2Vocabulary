@@ -56,12 +56,6 @@ class MergeGwbDuplicatesTests(unittest.TestCase):
                     "SELECT known,flagged FROM word_marks WHERE entry_id=20"
                 ).fetchone()
                 self.assertEqual((mark["known"], mark["flagged"]), (1, 1))
-                self.assertEqual(
-                    conn.execute(
-                        "SELECT COUNT(*) FROM sentence_stars WHERE entry_id=20"
-                    ).fetchone()[0],
-                    1,
-                )
                 conn.execute("DELETE FROM entry_examples WHERE entry_id=20 AND position>0")
                 restored = restore_provenance_examples(conn, "N2")
                 conn.commit()
@@ -99,11 +93,6 @@ def create_fixture(db_path: Path) -> None:
           entry_id INTEGER PRIMARY KEY REFERENCES entries(entry_id) ON DELETE CASCADE,
           known INTEGER NOT NULL DEFAULT 0,flagged INTEGER NOT NULL DEFAULT 0,updated_at TEXT NOT NULL
         );
-        CREATE TABLE sentence_stars(
-          entry_id INTEGER NOT NULL,position INTEGER NOT NULL,updated_at TEXT NOT NULL,
-          PRIMARY KEY(entry_id,position),
-          FOREIGN KEY(entry_id,position) REFERENCES entry_examples(entry_id,position) ON DELETE CASCADE
-        );
         INSERT INTO books(code,title) VALUES('N2','N2'),('N3','N3'),('GWB_N2','GWB');
         INSERT INTO units(book_code,number,header,title) VALUES
           ('N2',1,'N2','N2'),('N3',1,'N3','N3'),('GWB_N2',1,'GWB','GWB');
@@ -129,7 +118,6 @@ def create_fixture(db_path: Path) -> None:
           (104,0,'独自文。','独有句','');
         INSERT INTO word_marks(entry_id,known,flagged,updated_at) VALUES
           (20,1,0,'2026-01-01'),(100,0,1,'2026-02-01');
-        INSERT INTO sentence_stars(entry_id,position,updated_at) VALUES(100,0,'2026-02-01');
         """
     )
     conn.close()

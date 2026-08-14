@@ -332,7 +332,6 @@ fn detail_includes_examples_and_audio_urls() {
     let entry = fixture.repo.get_entry(1).unwrap().expect("entry exists");
     let examples = entry.examples.unwrap();
     assert_eq!(examples.len(), 3);
-    assert!(examples.iter().all(|example| !example.starred));
     assert_eq!(
         entry.word_audio_url.as_deref(),
         Some("/audio/clips/words/word1.mp3")
@@ -451,54 +450,6 @@ fn legacy_source_explanation_is_not_exposed_as_source_note() {
 
     let entry = fixture.repo.get_entry(1).unwrap().expect("entry exists");
     assert!(entry.source_notes.unwrap().is_empty());
-}
-
-#[test]
-fn sentence_stars_can_be_listed_filtered_and_cleared() {
-    let fixture = Fixture::new();
-
-    fixture.repo.set_sentence_star(1, 2, true).unwrap();
-    fixture.repo.set_sentence_star(3, 0, true).unwrap();
-
-    let global = fixture.repo.list_starred_sentences(None).unwrap();
-    assert_eq!(global.total, 2);
-    assert_eq!(global.items[0].entry_id, 1);
-    assert_eq!(global.items[0].position, 2);
-    assert_eq!(global.items[0].word, "人生");
-    assert_eq!(global.items[0].text, "不安が人生を覆う。");
-    assert_eq!(global.items[1].unit.number, 2);
-
-    let unit_one = fixture.repo.list_starred_sentences(Some(1)).unwrap();
-    assert_eq!(unit_one.total, 1);
-    assert_eq!(unit_one.items[0].entry_id, 1);
-
-    let entry = fixture.repo.get_entry(1).unwrap().expect("entry exists");
-    let starred_example = entry
-        .examples
-        .unwrap()
-        .into_iter()
-        .find(|example| example.position == 2)
-        .expect("position 2 example exists");
-    assert!(starred_example.starred);
-
-    fixture.repo.set_sentence_star(1, 2, false).unwrap();
-    let global = fixture.repo.list_starred_sentences(None).unwrap();
-    assert_eq!(
-        global
-            .items
-            .iter()
-            .map(|item| item.entry_id)
-            .collect::<Vec<_>>(),
-        vec![3]
-    );
-}
-
-#[test]
-fn sentence_star_rejects_unknown_example() {
-    let fixture = Fixture::new();
-
-    let error = fixture.repo.set_sentence_star(1, 99, true).unwrap_err();
-    assert!(error.to_string().contains("unknown example"));
 }
 
 #[test]
@@ -858,6 +809,8 @@ fn create_test_db(db_path: &PathBuf) {
           category TEXT,
           PRIMARY KEY(entry_id, position)
         );
+        -- Legacy table required only while migration 007 is exercised below.
+        -- Migration 010 removes it before the repository is used.
         CREATE TABLE sentence_stars (
           entry_id INTEGER NOT NULL,
           position INTEGER NOT NULL,
@@ -945,4 +898,8 @@ fn create_test_db(db_path: &PathBuf) {
         "../../db/migrations/009_n1_source_metadata.sql"
     ))
     .expect("create structured source metadata schema");
+    conn.execute_batch(include_str!(
+        "../../db/migrations/010_remove_sentence_stars.sql"
+    ))
+    .expect("remove retired sentence-star schema");
 }

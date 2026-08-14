@@ -242,49 +242,6 @@ pub(super) fn handle_put(
         };
     }
 
-    if let Some(rest) = path.strip_prefix("/api/entries/") {
-        let parts = rest.split('/').collect::<Vec<_>>();
-        if parts.len() == 4 && parts[1] == "examples" && parts[3] == "star" {
-            let entry_id = match parts[0].parse::<i64>() {
-                Ok(value) => value,
-                Err(_) => {
-                    return send_json(
-                        request,
-                        StatusCode(400),
-                        &json!({"error": "entry id must be integer"}),
-                    );
-                }
-            };
-            let position = match parts[2].parse::<i64>() {
-                Ok(value) => value,
-                Err(_) => {
-                    return send_json(
-                        request,
-                        StatusCode(400),
-                        &json!({"error": "sentence index must be integer"}),
-                    );
-                }
-            };
-            let starred = body
-                .get("starred")
-                .and_then(|value| value.as_bool())
-                .unwrap_or(false);
-            return match repository.set_sentence_star(entry_id, position, starred) {
-                Ok(()) => send_json(
-                    request,
-                    StatusCode(200),
-                    &json!({"ok": true, "starred": starred}),
-                ),
-                Err(error) if error.to_string().contains("unknown example") => send_json(
-                    request,
-                    StatusCode(404),
-                    &json!({"error": "unknown example"}),
-                ),
-                Err(error) => Err(error),
-            };
-        }
-    }
-
     send_json(request, StatusCode(404), &json!({"error": "not found"}))
 }
 

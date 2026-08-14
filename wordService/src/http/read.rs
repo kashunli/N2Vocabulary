@@ -55,17 +55,6 @@ pub(super) fn handle_read(
         "/api/audio-review" => {
             return send_json(request, StatusCode(200), &audio_review.list()?);
         }
-        "/api/starred-sentences" => {
-            let unit = match params.get("unit").filter(|value| !value.is_empty()) {
-                Some(value) => Some(value.parse::<i64>().context("unit must be an integer")?),
-                None => None,
-            };
-            return send_json(
-                request,
-                StatusCode(200),
-                &repository.list_starred_sentences(unit)?,
-            );
-        }
         "/api/entries" => {
             let unit = match params.get("unit").filter(|value| !value.is_empty()) {
                 Some(value) => Some(value.parse::<i64>().context("unit must be an integer")?),

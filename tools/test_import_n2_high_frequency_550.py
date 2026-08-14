@@ -129,7 +129,6 @@ def create_canonical_schema(db_path: Path) -> None:
           (2, 'entry_example_metadata'),
           (3, 'entry_source_provenance'),
           (4, 'entry_example_category'),
-          (5, 'sentence_stars'),
           (6, 'entry_example_kind'),
           (7, 'vocabulary_items');
         CREATE TABLE books(code TEXT PRIMARY KEY, title TEXT NOT NULL, notes TEXT);
@@ -229,13 +228,6 @@ def create_canonical_schema(db_path: Path) -> None:
           known INTEGER NOT NULL DEFAULT 0,
           flagged INTEGER NOT NULL DEFAULT 0,
           updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-        );
-        CREATE TABLE item_sentence_stars(
-          item_id INTEGER NOT NULL,
-          position INTEGER NOT NULL,
-          updated_at TEXT NOT NULL,
-          PRIMARY KEY(item_id, position),
-          FOREIGN KEY(item_id, position) REFERENCES item_examples(item_id, position)
         );
         CREATE TABLE item_source_notes(
           item_id INTEGER NOT NULL REFERENCES vocabulary_items(item_id) ON DELETE CASCADE,

@@ -1,8 +1,7 @@
 use crate::models::{
     AudioGenerationResponse, BookSummary, EntryExample, EntryListResponse, EntryPayload,
     EntrySourceNote, FlaggedAudioExportResponse, LegacyMarkSeed, LegacyMarkSeedResponse, MarkState,
-    MarksResponse, StarredSentenceListResponse, StarredSentencePayload, Summary, UnitRef,
-    UnitSummary,
+    MarksResponse, Summary, UnitRef, UnitSummary,
 };
 use anyhow::{Context, Result, bail};
 use chrono::Utc;
@@ -109,7 +108,6 @@ impl WordRepository {
             bail!("Database not found: {}", self.db_path.display());
         }
         let conn = self.connect()?;
-        self.ensure_sentence_star_schema(&conn)?;
         self.ensure_source_provenance_schema(&conn)?;
         self.ensure_example_metadata_schema(&conn)?;
         // rusqlite separates row-returning statements from mutation-style
@@ -164,23 +162,6 @@ impl WordRepository {
             .with_context(|| format!("open SQLite database {}", self.db_path.display()))?;
         conn.execute_batch("PRAGMA foreign_keys = ON;")?;
         Ok(conn)
-    }
-
-    fn ensure_sentence_star_schema(&self, conn: &Connection) -> Result<()> {
-        conn.execute_batch(
-            r#"
-            CREATE TABLE IF NOT EXISTS sentence_stars (
-              entry_id INTEGER NOT NULL,
-              position INTEGER NOT NULL,
-              updated_at TEXT NOT NULL,
-              PRIMARY KEY(entry_id, position),
-              FOREIGN KEY(entry_id, position)
-                REFERENCES entry_examples(entry_id, position)
-                ON DELETE CASCADE
-            );
-            "#,
-        )?;
-        Ok(())
     }
 
     fn ensure_source_provenance_schema(&self, conn: &Connection) -> Result<()> {
@@ -700,7 +681,6 @@ impl WordRepository {
                      ex.audio_clip
                    ) AS resolved_audio_clip,
                    ex.category,
-                   CASE WHEN s.item_id IS NULL THEN 0 ELSE 1 END AS starred,
                    (
                      SELECT p.source_book_code FROM item_example_sources p
                      WHERE p.item_id = ex.item_id AND p.position = ex.position
@@ -727,8 +707,6 @@ impl WordRepository {
                      LIMIT 1
                    ) AS main_source_book_code
             FROM item_examples ex
-            LEFT JOIN item_sentence_stars s
-              ON s.item_id = ex.item_id AND s.position = ex.position
             WHERE ex.item_id IN ({placeholders})
             ORDER BY ex.item_id, ex.position
             "#
@@ -751,10 +729,9 @@ impl WordRepository {
                     explanation_md: row.get::<_, Option<String>>(7)?.unwrap_or_default(),
                     audio_url: self.audio_url(audio_clip.as_deref()),
                     category: row.get(9)?,
-                    starred: int_to_bool(row.get(10)?),
-                    source_book_code: row.get(11)?,
-                    source_index: row.get(12)?,
-                    main_source_book_code: row.get(13)?,
+                    source_book_code: row.get(10)?,
+                    source_index: row.get(11)?,
+                    main_source_book_code: row.get(12)?,
                 },
             ))
         })?;
@@ -902,7 +879,6 @@ impl WordRepository {
                 .map(|example| example.translation_zh.clone())
                 .unwrap_or_default(),
             sentence_position: main_example.map(|example| example.position).unwrap_or(0),
-            sentence_starred: main_example.map(|example| example.starred).unwrap_or(false),
             word_audio_url: self.audio_url(row.word_clip.as_deref()),
             sentence_audio_url: sentence_audio_url.clone(),
             mark: MarkState {
@@ -1012,132 +988,6 @@ impl WordRepository {
         }
 
         copy_database_back_with_retry(&temp_db, &self.db_path)?;
-        Ok(())
-    }
-
-    pub fn list_starred_sentences(&self, unit: Option<i64>) -> Result<StarredSentenceListResponse> {
-        let conn = self.connect()?;
-        self.ensure_sentence_star_schema(&conn)?;
-
-        let mut query_params = vec![Value::Text(self.book_code.clone())];
-        let unit_clause = if let Some(unit_number) = unit {
-            query_params.push(Value::Integer(unit_number));
-            "AND be.unit_number = ?"
-        } else {
-            ""
-        };
-
-        let sql = format!(
-            r#"
-            SELECT
-              be.entry_id, ex.position, be.source_index, be.unit_number,
-              u.header, u.title, v.kanji, v.reading,
-              COALESCE(NULLIF(be.meaning_en, ''), v.meaning_en) AS meaning_en,
-              COALESCE(NULLIF(be.meaning_zh, ''), v.meaning_zh) AS meaning_zh,
-              ex.text, ex.translation_en,
-              ex.translation_zh, ex.explanation_md, ex.audio_clip,
-              COALESCE(be.word_clip, v.word_clip) AS word_clip, s.updated_at
-            FROM item_sentence_stars s
-            JOIN item_examples ex
-              ON ex.item_id = s.item_id AND ex.position = s.position
-            JOIN book_entries be ON be.item_id = ex.item_id
-            JOIN vocabulary_items v ON v.item_id = be.item_id
-            JOIN units u
-              ON u.book_code = be.book_code AND u.number = be.unit_number
-            WHERE be.book_code = ? {unit_clause}
-            ORDER BY be.unit_number, be.position, ex.position, be.source_index
-            "#
-        );
-
-        let mut statement = conn.prepare(&sql)?;
-        let rows = statement.query_map(params_from_iter(query_params.iter()), |row| {
-            let unit_header: String = row.get(4)?;
-            let unit_title: String = row.get(5)?;
-            let kanji: String = row.get(6)?;
-            let audio_clip: Option<String> = row.get(14)?;
-            let word_clip: Option<String> = row.get(15)?;
-            Ok(StarredSentencePayload {
-                entry_id: row.get(0)?,
-                position: row.get(1)?,
-                source_index: row.get(2)?,
-                unit: UnitRef {
-                    number: row.get(3)?,
-                    header: unit_header.clone(),
-                    title: unit_title,
-                },
-                word: kanji,
-                reading: row.get::<_, Option<String>>(7)?.unwrap_or_default(),
-                meaning_en: row.get::<_, Option<String>>(8)?.unwrap_or_default(),
-                meaning_zh: row.get::<_, Option<String>>(9)?.unwrap_or_default(),
-                text: row.get::<_, Option<String>>(10)?.unwrap_or_default(),
-                translation_en: row.get::<_, Option<String>>(11)?.unwrap_or_default(),
-                translation_zh: row.get::<_, Option<String>>(12)?.unwrap_or_default(),
-                explanation_md: row.get::<_, Option<String>>(13)?.unwrap_or_default(),
-                audio_url: self.audio_url(audio_clip.as_deref()),
-                word_audio_url: self.audio_url(word_clip.as_deref()),
-                starred_at: row.get(16)?,
-            })
-        })?;
-        let items = collect_rows(rows)?;
-
-        Ok(StarredSentenceListResponse {
-            total: items.len(),
-            items,
-        })
-    }
-
-    pub fn set_sentence_star(&self, entry_id: i64, position: i64, starred: bool) -> Result<()> {
-        let _guard = self
-            .write_lock
-            .lock()
-            .expect("sentence star write lock should not be poisoned");
-        let temp_dir = TempDir::with_prefix("n2_sentence_star_")?;
-        let temp_db = temp_dir.path().join(
-            self.db_path
-                .file_name()
-                .context("database path should have a filename")?,
-        );
-        fs::copy(&self.db_path, &temp_db)?;
-
-        {
-            let conn = Connection::open(&temp_db)?;
-            conn.execute_batch("PRAGMA foreign_keys = ON; PRAGMA journal_mode = DELETE;")?;
-            self.ensure_sentence_star_schema(&conn)?;
-            let item_id: Option<i64> = conn
-                .query_row(
-                    r#"
-                    SELECT be.item_id
-                    FROM book_entries be
-                    JOIN item_examples ex ON ex.item_id = be.item_id
-                    WHERE be.book_code = ? AND be.entry_id = ? AND ex.position = ?
-                    "#,
-                    params![&self.book_code, entry_id, position],
-                    |row| row.get(0),
-                )
-                .optional()?;
-            let Some(item_id) = item_id else {
-                bail!("unknown example");
-            };
-
-            if starred {
-                conn.execute(
-                    r#"
-                    INSERT INTO item_sentence_stars(item_id, position, updated_at)
-                    VALUES(?, ?, ?)
-                    ON CONFLICT(item_id, position) DO UPDATE SET
-                      updated_at = excluded.updated_at
-                    "#,
-                    params![item_id, position, now_utc()],
-                )?;
-            } else {
-                conn.execute(
-                    "DELETE FROM item_sentence_stars WHERE item_id = ? AND position = ?",
-                    params![item_id, position],
-                )?;
-            }
-        }
-
-        fs::copy(&temp_db, &self.db_path)?;
         Ok(())
     }
 
