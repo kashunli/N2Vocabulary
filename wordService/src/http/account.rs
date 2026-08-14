@@ -1,6 +1,8 @@
 use super::response::{header, parse_local_url, send_json, send_json_with_headers};
 use crate::repository::WordRepository;
-use crate::user_store::{AuthContext, ReviewCompletion, SESSION_COOKIE, StudyCard, UserStore};
+use crate::user_store::{
+    AuthContext, MarkStatus, ReviewCompletion, SESSION_COOKIE, StudyCard, UserStore,
+};
 use anyhow::Result;
 use serde::Deserialize;
 use serde_json::json;
@@ -328,19 +330,35 @@ pub(super) fn handle_put(
             &json!({"error": "unknown item UUID"}),
         );
     }
-    let known = body
-        .get("known")
-        .and_then(|value| value.as_bool())
-        .unwrap_or(false);
-    let flagged = body
-        .get("flagged")
-        .and_then(|value| value.as_bool())
-        .unwrap_or(false);
+    let Some(status) = parse_mark_status(&body) else {
+        return send_json(
+            request,
+            StatusCode(400),
+            &json!({"error": "status must be one of: unmarked, known, flagged"}),
+        );
+    };
     send_json(
         request,
         StatusCode(200),
-        &json!({"card": users.set_marks(auth.user.id, parts[0], known, flagged)?}),
+        &json!({"card": users.set_mark_status(auth.user.id, parts[0], status)?}),
     )
+}
+
+fn parse_mark_status(body: &serde_json::Value) -> Option<MarkStatus> {
+    if let Some(value) = body.get("status").and_then(|value| value.as_str()) {
+        return match value {
+            "unmarked" => Some(MarkStatus::Unmarked),
+            "known" => Some(MarkStatus::Known),
+            "flagged" => Some(MarkStatus::Flagged),
+            _ => None,
+        };
+    }
+
+    // Accept the old request shape during the cutover. Flagged takes
+    // precedence so an old client cannot recreate the invalid dual-mark state.
+    let known = body.get("known").and_then(|value| value.as_bool())?;
+    let flagged = body.get("flagged").and_then(|value| value.as_bool())?;
+    Some(MarkStatus::from_legacy(known, flagged))
 }
 
 fn read_json(request: &mut Request) -> Result<serde_json::Value> {

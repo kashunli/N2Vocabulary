@@ -7,6 +7,7 @@ use argon2::password_hash::{
 };
 use chrono::{DateTime, Duration, Utc};
 use rand::random;
+use rusqlite::types::{FromSql, FromSqlError, ToSql, ToSqlOutput, ValueRef};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -17,8 +18,10 @@ use std::time::{Duration as StdDuration, Instant};
 
 pub const SESSION_COOKIE: &str = "n2_word_session";
 const SESSION_DAYS: i64 = 30;
-const STUDY_STATE_VERSION: i64 = 2;
+pub const STUDY_STATE_VERSION: i64 = 3;
+const SPACED_REVIEW_STATE_VERSION: i64 = 2;
 const SPACED_REVIEW_MIGRATION: &str = "spaced-review-v1";
+const EXCLUSIVE_MARK_MIGRATION: &str = "exclusive-mark-v1";
 
 #[derive(Clone, Debug)]
 pub struct UserStore {
@@ -47,11 +50,65 @@ pub struct NewSession {
     pub csrf_token: String,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum MarkStatus {
+    Unmarked,
+    Known,
+    Flagged,
+}
+
+impl MarkStatus {
+    pub fn from_legacy(known: bool, flagged: bool) -> Self {
+        if flagged {
+            Self::Flagged
+        } else if known {
+            Self::Known
+        } else {
+            Self::Unmarked
+        }
+    }
+
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::Unmarked => "unmarked",
+            Self::Known => "known",
+            Self::Flagged => "flagged",
+        }
+    }
+}
+
+impl Default for MarkStatus {
+    fn default() -> Self {
+        Self::Unmarked
+    }
+}
+
+impl ToSql for MarkStatus {
+    fn to_sql(&self) -> rusqlite::Result<ToSqlOutput<'_>> {
+        Ok(ToSqlOutput::Owned(self.as_str().to_string().into()))
+    }
+}
+
+impl FromSql for MarkStatus {
+    fn column_result(value: ValueRef<'_>) -> std::result::Result<Self, FromSqlError> {
+        let ValueRef::Text(value) = value else {
+            return Err(FromSqlError::InvalidType);
+        };
+        match value {
+            b"unmarked" => Ok(Self::Unmarked),
+            b"known" => Ok(Self::Known),
+            b"flagged" => Ok(Self::Flagged),
+            _ => Err(FromSqlError::Other("invalid mark status".into())),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Serialize, PartialEq)]
 pub struct StudyCard {
     pub item_uuid: String,
-    pub known: bool,
-    pub flagged: bool,
+    pub status: MarkStatus,
+    pub mark_updated_at: Option<String>,
     pub enrolled_at: Option<String>,
     pub due_at: Option<String>,
     #[serde(default)]
@@ -62,6 +119,63 @@ pub struct StudyCard {
     pub preferred_book_code: Option<String>,
     pub preferred_source_index: Option<i64>,
     pub updated_at: String,
+}
+
+/// The import reader accepts both the old boolean shape and the new status
+/// shape. This keeps a browser with a cached guest snapshot safe during the
+/// deployment window; all values are normalized before they reach storage.
+#[derive(Debug, Deserialize)]
+struct StudyCardInput {
+    item_uuid: String,
+    #[serde(default)]
+    status: Option<MarkStatus>,
+    #[serde(default)]
+    known: bool,
+    #[serde(default)]
+    flagged: bool,
+    #[serde(default)]
+    mark_updated_at: Option<String>,
+    enrolled_at: Option<String>,
+    due_at: Option<String>,
+    #[serde(default)]
+    review_level: i64,
+    #[serde(default)]
+    last_reviewed_at: Option<String>,
+    last_played_at: Option<String>,
+    preferred_book_code: Option<String>,
+    preferred_source_index: Option<i64>,
+    updated_at: String,
+}
+
+impl<'de> Deserialize<'de> for StudyCard {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let input = StudyCardInput::deserialize(deserializer)?;
+        let status = if input.flagged {
+            MarkStatus::Flagged
+        } else if input.status == Some(MarkStatus::Flagged) {
+            MarkStatus::Flagged
+        } else if input.status == Some(MarkStatus::Known) || input.known {
+            MarkStatus::Known
+        } else {
+            MarkStatus::Unmarked
+        };
+        Ok(Self {
+            item_uuid: input.item_uuid,
+            status,
+            mark_updated_at: input.mark_updated_at,
+            enrolled_at: input.enrolled_at,
+            due_at: input.due_at,
+            review_level: input.review_level,
+            last_reviewed_at: input.last_reviewed_at,
+            last_played_at: input.last_played_at,
+            preferred_book_code: input.preferred_book_code,
+            preferred_source_index: input.preferred_source_index,
+            updated_at: input.updated_at,
+        })
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -75,6 +189,85 @@ pub struct StudySnapshot {
     pub version: i64,
     pub updated_at: String,
     pub cards: HashMap<String, StudyCard>,
+}
+
+fn migrate_exclusive_mark_schema(conn: &Connection) -> Result<()> {
+    let columns = conn
+        .prepare("PRAGMA table_info(study_cards)")?
+        .query_map([], |row| row.get::<_, String>(1))?
+        .collect::<std::result::Result<Vec<_>, _>>()?;
+    let has_status = columns.iter().any(|name| name == "status");
+    let has_mark_updated_at = columns.iter().any(|name| name == "mark_updated_at");
+    if has_status && has_mark_updated_at {
+        conn.execute(
+            "INSERT OR IGNORE INTO study_schema_migrations(name,applied_at) VALUES(?,?)",
+            params![EXCLUSIVE_MARK_MIGRATION, now_utc()],
+        )?;
+        return Ok(());
+    }
+
+    let has_legacy_marks =
+        columns.iter().any(|name| name == "known") && columns.iter().any(|name| name == "flagged");
+    if !has_legacy_marks {
+        bail!("study_cards has neither the new status columns nor legacy mark columns");
+    }
+
+    // SQLite cannot add a CHECK constraint to an existing table in place. A
+    // table rebuild makes the exclusive-state invariant part of the schema and
+    // intentionally drops the retired good_step column at the same boundary.
+    conn.execute_batch(
+        r#"
+        BEGIN IMMEDIATE;
+        CREATE TABLE study_cards_exclusive (
+          user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          item_uuid TEXT NOT NULL,
+          status TEXT NOT NULL DEFAULT 'unmarked'
+            CHECK(status IN ('unmarked','known','flagged')),
+          mark_updated_at TEXT,
+          enrolled_at TEXT,
+          due_at TEXT,
+          review_level INTEGER NOT NULL DEFAULT 0 CHECK(review_level >= 0),
+          last_reviewed_at TEXT,
+          last_played_at TEXT,
+          preferred_book_code TEXT,
+          preferred_source_index INTEGER,
+          updated_at TEXT NOT NULL,
+          PRIMARY KEY(user_id, item_uuid)
+        );
+        INSERT INTO study_cards_exclusive(
+          user_id, item_uuid, status, mark_updated_at, enrolled_at, due_at,
+          review_level, last_reviewed_at, last_played_at, preferred_book_code,
+          preferred_source_index, updated_at
+        )
+        SELECT
+          user_id,
+          item_uuid,
+          CASE
+            WHEN flagged = 1 THEN 'flagged'
+            WHEN known = 1 THEN 'known'
+            ELSE 'unmarked'
+          END,
+          updated_at,
+          enrolled_at,
+          due_at,
+          review_level,
+          last_reviewed_at,
+          last_played_at,
+          preferred_book_code,
+          preferred_source_index,
+          updated_at
+        FROM study_cards;
+        DROP TABLE study_cards;
+        ALTER TABLE study_cards_exclusive RENAME TO study_cards;
+        CREATE INDEX IF NOT EXISTS study_cards_due ON study_cards(user_id, due_at);
+        COMMIT;
+        "#,
+    )?;
+    conn.execute(
+        "INSERT OR IGNORE INTO study_schema_migrations(name,applied_at) VALUES(?,?)",
+        params![EXCLUSIVE_MARK_MIGRATION, now_utc()],
+    )?;
+    Ok(())
 }
 
 impl UserStore {
@@ -116,13 +309,11 @@ impl UserStore {
             CREATE TABLE IF NOT EXISTS study_cards (
               user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
               item_uuid TEXT NOT NULL,
-              known INTEGER NOT NULL DEFAULT 0 CHECK(known IN (0,1)),
-              flagged INTEGER NOT NULL DEFAULT 0 CHECK(flagged IN (0,1)),
+              status TEXT NOT NULL DEFAULT 'unmarked'
+                CHECK(status IN ('unmarked','known','flagged')),
+              mark_updated_at TEXT,
               enrolled_at TEXT,
               due_at TEXT,
-              -- Retained for compatibility with existing user databases. The
-              -- application no longer exposes or updates graded-review state.
-              good_step INTEGER NOT NULL DEFAULT 0 CHECK(good_step BETWEEN 0 AND 6),
               review_level INTEGER NOT NULL DEFAULT 0 CHECK(review_level >= 0),
               last_reviewed_at TEXT,
               last_played_at TEXT,
@@ -158,6 +349,7 @@ impl UserStore {
                 [],
             )?;
         }
+        migrate_exclusive_mark_schema(&conn)?;
         let migration_applied: Option<String> = conn
             .query_row(
                 "SELECT applied_at FROM study_schema_migrations WHERE name=?",
@@ -170,7 +362,7 @@ impl UserStore {
             // tags and normal-playback provenance, but reset every schedule.
             conn.execute(
                 r#"UPDATE study_cards SET enrolled_at=NULL,due_at=NULL,review_level=0,
-                   last_reviewed_at=NULL,good_step=0"#,
+                   last_reviewed_at=NULL"#,
                 [],
             )?;
             conn.execute(
@@ -309,7 +501,7 @@ impl UserStore {
     pub fn snapshot(&self, user_id: i64) -> Result<StudySnapshot> {
         let conn = self.connect()?;
         let mut statement = conn.prepare(
-            r#"SELECT item_uuid,known,flagged,enrolled_at,due_at,review_level,last_reviewed_at,
+            r#"SELECT item_uuid,status,mark_updated_at,enrolled_at,due_at,review_level,last_reviewed_at,
                       last_played_at,preferred_book_code,preferred_source_index,updated_at
                FROM study_cards WHERE user_id=? ORDER BY item_uuid"#,
         )?;
@@ -330,21 +522,21 @@ impl UserStore {
         })
     }
 
-    pub fn set_marks(
+    pub fn set_mark_status(
         &self,
         user_id: i64,
         item_uuid: &str,
-        known: bool,
-        flagged: bool,
+        status: MarkStatus,
     ) -> Result<StudyCard> {
         let _guard = self.write_lock.lock().expect("user write lock");
         let conn = self.connect()?;
         let now = now_utc();
         conn.execute(
-            r#"INSERT INTO study_cards(user_id,item_uuid,known,flagged,updated_at)
+            r#"INSERT INTO study_cards(user_id,item_uuid,status,mark_updated_at,updated_at)
                VALUES(?,?,?,?,?) ON CONFLICT(user_id,item_uuid) DO UPDATE SET
-               known=excluded.known, flagged=excluded.flagged, updated_at=excluded.updated_at"#,
-            params![user_id, item_uuid, int(known), int(flagged), now],
+               status=excluded.status, mark_updated_at=excluded.mark_updated_at,
+               updated_at=excluded.updated_at"#,
+            params![user_id, item_uuid, status, now, now],
         )?;
         get_card(&conn, user_id, item_uuid)
     }
@@ -362,9 +554,9 @@ impl UserStore {
         let now_text = now.to_rfc3339();
         let due = next_review_due_at(now, 0)?.to_rfc3339();
         conn.execute(
-            r#"INSERT INTO study_cards(user_id,item_uuid,known,flagged,enrolled_at,due_at,review_level,
+            r#"INSERT INTO study_cards(user_id,item_uuid,status,mark_updated_at,enrolled_at,due_at,review_level,
                     last_played_at,preferred_book_code,preferred_source_index,updated_at)
-               VALUES(?,?,0,0,?,?,0,?,?,?,?)
+               VALUES(?,?,'unmarked',?,?,?,0,?,?,?,?)
                ON CONFLICT(user_id,item_uuid) DO UPDATE SET
                  enrolled_at=COALESCE(study_cards.enrolled_at,excluded.enrolled_at),
                  due_at=COALESCE(study_cards.due_at,excluded.due_at),
@@ -375,6 +567,7 @@ impl UserStore {
             params![
                 user_id,
                 item_uuid,
+                now_text,
                 now_text,
                 due,
                 now_text,
@@ -499,7 +692,7 @@ impl UserStore {
 
         let now = now_utc();
         for mut guest in guest_cards {
-            if guest_version < STUDY_STATE_VERSION {
+            if guest_version < SPACED_REVIEW_STATE_VERSION {
                 // A cached pre-level client can carry the old one-time due
                 // timestamps. Keep its tags and playback provenance only.
                 guest.enrolled_at = None;
@@ -560,8 +753,8 @@ fn merge_import_cards(account: StudyCard, guest: StudyCard, now: &str) -> StudyC
     };
     StudyCard {
         item_uuid: account.item_uuid.clone(),
-        known: account.known || guest.known,
-        flagged: account.flagged || guest.flagged,
+        status: merge_mark_status(account.status, guest.status),
+        mark_updated_at: Some(now.to_string()),
         enrolled_at: earlier(&account.enrolled_at, &guest.enrolled_at),
         due_at: if guest_due_wins {
             guest.due_at.clone()
@@ -599,18 +792,28 @@ fn merge_import_cards(account: StudyCard, guest: StudyCard, now: &str) -> StudyC
 
 fn upsert_card(conn: &Connection, user_id: i64, card: &StudyCard) -> Result<()> {
     conn.execute(
-        r#"INSERT INTO study_cards(user_id,item_uuid,known,flagged,enrolled_at,due_at,review_level,
+        r#"INSERT INTO study_cards(user_id,item_uuid,status,mark_updated_at,enrolled_at,due_at,review_level,
              last_reviewed_at,last_played_at,preferred_book_code,preferred_source_index,updated_at)
            VALUES(?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(user_id,item_uuid) DO UPDATE SET
-             known=excluded.known,flagged=excluded.flagged,enrolled_at=excluded.enrolled_at,
+             status=excluded.status,mark_updated_at=excluded.mark_updated_at,enrolled_at=excluded.enrolled_at,
              due_at=excluded.due_at,review_level=excluded.review_level,last_reviewed_at=excluded.last_reviewed_at,
              last_played_at=excluded.last_played_at,preferred_book_code=excluded.preferred_book_code,
              preferred_source_index=excluded.preferred_source_index,updated_at=excluded.updated_at"#,
-        params![user_id, card.item_uuid, int(card.known), int(card.flagged), card.enrolled_at,
+        params![user_id, card.item_uuid, card.status, card.mark_updated_at, card.enrolled_at,
             card.due_at, card.review_level, card.last_reviewed_at, card.last_played_at,
             card.preferred_book_code, card.preferred_source_index, card.updated_at],
     )?;
     Ok(())
+}
+
+fn merge_mark_status(account: MarkStatus, guest: MarkStatus) -> MarkStatus {
+    if account == MarkStatus::Flagged || guest == MarkStatus::Flagged {
+        MarkStatus::Flagged
+    } else if account == MarkStatus::Known || guest == MarkStatus::Known {
+        MarkStatus::Known
+    } else {
+        MarkStatus::Unmarked
+    }
 }
 
 fn normalize_email(email: &str) -> Result<String> {
@@ -670,15 +873,11 @@ fn next_review_due_at(completed_at: DateTime<Utc>, level: i64) -> Result<DateTim
         .context("next review date is out of range")
 }
 
-fn int(value: bool) -> i64 {
-    if value { 1 } else { 0 }
-}
-
 fn row_to_card(row: &rusqlite::Row<'_>) -> rusqlite::Result<StudyCard> {
     Ok(StudyCard {
         item_uuid: row.get(0)?,
-        known: row.get::<_, i64>(1)? != 0,
-        flagged: row.get::<_, i64>(2)? != 0,
+        status: row.get(1)?,
+        mark_updated_at: row.get(2)?,
         enrolled_at: row.get(3)?,
         due_at: row.get(4)?,
         review_level: row.get(5)?,
@@ -692,7 +891,7 @@ fn row_to_card(row: &rusqlite::Row<'_>) -> rusqlite::Result<StudyCard> {
 
 fn get_card(conn: &Connection, user_id: i64, item_uuid: &str) -> Result<StudyCard> {
     conn.query_row(
-        r#"SELECT item_uuid,known,flagged,enrolled_at,due_at,review_level,last_reviewed_at,
+        r#"SELECT item_uuid,status,mark_updated_at,enrolled_at,due_at,review_level,last_reviewed_at,
                   last_played_at,preferred_book_code,preferred_source_index,updated_at
            FROM study_cards WHERE user_id=? AND item_uuid=?"#,
         params![user_id, item_uuid],
@@ -707,7 +906,7 @@ fn get_card_optional(
     item_uuid: &str,
 ) -> Result<Option<StudyCard>> {
     conn.query_row(
-        r#"SELECT item_uuid,known,flagged,enrolled_at,due_at,review_level,last_reviewed_at,
+        r#"SELECT item_uuid,status,mark_updated_at,enrolled_at,due_at,review_level,last_reviewed_at,
                   last_played_at,preferred_book_code,preferred_source_index,updated_at
            FROM study_cards WHERE user_id=? AND item_uuid=?"#,
         params![user_id, item_uuid],
@@ -730,6 +929,72 @@ mod tests {
     }
 
     #[test]
+    fn legacy_boolean_table_is_rebuilt_with_flagged_precedence() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().join("legacy.sqlite");
+        let conn = Connection::open(&path).unwrap();
+        conn.execute_batch(
+            r#"
+            PRAGMA foreign_keys = ON;
+            CREATE TABLE users (
+              id INTEGER PRIMARY KEY,
+              email TEXT NOT NULL UNIQUE,
+              password_hash TEXT NOT NULL,
+              created_at TEXT NOT NULL,
+              updated_at TEXT NOT NULL
+            );
+            CREATE TABLE study_cards (
+              user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+              item_uuid TEXT NOT NULL,
+              known INTEGER NOT NULL DEFAULT 0 CHECK(known IN (0,1)),
+              flagged INTEGER NOT NULL DEFAULT 0 CHECK(flagged IN (0,1)),
+              enrolled_at TEXT,
+              due_at TEXT,
+              good_step INTEGER NOT NULL DEFAULT 0 CHECK(good_step BETWEEN 0 AND 6),
+              review_level INTEGER NOT NULL DEFAULT 0 CHECK(review_level >= 0),
+              last_reviewed_at TEXT,
+              last_played_at TEXT,
+              preferred_book_code TEXT,
+              preferred_source_index INTEGER,
+              updated_at TEXT NOT NULL,
+              PRIMARY KEY(user_id, item_uuid)
+            );
+            INSERT INTO users(id,email,password_hash,created_at,updated_at)
+            VALUES(1,'legacy@example.com','hash','2026-01-01T00:00:00Z','2026-01-01T00:00:00Z');
+            INSERT INTO study_cards(
+              user_id,item_uuid,known,flagged,enrolled_at,due_at,good_step,review_level,
+              last_reviewed_at,last_played_at,preferred_book_code,preferred_source_index,updated_at
+            ) VALUES(
+              1,'both',1,1,'2026-01-01T00:00:00Z','2026-01-02T00:00:00Z',4,4,
+              '2026-01-01T00:00:00Z','2026-01-01T00:00:00Z','N2',7,'2026-01-03T00:00:00Z'
+            );
+            "#,
+        )
+        .unwrap();
+        drop(conn);
+
+        let store = UserStore::new(path);
+        store.ensure_ready().unwrap();
+        let card = &store.snapshot(1).unwrap().cards["both"];
+        assert_eq!(card.status, MarkStatus::Flagged);
+        assert!(card.enrolled_at.is_none());
+        assert!(card.due_at.is_none());
+
+        let conn = Connection::open(store.db_path()).unwrap();
+        let columns = conn
+            .prepare("PRAGMA table_info(study_cards)")
+            .unwrap()
+            .query_map([], |row| row.get::<_, String>(1))
+            .unwrap()
+            .collect::<std::result::Result<Vec<_>, _>>()
+            .unwrap();
+        assert!(columns.iter().any(|column| column == "status"));
+        assert!(!columns.iter().any(|column| column == "known"));
+        assert!(!columns.iter().any(|column| column == "flagged"));
+        assert!(!columns.iter().any(|column| column == "good_step"));
+    }
+
+    #[test]
     fn accounts_are_isolated_and_sessions_store_only_token_hashes() {
         let (_dir, store) = fixture();
         let first = store
@@ -738,9 +1003,12 @@ mod tests {
         let second = store.register("other@example.com", "password-two").unwrap();
         assert_eq!(first.user.email, "test@example.com");
         store
-            .set_marks(first.user.id, "shared", true, false)
+            .set_mark_status(first.user.id, "shared", MarkStatus::Known)
             .unwrap();
-        assert!(store.snapshot(first.user.id).unwrap().cards["shared"].known);
+        assert_eq!(
+            store.snapshot(first.user.id).unwrap().cards["shared"].status,
+            MarkStatus::Known
+        );
         assert!(store.snapshot(second.user.id).unwrap().cards.is_empty());
         let conn = Connection::open(store.db_path()).unwrap();
         let stored: String = conn
@@ -776,9 +1044,9 @@ mod tests {
         let (_dir, store) = fixture();
         let session = store.register("review@example.com", "password").unwrap();
         let marked = store
-            .set_marks(session.user.id, "item", true, true)
+            .set_mark_status(session.user.id, "item", MarkStatus::Flagged)
             .unwrap();
-        assert!(marked.known && marked.flagged);
+        assert_eq!(marked.status, MarkStatus::Flagged);
         assert!(marked.enrolled_at.is_none());
         assert!(marked.due_at.is_none());
         let played = store
@@ -786,7 +1054,7 @@ mod tests {
             .unwrap();
         assert!(played.due_at.is_some());
         assert_eq!(played.review_level, 0);
-        assert!(played.known && played.flagged);
+        assert_eq!(played.status, MarkStatus::Flagged);
     }
 
     #[test]
@@ -866,11 +1134,11 @@ mod tests {
         let (_dir, store) = fixture();
         let session = store.register("migrate@example.com", "password").unwrap();
         store
-            .set_marks(session.user.id, "item", true, true)
+            .set_mark_status(session.user.id, "item", MarkStatus::Flagged)
             .unwrap();
         let conn = Connection::open(store.db_path()).unwrap();
         conn.execute(
-            "UPDATE study_cards SET enrolled_at=?,due_at=?,review_level=4,last_reviewed_at=?,good_step=4 WHERE user_id=? AND item_uuid=?",
+            "UPDATE study_cards SET enrolled_at=?,due_at=?,review_level=4,last_reviewed_at=? WHERE user_id=? AND item_uuid=?",
             params!["2026-08-01T00:00:00Z", "2026-08-02T00:00:00Z", "2026-08-01T00:00:00Z", session.user.id, "item"],
         )
         .unwrap();
@@ -881,7 +1149,7 @@ mod tests {
         .unwrap();
         store.ensure_ready().unwrap();
         let card = &store.snapshot(session.user.id).unwrap().cards["item"];
-        assert!(card.known && card.flagged);
+        assert_eq!(card.status, MarkStatus::Flagged);
         assert!(card.enrolled_at.is_none() && card.due_at.is_none());
         assert_eq!(card.review_level, 0);
         assert!(card.last_reviewed_at.is_none());
@@ -892,12 +1160,12 @@ mod tests {
         let (_dir, store) = fixture();
         let session = store.register("import@example.com", "password").unwrap();
         store
-            .set_marks(session.user.id, "item", false, true)
+            .set_mark_status(session.user.id, "item", MarkStatus::Flagged)
             .unwrap();
         let guest = StudyCard {
             item_uuid: "item".into(),
-            known: true,
-            flagged: false,
+            status: MarkStatus::Known,
+            mark_updated_at: Some("2026-01-01T00:00:00Z".into()),
             enrolled_at: Some("2026-01-01T00:00:00Z".into()),
             due_at: Some("2026-01-02T00:00:00Z".into()),
             review_level: 1,
@@ -917,7 +1185,7 @@ mod tests {
             )
             .unwrap();
         let card = &snapshot.cards["item"];
-        assert!(card.known && card.flagged);
+        assert_eq!(card.status, MarkStatus::Flagged);
         assert_eq!(card.preferred_source_index, Some(7));
         assert_eq!(
             store
