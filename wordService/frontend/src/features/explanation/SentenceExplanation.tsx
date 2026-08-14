@@ -8,7 +8,6 @@ interface SentenceExplanationProps {
 export function SentenceExplanation({value}: SentenceExplanationProps) {
   return (
     <section className="react-sentence-explanation" aria-label="Sentence explanation">
-      <h3>Sentence explanation</h3>
       <MarkdownContent value={value} />
     </section>
   );

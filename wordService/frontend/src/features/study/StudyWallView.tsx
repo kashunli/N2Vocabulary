@@ -138,10 +138,9 @@ export function StudyWallView({
               >
                 <strong>{detail.sentence}</strong>
               </button>
-              <span>{detail.sentence_translation_en || detail.sentence_translation_zh}</span>
             </div> : null}
-            {detail?.source_notes ? <SourceMetadata notes={detail.source_notes} /> : null}
             {detail?.explanation_md ? <SentenceExplanation value={detail.explanation_md} /> : null}
+            {detail?.source_notes ? <SourceMetadata notes={detail.source_notes} /> : null}
           </>}
         </> : <p className="react-empty">{emptyMessage}</p>}
       </section>

@@ -154,7 +154,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .react-source-notes > span { display: block; color: #968d83; font-size: .75rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
 .react-source-notes .react-explanation { margin-top: 2px; }
 .react-sentence-explanation { max-width: 760px; margin-top: 25px; font: .88rem/1.6 system-ui, sans-serif; }
-.react-sentence-explanation > h3 { margin: 0; color: inherit; font: inherit; font-weight: 400; }
 .react-markdown { margin-top: 10px; font: .88rem/1.6 system-ui, sans-serif; }
 .react-markdown p { margin: 0 0 12px; }
 .react-markdown h3, .react-markdown h4, .react-markdown h5 { margin: 14px 0 6px; color: #282421; font-family: Georgia, "Times New Roman", serif; line-height: 1.25; }
