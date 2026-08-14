@@ -3,6 +3,7 @@ import { useEffect, useRef, type Dispatch, type SetStateAction } from "react";
 import { getEntries } from "../../api";
 import type { Entry } from "../../types";
 import type { PlaybackMode } from "../player/playbackSettings";
+import { markStatusOf } from "./markStatus";
 import type { FilterState } from "./studyTypes";
 import { isReviewDue, type ReviewSession, type StudySnapshot } from "./studyStateTypes";
 
@@ -51,7 +52,7 @@ export function useStudyEntries({
         const loadedItems = payload.items
           .map(entry => {
             const card = studySnapshot.cards[entry.item_uuid];
-            return {...entry, mark: {known: !!card?.known, flagged: !!card?.flagged, due_at: card?.due_at, review_level: card?.review_level, last_reviewed_at: card?.last_reviewed_at, updated_at: card?.updated_at}};
+            return {...entry, mark: {status: markStatusOf(card), due_at: card?.due_at, review_level: card?.review_level, last_reviewed_at: card?.last_reviewed_at, updated_at: card?.updated_at}};
           });
         const reviewNow = Date.now();
         const session = filterState === "review" && reviewSession?.scopeKey === scopeKey
@@ -66,9 +67,9 @@ export function useStudyEntries({
           || (filterState === "review" && (session
             ? Object.hasOwn(session.expectedDueAtByItemUuid, entry.item_uuid)
             : isReviewDue(entry.mark.due_at, reviewNow)))
-          || (filterState === "known" && entry.mark.known)
-          || (filterState === "flagged" && entry.mark.flagged)
-          || (filterState === "unmarked" && !entry.mark.known && !entry.mark.flagged));
+          || (filterState === "known" && markStatusOf(entry.mark) === "known")
+          || (filterState === "flagged" && markStatusOf(entry.mark) === "flagged")
+          || (filterState === "unmarked" && markStatusOf(entry.mark) === "unmarked"));
         if (preserveLoadedPlaylist) {
           // A mark change should update the visible icon without changing the
           // learner's current queue. The next full reload reapplies the filter.

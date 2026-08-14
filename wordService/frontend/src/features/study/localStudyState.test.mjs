@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import {LEGACY_MIGRATION_KEY, LocalStudyStateStore, PRE_SPACED_REVIEW_ARCHIVE_PREFIX, STUDY_STATE_KEY, STUDY_STATE_VERSION, nextReviewDueAt} from "./localStudyState.mjs";
+import {LEGACY_MIGRATION_KEY, LocalStudyStateStore, PRE_EXCLUSIVE_MARK_ARCHIVE_PREFIX, PRE_SPACED_REVIEW_ARCHIVE_PREFIX, STUDY_STATE_KEY, STUDY_STATE_VERSION, nextReviewDueAt} from "./localStudyState.mjs";
 
 class MemoryStorage {
   constructor() { this.values = new Map(); }
@@ -21,6 +21,8 @@ test("legacy marks stay independent from review enrollment", () => {
     {item_uuid: "known", known: true, flagged: false},
     {item_uuid: "flagged", known: false, flagged: true},
   ]);
+  assert.equal(store.load().cards.known.status, "known");
+  assert.equal(store.load().cards.flagged.status, "flagged");
   assert.equal(store.load().cards.known.enrolled_at, undefined);
   assert.equal(store.load().cards.known.due_at, undefined);
   assert.equal(store.load().cards.flagged.enrolled_at, undefined);
@@ -72,8 +74,7 @@ test("version-one state is archived and migrated without its old schedule", () =
   const store = new LocalStudyStateStore(storage, now);
   const card = store.load().cards.card;
   assert.equal(store.load().version, STUDY_STATE_VERSION);
-  assert.equal(card.known, true);
-  assert.equal(card.flagged, true);
+  assert.equal(card.status, "flagged");
   assert.equal(card.due_at, undefined);
   assert.equal(card.review_level, 0);
   assert.ok([...storage.values.keys()].some(key => key.startsWith(PRE_SPACED_REVIEW_ARCHIVE_PREFIX)));
@@ -81,9 +82,8 @@ test("version-one state is archived and migrated without its old schedule", () =
 
 test("marking a card does not enroll or schedule it", async () => {
   const store = new LocalStudyStateStore(new MemoryStorage(), now);
-  const marked = await store.setMark("card", {known: true, flagged: true});
-  assert.equal(marked.known, true);
-  assert.equal(marked.flagged, true);
+  const marked = await store.setMark("card", "flagged");
+  assert.equal(marked.status, "flagged");
   assert.equal(marked.enrolled_at, undefined);
   assert.equal(marked.due_at, undefined);
 });
@@ -99,9 +99,34 @@ test("malformed state is archived before recovery", () => {
 test("guest import archive is retained when active state is cleared", async () => {
   const storage = new MemoryStorage();
   const store = new LocalStudyStateStore(storage, now);
-  await store.setMark("card", {known: true, flagged: false});
+  await store.setMark("card", "known");
   const archiveKey = store.archiveSnapshot("import-one", "checksum");
   store.clearActive();
   assert.equal(storage.getItem(STUDY_STATE_KEY), null);
-  assert.equal(JSON.parse(storage.getItem(archiveKey)).snapshot.cards.card.known, true);
+  assert.equal(JSON.parse(storage.getItem(archiveKey)).snapshot.cards.card.status, "known");
+});
+
+test("version-two state is archived and migrated with flagged precedence", () => {
+  const storage = new MemoryStorage();
+  storage.setItem(STUDY_STATE_KEY, JSON.stringify({
+    version: 2,
+    updated_at: "2026-08-13T00:00:00.000Z",
+    cards: {
+      card: {
+        item_uuid: "card",
+        known: true,
+        flagged: true,
+        enrolled_at: "2026-08-01T00:00:00.000Z",
+        due_at: "2026-08-02T00:00:00.000Z",
+        review_level: 2,
+        updated_at: "2026-08-13T00:00:00.000Z",
+      },
+    },
+  }));
+  const store = new LocalStudyStateStore(storage, now);
+  const card = store.load().cards.card;
+  assert.equal(store.load().version, STUDY_STATE_VERSION);
+  assert.equal(card.status, "flagged");
+  assert.equal(card.review_level, 2);
+  assert.ok([...storage.values.keys()].some(key => key.startsWith(PRE_EXCLUSIVE_MARK_ARCHIVE_PREFIX)));
 });

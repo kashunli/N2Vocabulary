@@ -1,9 +1,29 @@
 export const STUDY_STATE_KEY = "n2-word-service:study-state:v1";
-export const STUDY_STATE_VERSION = 2;
+export const STUDY_STATE_VERSION = 3;
 export const LEGACY_MIGRATION_KEY = "n2-word-service:study-state:legacy-migrated:v1";
 export const GUEST_ARCHIVE_PREFIX = `${STUDY_STATE_KEY}:import-archive:`;
 export const PRE_SPACED_REVIEW_ARCHIVE_PREFIX = `${STUDY_STATE_KEY}:pre-spaced-review:`;
+export const PRE_EXCLUSIVE_MARK_ARCHIVE_PREFIX = `${STUDY_STATE_KEY}:pre-exclusive-mark:`;
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+export function normalizeMarkStatus(value) {
+  if (value === "flagged") return "flagged";
+  if (value === "known") return "known";
+  return "unmarked";
+}
+
+export function statusFromLegacyMark(known, flagged) {
+  // Flagged deliberately wins when old data contains both booleans.
+  if (flagged === true) return "flagged";
+  if (known === true) return "known";
+  return "unmarked";
+}
+
+function statusFromCard(value) {
+  if (value?.flagged === true || value?.status === "flagged") return "flagged";
+  if (value?.known === true || value?.status === "known") return "known";
+  return normalizeMarkStatus(value?.status);
+}
 
 export function nextReviewDueAt(completedAt, reviewLevel) {
   const date = new Date(completedAt);
@@ -30,8 +50,8 @@ function normalizeCard(value, key) {
   if (!itemUuid || itemUuid !== key) return null;
   return {
     item_uuid: itemUuid,
-    known: value.known === true,
-    flagged: value.flagged === true,
+    status: statusFromCard(value),
+    mark_updated_at: optionalIso(value.mark_updated_at),
     enrolled_at: optionalIso(value.enrolled_at),
     due_at: optionalIso(value.due_at),
     review_level: Number.isInteger(value.review_level) && value.review_level >= 0 ? value.review_level : 0,
@@ -49,8 +69,8 @@ function normalizePreSpacedReviewCard(value, key) {
   if (!itemUuid || itemUuid !== key) return null;
   return {
     item_uuid: itemUuid,
-    known: value.known === true,
-    flagged: value.flagged === true,
+    status: statusFromCard(value),
+    mark_updated_at: optionalIso(value.mark_updated_at),
     last_played_at: optionalIso(value.last_played_at),
     preferred_book_code: typeof value.preferred_book_code === "string" ? value.preferred_book_code : undefined,
     preferred_source_index: Number.isInteger(value.preferred_source_index) ? value.preferred_source_index : undefined,
@@ -83,6 +103,17 @@ function migratePreSpacedReviewSnapshot(value) {
   return result;
 }
 
+function migrateVersionTwoSnapshot(value) {
+  const result = emptyStudySnapshot();
+  if (!value || typeof value !== "object" || value.version !== 2 || !value.cards || typeof value.cards !== "object") return result;
+  for (const [key, candidate] of Object.entries(value.cards)) {
+    const card = normalizeCard(candidate, key);
+    if (card) result.cards[key] = card;
+  }
+  result.updated_at = optionalIso(value.updated_at) || result.updated_at;
+  return result;
+}
+
 export class LocalStudyStateStore {
   constructor(storage = window.localStorage, now = () => new Date()) {
     this.storage = storage;
@@ -103,6 +134,13 @@ export class LocalStudyStateStore {
     try {
       const parsed = JSON.parse(raw);
       if (parsed?.version === STUDY_STATE_VERSION) return normalizeStudySnapshot(parsed);
+      if (parsed?.version === 2) {
+        const suffix = this.now().toISOString().replaceAll(":", "-");
+        this.storage.setItem(`${PRE_EXCLUSIVE_MARK_ARCHIVE_PREFIX}${suffix}`, raw);
+        const migrated = migrateVersionTwoSnapshot(parsed);
+        this.storage.setItem(STUDY_STATE_KEY, JSON.stringify(migrated));
+        return migrated;
+      }
       if (parsed?.version === 1) {
         const suffix = this.now().toISOString().replaceAll(":", "-");
         this.storage.setItem(`${PRE_SPACED_REVIEW_ARCHIVE_PREFIX}${suffix}`, raw);
@@ -144,8 +182,8 @@ export class LocalStudyStateStore {
       if (!item?.item_uuid || cards[item.item_uuid]) continue;
       cards[item.item_uuid] = {
         item_uuid: item.item_uuid,
-        known: item.known === true,
-        flagged: item.flagged === true,
+        status: statusFromLegacyMark(item.known === true, item.flagged === true),
+        mark_updated_at: now,
         updated_at: now,
       };
     }
@@ -154,16 +192,21 @@ export class LocalStudyStateStore {
     return this.snapshot;
   }
 
-  async setMark(itemUuid, mark) {
+  async setMark(itemUuid, status) {
     const now = this.now().toISOString();
-    const current = this.snapshot.cards[itemUuid] || {item_uuid: itemUuid, known: false, flagged: false};
-    return this.commit({...this.snapshot.cards, [itemUuid]: {...current, ...mark, updated_at: now}}).cards[itemUuid];
+    const current = this.snapshot.cards[itemUuid] || {item_uuid: itemUuid, status: "unmarked"};
+    return this.commit({...this.snapshot.cards, [itemUuid]: {
+      ...current,
+      status: normalizeMarkStatus(status),
+      mark_updated_at: now,
+      updated_at: now,
+    }}).cards[itemUuid];
   }
 
   async recordStudyCompleted(entry) {
     const now = this.now().toISOString();
     const current = this.snapshot.cards[entry.item_uuid] || {
-      item_uuid: entry.item_uuid, known: false, flagged: false,
+      item_uuid: entry.item_uuid, status: "unmarked",
     };
     const enrolledAt = current.enrolled_at || now;
     const next = {

@@ -2,6 +2,7 @@ import { useCallback, type Dispatch, type SetStateAction } from "react";
 
 import { exportUnitFlaggedAudio } from "../../api";
 import type { Entry, UnitSummary } from "../../types";
+import { markStatusOf, toggleMarkStatus } from "./markStatus";
 import { unitLabel } from "./unitLabel";
 import type { StudyStateStore } from "./studyStateTypes";
 
@@ -29,25 +30,22 @@ export function useStudyActions({
   setDetail,
   setEntries,
   setStatus,
-  units,
-  studyStore,
+    units,
+    studyStore,
 }: UseStudyActionsOptions) {
   const toggleMark = useCallback(async (key: "known" | "flagged") => {
     if (!activeEntry) return;
-    const next = {
-      known: !!activeEntry.mark?.known,
-      flagged: !!activeEntry.mark?.flagged,
-    };
-    next[key] = !next[key];
+    const currentStatus = markStatusOf(activeEntry.mark);
+    const nextStatus = toggleMarkStatus(currentStatus, key);
     try {
-      await studyStore.setMark(activeEntry.item_uuid, next);
+      await studyStore.setMark(activeEntry.item_uuid, nextStatus);
       setEntries((current) => current.map((entry) => entry.entry_id === activeEntry.entry_id
-        ? {...entry, mark: {...entry.mark, ...next}}
+        ? {...entry, mark: {...entry.mark, status: nextStatus}}
         : entry));
       setDetail((current) => current && current.entry_id === activeEntry.entry_id
-        ? {...current, mark: {...current.mark, ...next}}
+        ? {...current, mark: {...current.mark, status: nextStatus}}
         : current);
-      setStatus(`${activeEntry.kanji} is ${next[key] ? key : `not ${key}`}.`);
+      setStatus(`${activeEntry.kanji} is ${nextStatus}.`);
     } catch (error: unknown) {
       setStatus(error instanceof Error ? error.message : "Could not update the study mark.");
     }

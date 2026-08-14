@@ -1,7 +1,9 @@
+import type { MarkStatus } from "./markStatus";
+
 export interface StudyCardState {
   item_uuid: string;
-  known: boolean;
-  flagged: boolean;
+  status: MarkStatus;
+  mark_updated_at?: string;
   enrolled_at?: string;
   due_at?: string;
   review_level: number;
@@ -28,7 +30,7 @@ export interface StudyStateStore {
   load(): StudySnapshot;
   subscribe(listener: (snapshot: StudySnapshot) => void): () => void;
   seedLegacy(items: Array<{item_uuid: string; known: boolean; flagged: boolean}>): StudySnapshot;
-  setMark(itemUuid: string, mark: {known: boolean; flagged: boolean}): Promise<StudyCardState>;
+  setMark(itemUuid: string, status: MarkStatus): Promise<StudyCardState>;
   recordStudyCompleted(entry: {item_uuid: string; book_code: string; source_index: number}): Promise<StudyCardState>;
   completeReview(entry: {item_uuid: string; book_code: string; source_index: number}, expectedDueAt: string): Promise<ReviewCompletionResult>;
 }

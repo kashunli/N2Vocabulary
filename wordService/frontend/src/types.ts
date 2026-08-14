@@ -1,3 +1,5 @@
+import type { MarkStatus } from "./features/study/markStatus";
+
 export interface UnitRef {
   number: number;
   header: string;
@@ -53,8 +55,11 @@ export interface VocabularySummary {
 }
 
 export interface Mark {
-  known: boolean;
-  flagged: boolean;
+  // The API may still return legacy content marks while the vocabulary DB is
+  // being retired. Active study state uses status as the canonical field.
+  status?: MarkStatus;
+  known?: boolean;
+  flagged?: boolean;
   due_at?: string;
   review_level?: number;
   last_reviewed_at?: string;

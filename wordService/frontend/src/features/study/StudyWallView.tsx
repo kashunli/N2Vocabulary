@@ -4,6 +4,7 @@ import { SentenceExplanation } from "../explanation/SentenceExplanation";
 import { SourceMetadata } from "../explanation/SourceMetadata";
 import type { PlaybackPhase } from "../player/playbackSettings";
 import type { Entry } from "../../types";
+import { markStatusOf } from "./markStatus";
 import { unitLabel } from "./unitLabel";
 import { MeaningDisplay } from "./MeaningDisplay";
 import { WordDisplay } from "./WordDisplay";
@@ -96,7 +97,8 @@ export function StudyWallView({
       <section ref={listRef} className="react-list" aria-label="Vocabulary playback list">
         {entries.length ? entries.map((entry, index) => {
           const reviewCompleted = reviewSession?.completedByItemUuid[entry.item_uuid];
-          return <button key={entry.entry_id} ref={index === activeIndex ? activeRef : null} className={`${index === activeIndex ? "is-active " : ""}${coveredEntryIds.has(entry.entry_id) ? "is-covered" : ""}${reviewCompleted ? " is-reviewed" : ""}`} aria-current={index === activeIndex ? "true" : undefined} onClick={() => onSelectEntry(index)}><span className="react-row-index">{String(index + 1).padStart(3, "0")}</span><span className="react-row-kanji">{entry.kanji}</span><span className="react-row-status" aria-label={`${entry.mark?.known ? "known" : ""}${entry.mark?.flagged ? " flagged" : ""}${reviewCompleted ? " reviewed" : ""}`}>{entry.mark?.known ? "✓" : ""}{entry.mark?.flagged ? " ⚑" : ""}{reviewCompleted ? " Reviewed" : ""}</span></button>;
+          const status = markStatusOf(entry.mark);
+          return <button key={entry.entry_id} ref={index === activeIndex ? activeRef : null} className={`${index === activeIndex ? "is-active " : ""}${coveredEntryIds.has(entry.entry_id) ? "is-covered" : ""}${reviewCompleted ? " is-reviewed" : ""}`} aria-current={index === activeIndex ? "true" : undefined} onClick={() => onSelectEntry(index)}><span className="react-row-index">{String(index + 1).padStart(3, "0")}</span><span className="react-row-kanji">{entry.kanji}</span><span className="react-row-status" aria-label={`${status}${reviewCompleted ? " reviewed" : ""}`}>{status === "known" ? "✓ Known" : status === "flagged" ? "⚑ Flagged" : ""}{reviewCompleted ? " Reviewed" : ""}</span></button>;
         }) : entriesLoading ? <p className="react-empty">{emptyMessage}</p> : <p className="react-empty">No words match the current filters.</p>}
       </section>
       <button className="react-divider" type="button" role="separator" aria-orientation="vertical" aria-label="Adjust playback list width" aria-valuemin={220} aria-valuemax={620} aria-valuenow={listWidth} tabIndex={0} onPointerDown={(event) => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); setDraggingDivider(true); }} onKeyDown={(event) => { if (event.key === "ArrowLeft") setListWidth((value) => Math.max(220, value - (event.shiftKey ? 50 : 20))); else if (event.key === "ArrowRight") setListWidth((value) => Math.min(620, value + (event.shiftKey ? 50 : 20))); else return; event.preventDefault(); }}> </button>
@@ -120,8 +122,8 @@ export function StudyWallView({
           {coveredEntryIds.has(activeEntry.entry_id) ? <p className="react-covered-note">Answers covered. Press Uncover all or Cover all to reveal the study details.</p> : <>
             <MeaningDisplay meaningEn={activeEntry.meaning_en} meaningZh={activeEntry.meaning_zh} />
             <div className="react-current-actions">
-              <button type="button" className={activeEntry.mark?.known ? "is-on" : ""} onClick={() => void onToggleMark("known")} aria-pressed={!!activeEntry.mark?.known}>✓ Known</button>
-              <button type="button" className={activeEntry.mark?.flagged ? "is-on" : ""} onClick={() => void onToggleMark("flagged")} aria-pressed={!!activeEntry.mark?.flagged}>⚑ Flag</button>
+              <button type="button" className={markStatusOf(activeEntry.mark) === "known" ? "is-on" : ""} onClick={() => void onToggleMark("known")} aria-pressed={markStatusOf(activeEntry.mark) === "known"}>✓ Known</button>
+              <button type="button" className={markStatusOf(activeEntry.mark) === "flagged" ? "is-on" : ""} onClick={() => void onToggleMark("flagged")} aria-pressed={markStatusOf(activeEntry.mark) === "flagged"}>⚑ Flagged</button>
             </div>
             {detail?.sentence ? <div className="react-sentence">
               <button

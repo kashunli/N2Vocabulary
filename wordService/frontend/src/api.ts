@@ -5,6 +5,7 @@ import type {
   UnitSummary,
   VocabularySummary,
 } from "./types";
+import type { MarkStatus } from "./features/study/markStatus";
 import type {ReviewCompletionResult, StudyCardState, StudySnapshot} from "./features/study/studyStateTypes";
 
 async function getJson<T>(url: string, init?: RequestInit): Promise<T> {
@@ -59,8 +60,8 @@ export function logoutAccount(csrfToken: string) {
   return getJson<{ok: boolean}>("/api/auth/logout", {method: "POST", headers: {"Content-Type": "application/json", "X-CSRF-Token": csrfToken}, body: "{}"});
 }
 export function getAccountStudyState() { return getJson<StudySnapshot>("/api/study/state"); }
-export function updateAccountMarks(csrfToken: string, itemUuid: string, mark: {known: boolean; flagged: boolean}) {
-  return getJson<{card: StudyCardState}>(`/api/study/cards/${encodeURIComponent(itemUuid)}/marks`, {method: "PUT", headers: {"Content-Type": "application/json", "X-CSRF-Token": csrfToken}, body: JSON.stringify(mark)});
+export function updateAccountMarks(csrfToken: string, itemUuid: string, status: MarkStatus) {
+  return getJson<{card: StudyCardState}>(`/api/study/cards/${encodeURIComponent(itemUuid)}/marks`, {method: "PUT", headers: {"Content-Type": "application/json", "X-CSRF-Token": csrfToken}, body: JSON.stringify({status})});
 }
 export function recordAccountPlayback(csrfToken: string, entry: {item_uuid: string; book_code: string; source_index: number}) {
   return getJson<{card: StudyCardState}>(`/api/study/cards/${encodeURIComponent(entry.item_uuid)}/played`, {method: "POST", headers: {"Content-Type": "application/json", "X-CSRF-Token": csrfToken}, body: JSON.stringify({preferred_book_code: entry.book_code, preferred_source_index: entry.source_index})});

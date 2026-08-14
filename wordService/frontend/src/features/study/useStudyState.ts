@@ -3,6 +3,7 @@ import {useCallback, useEffect, useMemo, useState} from "react";
 import {getAccountStudyState, getCurrentUser, getLegacyMarkSeed, importGuestStudyState, loginAccount, logoutAccount, registerAccount, type AuthSession} from "../../api";
 import {AccountStudyStateStore} from "./AccountStudyStateStore";
 import {LocalStudyStateStore} from "./localStudyState.mjs";
+import type {MarkStatus} from "./markStatus";
 import type {ReviewCompletionResult, StudyCardState, StudySnapshot, StudyStateStore} from "./studyStateTypes";
 
 export type ImportDecision = {account: AuthSession; accountSnapshot: StudySnapshot; guestChecksum: string};
@@ -18,7 +19,7 @@ class DecisionBlockedStudyStateStore implements StudyStateStore {
   load() { return this.source.load(); }
   subscribe(listener: (snapshot: StudySnapshot) => void) { return this.source.subscribe(listener); }
   seedLegacy() { return this.load(); }
-  async setMark(_itemUuid: string, _mark: {known: boolean; flagged: boolean}): Promise<StudyCardState> { throw new Error("Choose how to handle guest progress before studying."); }
+  async setMark(_itemUuid: string, _status: MarkStatus): Promise<StudyCardState> { throw new Error("Choose how to handle guest progress before studying."); }
   async recordStudyCompleted(_entry: {item_uuid: string; book_code: string; source_index: number}): Promise<StudyCardState> { throw new Error("Choose how to handle guest progress before studying."); }
   async completeReview(_entry: {item_uuid: string; book_code: string; source_index: number}, _expectedDueAt: string): Promise<ReviewCompletionResult> { throw new Error("Choose how to handle guest progress before studying."); }
 }
