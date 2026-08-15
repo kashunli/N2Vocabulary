@@ -1,27 +1,20 @@
-import type { AudioTarget, BookSummary, UnitSummary, VocabularySummary } from "../../types";
-import type { PlaybackRunMode } from "../player/playbackSettings";
+import type { BookSummary, UnitSummary, VocabularySummary } from "../../types";
 import { unitLabel } from "./unitLabel";
 import type { FilterState } from "./studyTypes";
 
 export type { FilterState } from "./studyTypes";
 
 interface StudyHeaderProps {
-  allVisibleCovered: boolean;
   blurred: boolean;
   books: BookSummary[];
   currentBook?: BookSummary;
-  entriesCount: number;
   exportFlaggedAudio: () => void;
   filterState: FilterState;
-  isSilencePaused: boolean;
-  playbackActive: boolean;
-  playbackRunMode: PlaybackRunMode;
   reviewSessionCount?: number;
   search: string;
   selectedBook: string;
   selectedUnit: number | null;
   summary?: VocabularySummary;
-  target: AudioTarget | null;
   units: UnitSummary[];
   onOpenSettings: () => void;
   onSearch: (value: string) => void;
@@ -29,27 +22,19 @@ interface StudyHeaderProps {
   onSelectFilter: (filter: FilterState) => void;
   onSelectUnit: (unit: number | null) => void;
   onToggleBlur: () => void;
-  onToggleCoverAll: () => void;
-  onTogglePlayback: () => void;
 }
 
 export function StudyHeader({
-  allVisibleCovered,
   blurred,
   books,
   currentBook,
-  entriesCount,
   exportFlaggedAudio,
   filterState,
-  isSilencePaused,
-  playbackActive,
-  playbackRunMode,
   reviewSessionCount,
   search,
   selectedBook,
   selectedUnit,
   summary,
-  target,
   units,
   onOpenSettings,
   onSearch,
@@ -57,17 +42,17 @@ export function StudyHeader({
   onSelectFilter,
   onSelectUnit,
   onToggleBlur,
-  onToggleCoverAll,
-  onTogglePlayback,
 }: StudyHeaderProps) {
   return (
     <>
       <header className="react-header">
         <div className="react-brand">
           <span className="eyebrow"><span className="brand-seal" aria-hidden="true">印</span>JLPT N2 · VOCABULARY</span>
-          <h1>{currentBook?.title || "スタディウォール"}</h1>
-          <div className="react-summary-meta">
-            {summary ? <><span>{summary.entries} entries</span><span>{summary.units} sections</span><span>{summary.known} known</span><span>{summary.flagged} flagged</span><span>{summary.unmarked} unmarked</span></> : <span>Loading vocabulary…</span>}
+          <div className="react-title-line">
+            <h1>{currentBook?.title || "スタディウォール"}</h1>
+            <div className="react-summary-meta">
+              {summary ? <><span>{summary.entries} entries</span><span>{summary.units} sections</span><span>{summary.known} known</span><span>{summary.flagged} flagged</span><span>{summary.unmarked} unmarked</span></> : <span>Loading vocabulary…</span>}
+            </div>
           </div>
         </div>
         <div className="react-pickers">
@@ -75,11 +60,6 @@ export function StudyHeader({
           <label><span>Section</span><select value={selectedUnit ?? ""} onChange={(event) => onSelectUnit(event.target.value ? Number(event.target.value) : null)}><option value="">All sections</option>{units.map((item) => <option key={item.number} value={item.number}>{unitLabel(item)} · {item.entry_count} words</option>)}</select></label>
         </div>
       </header>
-
-      <nav className="react-unit-strip" aria-label="Sections">
-        <button type="button" className={selectedUnit === null ? "is-selected" : ""} onClick={() => onSelectUnit(null)}>All</button>
-        {units.map((item) => <button type="button" key={item.number} className={selectedUnit === item.number ? "is-selected" : ""} onClick={() => onSelectUnit(item.number)} title={`${item.title} · ${item.entry_count} words`}>{unitLabel(item)}</button>)}
-      </nav>
 
       <section className="react-toolbar" aria-label="Study controls">
         <div className="react-toolbar-search"><input type="search" value={search} onChange={(event) => onSearch(event.target.value)} placeholder="Search kanji, reading, meaning, sentence…" aria-label="Search vocabulary" /></div>
@@ -94,9 +74,6 @@ export function StudyHeader({
           })}
         </div>
         <div className="react-toolbar-actions">
-          <button type="button" onClick={onToggleCoverAll} disabled={!entriesCount} aria-pressed={allVisibleCovered}>{allVisibleCovered ? "Uncover all" : "Cover all"}</button>
-          <button type="button" className="react-play-toggle" onClick={onTogglePlayback} disabled={!target} aria-pressed={playbackActive}>{playbackActive ? "Pause" : isSilencePaused ? "Resume" : playbackRunMode === "single" ? "Play one" : "Play visible"}</button>
-          <a href="/audio-review.html">Audio text review</a>
           <button type="button" onClick={exportFlaggedAudio} disabled={selectedUnit === null}>Export flagged audio</button>
           <a href="/classic">Classic study wall</a>
           <button type="button" onClick={onToggleBlur} aria-pressed={blurred} title="B: blur / reveal the study content">B</button>

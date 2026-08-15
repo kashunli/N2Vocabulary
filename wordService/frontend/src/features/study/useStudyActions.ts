@@ -8,11 +8,8 @@ import type { StudyStateStore } from "./studyStateTypes";
 
 interface UseStudyActionsOptions {
   activeEntry?: Entry;
-  allVisibleCovered: boolean;
-  entries: Entry[];
   selectedBook: string;
   selectedUnit: number | null;
-  setCoveredEntryIds: Dispatch<SetStateAction<Set<number>>>;
   setDetail: Dispatch<SetStateAction<Entry | undefined>>;
   setEntries: Dispatch<SetStateAction<Entry[]>>;
   setStatus: (status: string) => void;
@@ -22,11 +19,8 @@ interface UseStudyActionsOptions {
 
 export function useStudyActions({
   activeEntry,
-  allVisibleCovered,
-  entries,
   selectedBook,
   selectedUnit,
-  setCoveredEntryIds,
   setDetail,
   setEntries,
   setStatus,
@@ -51,15 +45,6 @@ export function useStudyActions({
     }
   }, [activeEntry, setDetail, setEntries, setStatus, studyStore]);
 
-  const toggleCoverAll = useCallback(() => {
-    setCoveredEntryIds((current) => {
-      const next = new Set(current);
-      if (allVisibleCovered) entries.forEach((entry) => next.delete(entry.entry_id));
-      else entries.forEach((entry) => next.add(entry.entry_id));
-      return next;
-    });
-  }, [allVisibleCovered, entries, setCoveredEntryIds]);
-
   const exportFlaggedAudio = useCallback(async () => {
     if (selectedUnit === null) {
       setStatus("Choose a section before exporting flagged audio.");
@@ -81,7 +66,6 @@ export function useStudyActions({
 
   return {
     exportFlaggedAudio,
-    toggleCoverAll,
     toggleMark,
   };
 }

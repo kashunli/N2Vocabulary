@@ -73,7 +73,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
 }
 
 .react-header,
-.react-unit-strip,
 .react-toolbar,
 .react-status,
 .react-content-scroll,
@@ -118,19 +117,26 @@ button, a { -webkit-tap-highlight-color: transparent; }
 }
 
 .react-brand h1 {
-  margin: 10px 0 0;
   font-family: var(--mincho);
   font-size: clamp(1.6rem, 2.9vw, 2.6rem);
   font-weight: 500;
   line-height: 1.15;
   letter-spacing: 0.01em;
 }
+.react-title-line {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin-top: 10px;
+}
+.react-title-line h1 { margin: 0; }
 
 .react-summary-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 6px 14px;
-  margin-top: 10px;
+  min-width: 0;
   color: var(--muted);
   font: 0.78rem/1.4 var(--sans);
 }
@@ -170,46 +176,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
   box-shadow: 0 0 0 3px var(--indigo-soft);
 }
 
-/* ---------- Section strip ---------- */
-
-.react-unit-strip {
-  flex: 0 0 auto;
-  display: flex;
-  gap: 4px;
-  overflow-x: auto;
-  border-bottom: 1px solid var(--line);
-  padding: 12px 0 0;
-  scrollbar-width: thin;
-}
-.react-unit-strip button {
-  flex: 0 0 auto;
-  position: relative;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  color: var(--muted);
-  cursor: pointer;
-  padding: 8px 12px 11px;
-  font: 0.74rem/1.2 var(--sans);
-  white-space: nowrap;
-  transition: color 120ms ease;
-}
-.react-unit-strip button::after {
-  content: "";
-  position: absolute;
-  left: 10px;
-  right: 10px;
-  bottom: 0;
-  height: 2px;
-  background: var(--indigo);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 140ms ease;
-}
-.react-unit-strip button:hover, .react-unit-strip button:focus-visible { color: var(--ink); }
-.react-unit-strip button.is-selected { color: var(--indigo); }
-.react-unit-strip button.is-selected::after { transform: scaleX(1); }
-
 /* ---------- Toolbar ---------- */
 
 .react-toolbar {
@@ -217,21 +183,21 @@ button, a { -webkit-tap-highlight-color: transparent; }
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 9px;
+  gap: 7px;
   overflow: visible;
   border-bottom: 1px solid var(--line);
-  padding: 12px 0;
+  padding: 10px 0;
   scrollbar-width: thin;
 }
-.react-toolbar-search { flex: 0 0 260px; }
+.react-toolbar-search { flex: 0 0 240px; }
 .react-toolbar-search input {
   width: 100%;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--card);
   color: var(--ink);
-  padding: 9px 11px;
-  font: 0.8rem/1.2 var(--sans);
+  padding: 7px 9px;
+  font: 0.76rem/1.2 var(--sans);
   box-shadow: inset 0 1px 2px rgba(32, 38, 43, 0.03);
   transition: border-color 120ms ease, box-shadow 120ms ease;
 }
@@ -240,15 +206,15 @@ button, a { -webkit-tap-highlight-color: transparent; }
   outline: none;
   box-shadow: 0 0 0 3px var(--indigo-soft);
 }
-.react-pill-group, .react-toolbar-actions { display: flex; flex: 0 0 auto; align-items: center; flex-wrap: wrap; gap: 6px; }
+.react-pill-group, .react-toolbar-actions { display: flex; flex: 0 0 auto; align-items: center; flex-wrap: wrap; gap: 5px; }
 .react-pill, .react-toolbar-actions button, .react-toolbar-actions a {
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--card);
   color: var(--muted);
   cursor: pointer;
-  padding: 7px 10px;
-  font: 0.72rem/1.2 var(--sans);
+  padding: 5px 8px;
+  font: 0.68rem/1.2 var(--sans);
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
@@ -272,18 +238,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .react-pill-flagged.is-selected { border-color: var(--flag); background: var(--flag); color: #fff; }
 .react-toolbar-actions button:disabled { cursor: not-allowed; opacity: 0.45; }
 .react-toolbar-actions .react-settings-button { min-width: 34px; padding-inline: 7px; font-size: 1rem; line-height: 1; }
-.react-toolbar-actions .react-play-toggle {
-  border-color: var(--indigo);
-  background: var(--indigo);
-  color: #fff;
-}
-.react-toolbar-actions .react-play-toggle:hover,
-.react-toolbar-actions .react-play-toggle:focus-visible {
-  border-color: var(--indigo-deep);
-  background: var(--indigo-deep);
-  color: #fff;
-}
-
 /* ---------- Transient status toast ---------- */
 
 .react-status {
@@ -364,7 +318,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
   color: var(--ink);
   box-shadow: inset 3px 0 0 var(--indigo);
 }
-.react-list button.is-covered { color: var(--faint); }
 .react-row-index { color: var(--faint); font: 0.66rem/1.2 var(--mono); letter-spacing: 0.02em; }
 .react-row-kanji {
   min-width: 0;
@@ -393,7 +346,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 }
 .react-divider:hover, .react-divider:focus-visible { background: var(--indigo-soft); }
 
-/* --- Current word (hero flashcard) --- */
+/* --- Current word and compact learner actions --- */
 
 .react-current {
   min-width: 0;
@@ -406,15 +359,13 @@ button, a { -webkit-tap-highlight-color: transparent; }
 }
 .react-current .eyebrow { letter-spacing: 0.16em; }
 
-.react-current h2 {
-  margin: 16px 0 0;
-  max-width: 720px;
-  font-family: var(--mincho);
-  font-weight: 500;
-  line-height: 1.12;
-  font-size: clamp(2.7rem, 4.6vw, 4.9rem);
-  color: var(--ink);
-  padding: clamp(22px, 3vw, 34px) clamp(22px, 3vw, 36px) clamp(26px, 3vw, 42px);
+.react-word-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-top: 14px;
+  padding: 16px 18px;
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background-color: var(--card);
@@ -423,6 +374,16 @@ button, a { -webkit-tap-highlight-color: transparent; }
     linear-gradient(to bottom, color-mix(in srgb, var(--indigo) 7%, transparent) 1px, transparent 1px);
   background-size: 52px 52px;
   box-shadow: var(--shadow-lift);
+}
+
+.react-word-summary h2 {
+  flex: 0 0 auto;
+  margin: 0;
+  font-family: var(--mincho);
+  font-weight: 500;
+  line-height: 1.12;
+  font-size: clamp(2.1rem, 3.6vw, 3.6rem);
+  color: var(--ink);
 }
 
 .react-word-trigger, .react-sentence-trigger {
@@ -442,26 +403,33 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .react-word-trigger:focus-visible, .react-sentence-trigger:focus-visible { outline: 2px solid var(--indigo); outline-offset: 4px; }
 .react-word-trigger:disabled, .react-sentence-trigger:disabled { cursor: not-allowed; opacity: 0.4; }
 .react-word-ruby { color: inherit; ruby-position: over; ruby-align: center; }
-.react-current h2 .react-word-ruby rt {
+.react-word-summary h2 .react-word-ruby rt {
   color: var(--indigo);
   font-family: var(--mincho);
   font-size: 0.3em;
   line-height: 1;
 }
 
-.react-meaning { max-width: 760px; margin-top: 18px; font: 1rem/1.65 var(--sans); color: var(--ink-soft); }
+.react-word-summary .react-meaning {
+  flex: 1 1 220px;
+  min-width: 180px;
+  max-width: 760px;
+  margin: 0;
+  font: 0.82rem/1.4 var(--sans);
+  color: var(--ink-soft);
+}
 .react-meaning .react-meaning-en { font-weight: 600; color: var(--ink); }
 .react-meaning .react-meaning-zh { color: var(--muted); }
 
-.react-current-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+.react-current-actions { display: flex; flex: 0 0 auto; flex-wrap: wrap; gap: 5px; margin: 0; }
 .react-current-actions button {
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--card);
   color: var(--muted);
   cursor: pointer;
-  padding: 8px 12px;
-  font: 0.76rem/1.2 var(--sans);
+  padding: 5px 8px;
+  font: 0.68rem/1.2 var(--sans);
   font-weight: 600;
   transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
 }
@@ -482,8 +450,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .react-current-actions button:disabled { cursor: not-allowed; opacity: 0.4; }
 
 .react-review-completed { color: var(--sage); margin: 12px 0 0; font: 0.82rem/1.4 var(--sans); }
-
-.react-covered-note { color: var(--faint); font: 0.9rem/1.5 var(--sans); }
 
 /* --- Sentence, explanation, source --- */
 
@@ -784,7 +750,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .react-list { min-height: 35vh; max-height: 42vh; padding-right: 0; }
   .react-divider { display: none; }
   .react-current { min-height: 480px; padding: 20px 4px 40px; }
-  .react-current h2 { font-size: clamp(2.2rem, 11vw, 3.5rem); }
+  .react-word-summary { align-items: flex-start; padding: 14px; }
+  .react-word-summary h2 { font-size: clamp(2.2rem, 11vw, 3.5rem); }
   .react-toolbar { align-items: stretch; flex-wrap: wrap; overflow: visible; }
   .react-toolbar-search { flex-basis: 100%; }
   .react-toolbar-actions { max-width: 100%; overflow-x: auto; padding-bottom: 2px; }

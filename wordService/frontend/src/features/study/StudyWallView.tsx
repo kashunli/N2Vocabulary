@@ -15,7 +15,6 @@ interface StudyWallViewProps {
   activeIndex: number;
   activePhase: PlaybackPhase;
   bookCode: string;
-  coveredEntryIds: ReadonlySet<number>;
   detail?: Entry;
   entries: Entry[];
   entriesLoading: boolean;
@@ -31,7 +30,6 @@ export function StudyWallView({
   activeIndex,
   activePhase,
   bookCode,
-  coveredEntryIds,
   detail,
   entries,
   entriesLoading,
@@ -98,34 +96,35 @@ export function StudyWallView({
         {entries.length ? entries.map((entry, index) => {
           const reviewCompleted = reviewSession?.completedByItemUuid[entry.item_uuid];
           const status = markStatusOf(entry.mark);
-          return <button key={entry.entry_id} ref={index === activeIndex ? activeRef : null} className={`${index === activeIndex ? "is-active " : ""}${coveredEntryIds.has(entry.entry_id) ? "is-covered" : ""}${reviewCompleted ? " is-reviewed" : ""} status-${status}`} aria-current={index === activeIndex ? "true" : undefined} onClick={() => onSelectEntry(index)}><span className="react-row-index">{String(index + 1).padStart(3, "0")}</span><span className="react-row-kanji">{entry.kanji}</span><span className="react-row-status" aria-label={`${status}${reviewCompleted ? " reviewed" : ""}`}>{status === "known" ? "✓ Known" : status === "flagged" ? "⚑ Flagged" : ""}{reviewCompleted ? " Reviewed" : ""}</span></button>;
+          return <button key={entry.entry_id} ref={index === activeIndex ? activeRef : null} className={`${index === activeIndex ? "is-active " : ""}${reviewCompleted ? " is-reviewed" : ""} status-${status}`} aria-current={index === activeIndex ? "true" : undefined} onClick={() => onSelectEntry(index)}><span className="react-row-index">{String(index + 1).padStart(3, "0")}</span><span className="react-row-kanji">{entry.kanji}</span><span className="react-row-status" aria-label={`${status}${reviewCompleted ? " reviewed" : ""}`}>{status === "known" ? "✓ Known" : status === "flagged" ? "⚑ Flagged" : ""}{reviewCompleted ? " Reviewed" : ""}</span></button>;
         }) : entriesLoading ? <p className="react-empty">{emptyMessage}</p> : <p className="react-empty">No words match the current filters.</p>}
       </section>
       <button className="react-divider" type="button" role="separator" aria-orientation="vertical" aria-label="Adjust playback list width" aria-valuemin={220} aria-valuemax={620} aria-valuenow={listWidth} tabIndex={0} onPointerDown={(event) => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); setDraggingDivider(true); }} onKeyDown={(event) => { if (event.key === "ArrowLeft") setListWidth((value) => Math.max(220, value - (event.shiftKey ? 50 : 20))); else if (event.key === "ArrowRight") setListWidth((value) => Math.min(620, value + (event.shiftKey ? 50 : 20))); else return; event.preventDefault(); }}> </button>
-      <section ref={currentRef} className={`react-current${activeEntry && coveredEntryIds.has(activeEntry.entry_id) ? " is-covered" : ""}`} aria-live="polite" aria-label="Current vocabulary item">
+      <section ref={currentRef} className="react-current" aria-live="polite" aria-label="Current vocabulary item">
         {activeEntry ? <>
           <span className="eyebrow">{activeEntry.book_code} #{String(activeEntry.source_index).padStart(3, "0")} · {unitLabel(activeEntry.unit)}</span>
-          <h2>
-            <button
-              type="button"
-              className="react-word-trigger"
-              onClick={() => onSelectPhase("word")}
-              disabled={!activeEntry.word_audio_url}
-              aria-current={activePhase === "word" ? "true" : undefined}
-              aria-label={`Play word audio: ${activeEntry.kanji}`}
-              title="Play word audio"
-            >
-              <WordDisplay word={activeEntry.kanji} reading={activeEntry.reading} />
-            </button>
-          </h2>
-          {reviewSession?.completedByItemUuid[activeEntry.item_uuid] ? <p className="react-review-completed">Reviewed · level {reviewSession.completedByItemUuid[activeEntry.item_uuid].reviewLevel} · next {new Date(reviewSession.completedByItemUuid[activeEntry.item_uuid].nextDueAt).toLocaleDateString()}</p> : null}
-          {coveredEntryIds.has(activeEntry.entry_id) ? <p className="react-covered-note">Answers covered. Press Uncover all or Cover all to reveal the study details.</p> : <>
+          <div className="react-word-summary">
+            <h2>
+              <button
+                type="button"
+                className="react-word-trigger"
+                onClick={() => onSelectPhase("word")}
+                disabled={!activeEntry.word_audio_url}
+                aria-current={activePhase === "word" ? "true" : undefined}
+                aria-label={`Play word audio: ${activeEntry.kanji}`}
+                title="Play word audio"
+              >
+                <WordDisplay word={activeEntry.kanji} reading={activeEntry.reading} />
+              </button>
+            </h2>
             <MeaningDisplay meaningEn={activeEntry.meaning_en} meaningZh={activeEntry.meaning_zh} />
             <div className="react-current-actions">
               <button type="button" className={`mark-known${markStatusOf(activeEntry.mark) === "known" ? " is-on" : ""}`} onClick={() => void onToggleMark("known")} aria-pressed={markStatusOf(activeEntry.mark) === "known"}>✓ Known</button>
               <button type="button" className={`mark-flagged${markStatusOf(activeEntry.mark) === "flagged" ? " is-on" : ""}`} onClick={() => void onToggleMark("flagged")} aria-pressed={markStatusOf(activeEntry.mark) === "flagged"}>⚑ Flagged</button>
             </div>
-            {detail?.sentence ? <div className="react-sentence">
+          </div>
+          {reviewSession?.completedByItemUuid[activeEntry.item_uuid] ? <p className="react-review-completed">Reviewed · level {reviewSession.completedByItemUuid[activeEntry.item_uuid].reviewLevel} · next {new Date(reviewSession.completedByItemUuid[activeEntry.item_uuid].nextDueAt).toLocaleDateString()}</p> : null}
+          {detail?.sentence ? <div className="react-sentence">
               <button
                 type="button"
                 className="react-sentence-trigger"
@@ -138,9 +137,8 @@ export function StudyWallView({
                 <strong>{detail.sentence}</strong>
               </button>
             </div> : null}
-            {detail?.explanation_md ? <SentenceExplanation value={detail.explanation_md} /> : null}
-            {detail?.source_notes ? <SourceMetadata notes={detail.source_notes} /> : null}
-          </>}
+          {detail?.explanation_md ? <SentenceExplanation value={detail.explanation_md} /> : null}
+          {detail?.source_notes ? <SourceMetadata notes={detail.source_notes} /> : null}
         </> : <p className="react-empty">{emptyMessage}</p>}
       </section>
     </div>

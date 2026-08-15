@@ -25,7 +25,6 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
   const [search, setSearch] = useState(() => initialView.search || "");
   const [entries, setEntries] = useState<Entry[]>([]);
   const [entriesLoading, setEntriesLoading] = useState(false);
-  const [coveredEntryIds, setCoveredEntryIds] = useState<Set<number>>(() => new Set());
   const [blurred, setBlurred] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [reviewSession, setReviewSession] = useState<ReviewSession>();
@@ -48,7 +47,6 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
     changePostWordSilence,
     handlePlaybackEnd,
     handlePlayingChange,
-    isSilencePaused,
     isSilencePlaying,
     moveClip: movePlaybackClip,
     pauseRequest,
@@ -134,19 +132,14 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
     }
   }, [selectedUnit, units]);
   const currentBook = books.find((book) => book.code === selectedBook);
-  const allVisibleCovered = entries.length > 0 && entries.every((entry) => coveredEntryIds.has(entry.entry_id));
 
   const {
     exportFlaggedAudio,
-    toggleCoverAll,
     toggleMark,
   } = useStudyActions({
     activeEntry,
-    allVisibleCovered,
-    entries,
     selectedBook,
     selectedUnit,
-    setCoveredEntryIds,
     setDetail,
     setEntries,
     setStatus,
@@ -182,22 +175,16 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
   return (
     <main className="react-shell">
       <StudyHeader
-        allVisibleCovered={allVisibleCovered}
         blurred={blurred}
         books={books}
         currentBook={currentBook}
-        entriesCount={entries.length}
         exportFlaggedAudio={() => void exportFlaggedAudio()}
         filterState={filterState}
-        isSilencePaused={isSilencePaused}
-        playbackActive={playbackActive}
-        playbackRunMode={playbackRunMode}
         search={search}
         selectedBook={selectedBook}
         selectedUnit={selectedUnit}
         summary={summary}
         reviewSessionCount={filterState === "review" ? Object.keys(reviewSession?.expectedDueAtByItemUuid || {}).length : undefined}
-        target={target}
         units={units}
         onOpenSettings={() => setSettingsOpen(true)}
         onSearch={setSearch}
@@ -205,8 +192,6 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
         onSelectFilter={(filter) => { setFilterState(filter); if (filter !== "review") setReviewSession(undefined); }}
         onSelectUnit={(unit) => { setSelectedUnit(unit); setReviewSession(undefined); }}
         onToggleBlur={() => setBlurred((current) => !current)}
-        onToggleCoverAll={toggleCoverAll}
-        onTogglePlayback={togglePlayback}
       />
       {status ? <div key={status} className="react-status" role="status" aria-live="polite" aria-atomic="true">{status}</div> : null}
 
@@ -216,7 +201,6 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
           activeIndex={activeIndex}
           activePhase={activePhase}
           bookCode={activeEntry?.book_code || selectedBook}
-          coveredEntryIds={coveredEntryIds}
           detail={detail}
           entries={entries}
           entriesLoading={entriesLoading}
