@@ -46,20 +46,6 @@ export function wireControls() {
       showCardView().catch(showError);
     });
   });
-  elements.coverAll.addEventListener("click", () => {
-    const shouldCover = state.currentEntries.some(entry => !state.coveredEntryIds.has(entry.entry_id));
-    state.currentEntries.forEach(entry => {
-      if (shouldCover) {
-        state.coveredEntryIds.add(entry.entry_id);
-      } else {
-        state.coveredEntryIds.delete(entry.entry_id);
-      }
-    });
-    renderCards();
-  });
-  elements.scopePlayButton.addEventListener("click", () => {
-    toggleScopePlayback().catch(showError);
-  });
   elements.scopeReplayButton.addEventListener("click", () => replayScopeImmediately().catch(showError));
   elements.scopePreviousButton.addEventListener("click", () => {
     moveScopePlayback(-1).catch(showError);

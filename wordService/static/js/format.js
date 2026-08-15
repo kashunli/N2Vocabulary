@@ -102,7 +102,7 @@ export function cardMeaningHTML(entry) {
   const parts = [];
   if (entry.meaning_en) parts.push(`<span class="en">${escapeHTML(entry.meaning_en)}</span>`);
   if (entry.meaning_zh) parts.push(`<span class="zh">${escapeHTML(entry.meaning_zh)}</span>`);
-  return parts.join("");
+  return parts.join(" · ");
 }
 
 export function sourceReferenceHTML(note) {

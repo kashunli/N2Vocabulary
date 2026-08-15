@@ -3,14 +3,10 @@ import { readStudyFocus, saveStudyFocus } from "./studyFocus.js";
 
 export const elements = {
   pageTitle: document.getElementById("page-title"),
-  summaryMeta: document.getElementById("summary-meta"),
   bookSelect: document.getElementById("book-select"),
   unitSelect: document.getElementById("unit-select"),
-  unitStrip: document.getElementById("unit-strip"),
   search: document.getElementById("search"),
   statePills: Array.from(document.querySelectorAll(".state-pill")),
-  coverAll: document.getElementById("cover-all"),
-  scopePlayButton: document.getElementById("scope-play-button"),
   playbackDock: document.getElementById("playback-dock"),
   playbackNowLabel: document.getElementById("playback-now-label"),
   playbackNowDetail: document.getElementById("playback-now-detail"),

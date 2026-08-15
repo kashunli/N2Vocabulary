@@ -1,7 +1,7 @@
 import { fetchBooks, fetchEntries, fetchSummary, fetchUnits } from "./api.js";
 import { renderCards } from "./cards.js";
 import { resumeScopePlaybackFromSavedState, stopScopePlayback, updateScopePlaybackButton } from "./audio.js";
-import { escapeHTML, unitLabel } from "./format.js";
+import { unitLabel } from "./format.js";
 import { elements, saveViewState, state } from "./state.js";
 import { applyStudyMarks, startReviewSession, summarizeStudyMarks } from "./studyState.js";
 
@@ -33,23 +33,24 @@ export function renderBooks() {
     elements.bookSelect.appendChild(option);
   });
   const book = currentBook();
-  elements.pageTitle.textContent = "スタディウォール";
+  elements.pageTitle.textContent = book.title;
   document.title = `${book.code} Study Wall`;
 }
 
 export async function loadSummary() {
   const [summary, entriesPayload] = await Promise.all([fetchSummary(), fetchEntries(new URLSearchParams({state: "all"}))]);
   const active = summarizeStudyMarks(entriesPayload.items || []);
-  const book = currentBook();
-  elements.summaryMeta.innerHTML = [
-    `<span>${escapeHTML(book.title)}</span>`,
-    `<span>${summary.entries} entries</span>`,
-    `<span>${summary.units} sections</span>`,
-    `<span>${active.known} known</span>`,
-    `<span>${active.flagged} flagged</span>`,
-    `<span>${active.review} review</span>`,
-    `<span>${active.unmarked} unmarked</span>`,
-  ].join("");
+  const counts = {
+    all: summary.entries,
+    review: active.review,
+    known: active.known,
+    flagged: active.flagged,
+    unmarked: active.unmarked,
+  };
+  elements.statePills.forEach(pill => {
+    const countNode = pill.querySelector(".pill-count");
+    if (countNode) countNode.textContent = String(counts[pill.dataset.state] ?? 0);
+  });
 }
 
 export async function loadUnits() {
@@ -65,7 +66,6 @@ export async function loadUnits() {
 
 export function renderUnits() {
   elements.unitSelect.innerHTML = "";
-  elements.unitStrip.innerHTML = "";
 
   const allOption = document.createElement("option");
   allOption.value = "";
@@ -73,30 +73,12 @@ export function renderUnits() {
   allOption.selected = state.selectedUnit === null;
   elements.unitSelect.appendChild(allOption);
 
-  const allButton = document.createElement("button");
-  allButton.type = "button";
-  allButton.className = "unit-tab";
-  allButton.textContent = "All";
-  allButton.classList.toggle("active", state.selectedUnit === null);
-  allButton.title = "Browse words from every section";
-  allButton.addEventListener("click", () => selectUnit(null));
-  elements.unitStrip.appendChild(allButton);
-
   state.units.forEach(unit => {
     const option = document.createElement("option");
     option.value = String(unit.number);
     option.textContent = `${unitLabel(unit)} - ${unit.entry_count} words`;
     option.selected = unit.number === state.selectedUnit;
     elements.unitSelect.appendChild(option);
-
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "unit-tab";
-    button.textContent = unitLabel(unit);
-    button.classList.toggle("active", unit.number === state.selectedUnit);
-    button.title = `${unit.title} - ${unit.entry_count} words`;
-    button.addEventListener("click", () => selectUnit(unit.number));
-    elements.unitStrip.appendChild(button);
   });
 }
 

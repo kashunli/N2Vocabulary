@@ -302,30 +302,6 @@ export function updateScopePlaybackButton() {
   const hasSaved = saved && saved.scopePlaybackStatus !== "idle" && state.currentEntries.some(
     entry => entry.entry_id === saved.scopePlaybackEntryId
   );
-  elements.scopePlayButton.disabled = !hasEntries;
-  elements.scopePlayButton.classList.toggle("playing", status === "playing");
-  elements.scopePlayButton.classList.toggle("paused", paused || (!active && hasSaved));
-  elements.scopePlayButton.setAttribute("aria-pressed", (active || hasSaved) ? "true" : "false");
-  elements.scopePlayButton.textContent = status === "playing"
-      ? `pause · ${state.scopePlaybackPosition}/${state.scopePlaybackTotal}`
-      : paused
-        ? `resume · ${state.scopePlaybackPosition}/${state.scopePlaybackTotal}`
-        : hasSaved
-          ? `resume · ${saved.scopePlaybackPosition}/${saved.scopePlaybackTotal}`
-          : "play visible";
-  elements.scopePlayButton.title = !hasEntries
-    ? "No visible vocabulary cards to play"
-    : status === "playing"
-        ? "Pause immediately"
-        : paused
-          ? "Resume from the same audio position"
-        : hasSaved
-          ? `Resume from where you left off (card ${saved.scopePlaybackPosition} of ${saved.scopePlaybackTotal})`
-        : state.playbackMode === "words"
-          ? "Play each visible word"
-          : state.playbackMode === "sentences"
-            ? "Play the main example sentence for each visible word"
-          : "Play each visible word followed by its main example sentence";
   elements.grid.classList.toggle("scope-playback-active", active);
   elements.grid.classList.toggle("scope-playback-paused", paused);
 
@@ -531,7 +507,7 @@ async function startScopePlayback(startIndex = 0, initialPhase = "word") {
     setBanner(`Playing ${index + 1} of ${entries.length}: ${entry.kanji}`);
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const bounds = card.getBoundingClientRect();
-    const toolbarBottom = elements.scopePlayButton.closest(".controls")?.getBoundingClientRect().bottom || 0;
+    const toolbarBottom = document.querySelector(".controls")?.getBoundingClientRect().bottom || 0;
     const dockTop = elements.playbackDock.getBoundingClientRect().top || window.innerHeight;
     const visibleBottom = Math.min(window.innerHeight, dockTop);
     const availableTop = toolbarBottom + 12;

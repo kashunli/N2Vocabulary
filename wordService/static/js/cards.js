@@ -48,17 +48,6 @@ export function applyCoverState(card, entry, covered) {
   detailsButton.disabled = covered;
 }
 
-export function updateCoverAllButton() {
-  const hasEntries = state.currentEntries.length > 0;
-  const allVisibleCovered = hasEntries && state.currentEntries.every(entry => (
-    state.coveredEntryIds.has(entry.entry_id)
-  ));
-
-  elements.coverAll.disabled = !hasEntries;
-  elements.coverAll.textContent = allVisibleCovered ? "uncover all" : "cover all";
-  elements.coverAll.setAttribute("aria-pressed", allVisibleCovered ? "true" : "false");
-}
-
 export function renderCards() {
   elements.grid.innerHTML = "";
   if (!state.currentEntries.length) {
@@ -67,7 +56,6 @@ export function renderCards() {
     empty.textContent = "No words match the current filters.";
     elements.grid.appendChild(empty);
     elements.counter.textContent = "showing 0";
-    updateCoverAllButton();
     updateAudioExportButton();
     updateScopePlaybackButton();
     return;
@@ -113,7 +101,6 @@ export function renderCards() {
         state.coveredEntryIds.delete(entry.entry_id);
       }
       applyCoverState(card, entry, covered);
-      updateCoverAllButton();
     });
     card.addEventListener("click", event => {
       const clickedPhase = event.target.closest(".main-sentence-row") ? "sentence" : "word";
@@ -173,7 +160,6 @@ export function renderCards() {
   }
   const scope = state.selectedUnit === null || state.search ? " across all sections" : "";
   elements.counter.textContent = `showing ${state.currentEntries.length}${scope}`;
-  updateCoverAllButton();
   updateAudioExportButton();
   updateScopePlaybackButton();
 }
@@ -234,7 +220,7 @@ function renderCardSentences(card, entry) {
     wireAudioTarget(row, item.audio_url, item.isMain ? "Play sentence audio" : "Play example audio");
   });
 
-  card.querySelector(".card-meaning").after(wrap);
+  card.querySelector(".card-word-row").after(wrap);
   card.querySelector(".card-sentence")?.remove();
   card.querySelector(".card-sentence-translation")?.remove();
 }
@@ -281,6 +267,7 @@ function renderSearchMatches(card, entry) {
 
   const insertionPoint =
     card.querySelector(".card-examples")
+    || card.querySelector(".card-word-row")
     || card.querySelector(".card-meaning")
     || card.querySelector(".card-kanji");
   if (insertionPoint) insertionPoint.after(wrap);

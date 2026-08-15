@@ -11,9 +11,8 @@
   <header class="hero">
     <div class="hero-main">
       <div>
+        <div class="eyebrow">JLPT N2 · VOCABULARY</div>
         <h1 id="page-title">スタディウォール</h1>
-        <div class="eyebrow">Study Wall</div>
-        <div class="meta" id="summary-meta">Loading vocabulary...</div>
       </div>
       <div class="hero-pickers">
         <label class="unit-picker">
@@ -28,20 +27,15 @@
     </div>
   </header>
 
-  <nav class="unit-strip" id="unit-strip" aria-label="Sections"></nav>
-
   <section class="controls">
     <input id="search" type="search" placeholder="Search kanji, reading, meaning, sentence...">
     <div class="pill-group" aria-label="Study state filter">
-      <button class="pill state-pill active" data-state="all">All</button>
-      <button class="pill state-pill review" data-state="review">Review</button>
-      <button class="pill state-pill" data-state="unmarked">Unmarked</button>
-      <button class="pill state-pill known" data-state="known">Known</button>
-      <button class="pill state-pill flagged" data-state="flagged">Flagged</button>
+      <button class="pill state-pill active" data-state="all"><span>All</span><small class="pill-count"></small></button>
+      <button class="pill state-pill review" data-state="review"><span>Review</span><small class="pill-count"></small></button>
+      <button class="pill state-pill" data-state="unmarked"><span>Unmarked</span><small class="pill-count"></small></button>
+      <button class="pill state-pill known" data-state="known"><span>Known</span><small class="pill-count"></small></button>
+      <button class="pill state-pill flagged" data-state="flagged"><span>Flagged</span><small class="pill-count"></small></button>
     </div>
-    <button class="cover-all" id="cover-all" type="button" aria-pressed="false">cover all</button>
-    <button class="scope-play-button" id="scope-play-button" type="button" aria-pressed="false" aria-keyshortcuts="Space">play visible</button>
-    <a class="audio-review-link" href="/audio-review.html">audio text review</a>
     <button class="audio-export-button" id="audio-export-button" type="button">export flagged audio</button>
     <a class="layout-switch-button" href="/">React study wall</a>
     <button class="settings-button" id="settings-button" type="button" aria-label="Open playback settings" title="Playback settings">⚙</button>
@@ -150,16 +144,16 @@
 
   <template id="card-template">
     <article class="card">
-      <div class="card-top">
+      <div class="card-word-row">
+        <div class="card-kanji"></div>
+        <div class="card-meaning"></div>
         <span class="card-actions">
-          <button class="icon-btn flagged" type="button" title="Flag for review" aria-keyshortcuts="F"><span aria-hidden="true">⚑</span><span class="card-action-text">Flag</span><kbd>F</kbd></button>
+          <button class="icon-btn flagged" type="button" title="Flag for review" aria-keyshortcuts="F"><span aria-hidden="true">⚑</span><span class="card-action-text">Flagged</span><kbd>F</kbd></button>
           <button class="icon-btn known" type="button" title="Mark as known" aria-keyshortcuts="Enter K"><span aria-hidden="true">✓</span><span class="card-action-text">Known</span><kbd>Enter</kbd></button>
         </span>
       </div>
       <progress class="card-playback-progress" max="3" value="0" aria-label="Word and sentence playback progress"></progress>
       <div class="card-playback-label">Now playing</div>
-      <div class="card-kanji"></div>
-      <div class="card-meaning"></div>
       <div class="card-sentence"></div>
       <div class="card-sentence-translation"></div>
       <div class="card-bottom">
