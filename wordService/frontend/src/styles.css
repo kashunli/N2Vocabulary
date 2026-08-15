@@ -117,33 +117,12 @@ button, a { -webkit-tap-highlight-color: transparent; }
 }
 
 .react-brand h1 {
+  margin: 10px 0 0;
   font-family: var(--mincho);
   font-size: clamp(1.6rem, 2.9vw, 2.6rem);
   font-weight: 500;
   line-height: 1.15;
   letter-spacing: 0.01em;
-}
-.react-title-line {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: nowrap;
-  gap: 8px 18px;
-  margin-top: 10px;
-}
-.react-title-line h1 { flex: 0 0 auto; margin: 0; white-space: nowrap; }
-
-.react-summary-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-  min-width: 0;
-  color: var(--muted);
-  font: 0.78rem/1.4 var(--sans);
-}
-.react-summary-meta span + span::before {
-  content: "·";
-  margin-right: 14px;
-  color: var(--faint);
 }
 
 .react-pickers { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
@@ -739,8 +718,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 @media (max-width: 900px) {
   .react-header { grid-template-columns: 1fr; gap: 14px; }
-  .react-title-line { flex-wrap: wrap; }
-  .react-pickers { max-width: 620px; }
+  .react-pickers { max-width: 620px; justify-self: end; }
 }
 
 @media (max-width: 700px) {

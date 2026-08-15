@@ -48,12 +48,7 @@ export function StudyHeader({
       <header className="react-header">
         <div className="react-brand">
           <span className="eyebrow"><span className="brand-seal" aria-hidden="true">印</span>JLPT N2 · VOCABULARY</span>
-          <div className="react-title-line">
-            <h1>{currentBook?.title || "スタディウォール"}</h1>
-            <div className="react-summary-meta">
-              {summary ? <><span>{summary.entries} entries</span><span>{summary.units} sections</span><span>{summary.known} known</span><span>{summary.flagged} flagged</span><span>{summary.unmarked} unmarked</span></> : <span>Loading vocabulary…</span>}
-            </div>
-          </div>
+          <h1>{currentBook?.title || "スタディウォール"}</h1>
         </div>
         <div className="react-pickers">
           <label><span>Book</span><select value={selectedBook} onChange={(event) => onSelectBook(event.target.value)}><option value="">Choose book</option>{books.map((book) => <option key={book.code} value={book.code}>{book.code} · {book.title}</option>)}</select></label>
@@ -65,7 +60,8 @@ export function StudyHeader({
         <div className="react-toolbar-search"><input type="search" value={search} onChange={(event) => onSearch(event.target.value)} placeholder="Search kanji, reading, meaning, sentence…" aria-label="Search vocabulary" /></div>
         <div className="react-pill-group" role="group" aria-label="Study state filter">
           {(["all", "review", "unmarked", "known", "flagged"] as FilterState[]).map((filter) => {
-            const count = filter === "review" ? reviewSessionCount ?? summary?.review
+            const count = filter === "all" ? summary?.entries
+              : filter === "review" ? reviewSessionCount ?? summary?.review
               : filter === "known" ? summary?.known
                 : filter === "flagged" ? summary?.flagged
                   : filter === "unmarked" ? summary?.unmarked
