@@ -140,6 +140,28 @@ http://127.0.0.1:8767/classic    # deprecated compatibility wall; do not extend
 http://127.0.0.1:8767/audio-review.html
 ```
 
+### One-click Windows launcher
+
+To build the compiled service and create the friendly project-root executable
+`Start N2 Vocabulary.exe`, run this from PowerShell at the repository root:
+
+```powershell
+.\tools\build_start_n2_vocabulary.ps1
+```
+
+The launcher checks whether port `8767` is already serving WordService. If it
+is not, it starts the release service, waits for `HEAD /api/summary` to return
+HTTP 200, and opens the React study wall at `http://127.0.0.1:8767/`. The
+service remains a separate process and is reused by later clicks.
+
+Startup output from the service is appended to
+`n2-word-service-launcher.log` beside the launcher. The build script uses
+`wordService\target\launcher-release\release` so a currently running service
+does not block a rebuild; the launcher also recognizes the normal
+`wordService\target\release` layout and a `wordService` subdirectory for a
+simple copied distribution. You can override the executable path with
+`N2_WORD_SERVICE_EXECUTABLE` when packaging it elsewhere.
+
 Optional environment variables:
 
 - `N2_WORD_SERVICE_DB`

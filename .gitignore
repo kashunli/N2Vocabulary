@@ -54,6 +54,10 @@ output/html/
 dist/
 dist/*.apkg
 
+# Generated local one-click launcher
+Start N2 Vocabulary.exe
+n2-word-service-launcher.log
+
 # 4. Heavy binaries, dependencies, caches, and local tool state
 tools/whispercpp-windows/*.exe
 tools/whispercpp-windows/*.dll
