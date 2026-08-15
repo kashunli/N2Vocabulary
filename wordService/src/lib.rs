@@ -8,6 +8,7 @@
 pub mod audio_review;
 pub mod config;
 pub mod http;
+pub mod launcher;
 pub mod models;
 pub mod repository;
 pub mod tts;
