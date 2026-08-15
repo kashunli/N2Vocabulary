@@ -64,7 +64,7 @@ export function StudyHeader({
     <>
       <header className="react-header">
         <div className="react-brand">
-          <span className="eyebrow">N2 VOCABULARY · REACT PREVIEW</span>
+          <span className="eyebrow"><span className="brand-seal" aria-hidden="true">印</span>JLPT N2 · VOCABULARY</span>
           <h1>{currentBook?.title || "スタディウォール"}</h1>
           <div className="react-summary-meta">
             {summary ? <><span>{summary.entries} entries</span><span>{summary.units} sections</span><span>{summary.known} known</span><span>{summary.flagged} flagged</span><span>{summary.unmarked} unmarked</span></> : <span>Loading vocabulary…</span>}
@@ -95,7 +95,7 @@ export function StudyHeader({
         </div>
         <div className="react-toolbar-actions">
           <button type="button" onClick={onToggleCoverAll} disabled={!entriesCount} aria-pressed={allVisibleCovered}>{allVisibleCovered ? "Uncover all" : "Cover all"}</button>
-          <button type="button" onClick={onTogglePlayback} disabled={!target} aria-pressed={playbackActive}>{playbackActive ? "Pause" : isSilencePaused ? "Resume" : playbackRunMode === "single" ? "Play one" : "Play visible"}</button>
+          <button type="button" className="react-play-toggle" onClick={onTogglePlayback} disabled={!target} aria-pressed={playbackActive}>{playbackActive ? "Pause" : isSilencePaused ? "Resume" : playbackRunMode === "single" ? "Play one" : "Play visible"}</button>
           <a href="/audio-review.html">Audio text review</a>
           <button type="button" onClick={exportFlaggedAudio} disabled={selectedUnit === null}>Export flagged audio</button>
           <a href="/classic">Classic study wall</a>
