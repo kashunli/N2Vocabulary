@@ -126,11 +126,11 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .react-title-line {
   display: flex;
   align-items: baseline;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 8px 18px;
   margin-top: 10px;
 }
-.react-title-line h1 { margin: 0; }
+.react-title-line h1 { flex: 0 0 auto; margin: 0; white-space: nowrap; }
 
 .react-summary-meta {
   display: flex;
@@ -739,6 +739,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 @media (max-width: 900px) {
   .react-header { grid-template-columns: 1fr; gap: 14px; }
+  .react-title-line { flex-wrap: wrap; }
   .react-pickers { max-width: 620px; }
 }
 
