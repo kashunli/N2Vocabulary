@@ -87,8 +87,8 @@
       </div>
       <div class="modal-body">
         <div class="modal-actions">
-          <button type="button" class="icon-btn known">Known</button>
-          <button type="button" class="icon-btn flagged">Flag</button>
+          <button type="button" class="icon-btn known" aria-label="Mark as known" title="Mark as known"><span aria-hidden="true">✓</span></button>
+          <button type="button" class="icon-btn flagged" aria-label="Flag for review" title="Flag for review"><span aria-hidden="true">⚑</span></button>
         </div>
         <div class="modal-meaning" id="modal-meaning"></div>
         <div>
@@ -148,8 +148,8 @@
         <div class="card-kanji"></div>
         <div class="card-meaning"></div>
         <span class="card-actions">
-          <button class="icon-btn flagged" type="button" title="Flag for review" aria-keyshortcuts="F"><span aria-hidden="true">⚑</span><span class="card-action-text">Flagged</span><kbd>F</kbd></button>
-          <button class="icon-btn known" type="button" title="Mark as known" aria-keyshortcuts="Enter K"><span aria-hidden="true">✓</span><span class="card-action-text">Known</span><kbd>Enter</kbd></button>
+          <button class="icon-btn flagged" type="button" title="Flag for review" aria-label="Flag for review" aria-keyshortcuts="F"><span aria-hidden="true">⚑</span></button>
+          <button class="icon-btn known" type="button" title="Mark as known" aria-label="Mark as known" aria-keyshortcuts="Enter K"><span aria-hidden="true">✓</span></button>
         </span>
       </div>
       <progress class="card-playback-progress" max="3" value="0" aria-label="Word and sentence playback progress"></progress>
@@ -159,7 +159,6 @@
       <div class="card-bottom">
         <button class="cover-button" type="button">cover</button>
         <button class="details-button" type="button">details</button>
-        <span class="card-index"></span>
       </div>
     </article>
   </template>

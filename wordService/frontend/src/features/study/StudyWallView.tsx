@@ -96,13 +96,15 @@ export function StudyWallView({
         {entries.length ? entries.map((entry, index) => {
           const reviewCompleted = reviewSession?.completedByItemUuid[entry.item_uuid];
           const status = markStatusOf(entry.mark);
-          return <button key={entry.entry_id} ref={index === activeIndex ? activeRef : null} className={`${index === activeIndex ? "is-active " : ""}${reviewCompleted ? " is-reviewed" : ""} status-${status}`} aria-current={index === activeIndex ? "true" : undefined} onClick={() => onSelectEntry(index)}><span className="react-row-index">{String(index + 1).padStart(3, "0")}</span><span className="react-row-kanji">{entry.kanji}</span><span className="react-row-status" aria-label={`${status}${reviewCompleted ? " reviewed" : ""}`}>{status === "known" ? "✓ Known" : status === "flagged" ? "⚑ Flagged" : ""}{reviewCompleted ? " Reviewed" : ""}</span></button>;
+          const statusLabel = [status === "known" ? "Known" : status === "flagged" ? "Flagged" : "", reviewCompleted ? "Reviewed" : ""].filter(Boolean).join(", ");
+          const statusIcon = status === "known" ? "✓" : status === "flagged" ? "⚑" : reviewCompleted ? "✓" : "";
+          return <button key={entry.entry_id} ref={index === activeIndex ? activeRef : null} className={`${index === activeIndex ? "is-active " : ""}${reviewCompleted ? " is-reviewed" : ""} status-${status}`} aria-label={`${entry.kanji}${statusLabel ? `, ${statusLabel}` : ""}`} aria-current={index === activeIndex ? "true" : undefined} onClick={() => onSelectEntry(index)}><span className="react-row-kanji">{entry.kanji}</span>{statusLabel ? <span className="react-row-status" aria-label={statusLabel} title={statusLabel}>{statusIcon}</span> : null}</button>;
         }) : entriesLoading ? <p className="react-empty">{emptyMessage}</p> : <p className="react-empty">No words match the current filters.</p>}
       </section>
       <button className="react-divider" type="button" role="separator" aria-orientation="vertical" aria-label="Adjust playback list width" aria-valuemin={220} aria-valuemax={620} aria-valuenow={listWidth} tabIndex={0} onPointerDown={(event) => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); setDraggingDivider(true); }} onKeyDown={(event) => { if (event.key === "ArrowLeft") setListWidth((value) => Math.max(220, value - (event.shiftKey ? 50 : 20))); else if (event.key === "ArrowRight") setListWidth((value) => Math.min(620, value + (event.shiftKey ? 50 : 20))); else return; event.preventDefault(); }}> </button>
       <section ref={currentRef} className="react-current" aria-live="polite" aria-label="Current vocabulary item">
         {activeEntry ? <>
-          <span className="eyebrow">{activeEntry.book_code} #{String(activeEntry.source_index).padStart(3, "0")} · {unitLabel(activeEntry.unit)}</span>
+          <span className="eyebrow">{activeEntry.book_code} · {unitLabel(activeEntry.unit)}</span>
           <div className="react-word-summary">
             <h2>
               <button
@@ -119,8 +121,8 @@ export function StudyWallView({
             </h2>
             <MeaningDisplay meaningEn={activeEntry.meaning_en} meaningZh={activeEntry.meaning_zh} />
             <div className="react-current-actions">
-              <button type="button" className={`mark-known${markStatusOf(activeEntry.mark) === "known" ? " is-on" : ""}`} onClick={() => void onToggleMark("known")} aria-pressed={markStatusOf(activeEntry.mark) === "known"}>✓ Known</button>
-              <button type="button" className={`mark-flagged${markStatusOf(activeEntry.mark) === "flagged" ? " is-on" : ""}`} onClick={() => void onToggleMark("flagged")} aria-pressed={markStatusOf(activeEntry.mark) === "flagged"}>⚑ Flagged</button>
+              <button type="button" className={`mark-known${markStatusOf(activeEntry.mark) === "known" ? " is-on" : ""}`} onClick={() => void onToggleMark("known")} aria-label="Mark as known" title="Mark as known" aria-pressed={markStatusOf(activeEntry.mark) === "known"}>✓</button>
+              <button type="button" className={`mark-flagged${markStatusOf(activeEntry.mark) === "flagged" ? " is-on" : ""}`} onClick={() => void onToggleMark("flagged")} aria-label="Flag for review" title="Flag for review" aria-pressed={markStatusOf(activeEntry.mark) === "flagged"}>⚑</button>
             </div>
           </div>
           {reviewSession?.completedByItemUuid[activeEntry.item_uuid] ? <p className="react-review-completed">Reviewed · level {reviewSession.completedByItemUuid[activeEntry.item_uuid].reviewLevel} · next {new Date(reviewSession.completedByItemUuid[activeEntry.item_uuid].nextDueAt).toLocaleDateString()}</p> : null}

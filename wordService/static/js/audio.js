@@ -453,8 +453,6 @@ async function recordCompletedCard(entry, card) {
     entry.review_completed = true;
     session.completedByItemUuid[entry.item_uuid] = {reviewLevel: result.card.review_level, nextDueAt: result.card.due_at};
     card.classList.add("reviewed");
-    const index = card.querySelector(".card-index");
-    if (index && !index.textContent.includes("Reviewed")) index.textContent += " · Reviewed";
     setBanner(`${entry.kanji} reviewed. Level ${result.card.review_level}; next review ${new Date(result.card.due_at).toLocaleDateString()}.`);
   } catch (error) {
     session.completingItemUuids.delete(entry.item_uuid);

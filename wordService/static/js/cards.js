@@ -1,5 +1,5 @@
 import { ensureCardAudio, playClip, playScopeFromEntry, previewPlaybackVisual, setScopePlaybackWindow, updateScopePlaybackButton, wireAudioTarget, wireCardAudioPrepTarget } from "./audio.js";
-import { cardMeaningHTML, escapeHTML, exampleCategoryBadgeHTML, exampleTranslationHTML, rubyOrPlain, unitLabel } from "./format.js";
+import { cardMeaningHTML, escapeHTML, exampleCategoryBadgeHTML, exampleTranslationHTML, rubyOrPlain } from "./format.js";
 import { applyStudyFocusVisual, elements, focusStudyEntry, setBanner, state, showError, updateAudioExportButton } from "./state.js";
 import { setStudyMark } from "./studyState.js";
 
@@ -66,7 +66,6 @@ export function renderCards() {
     const fragment = elements.template.content.cloneNode(true);
     const card = fragment.querySelector(".card");
     card.dataset.id = String(entry.entry_id);
-    card.querySelector(".card-index").textContent = `${entry.book_code} #${String(entry.source_index).padStart(3, "0")} · ${unitLabel(entry.unit)}${entry.review_completed ? " · Reviewed" : ""}`;
     card.classList.toggle("reviewed", !!entry.review_completed);
     card.querySelector(".card-kanji").innerHTML = rubyOrPlain(entry.kanji, entry.reading);
     card.querySelector(".card-meaning").innerHTML = cardMeaningHTML(entry);

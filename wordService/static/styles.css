@@ -268,7 +268,6 @@ main { max-width: 1420px; margin: 0 auto; padding: 1rem 1rem 8.6rem; }
 .card.flagged { border-left-color: var(--flag); background: color-mix(in srgb, var(--flag-bg) 35%, #fff); }
 .card.known.flagged { border-left-color: var(--flag); }
 .card.reviewed { border-left-color: #2e765e; }
-.card.reviewed .card-index { color: #2e765e; }
 .card.study-focus:not(.scope-playing) {
   border-color: color-mix(in srgb, var(--accent) 48%, var(--line));
   border-left-color: var(--accent);
@@ -355,15 +354,6 @@ main { max-width: 1420px; margin: 0 auto; padding: 1rem 1rem 8.6rem; }
   min-width: 0;
 }
 .card-actions { display: flex; gap: 3px; margin-left: auto; }
-.card-index {
-  margin-left: auto;
-  color: var(--muted2);
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  align-self: center;
-  white-space: nowrap;
-}
 .icon-btn {
   min-width: 25px;
   height: 25px;
@@ -378,24 +368,17 @@ main { max-width: 1420px; margin: 0 auto; padding: 1rem 1rem 8.6rem; }
   color: var(--muted2);
   transition: all 0.12s;
 }
-.icon-btn .card-action-text { display: inline; }
 .icon-btn kbd { display: none; }
 .card-word-row .icon-btn.flagged,
 .card-word-row .icon-btn.known {
-  width: auto;
-  gap: 4px;
-  padding: 0 8px;
+  width: 25px;
+  padding: 0;
   color: var(--ink);
   background: #fff;
 }
 .icon-btn:hover { color: var(--ink); border-color: var(--muted2); }
 .card .icon-btn.known.on { background: var(--known); border-color: var(--known); color: #fff; }
 .card .icon-btn.flagged.on { background: var(--flag); border-color: var(--flag); color: #fff; }
-.card .icon-btn.on kbd {
-  border-color: rgba(255, 255, 255, 0.58);
-  background: rgba(255, 255, 255, 0.14);
-  color: #fff;
-}
 .card-kanji {
   font-family: "Iowan Old Style", "Hiragino Mincho ProN", "Yu Mincho", serif;
   flex: 0 0 auto;
@@ -742,7 +725,7 @@ main { max-width: 1420px; margin: 0 auto; padding: 1rem 1rem 8.6rem; }
 }
 .settings-reset:hover { border-color: var(--accent); color: var(--accent); }
 .modal-actions { display: flex; gap: 8px; flex-wrap: wrap; padding-top: 4px; }
-.modal-actions .icon-btn { width: auto; height: 32px; gap: 6px; font-size: 0.85rem; }
+.modal-actions .icon-btn { width: 32px; height: 32px; padding: 0; font-size: 0.95rem; }
 .modal-meaning { font-size: 0.95rem; }
 .modal-meaning .en { font-weight: 600; }
 .modal-meaning .zh { color: var(--muted); margin-top: 2px; }

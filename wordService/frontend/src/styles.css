@@ -278,7 +278,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .react-list { min-width: 0; min-height: 0; overflow: auto; padding: 4px 18px 10px 0; scrollbar-width: thin; }
 .react-list button {
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 6px;
   width: 100%;
   align-items: center;
@@ -297,7 +297,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
   color: var(--ink);
   box-shadow: inset 3px 0 0 var(--indigo);
 }
-.react-row-index { color: var(--faint); font: 0.66rem/1.2 var(--mono); letter-spacing: 0.02em; }
 .react-row-kanji {
   min-width: 0;
   overflow: hidden;
@@ -307,9 +306,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.react-list button.is-active .react-row-index { color: var(--indigo); }
 .react-list button.is-active .react-row-kanji { color: var(--indigo-deep); font-size: 1.22rem; }
-.react-row-status { min-height: 1em; font: 0.68rem/1.2 var(--sans); font-weight: 600; white-space: nowrap; }
+.react-row-status { display: inline-grid; min-width: 1.25rem; min-height: 1em; place-items: center; font: 0.9rem/1 var(--sans); font-weight: 600; white-space: nowrap; }
 .react-list button.status-known .react-row-status { color: var(--hanko); }
 .react-list button.status-flagged .react-row-status { color: var(--flag); }
 .react-list button.is-reviewed .react-row-status { color: var(--sage); }
@@ -427,6 +425,15 @@ button, a { -webkit-tap-highlight-color: transparent; }
   color: #fff;
 }
 .react-current-actions button:disabled { cursor: not-allowed; opacity: 0.4; }
+.react-current-actions button.mark-known,
+.react-current-actions button.mark-flagged {
+  width: 29px;
+  height: 29px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  font-size: 0.9rem;
+}
 
 .react-review-completed { color: var(--sage); margin: 12px 0 0; font: 0.82rem/1.4 var(--sans); }
 
