@@ -53,7 +53,7 @@ export function StudyHeader({
   return (
     <header className="react-header">
       <div className="react-brand">
-        <span className="eyebrow"><span className="brand-seal" aria-hidden="true">印</span>JLPT N2 · VOCABULARY</span>
+        <span className="eyebrow"><span className="brand-seal" aria-hidden="true">印</span><span className="brand-caption">JLPT N2 · VOCABULARY</span></span>
         <h1>{currentBook?.title || "スタディウォール"}</h1>
       </div>
       <div className="react-pickers">
