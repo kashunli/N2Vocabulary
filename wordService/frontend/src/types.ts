@@ -93,4 +93,6 @@ export interface AudioTarget {
   entry: Entry;
   phase: "word" | "sentence";
   url: string;
+  /** Distinguishes repeated recipe occurrences that use the same audio URL. */
+  sequenceOccurrenceId?: string;
 }
