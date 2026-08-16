@@ -63,7 +63,7 @@ function sequenceCuesFor(
 }
 
 function firstCueIndexForPhase(cues: MaterializedAudioSequenceStep[], phase: PlaybackPhase) {
-  return cues.findIndex((cue) => cue.phase === phase);
+  return cues.findIndex((cue) => cue?.phase === phase);
 }
 
 export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCard, onConsecutiveSequenceComplete}: UseStudyPlaybackOptions) {
@@ -89,7 +89,7 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
   const endTimerRef = useRef<number | null>(null);
   const endGenerationRef = useRef(0);
   const pendingSilenceRef = useRef<PendingSilence | null>(null);
-  const completedPhasesRef = useRef<{itemUuid?: string; word: boolean; sentence: boolean}>({word: false, sentence: false});
+  const completedPhasesRef = useRef<{itemUuid?: string; word: boolean; sentence: boolean; cardCompleted: boolean}>({word: false, sentence: false, cardCompleted: false});
   const autoAdvanceRef = useRef(autoAdvance);
   const activeEntry = entries[activeIndex];
   const activeCues = useMemo(
@@ -98,7 +98,8 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
   );
   const safeCueIndex = activeCues.length ? Math.min(activeCueIndex, activeCues.length - 1) : 0;
   const sequenceCue = activeCues[safeCueIndex];
-  const selectedManualPhase = manualSelection?.entryUuid === activeEntry?.item_uuid
+  const selectedManualPhase = manualSelection?.entryUuid && activeEntry?.item_uuid
+    && manualSelection.entryUuid === activeEntry.item_uuid
     ? manualSelection.phase
     : null;
   const activePhase = selectedManualPhase || sequenceCue?.phase || (playbackMode === "sentences" ? "sentence" : "word");
@@ -120,7 +121,7 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
 
   useEffect(() => {
     if (completedPhasesRef.current.itemUuid === activeEntry?.item_uuid) return;
-    completedPhasesRef.current = {itemUuid: activeEntry?.item_uuid, word: false, sentence: false};
+    completedPhasesRef.current = {itemUuid: activeEntry?.item_uuid, word: false, sentence: false, cardCompleted: false};
   }, [activeEntry?.item_uuid]);
 
   useEffect(() => {
@@ -328,10 +329,11 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
     if (activeEntry) {
       const progress = completedPhasesRef.current.itemUuid === activeEntry.item_uuid
         ? completedPhasesRef.current
-        : {itemUuid: activeEntry.item_uuid, word: false, sentence: false};
+        : {itemUuid: activeEntry.item_uuid, word: false, sentence: false, cardCompleted: false};
       progress[activePhase] = true;
       completedPhasesRef.current = progress;
-      if (progress.word && (progress.sentence || !activeEntry.sentence_audio_url)) {
+      if (!progress.cardCompleted && progress.word && (progress.sentence || !activeEntry.sentence_audio_url)) {
+        progress.cardCompleted = true;
         onCompleteCard?.(activeEntry);
       }
     }
