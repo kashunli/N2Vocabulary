@@ -39,12 +39,14 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
     activeEntry: playbackEntry,
     activeIndex: playbackIndex,
     activePhase,
+    addSequenceStep,
     autoAdvance,
     canNext,
     canPrevious,
     changePlaybackMode,
-    changePostSentenceSilence,
-    changePostWordSilence,
+    changeSequenceStep,
+    moveSequenceStep,
+    removeSequenceStep,
     handlePlaybackEnd,
     handlePlayingChange,
     isSilencePlaying,
@@ -52,8 +54,6 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
     pauseRequest,
     playbackActive,
     playbackMode,
-    postSentenceSilence,
-    postWordSilence,
     playbackRunMode,
     playRequest,
     replayFocused,
@@ -62,6 +62,7 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
     resetPosition,
     selectEntry: selectPlaybackEntry,
     selectPhase,
+    sequence,
     stopPlayback,
     stopRequest,
     target,
@@ -235,11 +236,14 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
 
       {settingsOpen ? <PlaybackSettingsModal
         playbackMode={playbackMode}
-        postSentenceSilence={postSentenceSilence}
-        postWordSilence={postWordSilence}
+        playbackRunMode={playbackRunMode}
+        sequence={sequence}
         onChangePlaybackMode={changePlaybackMode}
-        onChangePostSentenceSilence={changePostSentenceSilence}
-        onChangePostWordSilence={changePostWordSilence}
+        onChangeSequenceStep={changeSequenceStep}
+        onAddSequenceStep={addSequenceStep}
+        onMoveSequenceStep={moveSequenceStep}
+        onRemoveSequenceStep={removeSequenceStep}
+        onTogglePlaybackRunMode={togglePlaybackRunMode}
         onClose={() => setSettingsOpen(false)}
         onReset={resetPlaybackSettings}
       /> : null}

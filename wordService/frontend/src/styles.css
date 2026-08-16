@@ -586,7 +586,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   padding: 20px;
 }
 .react-settings-modal {
-  width: min(560px, 100%);
+  width: min(820px, 100%);
   max-height: calc(100vh - 40px);
   display: flex;
   flex-direction: column;
@@ -636,6 +636,71 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .react-settings-body > input[type="range"] { width: 100%; accent-color: var(--indigo); }
 .react-setting-scale { display: flex; justify-content: space-between; color: var(--faint); font-size: 0.72rem; }
 .react-settings-reset { justify-self: start; }
+
+.react-sequence-intro {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--muted);
+}
+.react-sequence-intro p { margin: 0; font-size: 0.88rem; line-height: 1.5; }
+.react-sequence-intro > span { flex: 0 0 auto; color: var(--faint); font: 0.78rem/1 var(--mono); }
+.react-sequence-list { display: grid; gap: 10px; }
+.react-sequence-row {
+  display: grid;
+  grid-template-columns: 34px minmax(180px, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card-lift);
+  padding: 12px;
+}
+.react-sequence-number {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: var(--indigo-soft);
+  color: var(--indigo-deep);
+  font: 650 0.82rem/1 var(--mono);
+}
+.react-sequence-main { min-width: 0; display: grid; gap: 5px; }
+.react-sequence-main label, .react-sequence-field > span:first-child { color: var(--muted); font: 650 0.68rem/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; }
+.react-sequence-main select {
+  width: min(100%, 250px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  color: var(--ink);
+  padding: 8px 10px;
+  font: 0.9rem/1.2 var(--sans);
+}
+.react-sequence-main small { color: var(--faint); font-size: 0.72rem; }
+.react-sequence-controls { display: flex; align-items: end; justify-content: end; gap: 8px; flex-wrap: wrap; }
+.react-sequence-order { display: flex; gap: 4px; align-self: center; }
+.react-sequence-order button, .react-sequence-remove, .react-sequence-add button, .react-sequence-run-mode {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  color: var(--muted);
+  cursor: pointer;
+  font: 0.78rem/1.2 var(--sans);
+}
+.react-sequence-order button { width: 30px; height: 30px; padding: 0; font-size: 1rem; }
+.react-sequence-order button:hover:not(:disabled), .react-sequence-remove:hover:not(:disabled), .react-sequence-add button:hover:not(:disabled), .react-sequence-run-mode:hover { border-color: var(--indigo); color: var(--indigo-deep); }
+.react-sequence-order button:disabled, .react-sequence-remove:disabled, .react-sequence-add button:disabled { cursor: not-allowed; opacity: 0.4; }
+.react-sequence-field { display: grid; gap: 5px; }
+.react-sequence-field input { width: 68px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--card); color: var(--ink); padding: 8px 9px; font: 650 0.88rem/1 var(--mono); }
+.react-sequence-input-with-unit { display: flex; align-items: center; gap: 5px; color: var(--muted); }
+.react-sequence-input-with-unit input { width: 76px; }
+.react-sequence-remove, .react-sequence-add button, .react-sequence-run-mode { padding: 8px 10px; }
+.react-sequence-add { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; color: var(--muted); font-size: 0.82rem; }
+.react-sequence-add > span { margin-right: 2px; color: var(--ink); font-weight: 650; }
+.react-sequence-run-mode { justify-self: start; color: var(--indigo-deep); }
+.react-sequence-run-mode[aria-pressed="true"] { border-color: var(--indigo); background: var(--indigo-soft); }
 
 /* ---------- Account ---------- */
 
@@ -712,4 +777,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .react-player-controls { flex-wrap: wrap; }
   .react-player-status { flex-basis: 100%; margin-left: 0; }
   .react-setting-options { grid-template-columns: 1fr; }
+  .react-sequence-intro { align-items: start; flex-direction: column; gap: 6px; }
+  .react-sequence-row { grid-template-columns: 30px minmax(0, 1fr); gap: 10px; }
+  .react-sequence-controls { grid-column: 1 / -1; justify-content: start; }
+  .react-sequence-main select { width: 100%; }
 }
