@@ -72,6 +72,13 @@ button, a { -webkit-tap-highlight-color: transparent; }
   padding: 22px clamp(16px, 3.5vw, 60px) 0;
 }
 
+/* Mobile Chrome's layout viewport can include the browser controls. The
+   dynamic viewport keeps the shell, including the transport row, inside the
+   currently visible page area; 100vh remains the fallback for older browsers. */
+@supports (height: 100dvh) {
+  .react-shell { height: 100dvh; }
+}
+
 .react-header,
 .react-status,
 .react-content-scroll,
