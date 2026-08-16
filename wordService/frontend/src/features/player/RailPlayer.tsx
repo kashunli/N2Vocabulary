@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ArrowCounterClockwise, Pause, Play, Repeat, RepeatOnce, SkipBack, SkipForward } from "@phosphor-icons/react";
 
 import { useAudioBufferPlayer } from "./useAudioBufferPlayer";
 import { LineWaveform } from "./LineWaveform";
@@ -20,7 +21,6 @@ interface RailPlayerProps {
   playRequest: number;
   replayRequest: number;
   pauseRequest: number;
-  stopRequest: number;
   onEnded: () => void;
   onPlayingChange: (playing: boolean) => void;
   onTogglePlayback: () => void;
@@ -28,7 +28,6 @@ interface RailPlayerProps {
   onReplay: () => void;
   onPrevious: () => void;
   onNext: () => void;
-  onStop: () => void;
   canPrevious: boolean;
   canNext: boolean;
 }
@@ -42,7 +41,6 @@ export function RailPlayer({
   playRequest,
   replayRequest,
   pauseRequest,
-  stopRequest,
   onEnded,
   onPlayingChange,
   onTogglePlayback,
@@ -50,7 +48,6 @@ export function RailPlayer({
   onReplay,
   onPrevious,
   onNext,
-  onStop,
   canPrevious,
   canNext,
 }: RailPlayerProps) {
@@ -62,7 +59,6 @@ export function RailPlayer({
   const lastPlayRequest = useRef(playRequest);
   const lastReplayRequest = useRef(replayRequest);
   const lastPauseRequest = useRef(pauseRequest);
-  const lastStopRequest = useRef(stopRequest);
   const lastTargetKey = useRef<string | undefined>(undefined);
   const pendingTargetPlay = useRef(false);
   currentTimeRef.current = player.currentTime;
@@ -147,13 +143,6 @@ export function RailPlayer({
     player.pause();
   }, [pauseRequest, player.pause]);
 
-  useEffect(() => {
-    if (stopRequest === lastStopRequest.current) return;
-    lastStopRequest.current = stopRequest;
-    player.pause();
-    player.setPosition(0);
-  }, [player.pause, player.setPosition, stopRequest]);
-
   const duration = player.audioBuffer?.duration || 0;
   const progressLabel = `${formatTime(player.currentTime)} / ${formatTime(duration)}`;
   const silenceGaps = useMemo(() => {
@@ -185,13 +174,12 @@ export function RailPlayer({
       />
       <div className="react-player-controls">
         <span className="audio-time" aria-label="Playback time">{progressLabel}</span>
-        <button type="button" onClick={onPrevious} disabled={!canPrevious} aria-label="Play previous word or sentence">Previous</button>
-        <button type="button" onClick={onReplay} disabled={!player.audioBuffer} aria-label="Replay focused word or sentence">Replay</button>
-        <button type="button" className="react-player-primary" onClick={onTogglePlayback} disabled={!player.audioBuffer} aria-keyshortcuts="Space">
-          {isPlaybackActive ? "Pause" : "Play"}
+        <button type="button" onClick={onPrevious} disabled={!canPrevious} aria-label="Play previous word or sentence" title="Previous (A / ←)"><SkipBack size={18} weight="fill" /></button>
+        <button type="button" onClick={onReplay} disabled={!player.audioBuffer} aria-label="Replay focused word or sentence" title="Replay (R)"><ArrowCounterClockwise size={18} weight="bold" /></button>
+        <button type="button" className="react-player-primary" onClick={onTogglePlayback} disabled={!player.audioBuffer} aria-keyshortcuts="Space" aria-label={isPlaybackActive ? "Pause" : "Play"} title={`${isPlaybackActive ? "Pause" : "Play"} (Space)`}>
+          {isPlaybackActive ? <Pause size={22} weight="fill" /> : <Play size={22} weight="fill" />}
         </button>
-        <button type="button" onClick={onNext} disabled={!canNext} aria-label="Play next word or sentence">Next</button>
-        <button type="button" onClick={onStop} disabled={!player.audioBuffer} aria-keyshortcuts="Escape">Stop</button>
+        <button type="button" onClick={onNext} disabled={!canNext} aria-label="Play next word or sentence" title="Next (D / →)"><SkipForward size={18} weight="fill" /></button>
         <button
           type="button"
           className={playbackRunMode === "consecutive" ? "is-selected" : ""}
@@ -200,9 +188,9 @@ export function RailPlayer({
           aria-label={playbackRunMode === "single" ? "Switch to consecutive playback" : "Switch to single clip playback"}
           title={playbackRunMode === "single" ? "Switch to consecutive playback" : "Switch to single clip playback"}
         >
-          {playbackRunMode === "single" ? "Single" : "Consecutive"}
+          {playbackRunMode === "consecutive" ? <Repeat size={16} weight="bold" /> : <RepeatOnce size={16} weight="bold" />}
+          <span className="run-mode-label">{playbackRunMode === "single" ? "Single" : "Consec"}</span>
         </button>
-        <span className="react-player-shortcuts" aria-label="Keyboard shortcuts">A previous · D next</span>
         <span className="react-player-status">{error || (isSilencePlaying ? `Playing silence after ${target?.phase || "audio"}` : isPlaybackActive ? "Playing focused audio" : `${playbackRunMode === "single" ? "Single clip" : "Play through list"} · Click the wave to seek · Space to play`)}</span>
       </div>
     </section>

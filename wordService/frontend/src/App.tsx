@@ -22,7 +22,6 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
   const [selectedBook, setSelectedBook] = useState(() => initialView.selectedBook || readStudyFocus()?.bookCode || "N2");
   const [selectedUnit, setSelectedUnit] = useState<number | null>(() => initialView.selectedUnit ?? null);
   const [filterState, setFilterState] = useState<FilterState>(() => initialView.filterState || "all");
-  const [search, setSearch] = useState(() => initialView.search || "");
   const [entries, setEntries] = useState<Entry[]>([]);
   const [entriesLoading, setEntriesLoading] = useState(false);
   const [blurred, setBlurred] = useState(false);
@@ -33,7 +32,7 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
   useEffect(() => {
     if (filterState !== "review") setReviewSession(undefined);
     reviewCompletionInFlight.current.clear();
-  }, [filterState, search, selectedBook, selectedUnit]);
+  }, [filterState, selectedBook, selectedUnit]);
 
   const {
     activeEntry: playbackEntry,
@@ -63,8 +62,6 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
     selectEntry: selectPlaybackEntry,
     selectPhase,
     sequence,
-    stopPlayback,
-    stopRequest,
     target,
     togglePlaybackRunMode,
     togglePlayback,
@@ -123,9 +120,8 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
       selectedBook,
       selectedUnit,
       filterState,
-      search,
     });
-  }, [filterState, search, selectedBook, selectedUnit]);
+  }, [filterState, selectedBook, selectedUnit]);
 
   useEffect(() => {
     if (selectedUnit !== null && units.length && !units.some((unit) => unit.number === selectedUnit)) {
@@ -135,16 +131,12 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
   const currentBook = books.find((book) => book.code === selectedBook);
 
   const {
-    exportFlaggedAudio,
     toggleMark,
   } = useStudyActions({
     activeEntry,
-    selectedBook,
-    selectedUnit,
     setDetail,
     setEntries,
     setStatus,
-    units,
     studyStore: store,
   });
 
@@ -152,7 +144,6 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
     filterState,
     playbackMode,
     resetPosition,
-    search,
     selectedBook,
     selectedUnit,
     setEntries,
@@ -179,16 +170,13 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
         blurred={blurred}
         books={books}
         currentBook={currentBook}
-        exportFlaggedAudio={() => void exportFlaggedAudio()}
         filterState={filterState}
-        search={search}
         selectedBook={selectedBook}
         selectedUnit={selectedUnit}
         summary={summary}
         reviewSessionCount={filterState === "review" ? Object.keys(reviewSession?.expectedDueAtByItemUuid || {}).length : undefined}
         units={units}
         onOpenSettings={() => setSettingsOpen(true)}
-        onSearch={setSearch}
         onSelectBook={(book) => { setSelectedBook(book); setSelectedUnit(null); setReviewSession(undefined); }}
         onSelectFilter={(filter) => { setFilterState(filter); if (filter !== "review") setReviewSession(undefined); }}
         onSelectUnit={(unit) => { setSelectedUnit(unit); setReviewSession(undefined); }}
@@ -222,14 +210,12 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
         playRequest={playRequest}
         replayRequest={replayRequest}
         pauseRequest={pauseRequest}
-        stopRequest={stopRequest}
         onEnded={handlePlaybackEnd}
         onTogglePlayback={togglePlayback}
         onTogglePlaybackRunMode={togglePlaybackRunMode}
         onReplay={replayFocused}
         onPrevious={() => movePlaybackClip(-1)}
         onNext={() => movePlaybackClip(1)}
-        onStop={stopPlayback}
         canPrevious={canPrevious}
         canNext={canNext}
       />

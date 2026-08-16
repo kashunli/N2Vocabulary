@@ -83,7 +83,6 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
   const [playRequest, setPlayRequest] = useState(0);
   const [replayRequest, setReplayRequest] = useState(0);
   const [pauseRequest, setPauseRequest] = useState(0);
-  const [stopRequest, setStopRequest] = useState(0);
   const [isSilencePlaying, setIsSilencePlaying] = useState(false);
   const [isSilencePaused, setIsSilencePaused] = useState(false);
   const endTimerRef = useRef<number | null>(null);
@@ -400,13 +399,6 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
     setReplayRequest((value) => value + 1);
   }, [cancelEndTimer]);
 
-  const stopPlayback = useCallback(() => {
-    cancelEndTimer();
-    autoAdvanceRef.current = false;
-    setAutoAdvance(false);
-    setStopRequest((value) => value + 1);
-  }, [cancelEndTimer]);
-
   const persistSettings = useCallback((nextSequence: AudioSequenceConfig = sequence) => {
     savePlaybackSettings(postWordSilence, postSentenceSilence, playbackMode, playbackRunMode, nextSequence);
   }, [playbackMode, playbackRunMode, postSentenceSilence, postWordSilence, sequence]);
@@ -537,8 +529,6 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
     selectPhase,
     sequence,
     addSequenceStep,
-    stopPlayback,
-    stopRequest,
     target,
     togglePlaybackRunMode,
     togglePlayback,

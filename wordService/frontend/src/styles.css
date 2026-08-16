@@ -73,7 +73,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
 }
 
 .react-header,
-.react-toolbar,
 .react-status,
 .react-content-scroll,
 .react-player {
@@ -86,13 +85,16 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 .react-header {
   flex: 0 0 auto;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(330px, 500px);
-  align-items: end;
-  gap: 28px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
   border-bottom: 1px solid var(--line);
-  padding: 0 0 16px;
+  /* Reserve room for the fixed account corner (top-right) */
+  padding: 0 clamp(130px, 18vw, 260px) 14px 0;
 }
+
+.react-header .react-brand { margin-right: auto; }
 
 .eyebrow {
   color: var(--indigo);
@@ -125,7 +127,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   letter-spacing: 0.01em;
 }
 
-.react-pickers { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+.react-pickers { flex: 0 1 430px; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
 .react-pickers label {
   display: grid;
   gap: 6px;
@@ -155,68 +157,51 @@ button, a { -webkit-tap-highlight-color: transparent; }
   box-shadow: 0 0 0 3px var(--indigo-soft);
 }
 
-/* ---------- Toolbar ---------- */
+/* ---------- Filter select + header actions ---------- */
 
-.react-toolbar {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 7px;
-  overflow: visible;
-  border-bottom: 1px solid var(--line);
-  padding: 10px 0;
-  scrollbar-width: thin;
-}
-.react-toolbar-search { flex: 0 0 240px; }
-.react-toolbar-search input {
-  width: 100%;
+.react-filter-select {
+  flex: 0 1 210px;
+  min-width: 0;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--card);
   color: var(--ink);
-  padding: 7px 9px;
-  font: 0.76rem/1.2 var(--sans);
+  padding: 9px 10px;
+  font: 0.82rem/1.2 var(--sans);
   box-shadow: inset 0 1px 2px rgba(32, 38, 43, 0.03);
+  cursor: pointer;
   transition: border-color 120ms ease, box-shadow 120ms ease;
 }
-.react-toolbar-search input:focus {
+.react-filter-select:hover { border-color: var(--indigo-faint); }
+.react-filter-select:focus {
   border-color: var(--indigo);
   outline: none;
   box-shadow: 0 0 0 3px var(--indigo-soft);
 }
-.react-pill-group, .react-toolbar-actions { display: flex; flex: 0 0 auto; align-items: center; flex-wrap: wrap; gap: 5px; }
-.react-pill, .react-toolbar-actions button, .react-toolbar-actions a {
+
+.react-header-actions { display: flex; flex: 0 0 auto; align-items: center; gap: 6px; }
+.react-header-actions button {
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--card);
   color: var(--muted);
   cursor: pointer;
-  padding: 5px 8px;
+  padding: 7px 11px;
   font: 0.68rem/1.2 var(--sans);
   font-weight: 600;
-  text-decoration: none;
   white-space: nowrap;
   transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
 }
-.react-pill { display: inline-flex; align-items: center; gap: 6px; }
-.react-pill small { color: var(--faint); font-size: 0.68rem; font-family: var(--mono); font-weight: 400; }
-.react-pill:hover, .react-pill:focus-visible,
-.react-toolbar-actions button:hover, .react-toolbar-actions button:focus-visible,
-.react-toolbar-actions a:hover, .react-toolbar-actions a:focus-visible {
+.react-header-actions button:hover, .react-header-actions button:focus-visible {
   border-color: var(--indigo-faint);
   color: var(--ink);
 }
-.react-pill.is-selected, .react-toolbar-actions button.is-selected {
+.react-header-actions button.is-selected {
   border-color: var(--indigo);
   background: var(--indigo);
   color: #fff;
 }
-.react-pill.is-selected small { color: rgba(255, 255, 255, 0.7); }
-.react-pill-known.is-selected { border-color: var(--hanko); background: var(--hanko); color: #fff; }
-.react-pill-flagged.is-selected { border-color: var(--flag); background: var(--flag); color: #fff; }
-.react-toolbar-actions button:disabled { cursor: not-allowed; opacity: 0.45; }
-.react-toolbar-actions .react-settings-button { min-width: 34px; padding-inline: 7px; font-size: 1rem; line-height: 1; }
+.react-header-actions .react-settings-button { min-width: 34px; padding-inline: 7px; font-size: 1rem; line-height: 1; }
 /* ---------- Transient status toast ---------- */
 
 .react-status {
@@ -502,7 +487,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
   background: color-mix(in srgb, var(--paper) 88%, var(--card));
   padding: 14px 0 18px;
 }
-.react-player-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; font-family: var(--sans); }
 .audio-time { color: var(--muted); font: 0.78rem/1.2 var(--mono); white-space: nowrap; }
 
 .line-waveform {
@@ -533,12 +517,18 @@ button, a { -webkit-tap-highlight-color: transparent; }
 }
 .react-player-controls .audio-time { flex: 0 0 auto; }
 .react-player-controls button {
+  min-width: 0;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--card);
   color: var(--muted);
   cursor: pointer;
-  padding: 7px 12px;
+  padding: 7px 11px;
   white-space: nowrap;
   transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
 }
@@ -553,6 +543,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
   color: var(--indigo-deep);
 }
 .react-player-controls .react-player-primary {
+  min-height: 46px;
+  padding: 8px 20px;
+  border-radius: 999px;
   border-color: var(--indigo);
   background: var(--indigo);
   color: #fff;
@@ -563,7 +556,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   background: var(--indigo-deep);
   color: #fff;
 }
-.react-player-shortcuts { flex: 0 0 auto; color: var(--indigo); font: 0.68rem/1.2 var(--mono); white-space: nowrap; }
+.react-player-controls .run-mode-label { flex: 0 0 auto; margin-left: 0; color: inherit; font-size: 0.68rem; white-space: nowrap; }
 .react-player-status {
   min-width: 0;
   margin-left: 8px;
@@ -757,13 +750,17 @@ button, a { -webkit-tap-highlight-color: transparent; }
 /* ---------- Responsive ---------- */
 
 @media (max-width: 900px) {
-  .react-header { grid-template-columns: 1fr; gap: 14px; }
-  .react-pickers { max-width: 620px; justify-self: end; }
+  .react-header { gap: 10px; }
 }
 
 @media (max-width: 700px) {
   .react-shell { padding-inline: 12px; }
-  .react-pickers { grid-template-columns: 1fr; }
+  .react-header { gap: 8px; padding-bottom: 12px; }
+  .react-brand h1 { display: none; }
+  .react-pickers { flex: 1 1 250px; }
+  .react-filter-select { flex: 0 1 150px; }
+  .account-corner { top: 8px; right: 8px; padding: 5px 7px; font-size: 0.7rem; }
+  .account-corner > span { display: none; }
   .react-content-scroll { overflow: auto; }
   .react-layout { grid-template-columns: 1fr !important; grid-template-rows: auto auto; height: auto; min-height: 0; }
   .react-list { min-height: 35vh; max-height: 42vh; padding-right: 0; }
@@ -771,10 +768,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .react-current { min-height: 480px; padding: 20px 4px 40px; }
   .react-word-summary { align-items: flex-start; padding: 14px; }
   .react-word-summary h2 { font-size: clamp(2.2rem, 11vw, 3.5rem); }
-  .react-toolbar { align-items: stretch; flex-wrap: wrap; overflow: visible; }
-  .react-toolbar-search { flex-basis: 100%; }
-  .react-toolbar-actions { max-width: 100%; overflow-x: auto; padding-bottom: 2px; }
-  .react-player-controls { flex-wrap: wrap; }
+  .react-player-controls { flex-wrap: wrap; gap: 6px; }
+  .react-player-controls button { min-height: 44px; }
   .react-player-status { flex-basis: 100%; margin-left: 0; }
   .react-setting-options { grid-template-columns: 1fr; }
   .react-sequence-intro { align-items: start; flex-direction: column; gap: 6px; }

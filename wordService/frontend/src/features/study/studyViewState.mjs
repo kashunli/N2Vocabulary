@@ -11,7 +11,6 @@ const FILTER_STATES = new Set(["all", "review", "known", "flagged", "unmarked"])
  * @property {string} [selectedBook]
  * @property {number | null} [selectedUnit]
  * @property {FilterState} [filterState]
- * @property {string} [search]
  */
 /**
  * @typedef {Object} StorageLike
@@ -41,7 +40,6 @@ export function normalizeStudyViewState(value) {
     }
   }
   if (FILTER_STATES.has(raw.filterState)) normalized.filterState = raw.filterState;
-  if (typeof raw.search === "string") normalized.search = raw.search;
   return normalized;
 }
 

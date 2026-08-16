@@ -11,7 +11,6 @@ interface UseStudyEntriesOptions {
   filterState: FilterState;
   playbackMode: PlaybackMode;
   resetPosition: (entries: Entry[]) => void;
-  search: string;
   selectedBook: string;
   selectedUnit: number | null;
   setEntries: Dispatch<SetStateAction<Entry[]>>;
@@ -26,7 +25,6 @@ export function useStudyEntries({
   filterState,
   playbackMode,
   resetPosition,
-  search,
   selectedBook,
   selectedUnit,
   setEntries,
@@ -40,14 +38,14 @@ export function useStudyEntries({
 
   useEffect(() => {
     let cancelled = false;
-    const scopeKey = JSON.stringify([search, selectedBook, selectedUnit]);
+    const scopeKey = JSON.stringify([selectedBook, selectedUnit]);
     const queryKey = JSON.stringify([filterState, scopeKey]);
     const preserveLoadedPlaylist = loadedQueryRef.current === queryKey;
     // Playing a card updates studySnapshot so its progress can be saved. Keep
     // the current rows mounted during that background refresh; replacing them
     // with the loading message empties the scroll pane and resets it to row 1.
     if (loadedQueryRef.current !== queryKey) setEntriesLoading(true);
-    getEntries(selectedBook, selectedUnit ?? undefined, "all", search).then((payload) => {
+    getEntries(selectedBook, selectedUnit ?? undefined, "all").then((payload) => {
         if (cancelled) return;
         const loadedItems = payload.items
           .map(entry => {
@@ -91,5 +89,5 @@ export function useStudyEntries({
         if (!cancelled) setEntriesLoading(false);
       });
     return () => { cancelled = true; };
-  }, [filterState, playbackMode, resetPosition, reviewSession, search, selectedBook, selectedUnit, setEntries, setEntriesLoading, setReviewSession, setStatus, studySnapshot]);
+  }, [filterState, playbackMode, resetPosition, reviewSession, selectedBook, selectedUnit, setEntries, setEntriesLoading, setReviewSession, setStatus, studySnapshot]);
 }

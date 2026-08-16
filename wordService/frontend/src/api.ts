@@ -30,12 +30,10 @@ export function getEntries(
   book = "N2",
   unit?: number,
   state: "all" | "unmarked" | "known" | "flagged" = "all",
-  search = "",
 ) {
   const params = new URLSearchParams({ book });
   if (unit !== undefined) params.set("unit", String(unit));
   if (state !== "all") params.set("state", state);
-  if (search.trim()) params.set("search", search.trim());
   return getJson<{ items: Entry[] }>(`/api/entries?${params}`);
 }
 
@@ -87,15 +85,4 @@ export function updateMark(entryId: number, mark: Pick<Mark, "known" | "flagged"
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(mark),
   });
-}
-
-export function exportUnitFlaggedAudio(unitNumber: number, book = "N2") {
-  return getJson<{ audio_url: string; file_name?: string; unit: number; word_count: number }>(
-    `/api/units/${unitNumber}/flagged-audio?book=${encodeURIComponent(book)}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: "{}",
-    },
-  );
 }

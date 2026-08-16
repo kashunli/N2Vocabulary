@@ -27,14 +27,12 @@ test("React view selections round-trip through the shared wall state", () => {
     selectedBook: "n2",
     selectedUnit: 7,
     filterState: "known",
-    search: "覆う",
   }, storage);
 
   assert.deepEqual(readStudyViewState(storage), {
     selectedBook: "N2",
     selectedUnit: 7,
     filterState: "known",
-    search: "覆う",
   });
 });
 
@@ -65,7 +63,6 @@ test("invalid saved selections are ignored instead of poisoning the next view", 
     selectedBook: " ",
     selectedUnit: -3,
     filterState: "not-a-filter",
-    search: 12,
   }));
 
   assert.deepEqual(readStudyViewState(storage), {});

@@ -8,74 +8,68 @@ interface StudyHeaderProps {
   blurred: boolean;
   books: BookSummary[];
   currentBook?: BookSummary;
-  exportFlaggedAudio: () => void;
   filterState: FilterState;
   reviewSessionCount?: number;
-  search: string;
   selectedBook: string;
   selectedUnit: number | null;
   summary?: VocabularySummary;
   units: UnitSummary[];
   onOpenSettings: () => void;
-  onSearch: (value: string) => void;
   onSelectBook: (book: string) => void;
   onSelectFilter: (filter: FilterState) => void;
   onSelectUnit: (unit: number | null) => void;
   onToggleBlur: () => void;
 }
 
+function filterCount(summary?: VocabularySummary, reviewSessionCount?: number): (filter: FilterState) => number | undefined {
+  return (filter) => {
+    switch (filter) {
+      case "all": return summary?.entries;
+      case "review": return reviewSessionCount ?? summary?.review;
+      case "known": return summary?.known;
+      case "flagged": return summary?.flagged;
+      case "unmarked": return summary?.unmarked;
+    }
+  };
+}
+
 export function StudyHeader({
   blurred,
   books,
   currentBook,
-  exportFlaggedAudio,
   filterState,
   reviewSessionCount,
-  search,
   selectedBook,
   selectedUnit,
   summary,
   units,
   onOpenSettings,
-  onSearch,
   onSelectBook,
   onSelectFilter,
   onSelectUnit,
   onToggleBlur,
 }: StudyHeaderProps) {
+  const countFor = filterCount(summary, reviewSessionCount);
   return (
-    <>
-      <header className="react-header">
-        <div className="react-brand">
-          <span className="eyebrow"><span className="brand-seal" aria-hidden="true">印</span>JLPT N2 · VOCABULARY</span>
-          <h1>{currentBook?.title || "スタディウォール"}</h1>
-        </div>
-        <div className="react-pickers">
-          <label><span>Book</span><select value={selectedBook} onChange={(event) => onSelectBook(event.target.value)}><option value="">Choose book</option>{books.map((book) => <option key={book.code} value={book.code}>{book.code} · {book.title}</option>)}</select></label>
-          <label><span>Section</span><select value={selectedUnit ?? ""} onChange={(event) => onSelectUnit(event.target.value ? Number(event.target.value) : null)}><option value="">All sections</option>{units.map((item) => <option key={item.number} value={item.number}>{unitLabel(item)} · {item.entry_count} words</option>)}</select></label>
-        </div>
-      </header>
-
-      <section className="react-toolbar" aria-label="Study controls">
-        <div className="react-toolbar-search"><input type="search" value={search} onChange={(event) => onSearch(event.target.value)} placeholder="Search kanji, reading, meaning, sentence…" aria-label="Search vocabulary" /></div>
-        <div className="react-pill-group" role="group" aria-label="Study state filter">
-          {(["all", "review", "unmarked", "known", "flagged"] as FilterState[]).map((filter) => {
-            const count = filter === "all" ? summary?.entries
-              : filter === "review" ? reviewSessionCount ?? summary?.review
-              : filter === "known" ? summary?.known
-                : filter === "flagged" ? summary?.flagged
-                  : filter === "unmarked" ? summary?.unmarked
-                    : undefined;
-            return <button type="button" key={filter} className={`${filterState === filter ? "is-selected " : ""}react-pill react-pill-${filter}`} onClick={() => onSelectFilter(filter)}>{filter[0].toUpperCase() + filter.slice(1)}{count !== undefined ? <small>{count}</small> : null}</button>;
-          })}
-        </div>
-        <div className="react-toolbar-actions">
-          <button type="button" onClick={exportFlaggedAudio} disabled={selectedUnit === null}>Export flagged audio</button>
-          <a href="/classic">Classic study wall</a>
-          <button type="button" onClick={onToggleBlur} aria-pressed={blurred} title="B: blur / reveal the study content">B</button>
-          <button type="button" className="react-settings-button" onClick={onOpenSettings} aria-label="Open playback settings" title="Playback settings">⚙</button>
-        </div>
-      </section>
-    </>
+    <header className="react-header">
+      <div className="react-brand">
+        <span className="eyebrow"><span className="brand-seal" aria-hidden="true">印</span>JLPT N2 · VOCABULARY</span>
+        <h1>{currentBook?.title || "スタディウォール"}</h1>
+      </div>
+      <div className="react-pickers">
+        <label><span>Book</span><select value={selectedBook} onChange={(event) => onSelectBook(event.target.value)}><option value="">Choose book</option>{books.map((book) => <option key={book.code} value={book.code}>{book.code} · {book.title}</option>)}</select></label>
+        <label><span>Section</span><select value={selectedUnit ?? ""} onChange={(event) => onSelectUnit(event.target.value ? Number(event.target.value) : null)}><option value="">All sections</option>{units.map((item) => <option key={item.number} value={item.number}>{unitLabel(item)} · {item.entry_count} words</option>)}</select></label>
+      </div>
+      <select className="react-filter-select" value={filterState} onChange={(event) => onSelectFilter(event.target.value as FilterState)} aria-label="Filter items">
+        {(["all", "review", "unmarked", "known", "flagged"] as FilterState[]).map((filter) => {
+          const count = countFor(filter);
+          return <option key={filter} value={filter}>{filter[0].toUpperCase() + filter.slice(1)}{count !== undefined ? ` (${count})` : ""}</option>;
+        })}
+      </select>
+      <div className="react-header-actions">
+        <button type="button" className={blurred ? "is-selected" : ""} onClick={onToggleBlur} aria-pressed={blurred} title="B: blur / reveal the study content">B</button>
+        <button type="button" className="react-settings-button" onClick={onOpenSettings} aria-label="Open playback settings" title="Playback settings">⚙</button>
+      </div>
+    </header>
   );
 }
