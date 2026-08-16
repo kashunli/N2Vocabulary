@@ -311,14 +311,22 @@ transition advances the page by one smooth vertical step.
 
 The player’s `Single` / `Consecutive` button controls the transport run:
 
-- `Single` plays only the currently focused word or sentence clip, then stops.
-- `Consecutive` follows the selected content mode through the visible list;
-  with `Word + sentence`, that sequence is word, sentence, then the next
-  word.
+- `Single` plays only the currently focused recipe occurrence, then stops.
+- `Consecutive` follows every available occurrence in the listening sequence,
+  then moves to the next visible entry.
 
-This choice is saved in the browser together with the playback silence
-settings. The default remains `Consecutive` for compatibility with the
-original Study Wall behavior.
+Open the gear button to edit the local `Listening sequence` recipe. Each row
+has an audio element (`English word` or `English sentence`), a repeat count,
+and its own pause-after duration. Add the same element more than once when a
+learner wants a pattern such as word → sentence → sentence or word → sentence
+→ word. A repeat count of zero skips a row, and an unavailable clip is skipped
+automatically. The compatibility default remains one word followed by one
+sentence, each with a 500 ms pause.
+
+The recipe, content filter, transport mode, and pause values are saved in the
+browser’s local playback settings. Existing v1 settings are migrated the first
+time the React wall reads them; the runtime still uses only the browser’s
+local learner state and the server’s SQLite/media projection.
 
 - `Space`: start, pause immediately, or resume, even when a button has focus
 - `R`: immediately restart the current card from its word audio
