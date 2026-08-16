@@ -325,17 +325,13 @@ button, a { -webkit-tap-highlight-color: transparent; }
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 10px 16px;
-  margin-top: 14px;
-  padding: 16px 18px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background-color: var(--card);
-  background-image:
-    linear-gradient(to right, color-mix(in srgb, var(--indigo) 7%, transparent) 1px, transparent 1px),
-    linear-gradient(to bottom, color-mix(in srgb, var(--indigo) 7%, transparent) 1px, transparent 1px);
-  background-size: 52px 52px;
-  box-shadow: var(--shadow-lift);
+  gap: 8px 16px;
+  margin-top: 10px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .react-word-summary h2 {
@@ -424,25 +420,23 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 /* --- Sentence, explanation, source --- */
 
-.react-sentence { display: grid; gap: 6px; max-width: 760px; margin-top: 26px; }
+.react-sentence { display: grid; gap: 4px; max-width: 760px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
 .react-sentence-trigger { display: block; width: 100%; text-align: left; }
 .react-sentence-trigger strong {
   display: block;
   font-family: var(--mincho);
   font-weight: 500;
   font-size: 1.14rem;
-  line-height: 1.55;
+  line-height: 1.5;
   color: var(--ink);
-  padding: 14px 16px;
-  border: 1px solid var(--line);
-  border-left: 3px solid var(--indigo);
-  border-radius: var(--radius-md);
-  background: var(--card);
-  transition: background 120ms ease, border-color 120ms ease;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  transition: color 120ms ease;
 }
 .react-sentence-trigger:hover strong, .react-sentence-trigger:focus-visible strong {
-  background: var(--indigo-soft);
-  border-color: var(--indigo-faint);
+  color: var(--indigo-deep);
 }
 
 .react-sentence-explanation { max-width: 760px; margin-top: 22px; font: 0.88rem/1.6 var(--sans); }
@@ -774,8 +768,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .react-row-kanji { font-size: 1.05rem; }
   .react-divider { display: none; }
   .react-current { order: 1; flex: 1 1 auto; min-height: 0; padding: 18px 4px 28px; }
-  .react-word-summary { align-items: flex-start; padding: 14px; }
+  .react-word-summary { align-items: flex-start; padding: 0; }
   .react-word-summary h2 { font-size: clamp(2.2rem, 11vw, 3.5rem); }
+  .react-sentence { margin-top: 12px; padding-top: 12px; }
   .react-player-controls { flex-wrap: nowrap; gap: 6px; }
   .react-player-controls button { min-height: 44px; }
   .react-player-status { flex: 1 1 auto; min-width: 0; margin-left: 6px; }
