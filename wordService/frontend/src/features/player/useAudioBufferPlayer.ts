@@ -19,6 +19,39 @@ interface ActiveRange {
   segmentId: string;
 }
 
+// Decoded PCM buffers are far larger than the compressed MP3s (roughly
+// 0.7 MB/second stereo float32), so an unbounded cache would eat memory across
+// a long study session. An LRU capped at 40 clips (about a screen of cards,
+// word and sentence each) keeps the cache flat while covering repeated plays.
+const MAX_CACHED_AUDIO_BUFFERS = 40;
+const cachedAudioBuffers = new Map<string, AudioBuffer>();
+
+function loadDecodedAudio(
+  audioUrl: string,
+  controller: AbortController,
+  context: AudioContext,
+): Promise<AudioBuffer> {
+  const cached = cachedAudioBuffers.get(audioUrl);
+  if (cached) {
+    // Reinsert so Map iteration order keeps the cache LRU.
+    cachedAudioBuffers.delete(audioUrl);
+    cachedAudioBuffers.set(audioUrl, cached);
+    return Promise.resolve(cached);
+  }
+  return (async () => {
+    const response = await fetch(audioUrl, { signal: controller.signal });
+    if (!response.ok) throw new Error("audio request failed");
+    const encodedAudio = await response.arrayBuffer();
+    const decodedAudio = await context.decodeAudioData(encodedAudio);
+    if (cachedAudioBuffers.size >= MAX_CACHED_AUDIO_BUFFERS) {
+      const oldestKey = cachedAudioBuffers.keys().next().value;
+      if (oldestKey !== undefined) cachedAudioBuffers.delete(oldestKey);
+    }
+    cachedAudioBuffers.set(audioUrl, decodedAudio);
+    return decodedAudio;
+  })();
+}
+
 export function useAudioBufferPlayer(
   audioUrl: string | undefined,
   onRangeEnd: (segmentId: string) => void,
@@ -120,11 +153,7 @@ export function useAudioBufferPlayer(
     const controller = new AbortController();
     const context = new AudioContext();
     contextRef.current = context;
-    const decodePromise = (async () => {
-      const response = await fetch(audioUrl, { signal: controller.signal });
-      if (!response.ok) throw new Error("audio request failed");
-      const encodedAudio = await response.arrayBuffer();
-      const decodedAudio = await context.decodeAudioData(encodedAudio);
+    const decodePromise = loadDecodedAudio(audioUrl, controller, context).then((decodedAudio) => {
       if (controller.signal.aborted || requestedUrlRef.current !== audioUrl) {
         throw new DOMException("Audio load was superseded", "AbortError");
       }
@@ -133,7 +162,7 @@ export function useAudioBufferPlayer(
       setAudioBuffer(decodedAudio);
       setLoadedAudioUrl(audioUrl);
       return decodedAudio;
-    })();
+    });
     decodePromiseRef.current = decodePromise;
     void decodePromise.catch((reason) => {
       if (!(reason instanceof DOMException && reason.name === "AbortError")) {

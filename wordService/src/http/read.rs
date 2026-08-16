@@ -1,5 +1,7 @@
 use super::mutations::repository_for_params;
-use super::response::{parse_local_url, query_map, send_file, send_json, static_asset_path};
+use super::response::{
+    parse_local_url, query_map, send_audio, send_file, send_json, static_asset_path,
+};
 use crate::audio_review::AudioReviewStore;
 use crate::config::AppConfig;
 use crate::repository::WordRepository;
@@ -97,7 +99,7 @@ pub(super) fn handle_read(
                 &json!({"error": "audio not found"}),
             );
         };
-        return send_file(request, &file_path, "audio/mpeg");
+        return send_audio(request, &file_path);
     }
 
     let _ = method;

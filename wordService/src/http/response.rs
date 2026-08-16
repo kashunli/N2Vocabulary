@@ -92,12 +92,24 @@ pub(super) fn send_json_with_headers<T: Serialize>(
 }
 
 pub(super) fn send_file(request: Request, path: &Path, content_type: &str) -> Result<()> {
+    serve_file(request, path, content_type, "no-store")
+}
+
+/// Audio clips never change once written, so a long `max-age` lets the browser
+/// serve repeat plays straight from its disk cache. `immutable` is deliberately
+/// omitted: the flagged-unit export is regenerated in place at the same URL, and
+/// leaving it revalidatable lets a reload pick up the fresh file.
+pub(super) fn send_audio(request: Request, path: &Path) -> Result<()> {
+    serve_file(request, path, "audio/mpeg", "public, max-age=31536000")
+}
+
+fn serve_file(request: Request, path: &Path, content_type: &str, cache_control: &str) -> Result<()> {
     if !path.exists() || !path.is_file() {
         return send_json(request, StatusCode(404), &json!({"error": "not found"}));
     }
     let ctype = if content_type.is_empty() {
         // Let mime_guess handle static assets where the type is obvious from
-        // the extension. Audio routes pass an explicit content type above.
+        // the extension. send_audio passes an explicit content type above.
         mime_guess::from_path(path)
             .first_or_octet_stream()
             .essence_str()
@@ -106,7 +118,7 @@ pub(super) fn send_file(request: Request, path: &Path, content_type: &str) -> Re
         content_type.to_string()
     };
     let mut headers = vec![
-        header("Cache-Control", "no-store"),
+        header("Cache-Control", cache_control),
         header("Content-Type", &ctype),
     ];
     headers.extend(cors_headers());
