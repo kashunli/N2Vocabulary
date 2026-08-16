@@ -1,7 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { SentenceExplanation } from "../explanation/SentenceExplanation";
-import { SourceMetadata } from "../explanation/SourceMetadata";
 import type { PlaybackPhase } from "../player/playbackSettings";
 import type { Entry } from "../../types";
 import { markStatusOf } from "./markStatus";
@@ -140,7 +139,6 @@ export function StudyWallView({
               </button>
             </div> : null}
           {detail?.explanation_md ? <SentenceExplanation value={detail.explanation_md} /> : null}
-          {detail?.source_notes ? <SourceMetadata notes={detail.source_notes} /> : null}
         </> : <p className="react-empty">{emptyMessage}</p>}
       </section>
     </div>

@@ -28,8 +28,6 @@ export const elements = {
   modalTitle: document.getElementById("modal-title"),
   modalMeaning: document.getElementById("modal-meaning"),
   modalSentences: document.getElementById("modal-sentences"),
-  modalSourceWrap: document.getElementById("modal-source-wrap"),
-  modalSource: document.getElementById("modal-source"),
   modalExplanationWrap: document.getElementById("modal-explanation-wrap"),
   modalExplanation: document.getElementById("modal-explanation"),
   settingsButton: document.getElementById("settings-button"),

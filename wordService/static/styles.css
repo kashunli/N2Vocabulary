@@ -758,36 +758,6 @@ main { max-width: 1420px; margin: 0 auto; padding: 1rem 1rem 8.6rem; }
   gap: 8px;
 }
 
-.source-meaning strong,
-.source-note h4 span {
-  color: var(--muted);
-  font-weight: 600;
-}
-
-.source-reference-line {
-  color: var(--ink);
-  font-weight: 600;
-}
-
-.source-reference-code {
-  color: var(--muted2);
-  font-weight: 500;
-}
-
-.source-metadata {
-  display: grid;
-  gap: 10px;
-}
-
-.source-notes-label {
-  margin-top: 7px;
-  color: var(--muted2);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
 .explanation-section + .explanation-section {
   border-top: 1px solid var(--line);
   margin-top: 16px;
@@ -798,16 +768,6 @@ main { max-width: 1420px; margin: 0 auto; padding: 1rem 1rem 8.6rem; }
   margin: 0 0 9px;
 }
 
-.source-note {
-  background: #fffaf0;
-  border-radius: 8px;
-  padding: 12px;
-}
-
-.badge.source-badge {
-  background: #fef3c7;
-  color: #92400e;
-}
 .badge.category-collocation { background: #dbeafe; color: #1e40af; }
 .badge.category-compound   { background: #dcfce7; color: #166534; }
 .badge.category-antonym    { background: #fee2e2; color: #991b1b; }

@@ -105,54 +105,6 @@ export function cardMeaningHTML(entry) {
   return parts.join(" · ");
 }
 
-export function sourceReferenceHTML(note) {
-  const title = note.source_title || note.source_book_code || "Source";
-  const parts = [escapeHTML(title)];
-  if (note.source_page !== undefined && note.source_page !== null) {
-    parts.push(`page ${escapeHTML(note.source_page)}`);
-  }
-  if (note.source_cd_track) {
-    parts.push(`CD ${escapeHTML(note.source_cd_track)}`);
-  }
-  return `${parts.join(", ")} <span class="source-reference-code">(${escapeHTML(note.source_book_code)} #${escapeHTML(note.source_index)})</span>`;
-}
-
-function hasVisibleSourceNote(note) {
-  return Boolean(
-    note.source_title
-      || note.source_page !== undefined && note.source_page !== null
-      || note.source_cd_track
-      || note.notes_md
-  );
-}
-
-export function sourceMetadataHTML(entry) {
-  const sections = [];
-  (entry.source_notes || []).forEach(note => {
-    if (!hasVisibleSourceNote(note)) return;
-    const details = [];
-    if (note.reading && note.reading !== entry.reading) {
-      details.push(`<div><strong>Reading:</strong> ${escapeHTML(note.reading)}</div>`);
-    }
-    if (note.meaning_en && note.meaning_en !== entry.meaning_en) {
-      details.push(`<div><strong>Meaning:</strong> ${escapeHTML(note.meaning_en)}</div>`);
-    }
-    if (note.meaning_zh && note.meaning_zh !== entry.meaning_zh) {
-      details.push(`<div><strong>中文释义:</strong> ${escapeHTML(note.meaning_zh)}</div>`);
-    }
-    const source = sourceReferenceHTML(note);
-    const notes = note.notes_md ? markdownToHTML(note.notes_md) : "";
-    sections.push(`
-      <article class="source-note">
-        <div class="source-reference-line">${source}</div>
-        ${details.join("")}
-        ${notes ? `<div class="source-notes-label">Source notes</div>${notes}` : ""}
-      </article>
-    `);
-  });
-  return sections.join("");
-}
-
 export function detailExplanationHTML(entry) {
   if (!entry.explanation_md) return "";
   const heading = entry.book_code === "GWB_N2" ? "Study notes" : "Sentence explanation";
@@ -213,8 +165,4 @@ export function exampleKey(entryId, position) {
 export function unitLabel(unit) {
   if (!unit) return "Section";
   return unit.title || unit.header || `Section ${String(unit.number).padStart(2, "0")}`;
-}
-
-export function exampleSourceLabel(item) {
-  return `from ${item.word || ""} · ${unitLabel(item.unit)} · #${item.source_index}`;
 }

@@ -1,6 +1,6 @@
 import { generateExampleAudio, fetchEntry, updateMark } from "./api.js";
 import { playClip, wireAudioTarget } from "./audio.js";
-import { detailExplanationHTML, escapeHTML, exampleBadgeHTML, exampleTranslationHTML, meaningHTML, rubyOrPlain, sourceMetadataHTML, unitLabel } from "./format.js";
+import { detailExplanationHTML, escapeHTML, exampleBadgeHTML, exampleTranslationHTML, meaningHTML, rubyOrPlain, unitLabel } from "./format.js";
 import { elements, state, showError } from "./state.js";
 
 const callbacks = {
@@ -17,16 +17,12 @@ export async function openDetail(entryId) {
   const entry = await fetchEntry(entryId);
   state.detailEntry = entry;
   syncDetailAudioToCurrentCard(entry);
-  elements.modalMeta.textContent = `${entry.book_code} #${String(entry.source_index).padStart(3, "0")} · ${unitLabel(entry.unit)}`;
+  elements.modalMeta.textContent = `${entry.book_code} · ${unitLabel(entry.unit)}`;
   elements.modalTitle.innerHTML = rubyOrPlain(entry.kanji, entry.reading);
   wireAudioTarget(elements.modalTitle, entry.word_audio_url, "Play word audio");
   elements.modalMeaning.innerHTML = meaningHTML(entry);
   elements.modalSentences.innerHTML = sentenceRowsHTML(entry);
   wireModalSentenceRows(entry);
-
-  const sourceHTML = sourceMetadataHTML(entry);
-  elements.modalSource.innerHTML = sourceHTML;
-  elements.modalSourceWrap.hidden = !sourceHTML;
 
   const explanationHTML = detailExplanationHTML(entry);
   elements.modalExplanation.innerHTML = explanationHTML;
@@ -55,7 +51,6 @@ function sentenceRowsHTML(entry) {
       <div class="sentence-row ${isMainRow ? "main" : ""}" data-position="${item.position}">
         <div class="sentence-row-head">
           ${exampleBadgeHTML(item)}
-          ${item.source_book_code === "GWB_N2" ? `<span class="badge source-badge">GWB #${escapeHTML(item.source_index)}</span>` : ""}
         </div>
         <span class="sentence-text">${escapeHTML(item.text)}</span>
         ${item.reading ? `<span class="sentence-reading">${escapeHTML(item.reading)}</span>` : ""}

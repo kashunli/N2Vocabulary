@@ -485,38 +485,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
 }
 .react-markdown strong { color: var(--ink); }
 
-.react-source-metadata {
-  max-width: 760px;
-  margin-top: 22px;
-  padding: 14px 16px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  background: var(--card);
-  font: 0.82rem/1.55 var(--sans);
-  color: var(--muted);
-}
-.react-source-metadata > h3 {
-  margin: 0 0 8px;
-  color: var(--indigo);
-  font: 700 0.64rem/1.2 var(--mono);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-.react-source-reference + .react-source-reference { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line-soft); }
-.react-source-reference p { margin: 0; }
-.react-source-reference p strong { color: var(--ink); font-weight: 600; }
-.react-source-reference p span { color: var(--faint); }
-.react-source-notes { margin-top: 6px; }
-.react-source-notes > span {
-  display: block;
-  color: var(--faint);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-.react-source-notes .react-explanation { margin-top: 3px; font-size: 0.82rem; }
-
 .section-label {
   color: var(--indigo);
   font: 700 0.66rem/1.2 var(--mono);
