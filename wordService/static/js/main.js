@@ -41,8 +41,8 @@ async function init() {
   const accountActive = await initializeStudyState();
   if (!accountActive) seedLegacyStudyMarks((await fetchLegacyMarkSeed()).items || []);
   await loadBooks();
-  await loadSummary();
   await loadUnits();
+  await loadSummary();
   updateAudioExportButton();
   updateScopePlaybackButton();
   await showCardView();

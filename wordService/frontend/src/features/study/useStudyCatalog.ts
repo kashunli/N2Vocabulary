@@ -35,11 +35,26 @@ export function useStudyCatalog({
     Promise.all([getSummary(selectedBook), getUnits(selectedBook), getEntries(selectedBook)])
       .then(([nextSummary, nextUnits, allEntries]) => {
         if (cancelled) return;
-        const marks = allEntries.items.map(entry => studySnapshot.cards[entry.item_uuid]);
+        // The wall's visible queue is section-scoped, so the filter counts
+        // must use the same scope instead of always showing book-wide totals.
+        // Keep loading the full book here because the section dropdown still
+        // needs per-unit counts for every option.
+        const scopedEntries = selectedUnit === null
+          ? allEntries.items
+          : allEntries.items.filter(entry => entry.unit.number === selectedUnit);
+        const marks = scopedEntries.map(entry => studySnapshot.cards[entry.item_uuid]);
         const known = marks.filter(mark => markStatusOf(mark) === "known").length;
         const flagged = marks.filter(mark => markStatusOf(mark) === "flagged").length;
         const review = marks.filter(mark => isReviewDue(mark?.due_at)).length;
-        setSummary({...nextSummary, known, flagged, review, unmarked: marks.filter(mark => markStatusOf(mark) === "unmarked").length});
+        setSummary({
+          ...nextSummary,
+          entries: scopedEntries.length,
+          units: selectedUnit === null ? nextSummary.units : 1,
+          known,
+          flagged,
+          review,
+          unmarked: marks.filter(mark => markStatusOf(mark) === "unmarked").length,
+        });
         setUnits(nextUnits.items.map(unit => {
           const unitEntries = allEntries.items.filter(entry => entry.unit.number === unit.number);
           return {
@@ -55,7 +70,7 @@ export function useStudyCatalog({
         if (!cancelled) setStatus(error instanceof Error ? error.message : "Could not load sections.");
       });
     return () => { cancelled = true; };
-  }, [selectedBook, studySnapshot]);
+  }, [selectedBook, selectedUnit, studySnapshot]);
 
   useEffect(() => {
     if (!activeEntry) {

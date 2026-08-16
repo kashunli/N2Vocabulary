@@ -1,4 +1,4 @@
-import { fetchBooks, fetchEntries, fetchSummary, fetchUnits } from "./api.js";
+import { fetchBooks, fetchEntries, fetchUnits } from "./api.js";
 import { renderCards } from "./cards.js";
 import { resumeScopePlaybackFromSavedState, stopScopePlayback, updateScopePlaybackButton } from "./audio.js";
 import { unitLabel } from "./format.js";
@@ -38,10 +38,12 @@ export function renderBooks() {
 }
 
 export async function loadSummary() {
-  const [summary, entriesPayload] = await Promise.all([fetchSummary(), fetchEntries(new URLSearchParams({state: "all"}))]);
+  const params = new URLSearchParams({state: "all"});
+  if (Number.isFinite(state.selectedUnit)) params.set("unit", String(state.selectedUnit));
+  const entriesPayload = await fetchEntries(params);
   const active = summarizeStudyMarks(entriesPayload.items || []);
   const counts = {
-    all: summary.entries,
+    all: entriesPayload.items?.length || 0,
     review: active.review,
     known: active.known,
     flagged: active.flagged,
@@ -88,6 +90,7 @@ export async function selectUnit(unitNumber) {
   state.reviewSession = undefined;
   saveViewState();
   renderUnits();
+  await loadSummary();
   await loadEntries();
 }
 

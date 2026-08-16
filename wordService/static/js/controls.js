@@ -24,8 +24,8 @@ export function wireControls() {
     state.coveredEntryIds.clear();
     saveViewState();
     renderBooks();
-    loadSummary()
-      .then(loadUnits)
+    loadUnits()
+      .then(loadSummary)
       .then(loadEntries)
       .catch(showError);
   });
