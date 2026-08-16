@@ -71,7 +71,12 @@ export function RailPlayer({
     onPlayingChange(player.isPlaying);
   }, [onPlayingChange, player.isPlaying]);
 
-  const targetKey = target ? `${target.entry.item_uuid}:${target.phase}:${target.url}` : "";
+  // The same word or sentence can appear more than once in a recipe. Include
+  // the occurrence identity so repeated rows restart even when their URL is
+  // unchanged.
+  const targetKey = target
+    ? `${target.entry.item_uuid}:${target.phase}:${target.sequenceOccurrenceId || "direct"}:${target.url}`
+    : "";
 
   useEffect(() => {
     setError("");
@@ -89,7 +94,7 @@ export function RailPlayer({
         start: 0,
         end: player.audioBuffer.duration,
         offset: offset ?? (currentTimeRef.current >= player.audioBuffer.duration ? 0 : currentTimeRef.current),
-        segmentId: `${target.entry.entry_id}:${target.phase}`,
+        segmentId: `${target.entry.entry_id}:${target.phase}:${target.sequenceOccurrenceId || "direct"}`,
       });
     } catch {
       setError("Audio could not be played.");
