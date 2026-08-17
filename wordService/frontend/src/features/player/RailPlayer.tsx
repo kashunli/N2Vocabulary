@@ -23,6 +23,7 @@ interface RailPlayerProps {
   onToggleMark: (key: "known" | "flagged") => void | Promise<void>;
   onTogglePlayback: () => void;
   onTogglePlaybackRunMode: () => void;
+  onCancelSilence: () => void;
   onReplay: () => void;
   onPrevious: () => void;
   onNext: () => void;
@@ -45,6 +46,7 @@ export function RailPlayer({
   onToggleMark,
   onTogglePlayback,
   onTogglePlaybackRunMode,
+  onCancelSilence,
   onReplay,
   onPrevious,
   onNext,
@@ -96,6 +98,18 @@ export function RailPlayer({
       setError("Audio could not be played.");
     }
   }, [activeUrl, player.audioBuffer, player.playRange, target]);
+
+  // Clicking the wave while paused (including the configured silence between
+  // word and sentence) starts playback from that point. While already
+  // playing, the range input's change event has already restarted the source
+  // at the new offset, so the pointer-up only has work to do when paused.
+  // The pending gap timer must be cancelled first, or it could fire mid-clip
+  // and advance the sequence while the clicked audio is still running.
+  const handleWaveSeekPlay = useCallback((time: number) => {
+    if (player.isPlaying) return;
+    onCancelSilence();
+    void playFrom(time);
+  }, [onCancelSilence, playFrom, player.isPlaying]);
 
   // A newly selected target starts only when visible-list playback is active.
   // Keep this request pending until the new buffer has decoded; otherwise a
@@ -175,6 +189,7 @@ export function RailPlayer({
           silenceGaps={silenceGaps}
           vadNonSpeechIntervals={[]}
           onSeek={(time) => void player.seek(time)}
+          onSeekPlay={handleWaveSeekPlay}
           onNavigationPointsChange={() => {}}
         />
       </div>
@@ -196,7 +211,7 @@ export function RailPlayer({
         <button type="button" className={`mark-known${markStatus === "known" ? " is-on" : ""}`} onClick={() => void onToggleMark("known")} disabled={!target} aria-label="Mark as known" title="Mark as known" aria-pressed={markStatus === "known"}>✓</button>
         <button type="button" className={`mark-flagged${markStatus === "flagged" ? " is-on" : ""}`} onClick={() => void onToggleMark("flagged")} disabled={!target} aria-label="Flag for review" title="Flag for review" aria-pressed={markStatus === "flagged"}>⚑</button>
         {statusLabel ? <span className={`react-player-mark-status status-${markStatus}${reviewed ? " is-reviewed" : ""}`} role="status">{statusLabel}</span> : null}
-        <span className="react-player-status">{error || `${playbackRunMode === "single" ? "Single clip" : "Play through list"} · Click the wave to seek · Space to play`}</span>
+        <span className="react-player-status">{error || `${playbackRunMode === "single" ? "Single clip" : "Play through list"} · Click the wave to seek or play · Space to play/pause`}</span>
       </div>
     </section>
   );

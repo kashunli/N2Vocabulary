@@ -500,6 +500,7 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
     activeIndex,
     activePhase,
     autoAdvance,
+    cancelSilence: cancelEndTimer,
     canNext,
     canPrevious,
     changePlaybackMode,

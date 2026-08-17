@@ -15,6 +15,7 @@ interface LineWaveformProps {
   silenceGaps: { start_ms: number; end_ms: number }[];
   vadNonSpeechIntervals: { start_ms: number; end_ms: number }[];
   onSeek: (time: number) => void;
+  onSeekPlay?: (time: number) => void;
   onNavigationPointsChange: (start: number, end: number, points: number[]) => void;
 }
 
@@ -29,6 +30,7 @@ export function LineWaveform({
   silenceGaps,
   vadNonSpeechIntervals,
   onSeek,
+  onSeekPlay,
   onNavigationPointsChange,
 }: LineWaveformProps) {
   const clipId = "waveform-progress-" + useId().replace(/:/g, "");
@@ -124,6 +126,7 @@ export function LineWaveform({
         step="0.01"
         value={safeCurrent}
         onChange={(event) => onSeek(Number(event.target.value))}
+        onPointerUp={(event) => onSeekPlay?.(Number(event.currentTarget.value))}
         aria-label="現在の行の再生位置"
         aria-valuetext={`${formatTime(safeCurrent - safeStart)} / ${formatTime(lineDuration)}`}
       />

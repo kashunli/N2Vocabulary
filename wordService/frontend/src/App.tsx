@@ -41,6 +41,7 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
     activePhase,
     addSequenceStep,
     autoAdvance,
+    cancelSilence,
     canNext,
     canPrevious,
     changePlaybackMode,
@@ -208,6 +209,7 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
         reviewed={!!(activeEntry && reviewSession?.completedByItemUuid[activeEntry.item_uuid])}
         onToggleMark={toggleMark}
         onPlayingChange={handlePlayingChange}
+        onCancelSilence={cancelSilence}
         playRequest={playRequest}
         replayRequest={replayRequest}
         pauseRequest={pauseRequest}
