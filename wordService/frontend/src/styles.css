@@ -264,7 +264,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
-  padding: 18px 0 22px;
+  padding: 18px 0 8px;
   scrollbar-color: var(--line) transparent;
 }
 .react-content-scroll.is-blurred .react-list,
@@ -274,7 +274,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 /* --- Vocabulary list --- */
 
-.react-list { min-width: 0; min-height: 0; overflow: auto; padding: 4px 18px 10px 0; scrollbar-width: thin; }
+.react-list { min-width: 0; min-height: 0; overflow: auto; padding: 4px 18px 4px 0; scrollbar-width: thin; }
 .react-list button {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
