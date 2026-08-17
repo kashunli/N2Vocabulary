@@ -13,6 +13,7 @@ import { useStudyEntries } from "./features/study/useStudyEntries";
 import { readStudyFocus } from "./features/study/studyFocus";
 import { readStudyViewState, saveStudyViewState } from "./features/study/studyViewState.mjs";
 import { useStudyState } from "./features/study/useStudyState";
+import { markStatusOf } from "./features/study/markStatus";
 import type { ReviewSession } from "./features/study/studyStateTypes";
 import type { FilterState } from "./features/study/studyTypes";
 import type { Entry } from "./types";
@@ -48,7 +49,6 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
     removeSequenceStep,
     handlePlaybackEnd,
     handlePlayingChange,
-    isSilencePlaying,
     moveClip: movePlaybackClip,
     pauseRequest,
     playbackActive,
@@ -195,7 +195,6 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
           entriesLoading={entriesLoading}
           onSelectEntry={selectEntry}
           onSelectPhase={selectPhase}
-          onToggleMark={toggleMark}
           reviewSession={reviewSession}
         />
       </div>
@@ -204,8 +203,10 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
         target={target}
         autoPlay={autoAdvance}
         isPlaybackActive={playbackActive}
-        isSilencePlaying={isSilencePlaying}
         playbackRunMode={playbackRunMode}
+        markStatus={activeEntry ? markStatusOf(activeEntry.mark) : "unmarked"}
+        reviewed={!!(activeEntry && reviewSession?.completedByItemUuid[activeEntry.item_uuid])}
+        onToggleMark={toggleMark}
         onPlayingChange={handlePlayingChange}
         playRequest={playRequest}
         replayRequest={replayRequest}

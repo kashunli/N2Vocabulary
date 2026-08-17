@@ -5,24 +5,22 @@ import { useAudioBufferPlayer } from "./useAudioBufferPlayer";
 import { LineWaveform } from "./LineWaveform";
 import { detectSilenceGapsMs } from "./waveform.mjs";
 import type { PlaybackRunMode } from "./playbackSettings";
+import type { MarkStatus } from "../study/markStatus";
 import type { AudioTarget } from "../../types";
-
-function formatTime(value: number) {
-  if (!Number.isFinite(value) || value < 0) return "0:00";
-  return `${Math.floor(value / 60)}:${String(Math.floor(value % 60)).padStart(2, "0")}`;
-}
 
 interface RailPlayerProps {
   target: AudioTarget | null;
   autoPlay: boolean;
   isPlaybackActive: boolean;
-  isSilencePlaying: boolean;
   playbackRunMode: PlaybackRunMode;
+  markStatus: MarkStatus;
+  reviewed: boolean;
   playRequest: number;
   replayRequest: number;
   pauseRequest: number;
   onEnded: () => void;
   onPlayingChange: (playing: boolean) => void;
+  onToggleMark: (key: "known" | "flagged") => void | Promise<void>;
   onTogglePlayback: () => void;
   onTogglePlaybackRunMode: () => void;
   onReplay: () => void;
@@ -36,13 +34,15 @@ export function RailPlayer({
   target,
   autoPlay,
   isPlaybackActive,
-  isSilencePlaying,
   playbackRunMode,
+  markStatus,
+  reviewed,
   playRequest,
   replayRequest,
   pauseRequest,
   onEnded,
   onPlayingChange,
+  onToggleMark,
   onTogglePlayback,
   onTogglePlaybackRunMode,
   onReplay,
@@ -144,7 +144,6 @@ export function RailPlayer({
   }, [pauseRequest, player.pause]);
 
   const duration = player.audioBuffer?.duration || 0;
-  const progressLabel = `${formatTime(player.currentTime)} / ${formatTime(duration)}`;
   const silenceGaps = useMemo(() => {
     if (!player.audioBuffer) return [];
     const channels = Array.from(
@@ -159,26 +158,29 @@ export function RailPlayer({
     ).map(({startMs, endMs}) => ({start_ms: startMs, end_ms: endMs}));
   }, [duration, player.audioBuffer]);
 
+  const statusLabel = reviewed ? "Reviewed" : markStatus === "flagged" ? "Flagged" : markStatus === "known" ? "Known" : "";
+
   return (
     <section className="react-player" aria-label="Playback controls">
-      <LineWaveform
-        audioBuffer={player.audioBuffer}
-        loadFailed={player.loadFailed}
-        start={0}
-        end={duration || 0.01}
-        currentTime={player.currentTime}
-        silenceGaps={silenceGaps}
-        vadNonSpeechIntervals={[]}
-        onSeek={(time) => void player.seek(time)}
-        onNavigationPointsChange={() => {}}
-      />
+      <div className="react-player-wave-row">
+        <button type="button" className="react-player-primary" onClick={onTogglePlayback} disabled={!player.audioBuffer} aria-keyshortcuts="Space" aria-label={isPlaybackActive ? "Pause" : "Play"} title={`${isPlaybackActive ? "Pause" : "Play"} (Space)`}>
+          {isPlaybackActive ? <Pause size={24} weight="fill" /> : <Play size={24} weight="fill" />}
+        </button>
+        <LineWaveform
+          audioBuffer={player.audioBuffer}
+          loadFailed={player.loadFailed}
+          start={0}
+          end={duration || 0.01}
+          currentTime={player.currentTime}
+          silenceGaps={silenceGaps}
+          vadNonSpeechIntervals={[]}
+          onSeek={(time) => void player.seek(time)}
+          onNavigationPointsChange={() => {}}
+        />
+      </div>
       <div className="react-player-controls">
-        <span className="audio-time" aria-label="Playback time">{progressLabel}</span>
         <button type="button" onClick={onPrevious} disabled={!canPrevious} aria-label="Play previous word or sentence" title="Previous (A / ←)"><SkipBack size={18} weight="fill" /></button>
         <button type="button" onClick={onReplay} disabled={!player.audioBuffer} aria-label="Replay focused word or sentence" title="Replay (R)"><ArrowCounterClockwise size={18} weight="bold" /></button>
-        <button type="button" className="react-player-primary" onClick={onTogglePlayback} disabled={!player.audioBuffer} aria-keyshortcuts="Space" aria-label={isPlaybackActive ? "Pause" : "Play"} title={`${isPlaybackActive ? "Pause" : "Play"} (Space)`}>
-          {isPlaybackActive ? <Pause size={22} weight="fill" /> : <Play size={22} weight="fill" />}
-        </button>
         <button type="button" onClick={onNext} disabled={!canNext} aria-label="Play next word or sentence" title="Next (D / →)"><SkipForward size={18} weight="fill" /></button>
         <button
           type="button"
@@ -188,10 +190,13 @@ export function RailPlayer({
           aria-label={playbackRunMode === "single" ? "Switch to consecutive playback" : "Switch to single clip playback"}
           title={playbackRunMode === "single" ? "Switch to consecutive playback" : "Switch to single clip playback"}
         >
-          {playbackRunMode === "consecutive" ? <Repeat size={16} weight="bold" /> : <RepeatOnce size={16} weight="bold" />}
-          <span className="run-mode-label">{playbackRunMode === "single" ? "Single" : "Consec"}</span>
+          {playbackRunMode === "consecutive" ? <Repeat size={18} weight="bold" /> : <RepeatOnce size={18} weight="bold" />}
         </button>
-        <span className="react-player-status">{error || (isSilencePlaying ? `Playing silence after ${target?.phase || "audio"}` : isPlaybackActive ? "Playing focused audio" : `${playbackRunMode === "single" ? "Single clip" : "Play through list"} · Click the wave to seek · Space to play`)}</span>
+        <span className="react-player-controls-sep" aria-hidden="true" />
+        <button type="button" className={`mark-known${markStatus === "known" ? " is-on" : ""}`} onClick={() => void onToggleMark("known")} disabled={!target} aria-label="Mark as known" title="Mark as known" aria-pressed={markStatus === "known"}>✓</button>
+        <button type="button" className={`mark-flagged${markStatus === "flagged" ? " is-on" : ""}`} onClick={() => void onToggleMark("flagged")} disabled={!target} aria-label="Flag for review" title="Flag for review" aria-pressed={markStatus === "flagged"}>⚑</button>
+        {statusLabel ? <span className={`react-player-mark-status status-${markStatus}${reviewed ? " is-reviewed" : ""}`} role="status">{statusLabel}</span> : null}
+        <span className="react-player-status">{error || `${playbackRunMode === "single" ? "Single clip" : "Play through list"} · Click the wave to seek · Space to play`}</span>
       </div>
     </section>
   );
