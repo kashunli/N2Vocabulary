@@ -17,6 +17,7 @@ interface StudyWallViewProps {
   entries: Entry[];
   entriesLoading: boolean;
   emptyMessage?: string;
+  listVisible: boolean;
   onSelectEntry: (index: number) => void;
   onSelectPhase: (phase: PlaybackPhase) => void;
   reviewSession?: ReviewSession;
@@ -31,6 +32,7 @@ export function StudyWallView({
   entries,
   entriesLoading,
   emptyMessage = "Loading vocabulary…",
+  listVisible,
   onSelectEntry,
   onSelectPhase,
   reviewSession,
@@ -87,8 +89,8 @@ export function StudyWallView({
   }, [draggingDivider]);
 
   return (
-    <div className="react-layout" ref={layoutRef} style={{gridTemplateColumns: `${listWidth}px 12px minmax(0, 1fr)`}}>
-      <section ref={listRef} className="react-list" aria-label="Vocabulary playback list">
+    <div className="react-layout" ref={layoutRef} style={{gridTemplateColumns: listVisible ? `${listWidth}px 12px minmax(0, 1fr)` : "minmax(0, 1fr)"}}>
+      {listVisible ? <section ref={listRef} className="react-list" aria-label="Vocabulary playback list">
         {entries.length ? entries.map((entry, index) => {
           const reviewCompleted = reviewSession?.completedByItemUuid[entry.item_uuid];
           const status = markStatusOf(entry.mark);
@@ -96,8 +98,8 @@ export function StudyWallView({
           const statusIcon = status === "known" ? "✓" : status === "flagged" ? "⚑" : reviewCompleted ? "✓" : "";
           return <button key={entry.entry_id} ref={index === activeIndex ? activeRef : null} className={`${index === activeIndex ? "is-active " : ""}${reviewCompleted ? " is-reviewed" : ""} status-${status}`} aria-label={`${entry.kanji}${statusLabel ? `, ${statusLabel}` : ""}`} aria-current={index === activeIndex ? "true" : undefined} onClick={() => onSelectEntry(index)}><span className="react-row-kanji">{entry.kanji}</span>{statusLabel ? <span className="react-row-status" aria-label={statusLabel} title={statusLabel}>{statusIcon}</span> : null}</button>;
         }) : entriesLoading ? <p className="react-empty">{emptyMessage}</p> : <p className="react-empty">No words match the current filters.</p>}
-      </section>
-      <button className="react-divider" type="button" role="separator" aria-orientation="vertical" aria-label="Adjust playback list width" aria-valuemin={220} aria-valuemax={620} aria-valuenow={listWidth} tabIndex={0} onPointerDown={(event) => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); setDraggingDivider(true); }} onKeyDown={(event) => { if (event.key === "ArrowLeft") setListWidth((value) => Math.max(220, value - (event.shiftKey ? 50 : 20))); else if (event.key === "ArrowRight") setListWidth((value) => Math.min(620, value + (event.shiftKey ? 50 : 20))); else return; event.preventDefault(); }}> </button>
+      </section> : null}
+      {listVisible ? <button className="react-divider" type="button" role="separator" aria-orientation="vertical" aria-label="Adjust playback list width" aria-valuemin={220} aria-valuemax={620} aria-valuenow={listWidth} tabIndex={0} onPointerDown={(event) => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); setDraggingDivider(true); }} onKeyDown={(event) => { if (event.key === "ArrowLeft") setListWidth((value) => Math.max(220, value - (event.shiftKey ? 50 : 20))); else if (event.key === "ArrowRight") setListWidth((value) => Math.min(620, value + (event.shiftKey ? 50 : 20))); else return; event.preventDefault(); }}> </button> : null}
       <section ref={currentRef} className="react-current" aria-live="polite" aria-label="Current vocabulary item">
         {activeEntry ? <>
           <div className="react-word-summary">

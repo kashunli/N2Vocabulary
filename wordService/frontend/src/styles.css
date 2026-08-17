@@ -208,6 +208,13 @@ button, a { -webkit-tap-highlight-color: transparent; }
   background: var(--indigo);
   color: #fff;
 }
+.react-header-actions .react-list-toggle {
+  min-width: 34px;
+  padding-inline: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 .react-header-actions .react-settings-button { min-width: 34px; padding-inline: 7px; font-size: 1rem; line-height: 1; }
 /* ---------- Transient status toast ---------- */
 

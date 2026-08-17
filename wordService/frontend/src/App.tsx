@@ -26,6 +26,7 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [entriesLoading, setEntriesLoading] = useState(false);
   const [blurred, setBlurred] = useState(false);
+  const [listVisible, setListVisible] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [reviewSession, setReviewSession] = useState<ReviewSession>();
   const reviewCompletionInFlight = useRef(new Set<string>());
@@ -177,11 +178,13 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
         summary={summary}
         reviewSessionCount={filterState === "review" ? Object.keys(reviewSession?.expectedDueAtByItemUuid || {}).length : undefined}
         units={units}
+        listVisible={listVisible}
         onOpenSettings={() => setSettingsOpen(true)}
         onSelectBook={(book) => { setSelectedBook(book); setSelectedUnit(null); setReviewSession(undefined); }}
         onSelectFilter={(filter) => { setFilterState(filter); if (filter !== "review") setReviewSession(undefined); }}
         onSelectUnit={(unit) => { setSelectedUnit(unit); setReviewSession(undefined); }}
         onToggleBlur={() => setBlurred((current) => !current)}
+        onToggleList={() => setListVisible((current) => !current)}
       />
       {status ? <div key={status} className="react-status" role="status" aria-live="polite" aria-atomic="true">{status}</div> : null}
 
@@ -194,6 +197,7 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
           detail={detail}
           entries={entries}
           entriesLoading={entriesLoading}
+          listVisible={listVisible}
           onSelectEntry={selectEntry}
           onSelectPhase={selectPhase}
           reviewSession={reviewSession}

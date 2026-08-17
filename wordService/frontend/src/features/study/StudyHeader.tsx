@@ -1,3 +1,5 @@
+import { List } from "@phosphor-icons/react";
+
 import type { BookSummary, UnitSummary, VocabularySummary } from "../../types";
 import { unitLabel } from "./unitLabel";
 import type { FilterState } from "./studyTypes";
@@ -9,6 +11,7 @@ interface StudyHeaderProps {
   books: BookSummary[];
   currentBook?: BookSummary;
   filterState: FilterState;
+  listVisible: boolean;
   reviewSessionCount?: number;
   selectedBook: string;
   selectedUnit: number | null;
@@ -19,6 +22,7 @@ interface StudyHeaderProps {
   onSelectFilter: (filter: FilterState) => void;
   onSelectUnit: (unit: number | null) => void;
   onToggleBlur: () => void;
+  onToggleList: () => void;
 }
 
 function filterCount(summary?: VocabularySummary, reviewSessionCount?: number): (filter: FilterState) => number | undefined {
@@ -38,6 +42,7 @@ export function StudyHeader({
   books,
   currentBook,
   filterState,
+  listVisible,
   reviewSessionCount,
   selectedBook,
   selectedUnit,
@@ -48,6 +53,7 @@ export function StudyHeader({
   onSelectFilter,
   onSelectUnit,
   onToggleBlur,
+  onToggleList,
 }: StudyHeaderProps) {
   const countFor = filterCount(summary, reviewSessionCount);
   return (
@@ -68,6 +74,7 @@ export function StudyHeader({
       </select>
       <div className="react-header-actions">
         <button type="button" className={blurred ? "is-selected" : ""} onClick={onToggleBlur} aria-pressed={blurred} title="B: blur / reveal the study content">B</button>
+        <button type="button" className={`react-list-toggle${listVisible ? " is-selected" : ""}`} onClick={onToggleList} aria-pressed={listVisible} aria-label={listVisible ? "Hide the vocabulary list" : "Show the vocabulary list"} title={listVisible ? "Hide the vocabulary list" : "Show the vocabulary list"}><List size={16} weight="bold" /></button>
         <button type="button" className="react-settings-button" onClick={onOpenSettings} aria-label="Open playback settings" title="Playback settings">⚙</button>
       </div>
     </header>
