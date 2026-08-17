@@ -144,7 +144,6 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
 
   useStudyEntries({
     filterState,
-    playbackMode,
     resetPosition,
     selectedBook,
     selectedUnit,

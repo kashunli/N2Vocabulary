@@ -2,14 +2,12 @@ import { useEffect, useRef, type Dispatch, type SetStateAction } from "react";
 
 import { getEntries } from "../../api";
 import type { Entry } from "../../types";
-import type { PlaybackMode } from "../player/playbackSettings";
 import { markStatusOf } from "./markStatus";
 import type { FilterState } from "./studyTypes";
 import { isReviewDue, type ReviewSession, type StudySnapshot } from "./studyStateTypes";
 
 interface UseStudyEntriesOptions {
   filterState: FilterState;
-  playbackMode: PlaybackMode;
   resetPosition: (entries: Entry[]) => void;
   selectedBook: string;
   selectedUnit: number | null;
@@ -23,7 +21,6 @@ interface UseStudyEntriesOptions {
 
 export function useStudyEntries({
   filterState,
-  playbackMode,
   resetPosition,
   selectedBook,
   selectedUnit,
@@ -35,6 +32,16 @@ export function useStudyEntries({
   studySnapshot,
 }: UseStudyEntriesOptions) {
   const loadedQueryRef = useRef<string | undefined>(undefined);
+  // The snapshot changes on every playback/mark action. The fetch effect must
+  // not re-run for those changes (the list itself is immutable for a scope),
+  // but it still needs the latest snapshot when its async response lands, so
+  // read it through a ref instead of a dependency.
+  const studySnapshotRef = useRef(studySnapshot);
+  studySnapshotRef.current = studySnapshot;
+  const reviewSessionRef = useRef(reviewSession);
+  reviewSessionRef.current = reviewSession;
+  const resetPositionRef = useRef(resetPosition);
+  resetPositionRef.current = resetPosition;
 
   useEffect(() => {
     let cancelled = false;
@@ -49,12 +56,12 @@ export function useStudyEntries({
         if (cancelled) return;
         const loadedItems = payload.items
           .map(entry => {
-            const card = studySnapshot.cards[entry.item_uuid];
+            const card = studySnapshotRef.current.cards[entry.item_uuid];
             return {...entry, mark: {status: markStatusOf(card), due_at: card?.due_at, review_level: card?.review_level, last_reviewed_at: card?.last_reviewed_at, updated_at: card?.updated_at}};
           });
         const reviewNow = Date.now();
-        const session = filterState === "review" && reviewSession?.scopeKey === scopeKey
-          ? reviewSession
+        const session = filterState === "review" && reviewSessionRef.current?.scopeKey === scopeKey
+          ? reviewSessionRef.current
           : undefined;
         const dueItems = loadedItems.filter(entry => isReviewDue(entry.mark.due_at, reviewNow));
         if (filterState === "review" && !session) {
@@ -78,7 +85,7 @@ export function useStudyEntries({
           }));
         } else {
           setEntries(filteredItems);
-          resetPosition(filteredItems);
+          resetPositionRef.current(filteredItems);
         }
         loadedQueryRef.current = queryKey;
       })
@@ -89,5 +96,15 @@ export function useStudyEntries({
         if (!cancelled) setEntriesLoading(false);
       });
     return () => { cancelled = true; };
-  }, [filterState, playbackMode, resetPosition, reviewSession, selectedBook, selectedUnit, setEntries, setEntriesLoading, setReviewSession, setStatus, studySnapshot]);
+  }, [filterState, selectedBook, selectedUnit, setEntries, setEntriesLoading, setReviewSession, setStatus]);
+
+  // Refresh visible marks from the snapshot without refetching the list. The
+  // scope query above is fetched once per (book, unit, filter) selection; each
+  // play or mark action only needs the status merged into the mounted rows.
+  useEffect(() => {
+    setEntries(current => current.map(entry => {
+      const card = studySnapshot.cards[entry.item_uuid];
+      return {...entry, mark: {status: markStatusOf(card), due_at: card?.due_at, review_level: card?.review_level, last_reviewed_at: card?.last_reviewed_at, updated_at: card?.updated_at}};
+    }));
+  }, [setEntries, studySnapshot]);
 }
