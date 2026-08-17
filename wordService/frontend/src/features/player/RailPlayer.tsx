@@ -14,7 +14,6 @@ interface RailPlayerProps {
   isPlaybackActive: boolean;
   playbackRunMode: PlaybackRunMode;
   markStatus: MarkStatus;
-  reviewed: boolean;
   playRequest: number;
   replayRequest: number;
   pauseRequest: number;
@@ -37,7 +36,6 @@ export function RailPlayer({
   isPlaybackActive,
   playbackRunMode,
   markStatus,
-  reviewed,
   playRequest,
   replayRequest,
   pauseRequest,
@@ -172,8 +170,6 @@ export function RailPlayer({
     ).map(({startMs, endMs}) => ({start_ms: startMs, end_ms: endMs}));
   }, [duration, player.audioBuffer]);
 
-  const statusLabel = reviewed ? "Reviewed" : markStatus === "flagged" ? "Flagged" : markStatus === "known" ? "Known" : "";
-
   return (
     <section className="react-player" aria-label="Playback controls">
       <div className="react-player-wave-row">
@@ -210,7 +206,6 @@ export function RailPlayer({
         <span className="react-player-controls-sep" aria-hidden="true" />
         <button type="button" className={`mark-known${markStatus === "known" ? " is-on" : ""}`} onClick={() => void onToggleMark("known")} disabled={!target} aria-label="Mark as known" title="Mark as known" aria-pressed={markStatus === "known"}>✓</button>
         <button type="button" className={`mark-flagged${markStatus === "flagged" ? " is-on" : ""}`} onClick={() => void onToggleMark("flagged")} disabled={!target} aria-label="Flag for review" title="Flag for review" aria-pressed={markStatus === "flagged"}>⚑</button>
-        {statusLabel ? <span className={`react-player-mark-status status-${markStatus}${reviewed ? " is-reviewed" : ""}`} role="status">{statusLabel}</span> : null}
         <span className="react-player-status">{error || `${playbackRunMode === "single" ? "Single clip" : "Play through list"} · Click the wave to seek or play · Space to play/pause`}</span>
       </div>
     </section>

@@ -209,7 +209,6 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
         isPlaybackActive={playbackActive}
         playbackRunMode={playbackRunMode}
         markStatus={activeEntry ? markStatusOf(activeEntry.mark) : "unmarked"}
-        reviewed={!!(activeEntry && reviewSession?.completedByItemUuid[activeEntry.item_uuid])}
         onToggleMark={toggleMark}
         onPlayingChange={handlePlayingChange}
         onCancelSilence={cancelSilence}
