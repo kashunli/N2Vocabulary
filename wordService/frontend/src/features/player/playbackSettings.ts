@@ -2,7 +2,6 @@ import { createDefaultAudioSequence, normalizeAudioSequence } from "./audioSeque
 import type { AudioSequenceConfig } from "./audioSequenceTypes";
 
 export type PlaybackPhase = "word" | "sentence";
-export type PlaybackMode = "words" | "sentences" | "both";
 export type PlaybackRunMode = "single" | "consecutive";
 
 export const DEFAULT_SILENCE_MS = 500;
@@ -14,7 +13,6 @@ const LEGACY_PLAYBACK_SETTINGS_KEY = "n2-word-service:react-playback-settings:v1
 type StoredPlaybackSettings = {
   postWordSilenceMs?: number;
   postSentenceSilenceMs?: number;
-  playbackMode?: PlaybackMode;
   playbackRunMode?: PlaybackRunMode;
   sequence?: unknown;
 };
@@ -22,7 +20,6 @@ type StoredPlaybackSettings = {
 export type PlaybackSettings = {
   postWordSilence: number;
   postSentenceSilence: number;
-  mode: PlaybackMode;
   runMode: PlaybackRunMode;
   sequence: AudioSequenceConfig;
 };
@@ -41,16 +38,12 @@ export function readPlaybackSettings(): PlaybackSettings {
     const saved = raw ? JSON.parse(raw) as StoredPlaybackSettings : {};
     const postWordSilence = normalizeSilence(saved.postWordSilenceMs);
     const postSentenceSilence = normalizeSilence(saved.postSentenceSilenceMs);
-    const mode = saved.playbackMode === "words" || saved.playbackMode === "sentences" || saved.playbackMode === "both"
-      ? saved.playbackMode
-      : "both";
     const runMode = saved.playbackRunMode === "single" || saved.playbackRunMode === "consecutive"
       ? saved.playbackRunMode
       : DEFAULT_PLAYBACK_RUN_MODE;
     return {
       postWordSilence,
       postSentenceSilence,
-      mode,
       runMode,
       sequence: normalizeAudioSequence(saved.sequence, postWordSilence, postSentenceSilence) as AudioSequenceConfig,
     };
@@ -58,7 +51,6 @@ export function readPlaybackSettings(): PlaybackSettings {
     return {
       postWordSilence: DEFAULT_SILENCE_MS,
       postSentenceSilence: DEFAULT_SILENCE_MS,
-      mode: "both",
       runMode: DEFAULT_PLAYBACK_RUN_MODE,
       sequence: createDefaultAudioSequence(DEFAULT_SILENCE_MS, DEFAULT_SILENCE_MS) as AudioSequenceConfig,
     };
@@ -68,14 +60,12 @@ export function readPlaybackSettings(): PlaybackSettings {
 export function savePlaybackSettings(
   postWordSilence: number,
   postSentenceSilence: number,
-  mode: PlaybackMode,
   runMode: PlaybackRunMode,
   sequence = createDefaultAudioSequence(postWordSilence, postSentenceSilence),
 ) {
   window.localStorage.setItem(PLAYBACK_SETTINGS_KEY, JSON.stringify({
     postWordSilenceMs: postWordSilence,
     postSentenceSilenceMs: postSentenceSilence,
-    playbackMode: mode,
     playbackRunMode: runMode,
     sequence,
   }));

@@ -136,12 +136,10 @@ export function moveAudioSequenceStep(steps, stepId, direction) {
   return next;
 }
 
-export function materializeAudioSequence(sequence, playbackMode, entry) {
+export function materializeAudioSequence(sequence, entry) {
   const steps = Array.isArray(sequence?.steps) ? sequence.steps : [];
   return steps.flatMap((step, sequenceIndex) => {
     if (!step || step.repeatCount <= 0) return [];
-    if (playbackMode === "words" && step.element !== "word") return [];
-    if (playbackMode === "sentences" && step.element !== "sentence") return [];
     const url = step.element === "word" ? entry?.word_audio_url : entry?.sentence_audio_url;
     if (!url) return [];
     return Array.from({length: step.repeatCount}, (_, repeatIndex) => ({

@@ -20,7 +20,6 @@ import {
   DEFAULT_SILENCE_MS,
   readPlaybackSettings,
   savePlaybackSettings,
-  type PlaybackMode,
   type PlaybackPhase,
   type PlaybackRunMode,
 } from "./playbackSettings";
@@ -55,11 +54,10 @@ function targetFor(
 
 function sequenceCuesFor(
   sequence: AudioSequenceConfig,
-  playbackMode: PlaybackMode,
   entry: Entry | undefined,
 ): MaterializedAudioSequenceStep[] {
   if (!entry) return [];
-  return materializeAudioSequence(sequence, playbackMode, entry) as MaterializedAudioSequenceStep[];
+  return materializeAudioSequence(sequence, entry) as MaterializedAudioSequenceStep[];
 }
 
 function firstCueIndexForPhase(cues: MaterializedAudioSequenceStep[], phase: PlaybackPhase) {
@@ -76,7 +74,6 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
   const [postWordSilence, setPostWordSilence] = useState(savedSettings.postWordSilence);
   const [postSentenceSilence, setPostSentenceSilence] = useState(savedSettings.postSentenceSilence);
   const [sequence, setSequence] = useState<AudioSequenceConfig>(savedSettings.sequence);
-  const [playbackMode, setPlaybackMode] = useState<PlaybackMode>(savedSettings.mode);
   const [playbackRunMode, setPlaybackRunMode] = useState<PlaybackRunMode>(savedSettings.runMode);
   const [autoAdvance, setAutoAdvance] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -92,8 +89,8 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
   const autoAdvanceRef = useRef(autoAdvance);
   const activeEntry = entries[activeIndex];
   const activeCues = useMemo(
-    () => sequenceCuesFor(sequence, playbackMode, activeEntry),
-    [activeEntry, playbackMode, sequence],
+    () => sequenceCuesFor(sequence, activeEntry),
+    [activeEntry, sequence],
   );
   const safeCueIndex = activeCues.length ? Math.min(activeCueIndex, activeCues.length - 1) : 0;
   const sequenceCue = activeCues[safeCueIndex];
@@ -101,7 +98,7 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
     && manualSelection.entryUuid === activeEntry.item_uuid
     ? manualSelection.phase
     : null;
-  const activePhase = selectedManualPhase || sequenceCue?.phase || (playbackMode === "sentences" ? "sentence" : "word");
+  const activePhase = selectedManualPhase || sequenceCue?.phase || "word";
   const activeCue = selectedManualPhase ? undefined : sequenceCue;
   const target = activeEntry
     ? targetFor(activeEntry, activePhase, activeCue?.occurrenceId || `manual:${activePhase}`)
@@ -148,10 +145,8 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
       : -1;
     const nextIndex = savedIndex >= 0 ? savedIndex : 0;
     const nextEntry = nextEntries[nextIndex];
-    const preferredPhase = savedIndex >= 0 && savedFocus?.phase === "sentence"
-      ? "sentence"
-      : playbackMode === "sentences" ? "sentence" : "word";
-    const cues = sequenceCuesFor(sequence, playbackMode, nextEntry);
+    const preferredPhase = savedIndex >= 0 && savedFocus?.phase === "sentence" ? "sentence" : "word";
+    const cues = sequenceCuesFor(sequence, nextEntry);
     const nextCueIndex = firstCueIndexForPhase(cues, preferredPhase);
     const hasPreferredAudio = preferredPhase === "word"
       ? !!nextEntry?.word_audio_url
@@ -161,7 +156,7 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
     setManualSelection(nextCueIndex >= 0 || !hasPreferredAudio || !nextEntry
       ? null
       : {entryUuid: nextEntry.item_uuid, phase: preferredPhase});
-  }, [playbackMode, sequence]);
+  }, [sequence]);
 
   const clearEndTimer = useCallback(() => {
     endGenerationRef.current += 1;
@@ -268,14 +263,14 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
 
   const playableEntryAt = useCallback((index: number) => {
     const entry = entries[index];
-    return entry ? sequenceCuesFor(sequence, playbackMode, entry) : [];
-  }, [entries, playbackMode, sequence]);
+    return entry ? sequenceCuesFor(sequence, entry) : [];
+  }, [entries, sequence]);
 
   const selectEntry = useCallback((index: number, phase?: PlaybackPhase) => {
     if (index < 0 || index >= entries.length) return;
     const entry = entries[index];
     const cues = playableEntryAt(index);
-    const preferredPhase = phase || (playbackMode === "sentences" ? "sentence" : undefined);
+    const preferredPhase = phase;
     const cueIndex = preferredPhase
       ? firstCueIndexForPhase(cues, preferredPhase)
       : 0;
@@ -285,7 +280,7 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
     setActiveCueIndex(cueIndex >= 0 ? cueIndex : 0);
     setManualSelection(cueIndex >= 0 || !hasDirectAudio ? null : {entryUuid: entry.item_uuid, phase: directPhase});
     requestPlayback();
-  }, [entries, playableEntryAt, playbackMode, requestPlayback]);
+  }, [entries, playableEntryAt, requestPlayback]);
 
   const moveClip = useCallback((direction: -1 | 1) => {
     if (!activeEntry) return;
@@ -400,19 +395,8 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
   }, [cancelEndTimer]);
 
   const persistSettings = useCallback((nextSequence: AudioSequenceConfig = sequence) => {
-    savePlaybackSettings(postWordSilence, postSentenceSilence, playbackMode, playbackRunMode, nextSequence);
-  }, [playbackMode, playbackRunMode, postSentenceSilence, postWordSilence, sequence]);
-
-  const changePlaybackMode = useCallback((mode: PlaybackMode) => {
-    cancelEndTimer();
-    const cues = sequenceCuesFor(sequence, mode, activeEntry);
-    const preferredPhase = mode === "sentences" ? "sentence" : activePhase;
-    const nextCueIndex = firstCueIndexForPhase(cues, preferredPhase);
-    setPlaybackMode(mode);
-    setActiveCueIndex(nextCueIndex >= 0 ? nextCueIndex : 0);
-    setManualSelection(null);
-    savePlaybackSettings(postWordSilence, postSentenceSilence, mode, playbackRunMode, sequence);
-  }, [activeEntry, activePhase, cancelEndTimer, playbackRunMode, postSentenceSilence, postWordSilence, sequence]);
+    savePlaybackSettings(postWordSilence, postSentenceSilence, playbackRunMode, nextSequence);
+  }, [playbackRunMode, postSentenceSilence, postWordSilence, sequence]);
 
   const togglePlaybackRunMode = useCallback(() => {
     const nextMode: PlaybackRunMode = playbackRunMode === "single" ? "consecutive" : "single";
@@ -421,18 +405,18 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
     const continueCurrentClip = nextMode === "consecutive" && isPlaying;
     autoAdvanceRef.current = continueCurrentClip;
     setAutoAdvance(continueCurrentClip);
-    savePlaybackSettings(postWordSilence, postSentenceSilence, playbackMode, nextMode, sequence);
-  }, [cancelEndTimer, isPlaying, playbackMode, playbackRunMode, postSentenceSilence, postWordSilence, sequence]);
+    savePlaybackSettings(postWordSilence, postSentenceSilence, nextMode, sequence);
+  }, [cancelEndTimer, isPlaying, playbackRunMode, postSentenceSilence, postWordSilence, sequence]);
 
   const changePostWordSilence = useCallback((value: number) => {
     setPostWordSilence(value);
-    savePlaybackSettings(value, postSentenceSilence, playbackMode, playbackRunMode, sequence);
-  }, [playbackMode, playbackRunMode, postSentenceSilence, sequence]);
+    savePlaybackSettings(value, postSentenceSilence, playbackRunMode, sequence);
+  }, [playbackRunMode, postSentenceSilence, sequence]);
 
   const changePostSentenceSilence = useCallback((value: number) => {
     setPostSentenceSilence(value);
-    savePlaybackSettings(postWordSilence, value, playbackMode, playbackRunMode, sequence);
-  }, [playbackMode, playbackRunMode, postWordSilence, sequence]);
+    savePlaybackSettings(postWordSilence, value, playbackRunMode, sequence);
+  }, [playbackRunMode, postWordSilence, sequence]);
 
   const changeSequenceStep = useCallback((stepId: string, patch: Partial<AudioSequenceStep>) => {
     const nextSequence = {
@@ -475,11 +459,10 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
     setPostWordSilence(DEFAULT_SILENCE_MS);
     setPostSentenceSilence(DEFAULT_SILENCE_MS);
     setSequence(nextSequence);
-    setPlaybackMode("both");
     setPlaybackRunMode(DEFAULT_PLAYBACK_RUN_MODE);
     setActiveCueIndex(0);
     setManualSelection(null);
-    savePlaybackSettings(DEFAULT_SILENCE_MS, DEFAULT_SILENCE_MS, "both", DEFAULT_PLAYBACK_RUN_MODE, nextSequence);
+    savePlaybackSettings(DEFAULT_SILENCE_MS, DEFAULT_SILENCE_MS, DEFAULT_PLAYBACK_RUN_MODE, nextSequence);
   }, []);
 
   const selectPhase = useCallback((phase: PlaybackPhase) => {
@@ -503,7 +486,6 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
     cancelSilence: cancelEndTimer,
     canNext,
     canPrevious,
-    changePlaybackMode,
     changePostSentenceSilence,
     changePostWordSilence,
     changeSequenceStep,
@@ -515,7 +497,6 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
     moveSequenceStep,
     pauseRequest,
     playbackActive,
-    playbackMode,
     postSentenceSilence,
     postWordSilence,
     playbackRunMode,

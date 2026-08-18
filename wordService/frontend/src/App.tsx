@@ -45,7 +45,6 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
     cancelSilence,
     canNext,
     canPrevious,
-    changePlaybackMode,
     changeSequenceStep,
     moveSequenceStep,
     removeSequenceStep,
@@ -54,7 +53,6 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
     moveClip: movePlaybackClip,
     pauseRequest,
     playbackActive,
-    playbackMode,
     playbackRunMode,
     playRequest,
     replayFocused,
@@ -225,10 +223,8 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
       />
 
       {settingsOpen ? <PlaybackSettingsModal
-        playbackMode={playbackMode}
         playbackRunMode={playbackRunMode}
         sequence={sequence}
-        onChangePlaybackMode={changePlaybackMode}
         onChangeSequenceStep={changeSequenceStep}
         onAddSequenceStep={addSequenceStep}
         onMoveSequenceStep={moveSequenceStep}

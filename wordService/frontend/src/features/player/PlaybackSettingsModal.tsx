@@ -4,13 +4,11 @@ import type {
   AudioSequenceElement,
   AudioSequenceStep,
 } from "./audioSequenceTypes";
-import type { PlaybackMode, PlaybackRunMode } from "./playbackSettings";
+import type { PlaybackRunMode } from "./playbackSettings";
 
 interface PlaybackSettingsModalProps {
-  playbackMode: PlaybackMode;
   playbackRunMode: PlaybackRunMode;
   sequence: AudioSequenceConfig;
-  onChangePlaybackMode: (mode: PlaybackMode) => void;
   onChangeSequenceStep: (stepId: string, patch: Partial<AudioSequenceStep>) => void;
   onAddSequenceStep: (element: AudioSequenceElement) => void;
   onMoveSequenceStep: (stepId: string, direction: "up" | "down") => void;
@@ -25,10 +23,8 @@ function pauseSeconds(value: number) {
 }
 
 export function PlaybackSettingsModal({
-  playbackMode,
   playbackRunMode,
   sequence,
-  onChangePlaybackMode,
   onChangeSequenceStep,
   onAddSequenceStep,
   onMoveSequenceStep,
@@ -64,8 +60,8 @@ export function PlaybackSettingsModal({
                     value={step.element}
                     onChange={(event) => onChangeSequenceStep(step.id, {element: event.target.value as AudioSequenceElement})}
                   >
-                    <option value="word">English word</option>
-                    <option value="sentence">English sentence</option>
+                    <option value="word">Word</option>
+                    <option value="sentence">Sentence</option>
                   </select>
                   <small>Unavailable audio is skipped automatically.</small>
                 </div>
@@ -74,31 +70,27 @@ export function PlaybackSettingsModal({
                     <button type="button" onClick={() => onMoveSequenceStep(step.id, "up")} disabled={index === 0} aria-label={`Move step ${index + 1} up`}>↑</button>
                     <button type="button" onClick={() => onMoveSequenceStep(step.id, "down")} disabled={index === sequence.steps.length - 1} aria-label={`Move step ${index + 1} down`}>↓</button>
                   </div>
-                  <label className="react-sequence-field">
+                  <div className="react-sequence-stepper">
                     <span>Repeat</span>
-                    <input
-                      type="number"
-                      min="0"
-                      max="9"
-                      step="1"
-                      value={step.repeatCount}
-                      aria-label={`Repeat step ${index + 1}`}
-                      onChange={(event) => onChangeSequenceStep(step.id, {repeatCount: Number(event.target.value)})}
-                    />
-                  </label>
+                    <span className="react-sequence-stepper-control">
+                      <button type="button" onClick={() => onChangeSequenceStep(step.id, {repeatCount: Math.max(0, step.repeatCount - 1)})} disabled={step.repeatCount <= 0} aria-label={`Decrease repeat for step ${index + 1}`}>−</button>
+                      <output aria-label={`Repeat count for step ${index + 1}`}>{step.repeatCount}</output>
+                      <button type="button" onClick={() => onChangeSequenceStep(step.id, {repeatCount: Math.min(9, step.repeatCount + 1)})} disabled={step.repeatCount >= 9} aria-label={`Increase repeat for step ${index + 1}`}>+</button>
+                    </span>
+                  </div>
                   <label className="react-sequence-field">
                     <span>Pause after</span>
-                    <span className="react-sequence-input-with-unit">
+                    <span className="react-sequence-slider-row">
                       <input
-                        type="number"
+                        type="range"
                         min="0"
                         max="3"
                         step="0.1"
-                        value={pauseSeconds(step.pauseAfterMs)}
+                        value={step.pauseAfterMs / 1000}
                         aria-label={`Pause after step ${index + 1}`}
                         onChange={(event) => onChangeSequenceStep(step.id, {pauseAfterMs: Math.round(Number(event.target.value) * 1000)})}
                       />
-                      <span aria-hidden="true">s</span>
+                      <output>{pauseSeconds(step.pauseAfterMs)}s</output>
                     </span>
                   </label>
                   <button type="button" className="react-sequence-remove" onClick={() => onRemoveSequenceStep(step.id)} disabled={sequence.steps.length <= 1} aria-label={`Remove step ${index + 1}`}>Remove</button>
@@ -111,14 +103,6 @@ export function PlaybackSettingsModal({
             <span>Add step</span>
             <button type="button" onClick={() => onAddSequenceStep("word")} disabled={sequence.steps.length >= MAX_AUDIO_SEQUENCE_STEPS}>+ Word</button>
             <button type="button" onClick={() => onAddSequenceStep("sentence")} disabled={sequence.steps.length >= MAX_AUDIO_SEQUENCE_STEPS}>+ Sentence</button>
-          </div>
-
-          <div className="react-setting-copy">
-            <span>Audio included</span>
-            <p>Filter the recipe when you want only one kind of clip during visible-list playback.</p>
-          </div>
-          <div className="react-setting-options" role="radiogroup" aria-label="Audio included">
-            {(["words", "sentences", "both"] as PlaybackMode[]).map((mode) => <button type="button" key={mode} className={playbackMode === mode ? "is-selected" : ""} role="radio" aria-checked={playbackMode === mode} onClick={() => onChangePlaybackMode(mode)}>{mode === "words" ? "Words only" : mode === "sentences" ? "Sentences only" : "Use full recipe"}</button>)}
           </div>
 
           <div className="react-setting-copy">

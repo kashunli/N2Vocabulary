@@ -316,15 +316,15 @@ The player’s `Single` / `Consecutive` button controls the transport run:
   then moves to the next visible entry.
 
 Open the gear button to edit the local `Listening sequence` recipe. Each row
-has an audio element (`English word` or `English sentence`), a repeat count,
-and its own pause-after duration. Add the same element more than once when a
+has an audio element (`word` or `sentence`), a repeat count, and its own
+pause-after duration. Add the same element more than once when a
 learner wants a pattern such as word → sentence → sentence or word → sentence
 → word. A repeat count of zero skips a row, and an unavailable clip is skipped
 automatically. The compatibility default remains one word followed by one
 sentence, each with a 500 ms pause.
 
-The recipe, content filter, transport mode, and pause values are saved in the
-browser’s local playback settings. Existing v1 settings are migrated the first
+The recipe, transport mode, and pause values are saved in the browser’s local
+playback settings. Existing v1 settings are migrated the first
 time the React wall reads them; the runtime still uses only the browser’s
 local learner state and the server’s SQLite/media projection.
 

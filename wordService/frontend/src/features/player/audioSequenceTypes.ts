@@ -1,4 +1,4 @@
-import type { PlaybackMode, PlaybackPhase } from "./playbackSettings";
+import type { PlaybackPhase } from "./playbackSettings";
 
 export type AudioSequenceElement = PlaybackPhase;
 
