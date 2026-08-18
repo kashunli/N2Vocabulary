@@ -103,7 +103,12 @@ pub(super) fn send_audio(request: Request, path: &Path) -> Result<()> {
     serve_file(request, path, "audio/mpeg", "public, max-age=31536000")
 }
 
-fn serve_file(request: Request, path: &Path, content_type: &str, cache_control: &str) -> Result<()> {
+fn serve_file(
+    request: Request,
+    path: &Path,
+    content_type: &str,
+    cache_control: &str,
+) -> Result<()> {
     if !path.exists() || !path.is_file() {
         return send_json(request, StatusCode(404), &json!({"error": "not found"}));
     }
