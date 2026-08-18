@@ -1,0 +1,15 @@
+node_modules/
+resources/
+android/.gradle/
+android/.idea/
+android/build/
+android/app/build/
+android/app/src/main/assets/public/
+android/local.properties
+*.jks
+keystore.properties
+
+# The project-wide **/*.png rule would drop the launcher/splash PNGs the
+# Android build requires — un-ignore exactly those resources.
+!android/app/src/main/res/mipmap-*/ic_launcher*.png
+!android/app/src/main/res/drawable*/splash.png
