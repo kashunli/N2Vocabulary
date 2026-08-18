@@ -6,6 +6,7 @@ Naming: `YYYY-MM-DD_short-slug.md`.
 
 ## Index
 
+- [2026-08-18 - Content cache and reload](2026-08-18_wordservice-content-cache-and-reload.md) - treated book content as static: client caches each book locally keyed by a server `content_revision`, the wall stops fetching one entry per play, and scoped queues derive client-side.
 - [2026-07-19 - Autoplay review transport](2026-07-19_wordservice-autoplay-review-transport.md) - added the Study Wall player, deferred pause, idempotent replay-once, and optional keyboard marking while the list advances automatically.
 - [2026-07-18 - N1 human-cut audio runtime fix](2026-07-18_n1-human-audio-runtime-fix.md) - rebuilt the stale service release so all N1 cards use their imported human word and main-sentence clips, with a regression test for shared identities.
 - [2026-07-14 - Visible-scope audio playback](2026-07-14_wordservice-visible-audio-playback.md) - added scope-aware continuous playback with progress, pause/resume at the same timestamp, and click-a-card start-here behavior.
