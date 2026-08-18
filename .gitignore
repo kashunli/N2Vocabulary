@@ -40,6 +40,9 @@ clips/*
 !clips/n3/words/*.mp3
 !clips/n3/sentences/
 !clips/n3/sentences/*.mp3
+!clips/gwb_n2/
+!clips/gwb_n2/words/
+!clips/gwb_n2/words/*.mp3
 output/clips/
 legacy/oldClips/
 
