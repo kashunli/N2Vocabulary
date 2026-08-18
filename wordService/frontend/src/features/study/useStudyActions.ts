@@ -6,7 +6,6 @@ import type { StudyStateStore } from "./studyStateTypes";
 
 interface UseStudyActionsOptions {
   activeEntry?: Entry;
-  setDetail: Dispatch<SetStateAction<Entry | undefined>>;
   setEntries: Dispatch<SetStateAction<Entry[]>>;
   setStatus: (status: string) => void;
   studyStore: StudyStateStore;
@@ -14,7 +13,6 @@ interface UseStudyActionsOptions {
 
 export function useStudyActions({
   activeEntry,
-  setDetail,
   setEntries,
   setStatus,
   studyStore,
@@ -28,14 +26,11 @@ export function useStudyActions({
       setEntries((current) => current.map((entry) => entry.entry_id === activeEntry.entry_id
         ? {...entry, mark: {...entry.mark, status: nextStatus}}
         : entry));
-      setDetail((current) => current && current.entry_id === activeEntry.entry_id
-        ? {...current, mark: {...current.mark, status: nextStatus}}
-        : current);
       setStatus(`${activeEntry.kanji} is ${nextStatus}.`);
     } catch (error: unknown) {
       setStatus(error instanceof Error ? error.message : "Could not update the study mark.");
     }
-  }, [activeEntry, setDetail, setEntries, setStatus, studyStore]);
+  }, [activeEntry, setEntries, setStatus, studyStore]);
 
   return {
     toggleMark,

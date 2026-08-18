@@ -52,6 +52,8 @@ export interface VocabularySummary {
   flagged: number;
   review?: number;
   unmarked: number;
+  /** Fingerprint of the immutable content DB. Keys the local content cache. */
+  content_revision: string;
 }
 
 export interface Mark {

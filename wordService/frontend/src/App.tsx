@@ -99,14 +99,14 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
   const activeIndex = playbackIndex;
   const selectEntry = selectPlaybackEntry;
   const {
+    allEntries,
     books,
-    detail,
-    setDetail,
+    contentLoading,
     setStatus,
     status,
     summary,
     units,
-  } = useStudyCatalog({activeEntry, selectedBook, selectedUnit, studySnapshot: snapshot});
+  } = useStudyCatalog({selectedBook, selectedUnit, studySnapshot: snapshot});
 
   // Status messages are transient feedback, not part of the study layout.
   // Removing them after a short pause keeps an error or save confirmation from
@@ -136,13 +136,13 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
     toggleMark,
   } = useStudyActions({
     activeEntry,
-    setDetail,
     setEntries,
     setStatus,
     studyStore: store,
   });
 
   useStudyEntries({
+    allEntries,
     filterState,
     resetPosition,
     selectedBook,
@@ -193,9 +193,8 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
           activeIndex={activeIndex}
           activePhase={activePhase}
           bookCode={activeEntry?.book_code || selectedBook}
-          detail={detail}
           entries={entries}
-          entriesLoading={entriesLoading}
+          entriesLoading={contentLoading || entriesLoading}
           listVisible={listVisible}
           onSelectEntry={selectEntry}
           onSelectPhase={selectPhase}

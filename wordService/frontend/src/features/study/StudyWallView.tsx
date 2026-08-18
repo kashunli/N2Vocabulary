@@ -13,7 +13,6 @@ interface StudyWallViewProps {
   activeIndex: number;
   activePhase: PlaybackPhase;
   bookCode: string;
-  detail?: Entry;
   entries: Entry[];
   entriesLoading: boolean;
   emptyMessage?: string;
@@ -28,7 +27,6 @@ export function StudyWallView({
   activeIndex,
   activePhase,
   bookCode,
-  detail,
   entries,
   entriesLoading,
   emptyMessage = "Loading vocabulary…",
@@ -119,7 +117,7 @@ export function StudyWallView({
             <MeaningDisplay meaningEn={activeEntry.meaning_en} meaningZh={activeEntry.meaning_zh} />
           </div>
           {reviewSession?.completedByItemUuid[activeEntry.item_uuid] ? <p className="react-review-completed">Reviewed · level {reviewSession.completedByItemUuid[activeEntry.item_uuid].reviewLevel} · next {new Date(reviewSession.completedByItemUuid[activeEntry.item_uuid].nextDueAt).toLocaleDateString()}</p> : null}
-          {detail?.sentence ? <div className="react-sentence">
+          {activeEntry.sentence ? <div className="react-sentence">
               <button
                 type="button"
                 className="react-sentence-trigger"
@@ -129,10 +127,10 @@ export function StudyWallView({
                 aria-label="Play sentence audio"
                 title="Play sentence audio"
               >
-                <strong>{detail.sentence}</strong>
+                <strong>{activeEntry.sentence}</strong>
               </button>
             </div> : null}
-          {detail?.explanation_md ? <SentenceExplanation value={detail.explanation_md} /> : null}
+          {activeEntry.explanation_md ? <SentenceExplanation value={activeEntry.explanation_md} /> : null}
         </> : <p className="react-empty">{emptyMessage}</p>}
       </section>
     </div>

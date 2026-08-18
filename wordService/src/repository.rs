@@ -7,6 +7,7 @@ use anyhow::{Context, Result, bail};
 use chrono::Utc;
 use rusqlite::types::Value;
 use rusqlite::{Connection, OptionalExtension, params, params_from_iter};
+use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, HashMap};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -46,6 +47,10 @@ pub struct WordRepository {
     clips_dir: PathBuf,
     book_code: String,
     write_lock: Arc<Mutex<()>>,
+    // Lazily computed SHA-256 of the content database, shared across the
+    // per-book clones every request creates. The frontend uses it to validate
+    // its local content cache.
+    content_revision: Arc<Mutex<Option<String>>>,
 }
 
 /// A raw joined row from the `entries` query.
@@ -92,6 +97,7 @@ impl WordRepository {
             clips_dir: clips_dir.into(),
             book_code: book_code.to_string(),
             write_lock: Arc::new(Mutex::new(())),
+            content_revision: Arc::new(Mutex::new(None)),
         }
     }
 
@@ -101,7 +107,37 @@ impl WordRepository {
             clips_dir: self.clips_dir.clone(),
             book_code: normalize_book_code(book_code),
             write_lock: self.write_lock.clone(),
+            content_revision: self.content_revision.clone(),
         }
+    }
+
+    /// Fingerprint of the immutable content database, computed once per process.
+    ///
+    /// The hash is taken lazily on first access and cached, so the 35 MB read
+    /// happens at most once per run. A fresh process after an offline import or
+    /// migration sees a different hash and the browser refetches its content.
+    fn content_revision(&self) -> String {
+        let mut guard = self
+            .content_revision
+            .lock()
+            .expect("content revision lock should not be poisoned");
+        if let Some(value) = guard.as_ref() {
+            return value.clone();
+        }
+        // A missing/unreadable database simply becomes an empty revision, which
+        // makes the browser treat every cache as stale and refetch. Failing the
+        // whole summary request would be worse than a redundant refetch.
+        let revision = fs::read(&self.db_path)
+            .map(|bytes| {
+                let digest = Sha256::digest(&bytes);
+                digest
+                    .iter()
+                    .map(|byte| format!("{:02x}", byte))
+                    .collect::<String>()
+            })
+            .unwrap_or_default();
+        *guard = Some(revision.clone());
+        revision
     }
 
     pub fn ensure_ready(&self) -> Result<()> {
@@ -381,6 +417,7 @@ impl WordRepository {
             known,
             flagged,
             unmarked: (entries - marked_any).max(0),
+            content_revision: self.content_revision(),
         })
     }
 
@@ -898,15 +935,17 @@ impl WordRepository {
                     .flatten()
             });
 
-        let explanation_md = if detail {
+        // The explanation is static content the card pane renders on every
+        // entry, so list and detail payloads both carry it. Keeping it in the
+        // list lets the study wall render the pane from the already-loaded
+        // queue instead of fetching one entry per card play.
+        let explanation_md = {
             let value = main_example
                 .map(|example| example.explanation_md.clone())
                 .filter(|value| !value.is_empty())
                 .or_else(|| row.explanation_md.clone())
                 .unwrap_or_default();
             (!value.trim().is_empty()).then_some(value)
-        } else {
-            None
         };
 
         EntryPayload {

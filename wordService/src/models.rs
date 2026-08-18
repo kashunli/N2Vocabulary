@@ -18,6 +18,9 @@ pub struct Summary {
     pub known: i64,
     pub flagged: i64,
     pub unmarked: i64,
+    /// Stable fingerprint of the immutable content database. The frontend keys
+    /// its local content cache on this value and refetches only when it changes.
+    pub content_revision: String,
 }
 
 /// Per-unit counts used by the unit sidebar/list.

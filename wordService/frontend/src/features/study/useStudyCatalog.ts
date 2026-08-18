@@ -1,19 +1,18 @@
 import { useEffect, useState } from "react";
 
-import { getBooks, getEntries, getEntry, getSummary, getUnits } from "../../api";
+import { getBooks, getEntries, getSummary, getUnits } from "../../api";
+import { readContentBook, writeContentBook } from "./contentCache.mjs";
 import type { BookSummary, Entry, UnitSummary, VocabularySummary } from "../../types";
 import { markStatusOf } from "./markStatus";
 import { isReviewDue, type StudySnapshot } from "./studyStateTypes";
 
 interface UseStudyCatalogOptions {
-  activeEntry?: Entry;
   selectedBook: string;
   selectedUnit: number | null;
   studySnapshot: StudySnapshot;
 }
 
 export function useStudyCatalog({
-  activeEntry,
   selectedBook,
   selectedUnit,
   studySnapshot,
@@ -22,33 +21,55 @@ export function useStudyCatalog({
   const [summary, setSummary] = useState<VocabularySummary>();
   const [units, setUnits] = useState<UnitSummary[]>([]);
   const [allEntries, setAllEntries] = useState<Entry[]>([]);
-  const [detail, setDetail] = useState<Entry>();
+  const [contentLoading, setContentLoading] = useState(false);
   const [status, setStatus] = useState("");
 
   useEffect(() => {
     getBooks()
       .then((payload) => setBooks(payload.items))
       .catch((error: unknown) => setStatus(error instanceof Error ? error.message : "Could not load books."));
-  }, []);
+  }, [setStatus]);
 
-  // Fetch the selected book's catalog once per book selection. The wall's
-  // visible queue and the section dropdown counts are both derived from this
-  // immutable list below, so playback/mark snapshot changes must not re-run
-  // this network request.
+  // Load the selected book's content once and keep it local. Book content is
+  // immutable, so a fresh summary only validates the cached revision; units and
+  // entries are refetched only when the server fingerprint changed. There is no
+  // per-entry detail request: every card field ships in the list payload.
   useEffect(() => {
     let cancelled = false;
-    Promise.all([getSummary(selectedBook), getUnits(selectedBook), getEntries(selectedBook)])
-      .then(([nextSummary, nextUnits, bookPayload]) => {
+    setContentLoading(true);
+    getSummary(selectedBook)
+      .then(async (freshSummary) => {
+        const cached = readContentBook(selectedBook);
+        if (cached && cached.revision === freshSummary.content_revision) {
+          if (cancelled) return;
+          setSummary(freshSummary);
+          setUnits(cached.units);
+          setAllEntries(cached.allEntries);
+          return;
+        }
+        const [nextUnits, bookPayload] = await Promise.all([
+          getUnits(selectedBook),
+          getEntries(selectedBook),
+        ]);
         if (cancelled) return;
-        setAllEntries(bookPayload.items);
-        setSummary(nextSummary);
+        writeContentBook(selectedBook, {
+          revision: freshSummary.content_revision,
+          summary: freshSummary,
+          units: nextUnits.items,
+          allEntries: bookPayload.items,
+        });
+        setSummary(freshSummary);
         setUnits(nextUnits.items);
+        setAllEntries(bookPayload.items);
       })
       .catch((error: unknown) => {
         if (!cancelled) setStatus(error instanceof Error ? error.message : "Could not load sections.");
+      })
+      .finally(() => {
+        if (!cancelled) setContentLoading(false);
       });
     return () => { cancelled = true; };
-  }, [selectedBook]);
+  }, [selectedBook, setStatus]);
 
   // Recompute the scoped header counts whenever marks/playback change the
   // snapshot. All inputs already live locally, so this never hits the network.
@@ -86,25 +107,13 @@ export function useStudyCatalog({
     }));
   }, [allEntries, selectedBook, selectedUnit, studySnapshot]);
 
-  useEffect(() => {
-    if (!activeEntry) {
-      setDetail(undefined);
-      return undefined;
-    }
-    let cancelled = false;
-    getEntry(activeEntry.entry_id, activeEntry.book_code)
-      .then((nextDetail) => { if (!cancelled) setDetail(nextDetail); })
-      .catch((error: unknown) => { if (!cancelled) setStatus(error instanceof Error ? error.message : "Could not load word details."); });
-    return () => { cancelled = true; };
-  }, [activeEntry, selectedBook]);
-
   return {
     books,
-    detail,
-    setDetail,
+    contentLoading,
     setStatus,
     status,
     summary,
     units,
+    allEntries,
   };
 }

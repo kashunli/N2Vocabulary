@@ -55,10 +55,54 @@ fn summary_and_units_include_mark_counts() {
     assert_eq!(summary.known, 1);
     assert_eq!(summary.flagged, 0);
     assert_eq!(summary.unmarked, 3);
+    assert!(
+        !summary.content_revision.is_empty(),
+        "summary should carry a content revision for the client cache"
+    );
 
     let unit = fixture.repo.list_units().unwrap().remove(0);
     assert_eq!(unit.entry_count, 2);
     assert_eq!(unit.known, 1);
+}
+
+#[test]
+fn content_revision_is_stable_across_handles_and_ensure_ready() {
+    let fixture = Fixture::new();
+    let first = fixture.repo.get_summary().unwrap().content_revision;
+    assert!(
+        !first.is_empty(),
+        "content revision should be a fingerprint of the database"
+    );
+
+    // A second handle over the same database shares the same cached revision.
+    let second = WordRepository::new(fixture.db_path.clone(), fixture.clips_dir.clone(), "N2");
+    assert_eq!(second.get_summary().unwrap().content_revision, first);
+
+    // ensure_ready may run startup migrations; the in-process revision must not
+    // change even if those writes touch the file.
+    fixture.repo.ensure_ready().unwrap();
+    assert_eq!(fixture.repo.get_summary().unwrap().content_revision, first);
+}
+
+#[test]
+fn content_revision_changes_for_a_fresh_process_after_a_content_edit() {
+    let fixture = Fixture::new();
+    let before = fixture.repo.get_summary().unwrap().content_revision;
+    {
+        let conn = Connection::open(&fixture.db_path).unwrap();
+        conn.execute(
+            "UPDATE vocabulary_items SET meaning_en = 'changed' WHERE item_id = 1",
+            [],
+        )
+        .unwrap();
+    }
+    // A brand-new handle (a fresh process with no cached revision) recomputes and
+    // sees the changed file, so the browser refetches after an offline edit.
+    let fresh = WordRepository::new(fixture.db_path.clone(), fixture.clips_dir.clone(), "N2");
+    let after = fresh.get_summary().unwrap().content_revision;
+    assert_ne!(after, before);
+    // The original handle still serves its cached revision for this process.
+    assert_eq!(fixture.repo.get_summary().unwrap().content_revision, before);
 }
 
 #[test]
