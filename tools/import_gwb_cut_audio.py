@@ -32,6 +32,7 @@ from collections import Counter, defaultdict
 
 BOOK_CODE = "GWB_N2"
 DEFAULT_CUTS_ROOT = r"D:\n2Prepare\greenWordBook\work\cuts"
+DEFAULT_GREEN_ROOT = r"D:\n2Prepare\greenWordBook"
 DEFAULT_DB = "wordService/data/n2vocab.sqlite"
 WORD_DST_DIR = "clips/gwb_n2/human/words"
 SENTENCE_DST_DIR = "clips/gwb_n2/human/sentences"
@@ -58,9 +59,14 @@ def load_cut_entries(cuts_root: str) -> list[dict]:
     for mpath in sorted(glob.glob(os.path.join(cuts_root, "p*", "manifest.json"))):
         m = read_json(mpath)
         for e in m["entries"]:
+            try:
+                number_padded = str(int(e["entry_number"])).zfill(4)
+            except (TypeError, ValueError):
+                number_padded = str(e.get("entry_number") or "").strip()
             entries.append(
                 {
                     "entry_number": int(e["entry_number"]),
+                    "entry_number_padded": number_padded,
                     "headword": (e.get("headword") or "").strip(),
                     "bracket": ((e.get("book_content") or {}).get("bracket_form") or "").strip(),
                     "example": ((e.get("book_content") or {}).get("example_japanese") or "").strip(),
@@ -107,7 +113,12 @@ def load_db(conn) -> tuple[list[dict], dict]:
     return db_entries
 
 
-def build_matches(cut_entries: list[dict], db_entries: list[dict]) -> tuple[list[dict], dict]:
+def build_matches(
+    cut_entries: list[dict],
+    db_entries: list[dict],
+    records_by_number: dict[str, dict] | None = None,
+    db_by_source_index: dict[int, dict] | None = None,
+) -> tuple[list[dict], dict]:
     idx = defaultdict(list)  # level1 example text -> [(entry_id, position)]
     idx2 = defaultdict(list)  # level2
     by_reading = defaultdict(list)
@@ -128,6 +139,44 @@ def build_matches(cut_entries: list[dict], db_entries: list[dict]) -> tuple[list
     for c in cut_entries:
         example = c["example"]
         if not example:
+            # No OCR-backed example text (manifest gap). The word clip can
+            # still be attached when the printed entry number resolves to the
+            # record's actual JSON position (never assume number == position).
+            if records_by_number and db_by_source_index:
+                rec = records_by_number.get(c["entry_number_padded"])
+                if rec is None:
+                    stats["no_example_text"] += 1
+                    skipped.append({**c, "reason": "no_example_text_no_record"})
+                    continue
+                src_index = rec["position"]
+                row = db_by_source_index.get(src_index)
+                if row is None:
+                    stats["no_example_text"] += 1
+                    skipped.append({**c, "reason": "no_example_text_no_db_row"})
+                    continue
+                head_matches = (
+                    norm(row["reading"], 1) == norm(c["headword"], 1)
+                    or norm(row["kanji"], 1) == norm(c["headword"], 1)
+                    or (c["bracket"] and norm(row["kanji"], 1) == norm(c["bracket"], 1))
+                )
+                if not head_matches:
+                    stats["no_example_text"] += 1
+                    skipped.append({**c, "reason": "no_example_text_headword_mismatch",
+                                    "db_row": (src_index, row["kanji"], row["reading"])})
+                    continue
+                stats["entry_number_fallback"] += 1
+                matches.append(
+                    {
+                        "cut_entry_number": c["entry_number"],
+                        "part": c["part"],
+                        "word": c["word"],
+                        "sentence": None,
+                        "db_entry_id": row["entry_id"],
+                        "example_position": 0,
+                        "match_kind": "entry_number_fallback",
+                    }
+                )
+                continue
             stats["no_example_text"] += 1
             skipped.append({**c, "reason": "no_example_text"})
             continue
@@ -163,6 +212,10 @@ def build_matches(cut_entries: list[dict], db_entries: list[dict]) -> tuple[list
             stats["ambiguous_resolved_by_headword"] += 1
         entry_id, position = uniq[0]
         stats["matched"] += 1
+        example_text = next(
+            ex["text"] for ex in db_by_entry[entry_id]["examples"]
+            if ex["position"] == position
+        )
         matches.append(
             {
                 "cut_entry_number": c["entry_number"],
@@ -171,15 +224,23 @@ def build_matches(cut_entries: list[dict], db_entries: list[dict]) -> tuple[list
                 "sentence": c["sentence"],
                 "db_entry_id": entry_id,
                 "example_position": position,
+                "example_text": example_text,
+                "match_kind": "text",
             }
         )
     return matches, {"stats": dict(stats), "skipped": skipped}
 
 
-def plan_steps(root: str, matches: list[dict], db_entries: list[dict]) -> tuple[list[dict], list[dict], list[dict]]:
+def plan_steps(
+    root: str,
+    matches: list[dict],
+    db_entries: list[dict],
+    item_examples_texts: dict[int, list[tuple[int, str]]],
+) -> tuple[list[dict], list[dict], list[dict]]:
     db_by_entry = {e["entry_id"]: e for e in db_entries}
     word_steps = []
     sentence_steps = []
+    skipped_sentences = []
     for m in matches:
         e = db_by_entry[m["db_entry_id"]]
         if m["word"]:
@@ -200,20 +261,36 @@ def plan_steps(root: str, matches: list[dict], db_entries: list[dict]) -> tuple[
             for ex in e["examples"]:
                 if ex["position"] == m["example_position"]:
                     old = ex["audio_clip"]
+            # Shared items can carry the example at any position; resolve by
+            # text instead of assuming entry_examples position == item position.
+            item_pos = None
+            for pos, text in item_examples_texts.get(e["item_id"], []):
+                if (text or "").strip() == (m.get("example_text") or ""):
+                    item_pos = pos
+                    break
+            if item_pos is None:
+                skipped_sentences.append(
+                    {
+                        "entry_id": m["db_entry_id"],
+                        "reason": "no_item_example_text_match",
+                    }
+                )
+                continue
             sentence_steps.append(
                 {
                     "entry_id": m["db_entry_id"],
                     "item_id": e["item_id"],
                     "position": m["example_position"],
+                    "item_position": item_pos,
                     "src": src,
                     "dst_rel": dst_rel,
                     "old_clip": old,
                 }
             )
-    return word_steps, sentence_steps
+    return word_steps, sentence_steps, skipped_sentences
 
 
-def validate(root: str, word_steps, sentence_steps, db_path: str) -> list[str]:
+def validate(root: str, word_steps, sentence_steps, db_path: str, overwrite: bool = False) -> list[str]:
     errors = []
     seen_dst = set()
     for s in word_steps + sentence_steps:
@@ -226,7 +303,7 @@ def validate(root: str, word_steps, sentence_steps, db_path: str) -> list[str]:
             errors.append(f"duplicate destination: {s['dst_rel']}")
         seen_dst.add(s["dst_rel"])
         dst = os.path.join(root, s["dst_rel"])
-        if os.path.exists(dst):
+        if os.path.exists(dst) and not overwrite:
             errors.append(f"destination already exists: {s['dst_rel']}")
     if not os.path.isfile(db_path):
         errors.append(f"DB not found: {db_path}")
@@ -269,11 +346,12 @@ def apply(root: str, db_path: str, word_steps, sentence_steps) -> None:
         for s in sentence_steps:
             n = conn.execute(
                 "UPDATE item_examples SET audio_clip=? WHERE item_id=? AND position=?",
-                (s["dst_rel"], s["item_id"], s["position"]),
+                (s["dst_rel"], s["item_id"], s["item_position"]),
             ).rowcount
             if n != 1:
                 raise RuntimeError(
-                    f"item_examples update failed for item {s['item_id']} pos {s['position']}"
+                    f"item_examples update failed for item {s['item_id']} "
+                    f"item_pos {s['item_position']}"
                 )
             n = conn.execute(
                 "UPDATE entry_examples SET audio_clip=? WHERE entry_id=? AND position=?",
@@ -363,27 +441,58 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", default=".", help="N2Vocabulary repo root (default: cwd)")
     parser.add_argument("--cuts-root", default=DEFAULT_CUTS_ROOT)
+    parser.add_argument("--green-root", default=DEFAULT_GREEN_ROOT)
     parser.add_argument("--db", default=DEFAULT_DB)
     parser.add_argument("--report", default="tmp/gwb_cut_audio_import_report.json")
     parser.add_argument("--dry-run", action="store_true", help="preview without changing anything")
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="allow re-copying over destinations that already exist (re-run after boundary review)",
+    )
     args = parser.parse_args()
 
     root = os.path.abspath(args.repo_root)
     db_path = os.path.join(root, args.db)
     cuts_root = os.path.abspath(args.cuts_root)
+    green_root = os.path.abspath(args.green_root)
 
     cut_entries = load_cut_entries(cuts_root)
     conn = sqlite3.connect(db_path)
     db_entries = load_db(conn)
+    # Current book records by printed entry number -> actual JSON position.
+    records_by_number = {}
+    book_payload = read_json(os.path.join(green_root, "data", "green_word_book_n2_vocab.json"))
+    for pos, rec in enumerate(book_payload["records"], start=1):
+        try:
+            number_padded = str(int(rec["entry_number"])).zfill(4)
+        except (TypeError, KeyError, ValueError):
+            number_padded = str(rec.get("entry_number") or "").strip()
+        if number_padded and number_padded not in records_by_number:
+            records_by_number[number_padded] = {**rec, "position": pos}
+    db_by_source_index = {
+        e["source_index"]: e for e in db_entries if e["source_index"] is not None
+    }
+    item_examples_texts = {}
+    for item_id, position, text in conn.execute(
+        "SELECT item_id, position, text FROM item_examples"
+    ).fetchall():
+        item_examples_texts.setdefault(item_id, []).append((position, text or ""))
     conn.close()
-    matches, meta = build_matches(cut_entries, db_entries)
-    word_steps, sentence_steps = plan_steps(cuts_root, matches, db_entries)
+    matches, meta = build_matches(cut_entries, db_entries, records_by_number, db_by_source_index)
+    word_steps, sentence_steps, skipped_sentences = plan_steps(
+        cuts_root, matches, db_entries, item_examples_texts
+    )
 
     print(f"Cut entries: {len(cut_entries)} | matched: {meta['stats']['matched']}")
     print(f"Planned word files: {len(word_steps)} | sentence files: {len(sentence_steps)}")
     print("Skip stats:", {k: v for k, v in meta["stats"].items() if k != "matched"})
+    if skipped_sentences:
+        print(f"Sentences skipped (no item_examples text match): {len(skipped_sentences)}")
+        for s in skipped_sentences[:10]:
+            print("  ", s)
 
-    errors = validate(root, word_steps, sentence_steps, db_path)
+    errors = validate(root, word_steps, sentence_steps, db_path, args.overwrite)
     if errors:
         print("FATAL validation errors:")
         for e in errors[:20]:
@@ -396,6 +505,7 @@ def main() -> int:
         "db": db_path,
         "stats": meta["stats"],
         "skipped": meta["skipped"],
+        "skipped_sentences": skipped_sentences,
         "word_plan": word_steps,
         "sentence_plan": sentence_steps,
     }
