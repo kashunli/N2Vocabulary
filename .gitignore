@@ -43,6 +43,11 @@ clips/*
 !clips/gwb_n2/
 !clips/gwb_n2/words/
 !clips/gwb_n2/words/*.mp3
+!clips/gwb_n2/human/
+!clips/gwb_n2/human/words/
+!clips/gwb_n2/human/words/*.mp3
+!clips/gwb_n2/human/sentences/
+!clips/gwb_n2/human/sentences/*.mp3
 output/clips/
 legacy/oldClips/
 
