@@ -57,6 +57,14 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
+
+    // Keep the actual audio engine outside the WebView.  Media3 owns playback
+    // and its foreground media-session notification while the screen is locked.
+    def media3Version = '1.11.0'
+    implementation "androidx.media3:media3-exoplayer:$media3Version"
+    implementation "androidx.media3:media3-session:$media3Version"
+    implementation "androidx.media3:media3-datasource:$media3Version"
+    implementation "androidx.media3:media3-database:$media3Version"
 }
 
 apply from: 'capacitor.build.gradle'
