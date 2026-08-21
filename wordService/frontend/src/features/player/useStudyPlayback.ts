@@ -97,6 +97,8 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
   const endGenerationRef = useRef(0);
   const pendingSilenceRef = useRef<PendingSilence | null>(null);
   const completedPhasesRef = useRef<{itemUuid?: string; word: boolean; sentence: boolean; cardCompleted: boolean}>({word: false, sentence: false, cardCompleted: false});
+  const completedNativeCueIdsRef = useRef(new Set<string>());
+  const activeNativeCueIdRef = useRef<string | undefined>(undefined);
   const autoAdvanceRef = useRef(autoAdvance);
   const activeEntry = entries[activeIndex];
   const activeCues = useMemo(
@@ -418,24 +420,55 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
     }
   }, []);
 
+  const completeNativeCue = useCallback((id: string) => {
+    if (completedNativeCueIdsRef.current.has(id)) return;
+    const location = nativeCueLocation(id);
+    if (!location) return;
+    const entry = entries[location.entryIndex];
+    const cue = entry ? playableEntryAt(location.entryIndex)[location.cueIndex] : undefined;
+    if (!entry || !cue) return;
+    completedNativeCueIdsRef.current.add(id);
+    const progress = completedPhasesRef.current.itemUuid === entry.item_uuid
+      ? completedPhasesRef.current
+      : {itemUuid: entry.item_uuid, word: false, sentence: false, cardCompleted: false};
+    progress[cue.phase] = true;
+    completedPhasesRef.current = progress;
+    if (!progress.cardCompleted && progress.word && (progress.sentence || !entry.sentence_audio_url)) {
+      progress.cardCompleted = true;
+      onCompleteCard?.(entry);
+    }
+  }, [entries, onCompleteCard, playableEntryAt]);
+
   const syncNativeQueueItem = useCallback((id: string) => {
     const location = nativeCueLocation(id);
     if (!location || location.entryIndex < 0 || location.entryIndex >= entries.length) return;
     const cues = playableEntryAt(location.entryIndex);
     if (location.cueIndex < 0 || location.cueIndex >= cues.length) return;
+    // A locked WebView may miss several service callbacks. The queue is still
+    // materialized locally, so on unlock we can record every earlier cue that
+    // Android has already passed before showing the current cue.
+    const queuePosition = nativeQueue.findIndex((item) => item.id === id);
+    if (queuePosition >= 0) {
+      nativeQueue.slice(0, queuePosition).forEach((item) => completeNativeCue(item.id));
+    } else if (activeNativeCueIdRef.current && activeNativeCueIdRef.current !== id) {
+      completeNativeCue(activeNativeCueIdRef.current);
+    }
+    activeNativeCueIdRef.current = id;
     setActiveIndex(location.entryIndex);
     setActiveCueIndex(location.cueIndex);
     setManualSelection(null);
-  }, [entries.length, playableEntryAt]);
+  }, [completeNativeCue, entries.length, nativeQueue, playableEntryAt]);
 
   const completeNativeQueue = useCallback(() => {
+    if (activeNativeCueIdRef.current) completeNativeCue(activeNativeCueIdRef.current);
+    activeNativeCueIdRef.current = undefined;
     cancelEndTimer();
     autoAdvanceRef.current = false;
     setAutoAdvance(false);
     setIsSilencePlaying(false);
     setIsSilencePaused(false);
     if (activeEntry) onConsecutiveSequenceComplete?.(activeEntry);
-  }, [activeEntry, cancelEndTimer, onConsecutiveSequenceComplete]);
+  }, [activeEntry, cancelEndTimer, completeNativeCue, onConsecutiveSequenceComplete]);
 
   const togglePlayback = useCallback(() => {
     if (isPlaying) {
