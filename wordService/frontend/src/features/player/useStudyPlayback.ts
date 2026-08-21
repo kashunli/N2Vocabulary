@@ -24,6 +24,7 @@ import {
   type PlaybackRunMode,
 } from "./playbackSettings";
 import { readStudyFocus, saveStudyFocus } from "../study/studyFocus";
+import type { NativeAudioQueueItem } from "./nativeAudio";
 
 type PendingSilence = {
   remainingMs: number;
@@ -62,6 +63,16 @@ function sequenceCuesFor(
 
 function firstCueIndexForPhase(cues: MaterializedAudioSequenceStep[], phase: PlaybackPhase) {
   return cues.findIndex((cue) => cue?.phase === phase);
+}
+
+function nativeCueId(entryIndex: number, cueIndex: number) {
+  return `cue:${entryIndex}:${cueIndex}`;
+}
+
+function nativeCueLocation(id: string) {
+  const match = /^cue:(\d+):(\d+)$/.exec(id);
+  if (!match) return null;
+  return {entryIndex: Number(match[1]), cueIndex: Number(match[2])};
 }
 
 export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCard, onConsecutiveSequenceComplete}: UseStudyPlaybackOptions) {
@@ -103,6 +114,38 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
   const target = activeEntry
     ? targetFor(activeEntry, activePhase, activeCue?.occurrenceId || `manual:${activePhase}`)
     : null;
+
+  // A complete consecutive run must be materialized before the screen locks.
+  // The Android service owns this queue and its pauses, so it never depends on
+  // WebView timers to move from one word/sentence to the next.
+  const nativeQueue = useMemo((): NativeAudioQueueItem[] => {
+    if (!activeEntry) return [];
+    const selectedCueIndex = selectedManualPhase
+      ? firstCueIndexForPhase(activeCues, selectedManualPhase)
+      : safeCueIndex;
+    const firstCueIndex = selectedCueIndex >= 0 ? selectedCueIndex : safeCueIndex;
+    const result: NativeAudioQueueItem[] = [];
+    for (let entryIndex = activeIndex; entryIndex < entries.length; entryIndex += 1) {
+      if (entryIndex > activeIndex && stopAfterEntry) break;
+      const entry = entries[entryIndex];
+      const cues = sequenceCuesFor(sequence, entry);
+      const startCueIndex = entryIndex === activeIndex ? firstCueIndex : 0;
+      for (let cueIndex = startCueIndex; cueIndex < cues.length; cueIndex += 1) {
+        const cue = cues[cueIndex];
+        const url = cue.phase === "word" ? entry.word_audio_url : entry.sentence_audio_url;
+        if (!url) continue;
+        result.push({
+          id: nativeCueId(entryIndex, cueIndex),
+          title: `${entry.kanji} · ${cue.phase === "word" ? "Word" : "Sentence"}`,
+          url,
+          pauseAfterMs: cue.pauseAfterMs
+            ?? (cue.phase === "word" ? postWordSilence : postSentenceSilence),
+        });
+      }
+      if (stopAfterEntry) break;
+    }
+    return result;
+  }, [activeCues, activeEntry, activeIndex, entries, postSentenceSilence, postWordSilence, safeCueIndex, selectedManualPhase, sequence, stopAfterEntry]);
 
   useEffect(() => {
     if (activeIndex >= entries.length) {
@@ -375,6 +418,25 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
     }
   }, []);
 
+  const syncNativeQueueItem = useCallback((id: string) => {
+    const location = nativeCueLocation(id);
+    if (!location || location.entryIndex < 0 || location.entryIndex >= entries.length) return;
+    const cues = playableEntryAt(location.entryIndex);
+    if (location.cueIndex < 0 || location.cueIndex >= cues.length) return;
+    setActiveIndex(location.entryIndex);
+    setActiveCueIndex(location.cueIndex);
+    setManualSelection(null);
+  }, [entries.length, playableEntryAt]);
+
+  const completeNativeQueue = useCallback(() => {
+    cancelEndTimer();
+    autoAdvanceRef.current = false;
+    setAutoAdvance(false);
+    setIsSilencePlaying(false);
+    setIsSilencePaused(false);
+    if (activeEntry) onConsecutiveSequenceComplete?.(activeEntry);
+  }, [activeEntry, cancelEndTimer, onConsecutiveSequenceComplete]);
+
   const togglePlayback = useCallback(() => {
     if (isPlaying) {
       setPauseRequest((value) => value + 1);
@@ -495,6 +557,9 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
     isSilencePlaying,
     moveClip,
     moveSequenceStep,
+    nativeQueue,
+    syncNativeQueueItem,
+    completeNativeQueue,
     pauseRequest,
     playbackActive,
     postSentenceSilence,

@@ -4,6 +4,17 @@ import { ArrowCounterClockwise, Pause, Play, Repeat, RepeatOnce, SkipBack, SkipF
 import { useAudioBufferPlayer } from "./useAudioBufferPlayer";
 import { LineWaveform } from "./LineWaveform";
 import { detectSilenceGapsMs } from "./waveform.mjs";
+import {
+  listenForNativeAudioState,
+  nativeAudioAvailable,
+  nativeAudioState,
+  pauseNativeAudio,
+  playNativeAudioQueue,
+  resumeNativeAudio,
+  seekNativeAudio,
+  type NativeAudioQueueItem,
+  type NativeAudioState,
+} from "./nativeAudio";
 import type { PlaybackRunMode } from "./playbackSettings";
 import type { MarkStatus } from "../study/markStatus";
 import type { AudioTarget } from "../../types";
@@ -14,6 +25,9 @@ interface RailPlayerProps {
   isPlaybackActive: boolean;
   playbackRunMode: PlaybackRunMode;
   markStatus: MarkStatus;
+  nativeQueue: NativeAudioQueueItem[];
+  onNativeQueueItem: (id: string) => void;
+  onNativeQueueComplete: () => void;
   playRequest: number;
   replayRequest: number;
   pauseRequest: number;
@@ -30,12 +44,19 @@ interface RailPlayerProps {
   canNext: boolean;
 }
 
+function isNativeActive(state: NativeAudioState | undefined) {
+  return state?.status === "playing" || state?.status === "gap";
+}
+
 export function RailPlayer({
   target,
   autoPlay,
   isPlaybackActive,
   playbackRunMode,
   markStatus,
+  nativeQueue,
+  onNativeQueueItem,
+  onNativeQueueComplete,
   playRequest,
   replayRequest,
   pauseRequest,
@@ -53,8 +74,10 @@ export function RailPlayer({
 }: RailPlayerProps) {
   const [activeUrl, setActiveUrl] = useState<string>();
   const [error, setError] = useState("");
+  const [nativeState, setNativeState] = useState<NativeAudioState>();
   const finish = useCallback(() => onEnded(), [onEnded]);
   const player = useAudioBufferPlayer(activeUrl, finish);
+  const nativeAvailable = nativeAudioAvailable();
   const currentTimeRef = useRef(player.currentTime);
   const lastPlayRequest = useRef(playRequest);
   const lastReplayRequest = useRef(replayRequest);
@@ -63,9 +86,42 @@ export function RailPlayer({
   const pendingTargetPlay = useRef(false);
   currentTimeRef.current = player.currentTime;
 
+  // A background service keeps progressing even when the WebView cannot paint.
+  // Pull a snapshot when it becomes visible so the active card catches up
+  // after an unlock without trying to reconstruct skipped JS timers.
   useEffect(() => {
-    onPlayingChange(player.isPlaying);
-  }, [onPlayingChange, player.isPlaying]);
+    if (!nativeAvailable) return undefined;
+    let disposed = false;
+    const acceptState = (state: NativeAudioState) => {
+      if (disposed) return;
+      setNativeState(state);
+      if (state.itemId && (state.status === "playing" || state.status === "ready")) {
+        onNativeQueueItem(state.itemId);
+      }
+      if (state.status === "completed") onNativeQueueComplete();
+      if (state.error) setError(state.error);
+    };
+    const refresh = () => void nativeAudioState().then((state) => state && acceptState(state));
+    refresh();
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    let subscription: {remove(): Promise<void> | void} | undefined;
+    void listenForNativeAudioState(acceptState).then((nextSubscription) => {
+      subscription = nextSubscription;
+    });
+    return () => {
+      disposed = true;
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      void subscription?.remove();
+    };
+  }, [nativeAvailable, onNativeQueueComplete, onNativeQueueItem]);
+
+  const effectivePlaying = nativeAvailable ? isNativeActive(nativeState) : player.isPlaying;
+  useEffect(() => {
+    onPlayingChange(effectivePlaying);
+  }, [effectivePlaying, onPlayingChange]);
 
   // The same word or sentence can appear more than once in a recipe. Include
   // the occurrence identity so repeated rows restart even when their URL is
@@ -78,14 +134,30 @@ export function RailPlayer({
     setError("");
     setActiveUrl(target?.url);
     if (targetKey !== lastTargetKey.current) {
-      pendingTargetPlay.current = !!target && autoPlay;
+      // Android queue transitions update the selected target, but must not
+      // replace the native queue with a one-item request.
+      pendingTargetPlay.current = !!target && autoPlay && !nativeAvailable;
       lastTargetKey.current = targetKey;
     }
-  }, [autoPlay, target?.url, targetKey]);
+  }, [autoPlay, nativeAvailable, target?.url, targetKey]);
+
+  const nativeItemsForRun = useCallback(() => {
+    if (playbackRunMode === "consecutive") return nativeQueue;
+    const first = nativeQueue[0];
+    return first ? [{...first, pauseAfterMs: 0}] : [];
+  }, [nativeQueue, playbackRunMode]);
 
   const playFrom = useCallback(async (offset?: number) => {
-    if (!target || !activeUrl || !player.audioBuffer) return;
+    if (!target || !activeUrl) return;
     try {
+      if (nativeAvailable) {
+        const items = nativeItemsForRun();
+        if (!items.length) return;
+        await playNativeAudioQueue(items);
+        if (offset && offset > 0) await seekNativeAudio(offset * 1000);
+        return;
+      }
+      if (!player.audioBuffer) return;
       await player.playRange({
         start: 0,
         end: player.audioBuffer.duration,
@@ -95,25 +167,21 @@ export function RailPlayer({
     } catch {
       setError("Audio could not be played.");
     }
-  }, [activeUrl, player.audioBuffer, player.playRange, target]);
+  }, [activeUrl, nativeAvailable, nativeItemsForRun, player.audioBuffer, player.playRange, target]);
 
-  // Clicking the wave while paused (including the configured silence between
-  // word and sentence) starts playback from that point. While already
-  // playing, the range input's change event has already restarted the source
-  // at the new offset, so the pointer-up only has work to do when paused.
-  // The pending gap timer must be cancelled first, or it could fire mid-clip
-  // and advance the sequence while the clicked audio is still running.
+  // Clicking the wave while paused starts from that point. Android receives
+  // the seek after creating the native queue, rather than React starting an
+  // AudioBufferSourceNode that cannot outlive the locked WebView.
   const handleWaveSeekPlay = useCallback((time: number) => {
-    if (player.isPlaying) return;
+    if (effectivePlaying) return;
     onCancelSilence();
     void playFrom(time);
-  }, [onCancelSilence, playFrom, player.isPlaying]);
+  }, [effectivePlaying, onCancelSilence, playFrom]);
 
-  // A newly selected target starts only when visible-list playback is active.
-  // Keep this request pending until the new buffer has decoded; otherwise a
-  // fast navigation can increment playRequest before the target is ready and
-  // silently lose the autoplay request (most noticeable in Single mode).
+  // The hosted browser retains the existing decoded-buffer route. In the APK,
+  // React sends one materialized queue and Android advances it in the service.
   useEffect(() => {
+    if (nativeAvailable) return;
     if (
       !pendingTargetPlay.current
       || !autoPlay
@@ -127,35 +195,58 @@ export function RailPlayer({
       return;
     }
     pendingTargetPlay.current = false;
-    // A navigation request may have already been observed by the effect
-    // below while the new buffer was decoding.  Mark it handled here so the
-    // ready-buffer transition starts the clip exactly once.
     lastPlayRequest.current = playRequest;
     void playFrom(0);
-  }, [activeUrl, autoPlay, playFrom, playRequest, player.audioBuffer, player.isPlaying, player.loadedAudioUrl, target?.url, targetKey]);
+  }, [activeUrl, autoPlay, nativeAvailable, playFrom, playRequest, player.audioBuffer, player.isPlaying, player.loadedAudioUrl, target?.url, targetKey]);
 
   useEffect(() => {
     if (playRequest === lastPlayRequest.current) return;
     lastPlayRequest.current = playRequest;
-    if (autoPlay && activeUrl === target?.url && player.loadedAudioUrl === activeUrl && player.audioBuffer) void playFrom();
-  }, [activeUrl, autoPlay, playFrom, playRequest, player.audioBuffer, player.loadedAudioUrl, target?.url]);
+    if (!autoPlay || !target) return;
+    if (nativeAvailable) {
+      // Resume the exact native queue (including a paused silence) only when
+      // the selected React cue still matches the service's current cue. A
+      // navigation request has a different first queue item and must replace it.
+      if (
+        (nativeState?.status === "paused" || nativeState?.status === "gap-paused")
+        && nativeState.itemId === nativeQueue[0]?.id
+      ) {
+        void resumeNativeAudio();
+        return;
+      }
+      void playFrom();
+      return;
+    }
+    if (activeUrl === target.url && player.loadedAudioUrl === activeUrl && player.audioBuffer) void playFrom();
+  }, [activeUrl, autoPlay, nativeAvailable, nativeQueue, nativeState?.itemId, nativeState?.status, playFrom, playRequest, player.audioBuffer, player.loadedAudioUrl, target]);
 
   useEffect(() => {
     if (replayRequest === lastReplayRequest.current) return;
     lastReplayRequest.current = replayRequest;
+    if (nativeAvailable) {
+      void playFrom(0);
+      return;
+    }
     if (player.audioBuffer) {
       player.setPosition(0);
       void playFrom(0);
     }
-  }, [playFrom, player.audioBuffer, player.setPosition, replayRequest]);
+  }, [nativeAvailable, playFrom, player.audioBuffer, player.setPosition, replayRequest]);
 
   useEffect(() => {
     if (pauseRequest === lastPauseRequest.current) return;
     lastPauseRequest.current = pauseRequest;
+    if (nativeAvailable) {
+      void pauseNativeAudio();
+      return;
+    }
     player.pause();
-  }, [pauseRequest, player.pause]);
+  }, [nativeAvailable, pauseRequest, player.pause]);
 
-  const duration = player.audioBuffer?.duration || 0;
+  // React still decodes an audio buffer for the waveform, but native service
+  // events become the source of displayed playback time in the APK.
+  const duration = player.audioBuffer?.duration || (nativeState?.durationMs || 0) / 1000;
+  const currentTime = nativeAvailable ? (nativeState?.positionMs || 0) / 1000 : player.currentTime;
   const silenceGaps = useMemo(() => {
     if (!player.audioBuffer) return [];
     const channels = Array.from(
@@ -169,11 +260,28 @@ export function RailPlayer({
       duration * 1000,
     ).map(({startMs, endMs}) => ({start_ms: startMs, end_ms: endMs}));
   }, [duration, player.audioBuffer]);
+  const canPlay = nativeAvailable ? !!target : !!player.audioBuffer;
+
+  const handleSeek = useCallback((time: number) => {
+    if (nativeAvailable) {
+      void seekNativeAudio(time * 1000);
+      return;
+    }
+    void player.seek(time);
+  }, [nativeAvailable, player.seek]);
+
+  const nativeStatus = nativeState?.status === "gap"
+    ? "Native queue pause"
+    : nativeState?.status === "gap-paused"
+      ? "Native queue paused"
+      : nativeState?.status === "playing"
+        ? "Native background player"
+        : "";
 
   return (
     <section className="react-player" aria-label="Playback controls">
       <div className="react-player-wave-row">
-        <button type="button" className="react-player-primary" onClick={onTogglePlayback} disabled={!player.audioBuffer} aria-keyshortcuts="Space" aria-label={isPlaybackActive ? "Pause" : "Play"} title={`${isPlaybackActive ? "Pause" : "Play"} (Space)`}>
+        <button type="button" className="react-player-primary" onClick={onTogglePlayback} disabled={!canPlay} aria-keyshortcuts="Space" aria-label={isPlaybackActive ? "Pause" : "Play"} title={`${isPlaybackActive ? "Pause" : "Play"} (Space)`}>
           {isPlaybackActive ? <Pause size={24} weight="fill" /> : <Play size={24} weight="fill" />}
         </button>
         <LineWaveform
@@ -181,17 +289,17 @@ export function RailPlayer({
           loadFailed={player.loadFailed}
           start={0}
           end={duration || 0.01}
-          currentTime={player.currentTime}
+          currentTime={currentTime}
           silenceGaps={silenceGaps}
           vadNonSpeechIntervals={[]}
-          onSeek={(time) => void player.seek(time)}
+          onSeek={handleSeek}
           onSeekPlay={handleWaveSeekPlay}
           onNavigationPointsChange={() => {}}
         />
       </div>
       <div className="react-player-controls">
         <button type="button" onClick={onPrevious} disabled={!canPrevious} aria-label="Play previous word or sentence" title="Previous (A / ←)"><SkipBack size={18} weight="fill" /></button>
-        <button type="button" onClick={onReplay} disabled={!player.audioBuffer} aria-label="Replay focused word or sentence" title="Replay (R)"><ArrowCounterClockwise size={18} weight="bold" /></button>
+        <button type="button" onClick={onReplay} disabled={!canPlay} aria-label="Replay focused word or sentence" title="Replay (R)"><ArrowCounterClockwise size={18} weight="bold" /></button>
         <button type="button" onClick={onNext} disabled={!canNext} aria-label="Play next word or sentence" title="Next (D / →)"><SkipForward size={18} weight="fill" /></button>
         <button
           type="button"
@@ -206,7 +314,7 @@ export function RailPlayer({
         <span className="react-player-controls-sep" aria-hidden="true" />
         <button type="button" className={`mark-known${markStatus === "known" ? " is-on" : ""}`} onClick={() => void onToggleMark("known")} disabled={!target} aria-label="Mark as known" title="Mark as known" aria-pressed={markStatus === "known"}>✓</button>
         <button type="button" className={`mark-flagged${markStatus === "flagged" ? " is-on" : ""}`} onClick={() => void onToggleMark("flagged")} disabled={!target} aria-label="Flag for review" title="Flag for review" aria-pressed={markStatus === "flagged"}>⚑</button>
-        <span className="react-player-status">{error || `${playbackRunMode === "single" ? "Single clip" : "Play through list"} · Click the wave to seek or play · Space to play/pause`}</span>
+        <span className="react-player-status">{error || nativeState?.error || nativeStatus || `${playbackRunMode === "single" ? "Single clip" : "Play through list"} · Click the wave to seek or play · Space to play/pause`}</span>
       </div>
     </section>
   );

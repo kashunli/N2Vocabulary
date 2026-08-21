@@ -47,6 +47,9 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
     canPrevious,
     changeSequenceStep,
     moveSequenceStep,
+    nativeQueue,
+    syncNativeQueueItem,
+    completeNativeQueue,
     removeSequenceStep,
     handlePlaybackEnd,
     handlePlayingChange,
@@ -209,6 +212,9 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
         onToggleMark={toggleMark}
         onPlayingChange={handlePlayingChange}
         onCancelSilence={cancelSilence}
+        nativeQueue={nativeQueue}
+        onNativeQueueItem={syncNativeQueueItem}
+        onNativeQueueComplete={completeNativeQueue}
         playRequest={playRequest}
         replayRequest={replayRequest}
         pauseRequest={pauseRequest}
