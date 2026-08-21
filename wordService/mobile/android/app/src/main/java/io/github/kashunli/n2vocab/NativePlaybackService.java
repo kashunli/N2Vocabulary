@@ -48,9 +48,10 @@ public final class NativePlaybackService extends MediaSessionService {
     public static final String EXTRA_QUEUE_JSON = "queue_json";
     public static final String EXTRA_POSITION_MS = "position_ms";
 
-    // 150 MiB is enough for a large recent vocabulary run while still leaving
-    // eviction predictable.  This is an LRU *cache*, not user-visible storage.
-    private static final long CACHE_MAX_BYTES = 150L * 1024L * 1024L;
+    // Keep up to 1 GiB of downloaded media for offline replay.  This is an LRU
+    // *cache*, not user-visible storage, so Android may still evict it under
+    // storage pressure.
+    private static final long CACHE_MAX_BYTES = 1024L * 1024L * 1024L;
     private static final Set<PlaybackListener> LISTENERS = new CopyOnWriteArraySet<>();
     private static volatile PlaybackSnapshot lastSnapshot = PlaybackSnapshot.idle();
 
