@@ -1,7 +1,6 @@
 import type {
   BookSummary,
   Entry,
-  Mark,
   UnitSummary,
   VocabularySummary,
 } from "./types";
@@ -35,10 +34,6 @@ export function getEntries(
   if (unit !== undefined) params.set("unit", String(unit));
   if (state !== "all") params.set("state", state);
   return getJson<{ items: Entry[] }>(`/api/entries?${params}`);
-}
-
-export function getEntry(entryId: number, book = "N2") {
-    return getJson<Entry>(`/api/entries/${entryId}?book=${encodeURIComponent(book)}`);
 }
 
 export function getLegacyMarkSeed() {
@@ -77,12 +72,4 @@ export async function completeAccountReview(csrfToken: string, entry: {item_uuid
 }
 export function importGuestStudyState(csrfToken: string, payload: {version: number; import_id: string; snapshot_checksum: string; cards: StudySnapshot["cards"]}) {
   return getJson<StudySnapshot>("/api/study/import-guest", {method: "POST", headers: {"Content-Type": "application/json", "X-CSRF-Token": csrfToken}, body: JSON.stringify(payload)});
-}
-
-export function updateMark(entryId: number, mark: Pick<Mark, "known" | "flagged">, book = "N2") {
-  return getJson<{ mark: Mark }>(`/api/marks/${entryId}?book=${encodeURIComponent(book)}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(mark),
-  });
 }

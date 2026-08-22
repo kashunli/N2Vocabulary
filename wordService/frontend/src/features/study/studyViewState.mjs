@@ -1,4 +1,3 @@
-// Keep this payload contract compatible with the Classic wall's state.js.
 // View state is separate from studyFocus because a learner can change the
 // visible filters without changing the word currently being played.
 export const STUDY_VIEW_STORAGE_KEY = "n2-word-service:view-state:v1";

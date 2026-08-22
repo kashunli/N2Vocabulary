@@ -1,14 +1,14 @@
 use crate::models::{
     AudioGenerationResponse, BookSummary, EntryExample, EntryListResponse, EntryPayload,
     EntrySourceNote, FlaggedAudioExportResponse, LegacyMarkSeed, LegacyMarkSeedResponse, MarkState,
-    MarksResponse, Summary, UnitRef, UnitSummary,
+    Summary, UnitRef, UnitSummary,
 };
 use anyhow::{Context, Result, bail};
 use chrono::Utc;
 use rusqlite::types::Value;
 use rusqlite::{Connection, OptionalExtension, params, params_from_iter};
 use sha2::{Digest, Sha256};
-use std::collections::{BTreeMap, HashMap};
+use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
@@ -157,10 +157,10 @@ impl WordRepository {
 
     /// Normalize the shared legacy mark tables before they are used as a
     /// guest-import seed. Account study state lives in `users.sqlite`; these
-    /// tables remain only as a compatibility bridge while the old study wall
-    /// is retired. The migration deliberately keeps the old columns so an
-    /// older browser can still read the seed, but guarantees that one item
-    /// cannot be both Known and Flagged.
+    /// tables remain as a compatibility bridge for existing learner data.
+    /// The migration deliberately keeps the old columns so the active React
+    /// wall can import the seed, but guarantees that one item cannot be both
+    /// Known and Flagged.
     fn ensure_exclusive_mark_data(&self, conn: &mut Connection) -> Result<()> {
         conn.execute_batch(
             r#"
@@ -347,48 +347,6 @@ impl WordRepository {
             "#,
         )?;
         Ok(())
-    }
-
-    pub fn get_marks(&self) -> Result<MarksResponse> {
-        let conn = self.connect()?;
-        let mut statement = conn.prepare(
-            r#"
-            SELECT be.entry_id, im.known, im.flagged, im.updated_at
-            FROM book_entries be
-            JOIN item_marks im ON im.item_id = be.item_id
-            ORDER BY be.entry_id
-            "#,
-        )?;
-        let rows = statement.query_map([], |row| {
-            let entry_id: i64 = row.get(0)?;
-            Ok((
-                entry_id.to_string(),
-                MarkState {
-                    known: int_to_bool(row.get(1)?),
-                    flagged: int_to_bool(row.get(2)?),
-                    updated_at: row.get(3)?,
-                },
-            ))
-        })?;
-
-        // BTreeMap keeps JSON output stable by sorting entry IDs. That is nice
-        // for debugging and for future agents comparing responses.
-        let mut marks = BTreeMap::new();
-        for row in rows {
-            let (entry_id, mark) = row?;
-            marks.insert(entry_id, mark);
-        }
-
-        let latest: Option<String> =
-            conn.query_row("SELECT MAX(updated_at) FROM item_marks", [], |row| {
-                row.get(0)
-            })?;
-
-        Ok(MarksResponse {
-            version: 2,
-            updated_at: latest.unwrap_or_else(now_utc),
-            marks,
-        })
     }
 
     pub fn get_summary(&self) -> Result<Summary> {

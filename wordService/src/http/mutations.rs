@@ -146,19 +146,13 @@ pub(super) fn handle_post(
     }
 }
 
-pub(super) fn handle_put(
-    mut request: Request,
-    repository: WordRepository,
-    audio_review: AudioReviewStore,
-) -> Result<()> {
+pub(super) fn handle_put(mut request: Request, audio_review: AudioReviewStore) -> Result<()> {
     let parsed = parse_local_url(request.url())?;
     let path = parsed.path().trim_end_matches('/').to_string();
-    let params = query_map(&parsed);
-    let repository = repository_for_params(&repository, &params);
     let mut body = String::new();
     request.as_reader().read_to_string(&mut body)?;
-    // An empty PUT body means "clear both flags". That matches the frontend's
-    // simple mark contract and avoids requiring `{}` for a no-state mark.
+    // Normalize an empty request body so the audio-review payload validator
+    // returns the same structured error as it does for an explicit `{}`.
     let body: serde_json::Value =
         match serde_json::from_str(if body.trim().is_empty() { "{}" } else { &body }) {
             Ok(value) => value,
@@ -206,38 +200,6 @@ pub(super) fn handle_put(
                     &json!({"error": error.to_string()}),
                 )
             }
-            Err(error) => Err(error),
-        };
-    }
-
-    if let Some(id_text) = path.strip_prefix("/api/marks/") {
-        let entry_id = match id_text.parse::<i64>() {
-            Ok(value) => value,
-            Err(_) => {
-                return send_json(
-                    request,
-                    StatusCode(400),
-                    &json!({"error": "entry id must be integer"}),
-                );
-            }
-        };
-
-        let known = body
-            .get("known")
-            .and_then(|value| value.as_bool())
-            .unwrap_or(false);
-        let flagged = body
-            .get("flagged")
-            .and_then(|value| value.as_bool())
-            .unwrap_or(false);
-
-        return match repository.set_mark(entry_id, known, flagged) {
-            Ok(()) => send_json(request, StatusCode(200), &json!({"ok": true})),
-            Err(error) if error.to_string().contains("unknown entry_id") => send_json(
-                request,
-                StatusCode(404),
-                &json!({"error": "unknown entry_id"}),
-            ),
             Err(error) => Err(error),
         };
     }

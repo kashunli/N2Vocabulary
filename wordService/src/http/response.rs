@@ -9,8 +9,9 @@ use url::Url;
 
 pub(super) fn static_asset_path(static_dir: &Path, request_path: &str) -> Option<PathBuf> {
     match request_path {
-        "/styles.css" | "/favicon.svg" | "/app.js" | "/audio-review.html" | "/audio-review.css"
-        | "/audio-review.js" => Some(static_dir.join(request_path.trim_start_matches('/'))),
+        "/favicon.svg" | "/audio-review.html" | "/audio-review.css" | "/audio-review.js" => {
+            Some(static_dir.join(request_path.trim_start_matches('/')))
+        }
         _ => {
             if let Some(asset_name) = request_path
                 .strip_prefix("/assets/")
@@ -34,18 +35,7 @@ pub(super) fn static_asset_path(static_dir: &Path, request_path: &str) -> Option
                         .join(asset_name),
                 );
             }
-            let module_name = request_path.strip_prefix("/js/")?;
-            // ES module imports only need direct files in static/js. Keeping the
-            // route flat avoids accidentally exposing arbitrary static subtrees.
-            if module_name.is_empty()
-                || module_name.contains('/')
-                || module_name.contains('\\')
-                || module_name.contains("..")
-                || !module_name.ends_with(".js")
-            {
-                return None;
-            }
-            Some(static_dir.join("js").join(module_name))
+            None
         }
     }
 }
@@ -186,19 +176,11 @@ mod tests {
     use std::path::Path;
 
     #[test]
-    fn static_asset_path_allows_known_static_files_and_js_modules() {
+    fn static_asset_path_allows_current_static_files_and_react_assets() {
         let root = Path::new("static");
-        assert_eq!(
-            static_asset_path(root, "/styles.css").as_deref(),
-            Some(Path::new("static/styles.css"))
-        );
         assert_eq!(
             static_asset_path(root, "/favicon.svg").as_deref(),
             Some(Path::new("static/favicon.svg"))
-        );
-        assert_eq!(
-            static_asset_path(root, "/js/main.js").as_deref(),
-            Some(Path::new("static/js/main.js"))
         );
         assert_eq!(
             static_asset_path(root, "/audio-review.html").as_deref(),
@@ -219,14 +201,12 @@ mod tests {
     }
 
     #[test]
-    fn static_asset_path_rejects_nested_or_non_js_module_paths() {
+    fn static_asset_path_rejects_removed_assets_and_invalid_react_paths() {
         let root = Path::new("static");
-        assert!(static_asset_path(root, "/js/../app.js").is_none());
-        assert!(static_asset_path(root, "/js/nested/main.js").is_none());
-        assert!(static_asset_path(root, "/js/main.css").is_none());
+        assert!(static_asset_path(root, "/styles.css").is_none());
+        assert!(static_asset_path(root, "/app.js").is_none());
+        assert!(static_asset_path(root, "/js/main.js").is_none());
         assert!(static_asset_path(root, "/api/summary").is_none());
-        assert!(static_asset_path(root, "/study-wall-rail.html").is_none());
-        assert!(static_asset_path(root, "/study-wall-rail.css").is_none());
         assert!(static_asset_path(root, "/study-wall-react/assets/../index.js").is_none());
         assert!(static_asset_path(root, "/study-wall-react/assets/index.html").is_none());
     }

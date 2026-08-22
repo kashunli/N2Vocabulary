@@ -8,9 +8,8 @@ export interface StudyFocus {
   updatedAt: number;
 }
 
-// This key is deliberately shared with the classic wall's studyFocus.js
-// module. Keep the payload small and entry-based so a different card layout
-// can restore the same learner position without sharing scroll coordinates.
+// Keep the payload small and entry-based so a learner position can be restored
+// after a reload or view change without persisting fragile scroll coordinates.
 export const STUDY_FOCUS_STORAGE_KEY = "n2-word-service:study-focus:v1";
 
 function normalizeFocus(value: unknown): StudyFocus | null {

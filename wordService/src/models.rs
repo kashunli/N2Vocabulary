@@ -1,5 +1,4 @@
 use serde::Serialize;
-use std::collections::BTreeMap;
 
 /// A book-level source that can be browsed in the same card UI.
 #[derive(Debug, Serialize, PartialEq)]
@@ -52,14 +51,6 @@ pub struct MarkState {
     pub known: bool,
     pub flagged: bool,
     pub updated_at: Option<String>,
-}
-
-/// Full mark snapshot returned by `/api/marks`.
-#[derive(Debug, Serialize, PartialEq)]
-pub struct MarksResponse {
-    pub version: i64,
-    pub updated_at: String,
-    pub marks: BTreeMap<String, MarkState>,
 }
 
 /// One sentence/example attached to an entry.

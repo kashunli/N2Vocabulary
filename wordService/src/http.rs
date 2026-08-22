@@ -112,7 +112,7 @@ fn handle_request(
     match request.method() {
         Method::Options => return send_options(request),
         Method::Get | Method::Head => {}
-        Method::Put => return handle_put(request, repository, audio_review),
+        Method::Put => return handle_put(request, audio_review),
         Method::Delete => return handle_delete(request, audio_review),
         Method::Post => return handle_post(request, config, repository, tts_service),
         _ => {

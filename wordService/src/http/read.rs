@@ -50,7 +50,6 @@ pub(super) fn handle_read(
                 &json!({ "items": repository.list_units()? }),
             );
         }
-        "/api/marks" => return send_json(request, StatusCode(200), &repository.get_marks()?),
         "/api/study/legacy-seed" => {
             return send_json(request, StatusCode(200), &repository.legacy_mark_seed()?);
         }
@@ -115,8 +114,6 @@ fn static_page_path(static_dir: &Path, request_path: &str) -> Option<PathBuf> {
         | "/study-wall-react"
         | "/study-wall-react/"
         | "/study-wall-react.html" => Some(static_dir.join("react-rail").join("index.html")),
-        // The classic wall now has an explicit URL instead of owning `/`.
-        "/classic" | "/classic/" => Some(static_dir.join("index.html")),
         _ => None,
     }
 }
@@ -127,10 +124,9 @@ mod tests {
     use std::path::Path;
 
     #[test]
-    fn study_wall_routes_assign_default_and_classic_pages() {
+    fn study_wall_routes_assign_the_react_page() {
         let root = Path::new("static");
         let react_page = Some(Path::new("static/react-rail/index.html"));
-        let classic_page = Some(Path::new("static/index.html"));
 
         assert_eq!(static_page_path(root, "/").as_deref(), react_page);
         assert_eq!(static_page_path(root, "/index.html").as_deref(), react_page);
@@ -138,8 +134,8 @@ mod tests {
             static_page_path(root, "/study-wall-react/").as_deref(),
             react_page
         );
-        assert_eq!(static_page_path(root, "/classic").as_deref(), classic_page);
-        assert_eq!(static_page_path(root, "/classic/").as_deref(), classic_page);
+        assert!(static_page_path(root, "/classic").is_none());
+        assert!(static_page_path(root, "/classic/").is_none());
         assert!(static_page_path(root, "/missing").is_none());
     }
 }

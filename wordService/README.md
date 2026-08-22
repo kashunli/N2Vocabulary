@@ -136,7 +136,6 @@ Then open:
 
 ```text
 http://127.0.0.1:8767/           # React study wall (default)
-http://127.0.0.1:8767/classic    # deprecated compatibility wall; do not extend
 http://127.0.0.1:8767/audio-review.html
 ```
 
@@ -194,8 +193,6 @@ Optional environment variables:
 - `GET /api/entries?unit=1&state=all|known|flagged|unmarked&search=...`
   (`unit` is optional; omit it to search/list all units)
 - `GET /api/entries/<entry_id>`
-- `GET /api/marks` and `PUT /api/marks/<entry_id>` are legacy compatibility
-  endpoints; the active walls use the study-state APIs below
 - `POST /api/entries/<entry_id>/audio`
 - `POST /api/entries/<entry_id>/examples/<position>/audio`
 - `POST /api/units/<unit_number>/flagged-audio`
@@ -219,7 +216,7 @@ Study state and account endpoints:
 ## Review filter
 
 The active React study wall exposes `Review` beside `All`, `Unmarked`, `Known`,
-and `Flagged`. The Classic wall is deprecated and is not part of this contract.
+and `Flagged`.
 Review shows cards whose playback-created `due_at` timestamp has arrived.
 Playback completion—not a mark—enrolls a shared vocabulary item at level 0,
 with its first review due after one day. A complete word-plus-available-sentence
