@@ -134,6 +134,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
   letter-spacing: 0.01em;
 }
 
+.react-pickers,
+.react-filter-select { align-self: flex-end; }
 .react-pickers { flex: 0 1 430px; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
 .react-pickers label {
   display: grid;
