@@ -25,6 +25,12 @@ import {
 } from "./playbackSettings";
 import { readStudyFocus, saveStudyFocus } from "../study/studyFocus";
 import type { NativeAudioQueueItem } from "./nativeAudio";
+import {
+  nativeCueId,
+  nativeCueLocation,
+  playbackEndAction,
+  recordCompletedPhase,
+} from "./studyPlaybackState.mjs";
 
 type PendingSilence = {
   remainingMs: number;
@@ -63,16 +69,6 @@ function sequenceCuesFor(
 
 function firstCueIndexForPhase(cues: MaterializedAudioSequenceStep[], phase: PlaybackPhase) {
   return cues.findIndex((cue) => cue?.phase === phase);
-}
-
-function nativeCueId(entryIndex: number, cueIndex: number) {
-  return `cue:${entryIndex}:${cueIndex}`;
-}
-
-function nativeCueLocation(id: string) {
-  const match = /^cue:(\d+):(\d+)$/.exec(id);
-  if (!match) return null;
-  return {entryIndex: Number(match[1]), cueIndex: Number(match[2])};
 }
 
 export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCard, onConsecutiveSequenceComplete}: UseStudyPlaybackOptions) {
@@ -366,35 +362,20 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
 
   const handlePlaybackEnd = useCallback(() => {
     if (activeEntry) {
-      const progress = completedPhasesRef.current.itemUuid === activeEntry.item_uuid
-        ? completedPhasesRef.current
-        : {itemUuid: activeEntry.item_uuid, word: false, sentence: false, cardCompleted: false};
-      progress[activePhase] = true;
-      completedPhasesRef.current = progress;
-      if (!progress.cardCompleted && progress.word && (progress.sentence || !activeEntry.sentence_audio_url)) {
-        progress.cardCompleted = true;
-        onCompleteCard?.(activeEntry);
-      }
-    }
-    if (!autoAdvanceRef.current) return;
-
-    if (playbackRunMode === "single") {
-      autoAdvanceRef.current = false;
-      setAutoAdvance(false);
-      return;
+      const completion = recordCompletedPhase(
+        completedPhasesRef.current,
+        activeEntry.item_uuid,
+        activePhase,
+        !!activeEntry.sentence_audio_url,
+      );
+      completedPhasesRef.current = completion.progress;
+      if (completion.completesCard) onCompleteCard?.(activeEntry);
     }
 
     const nextCueIndex = safeCueIndex + 1;
     const currentPause = activeCue?.pauseAfterMs
       ?? (activePhase === "word" ? postWordSilence : postSentenceSilence);
-    if (nextCueIndex < activeCues.length) {
-      scheduleAfterSilence(currentPause, () => {
-        setManualSelection(null);
-        setActiveCueIndex(nextCueIndex);
-      });
-      return;
-    }
-
+    const hasNextCue = nextCueIndex < activeCues.length;
     const hasNextEntry = !stopAfterEntry && (() => {
       let nextIndex = activeIndex + 1;
       while (nextIndex < entries.length) {
@@ -403,7 +384,26 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
       }
       return false;
     })();
-    if (!hasNextEntry) {
+    const action = playbackEndAction({
+      autoAdvance: autoAdvanceRef.current,
+      runMode: playbackRunMode,
+      hasNextCue,
+      hasNextEntry,
+    });
+    if (action === "none") return;
+    if (action === "stop") {
+      autoAdvanceRef.current = false;
+      setAutoAdvance(false);
+      return;
+    }
+    if (action === "next-cue") {
+      scheduleAfterSilence(currentPause, () => {
+        setManualSelection(null);
+        setActiveCueIndex(nextCueIndex);
+      });
+      return;
+    }
+    if (action === "complete-sequence") {
       autoAdvanceRef.current = false;
       setAutoAdvance(false);
       if (activeEntry) onConsecutiveSequenceComplete?.(activeEntry);
@@ -428,15 +428,14 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
     const cue = entry ? playableEntryAt(location.entryIndex)[location.cueIndex] : undefined;
     if (!entry || !cue) return;
     completedNativeCueIdsRef.current.add(id);
-    const progress = completedPhasesRef.current.itemUuid === entry.item_uuid
-      ? completedPhasesRef.current
-      : {itemUuid: entry.item_uuid, word: false, sentence: false, cardCompleted: false};
-    progress[cue.phase] = true;
-    completedPhasesRef.current = progress;
-    if (!progress.cardCompleted && progress.word && (progress.sentence || !entry.sentence_audio_url)) {
-      progress.cardCompleted = true;
-      onCompleteCard?.(entry);
-    }
+    const completion = recordCompletedPhase(
+      completedPhasesRef.current,
+      entry.item_uuid,
+      cue.phase,
+      !!entry.sentence_audio_url,
+    );
+    completedPhasesRef.current = completion.progress;
+    if (completion.completesCard) onCompleteCard?.(entry);
   }, [entries, onCompleteCard, playableEntryAt]);
 
   const syncNativeQueueItem = useCallback((id: string) => {
