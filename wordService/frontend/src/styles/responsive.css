@@ -1,0 +1,47 @@
+/* ---------- Responsive ---------- */
+
+@media (max-width: 900px) {
+  .react-header { gap: 10px; }
+}
+
+@media (max-width: 700px) {
+  .react-shell { padding-inline: 12px; }
+  .react-header { gap: 6px; padding: 0 0 12px; flex-wrap: nowrap; }
+  .react-brand { flex: 0 0 auto; }
+  .react-brand h1 { display: none; }
+  .react-brand .brand-caption { display: none; }
+  .react-brand .brand-seal { width: 26px; height: 26px; font-size: 0.9rem; }
+  .react-pickers { flex: 1 1 auto; }
+  .react-pickers label > span { display: none; }
+  .react-pickers select, .react-filter-select { padding: 7px 7px; font-size: 0.75rem; }
+  .react-filter-select { flex: 0 1 118px; }
+  .react-header-actions { gap: 5px; }
+  .react-header-actions button { padding: 7px 9px; }
+  .account-corner { display: none; }
+  .react-content-scroll { overflow: hidden; }
+  .react-layout { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+  .react-list { order: 2; flex: 0 0 auto; min-height: 0; max-height: 150px; padding-right: 0; }
+  .react-list button { padding: 7px 8px 7px 10px; }
+  .react-row-kanji { font-size: 1.05rem; }
+  .react-divider { display: none; }
+  .react-current { order: 1; flex: 1 1 auto; min-height: 0; padding: 12px 4px 24px; }
+  .react-word-summary { align-items: flex-start; padding: 0; }
+  .react-word-summary h2 { font-size: clamp(2rem, 9vw, 3rem); }
+  .react-sentence { margin-top: 12px; padding-top: 12px; }
+  .react-player-wave-row { gap: 10px; }
+  .react-player-wave-row .react-player-primary { width: 52px; min-width: 52px; min-height: 52px; height: 52px; padding: 11px; }
+  .react-player-wave-row .react-player-primary svg { width: 100%; height: 100%; }
+  .react-player-controls { flex-wrap: nowrap; gap: 5px; }
+  .react-player-controls button { width: 40px; height: 40px; min-height: 40px; padding: 6px; }
+  .react-player-controls button svg { width: 100%; height: 100%; }
+  .react-player-controls .mark-known, .react-player-controls .mark-flagged { width: 40px; font-size: 1.3rem; }
+  .react-player-controls-sep { height: 20px; margin-inline: 1px; }
+  .react-player-status { display: none; }
+  .react-setting-options { grid-template-columns: 1fr; }
+  .react-sequence-intro { align-items: start; flex-direction: column; gap: 6px; }
+  .react-sequence-row { grid-template-columns: 30px minmax(0, 1fr); gap: 10px; }
+  .react-sequence-controls { grid-column: 1 / -1; justify-content: start; }
+  .react-sequence-field { flex: 1 1 100%; }
+  .react-sequence-slider-row input[type="range"] { flex: 1; min-width: 0; }
+  .react-sequence-main select { width: 100%; }
+}

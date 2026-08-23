@@ -1,0 +1,51 @@
+/* ---------- Account ---------- */
+
+.account-corner {
+  position: fixed;
+  z-index: 12;
+  top: 10px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  padding: 6px 8px;
+  color: var(--muted);
+  font: 0.74rem/1.2 var(--sans);
+  box-shadow: var(--shadow);
+}
+.account-corner button, .account-modal button {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card-lift);
+  color: var(--muted);
+  cursor: pointer;
+  padding: 7px 10px;
+  transition: border-color 120ms ease, color 120ms ease;
+}
+.account-corner button:hover, .account-modal button:hover { border-color: var(--indigo); color: var(--indigo-deep); }
+.account-modal {
+  width: min(430px, 100%);
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  box-shadow: var(--shadow-lift);
+  padding: 24px;
+  font-family: var(--sans);
+}
+.account-modal h2, .account-modal p { margin: 0; }
+.account-modal h2 { font-family: var(--mincho); font-weight: 500; font-size: 1.35rem; }
+.account-modal form, .account-modal label { display: grid; gap: 8px; }
+.account-modal input {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card-lift);
+  padding: 9px;
+  color: var(--ink);
+}
+.account-modal input:focus { outline: 2px solid var(--indigo); outline-offset: 1px; }
+.account-modal [role="alert"] { color: var(--hanko); white-space: pre-wrap; }

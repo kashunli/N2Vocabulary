@@ -1,0 +1,188 @@
+/* ---------- Study desk ---------- */
+
+.react-content-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  padding: 18px 0 8px;
+  scrollbar-color: var(--line) transparent;
+}
+.react-content-scroll.is-blurred .react-list,
+.react-content-scroll.is-blurred .react-current { filter: blur(8px); transition: filter 160ms ease; }
+
+.react-layout { display: grid; grid-template-rows: minmax(0, 1fr); height: 100%; min-height: 0; }
+
+/* --- Vocabulary list --- */
+
+.react-list { min-width: 0; min-height: 0; overflow: auto; padding: 4px 18px 4px 0; scrollbar-width: thin; }
+.react-list button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px;
+  width: 100%;
+  align-items: center;
+  border: 0;
+  border-bottom: 1px solid var(--line-soft);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 10px 12px 10px 10px;
+  text-align: left;
+  transition: color 140ms ease, background 140ms ease;
+}
+.react-list button:hover, .react-list button:focus-visible { background: var(--card); color: var(--ink); }
+.react-list button.is-active {
+  background: var(--indigo-soft);
+  color: var(--ink);
+  box-shadow: inset 3px 0 0 var(--indigo);
+}
+.react-row-kanji {
+  min-width: 0;
+  overflow: hidden;
+  font-family: var(--mincho);
+  font-size: 1.22rem;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.react-list button.is-active .react-row-kanji { color: var(--indigo-deep); font-size: 1.22rem; }
+.react-row-status { display: inline-grid; min-width: 1.25rem; min-height: 1em; place-items: center; font: 0.9rem/1 var(--sans); font-weight: 600; white-space: nowrap; }
+.react-list button.status-known .react-row-status { color: var(--hanko); }
+.react-list button.status-flagged .react-row-status { color: var(--flag); }
+.react-list button.is-reviewed .react-row-status { color: var(--sage); }
+.react-empty { color: var(--faint); padding: 28px 8px; font: 0.84rem/1.5 var(--sans); }
+
+.react-divider {
+  border: 0;
+  border-left: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  background: transparent;
+  cursor: col-resize;
+  padding: 0;
+}
+.react-divider:hover, .react-divider:focus-visible { background: var(--indigo-soft); }
+
+/* --- Current word and compact learner actions --- */
+
+.react-current {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(12px, 1.8vw, 22px) clamp(20px, 5vw, 72px) 56px;
+  scroll-padding-block: clamp(12px, 1.8vw, 22px);
+}
+
+.react-word-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.react-word-summary h2 {
+  flex: 0 0 auto;
+  margin: 0;
+  font-family: var(--mincho);
+  font-weight: 500;
+  line-height: 1.12;
+  font-size: clamp(1.7rem, 2.8vw, 2.7rem);
+  color: var(--ink);
+}
+
+.react-word-trigger, .react-sentence-trigger {
+  appearance: none;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+  text-align: inherit;
+}
+.react-word-trigger { display: block; width: fit-content; max-width: 100%; }
+.react-word-trigger:hover, .react-word-trigger:focus-visible,
+.react-sentence-trigger:hover, .react-sentence-trigger:focus-visible { color: var(--indigo-deep); }
+.react-word-trigger:focus-visible, .react-sentence-trigger:focus-visible { outline: 2px solid var(--indigo); outline-offset: 4px; }
+.react-word-trigger:disabled, .react-sentence-trigger:disabled { cursor: not-allowed; opacity: 0.4; }
+.react-word-ruby { color: inherit; ruby-position: over; ruby-align: center; }
+.react-word-summary h2 .react-word-ruby rt {
+  color: var(--indigo);
+  font-family: var(--mincho);
+  font-size: 0.3em;
+  line-height: 1;
+}
+
+.react-word-summary .react-meaning {
+  flex: 1 1 220px;
+  min-width: 180px;
+  max-width: 760px;
+  margin: 0;
+  font: 0.82rem/1.4 var(--sans);
+  color: var(--ink-soft);
+}
+.react-meaning .react-meaning-en { font-weight: 600; color: var(--ink); }
+.react-meaning .react-meaning-zh { color: var(--muted); }
+
+.react-review-completed { color: var(--sage); margin: 12px 0 0; font: 0.82rem/1.4 var(--sans); }
+
+/* --- Sentence, explanation, source --- */
+
+.react-sentence { display: grid; gap: 4px; max-width: 760px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+.react-sentence-trigger { display: block; width: 100%; text-align: left; }
+.react-sentence-trigger strong {
+  display: block;
+  font-family: var(--mincho);
+  font-weight: 500;
+  font-size: 1.14rem;
+  line-height: 1.5;
+  color: var(--ink);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  transition: color 120ms ease;
+}
+.react-sentence-trigger:hover strong, .react-sentence-trigger:focus-visible strong {
+  color: var(--indigo-deep);
+}
+
+.react-sentence-explanation { max-width: 760px; margin-top: 22px; font: 0.88rem/1.6 var(--sans); }
+.react-explanation, .react-markdown { color: var(--ink-soft); }
+.react-markdown p { margin: 0 0 12px; }
+.react-markdown h3, .react-markdown h4, .react-markdown h5 {
+  margin: 18px 0 6px;
+  color: var(--ink);
+  font-family: var(--mincho);
+  font-weight: 600;
+  line-height: 1.25;
+}
+.react-markdown h3 { font-size: 1.18rem; }
+.react-markdown h4 { font-size: 1.02rem; }
+.react-markdown h5 { font-size: 0.94rem; }
+.react-markdown ul, .react-markdown ol { margin: 8px 0 14px; padding-left: 1.35rem; }
+.react-markdown li { margin: 4px 0; padding-left: 2px; }
+.react-markdown hr { border: 0; border-top: 1px solid var(--line); margin: 14px 0; }
+.react-markdown code {
+  border-radius: 4px;
+  background: var(--indigo-soft);
+  color: var(--indigo-deep);
+  padding: 1px 5px;
+  font: 0.85em/1.2 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+.react-markdown strong { color: var(--ink); }
+
+.section-label {
+  color: var(--indigo);
+  font: 700 0.66rem/1.2 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}

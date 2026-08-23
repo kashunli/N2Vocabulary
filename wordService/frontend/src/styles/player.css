@@ -1,0 +1,127 @@
+/* ---------- Player ---------- */
+
+.react-player {
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 3;
+  border-top: 1px solid var(--line);
+  background: color-mix(in srgb, var(--paper) 88%, var(--card));
+  padding: 14px 0 18px;
+}
+
+.react-player-wave-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.line-waveform {
+  position: relative;
+  height: 54px;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  box-shadow: inset 0 1px 2px rgba(32, 38, 43, 0.03);
+}
+.line-waveform svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.line-waveform input { position: absolute; z-index: 2; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.waveform-unplayed { fill: color-mix(in srgb, var(--indigo) 16%, var(--line)); }
+.waveform-played { fill: var(--indigo); }
+.waveform-silence-gap { fill: color-mix(in srgb, var(--flag) 20%, transparent); }
+.waveform-vad-silence { fill: color-mix(in srgb, #4d8fb0 26%, transparent); }
+.waveform-cursor { stroke: var(--indigo); stroke-width: 2; }
+
+.react-player-controls {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 10px;
+  color: var(--muted);
+  font: 0.78rem/1.2 var(--sans);
+}
+.react-player-controls button {
+  min-width: 0;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  color: var(--muted);
+  cursor: pointer;
+  padding: 7px 11px;
+  white-space: nowrap;
+  transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
+}
+.react-player-controls button:hover, .react-player-controls button:focus-visible {
+  border-color: var(--indigo-faint);
+  color: var(--ink);
+}
+.react-player-controls button:disabled { cursor: not-allowed; opacity: 0.42; }
+.react-player-controls button.is-selected {
+  border-color: var(--indigo);
+  background: var(--indigo-soft);
+  color: var(--indigo-deep);
+}
+.react-player-controls-sep {
+  flex: 0 0 auto;
+  width: 1px;
+  height: 22px;
+  margin-inline: 3px;
+  background: var(--line);
+}
+.react-player-primary {
+  flex: 0 0 auto;
+  min-width: 46px;
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border: 1px solid var(--indigo);
+  border-radius: 999px;
+  background: var(--indigo);
+  color: #fff;
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+.react-player-primary:hover,
+.react-player-primary:focus-visible {
+  border-color: var(--indigo-deep);
+  background: var(--indigo-deep);
+  color: #fff;
+}
+.react-player-primary:disabled { cursor: not-allowed; opacity: 0.42; }
+
+.react-player-controls .mark-known,
+.react-player-controls .mark-flagged {
+  width: 32px;
+  min-height: 40px;
+  padding-inline: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.react-player-controls .mark-known.is-on {
+  border-color: var(--hanko);
+  background: var(--hanko);
+  color: #fff;
+}
+.react-player-controls .mark-flagged.is-on {
+  border-color: var(--flag);
+  background: var(--flag);
+  color: #fff;
+}
+.react-player-status {
+  min-width: 0;
+  margin-left: 8px;
+  overflow: hidden;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

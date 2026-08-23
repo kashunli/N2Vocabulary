@@ -1,0 +1,146 @@
+/* ---------- Modals ---------- */
+
+.react-modal-backdrop {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(32, 38, 43, 0.4);
+  backdrop-filter: blur(3px);
+  padding: 20px;
+}
+.react-settings-modal {
+  width: min(820px, 100%);
+  max-height: calc(100vh - 40px);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  box-shadow: var(--shadow-lift);
+}
+.react-settings-head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+  padding: 20px 22px 16px;
+}
+.react-settings-head h2 { margin: 8px 0 0; font-family: var(--mincho); font-size: 1.5rem; font-weight: 500; }
+.react-settings-head > button {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 1.6rem;
+  line-height: 1;
+}
+.react-settings-head > button:hover { color: var(--ink); }
+.react-settings-body { min-height: 0; display: grid; gap: 14px; overflow: auto; padding: 20px 22px 24px; font-family: var(--sans); }
+.react-setting-copy { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 12px; }
+.react-setting-copy > span, .react-setting-copy > label { color: var(--ink); font-weight: 650; }
+.react-setting-copy output { color: var(--indigo); font-size: 0.82rem; font-family: var(--mono); }
+.react-setting-copy p { grid-column: 1 / -1; margin: 0; color: var(--muted); font-size: 0.8rem; line-height: 1.45; }
+.react-setting-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.react-setting-options button, .react-settings-reset {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card-lift);
+  color: var(--muted);
+  cursor: pointer;
+  padding: 9px 8px;
+  font: 0.78rem/1.25 var(--sans);
+}
+.react-setting-options button.is-selected,
+.react-setting-options button:hover,
+.react-settings-reset:hover { border-color: var(--indigo); color: var(--indigo-deep); }
+.react-setting-options button.is-selected { background: var(--indigo); color: #fff; }
+.react-setting-options button.is-selected:hover { background: var(--indigo-deep); color: #fff; }
+.react-settings-body > input[type="range"] { width: 100%; accent-color: var(--indigo); }
+.react-setting-scale { display: flex; justify-content: space-between; color: var(--faint); font-size: 0.72rem; }
+.react-settings-reset { justify-self: start; }
+
+.react-sequence-intro {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--muted);
+}
+.react-sequence-intro p { margin: 0; font-size: 0.88rem; line-height: 1.5; }
+.react-sequence-intro > span { flex: 0 0 auto; color: var(--faint); font: 0.78rem/1 var(--mono); }
+.react-sequence-list { display: grid; gap: 10px; }
+.react-sequence-row {
+  display: grid;
+  grid-template-columns: 34px minmax(180px, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card-lift);
+  padding: 12px;
+}
+.react-sequence-number {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: var(--indigo-soft);
+  color: var(--indigo-deep);
+  font: 650 0.82rem/1 var(--mono);
+}
+.react-sequence-main { min-width: 0; display: grid; gap: 5px; }
+.react-sequence-main label, .react-sequence-field > span:first-child { color: var(--muted); font: 650 0.68rem/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; }
+.react-sequence-main select {
+  width: min(100%, 250px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  color: var(--ink);
+  padding: 8px 10px;
+  font: 0.9rem/1.2 var(--sans);
+}
+.react-sequence-main small { color: var(--faint); font-size: 0.72rem; }
+.react-sequence-controls { display: flex; align-items: end; justify-content: end; gap: 8px; flex-wrap: wrap; }
+.react-sequence-order { display: flex; gap: 4px; align-self: center; }
+.react-sequence-order button, .react-sequence-remove, .react-sequence-add button, .react-sequence-run-mode {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  color: var(--muted);
+  cursor: pointer;
+  font: 0.78rem/1.2 var(--sans);
+}
+.react-sequence-order button { width: 30px; height: 30px; padding: 0; font-size: 1rem; }
+.react-sequence-order button:hover:not(:disabled), .react-sequence-remove:hover:not(:disabled), .react-sequence-add button:hover:not(:disabled), .react-sequence-run-mode:hover { border-color: var(--indigo); color: var(--indigo-deep); }
+.react-sequence-order button:disabled, .react-sequence-remove:disabled, .react-sequence-add button:disabled { cursor: not-allowed; opacity: 0.4; }
+.react-sequence-field { display: grid; gap: 5px; }
+.react-sequence-slider-row { display: flex; align-items: center; gap: 8px; }
+.react-sequence-slider-row input[type="range"] { flex: 1 1 120px; min-width: 120px; accent-color: var(--indigo); }
+.react-sequence-slider-row output { min-width: 40px; text-align: right; font: 650 0.85rem/1 var(--mono); color: var(--indigo); }
+.react-sequence-stepper { display: grid; gap: 5px; }
+.react-sequence-stepper > span:first-child { color: var(--muted); font: 650 0.68rem/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; }
+.react-sequence-stepper-control { display: flex; align-items: center; gap: 4px; }
+.react-sequence-stepper-control button {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+.react-sequence-stepper-control button:disabled { cursor: not-allowed; opacity: 0.4; }
+.react-sequence-stepper-control button:not(:disabled):hover { border-color: var(--indigo); color: var(--indigo-deep); }
+.react-sequence-stepper-control output { min-width: 34px; text-align: center; font: 650 0.95rem/1 var(--mono); color: var(--ink); }
+.react-sequence-remove, .react-sequence-add button, .react-sequence-run-mode { padding: 8px 10px; }
+.react-sequence-add { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; color: var(--muted); font-size: 0.82rem; }
+.react-sequence-add > span { margin-right: 2px; color: var(--ink); font-weight: 650; }
+.react-sequence-run-mode { justify-self: start; color: var(--indigo-deep); }
+.react-sequence-run-mode[aria-pressed="true"] { border-color: var(--indigo); background: var(--indigo-soft); }
