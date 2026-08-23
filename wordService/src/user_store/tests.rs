@@ -1,6 +1,7 @@
 use super::study::next_review_due_at;
 use super::*;
-use chrono::Duration;
+use chrono::{DateTime, Duration};
+use rusqlite::params;
 use tempfile::TempDir;
 
 fn fixture() -> (TempDir, UserStore) {
