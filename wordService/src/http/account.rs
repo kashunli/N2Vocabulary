@@ -9,6 +9,21 @@ use serde_json::json;
 use std::collections::HashMap;
 use tiny_http::{Request, StatusCode};
 
+#[derive(Deserialize)]
+struct Credentials {
+    email: String,
+    password: String,
+}
+
+#[derive(Deserialize)]
+struct GuestImport {
+    #[serde(default)]
+    version: i64,
+    import_id: String,
+    snapshot_checksum: String,
+    cards: HashMap<String, StudyCard>,
+}
+
 pub(super) fn is_account_path(path: &str) -> bool {
     path.starts_with("/api/auth/")
         || path == "/api/study/state"
@@ -49,46 +64,11 @@ pub(super) fn handle_post(
         .trim_end_matches('/')
         .to_string();
     let body = read_json(&mut request)?;
-    if path == "/api/auth/register" || path == "/api/auth/login" {
-        #[derive(Deserialize)]
-        struct Credentials {
-            email: String,
-            password: String,
-        }
-        let credentials: Credentials = match serde_json::from_value(body) {
-            Ok(value) => value,
-            Err(_) => {
-                return send_json(
-                    request,
-                    StatusCode(400),
-                    &json!({"error": "email and password are required"}),
-                );
-            }
-        };
-        let result = if path.ends_with("register") {
-            users.register(&credentials.email, &credentials.password)
-        } else {
-            users.login(&credentials.email, &credentials.password)
-        };
-        return match result {
-            Ok(session) => send_json_with_headers(
-                request,
-                StatusCode(200),
-                &json!({"user": session.user, "csrf_token": session.csrf_token}),
-                vec![session_cookie(&session.token)],
-            ),
-            Err(error) => {
-                let message = error.to_string();
-                let status = if message.contains("too many login") {
-                    StatusCode(429)
-                } else if message.contains("invalid email or password") {
-                    StatusCode(401)
-                } else {
-                    StatusCode(400)
-                };
-                send_json(request, status, &json!({"error": message}))
-            }
-        };
+    if path == "/api/auth/register" {
+        return handle_credentials(request, &users, body, true);
+    }
+    if path == "/api/auth/login" {
+        return handle_credentials(request, &users, body, false);
     }
 
     let Some(auth) = authenticate_request(&request, &users)? else {
@@ -116,79 +96,20 @@ pub(super) fn handle_post(
     }
 
     if path == "/api/study/import-guest" {
-        #[derive(Deserialize)]
-        struct GuestImport {
-            #[serde(default)]
-            version: i64,
-            import_id: String,
-            snapshot_checksum: String,
-            cards: HashMap<String, StudyCard>,
-        }
-        let import: GuestImport = match serde_json::from_value(body) {
-            Ok(value) => value,
-            Err(_) => {
-                return send_json(
-                    request,
-                    StatusCode(400),
-                    &json!({"error": "invalid guest snapshot"}),
-                );
-            }
-        };
-        if import.snapshot_checksum.len() != 64
-            || !import
-                .snapshot_checksum
-                .bytes()
-                .all(|byte| byte.is_ascii_hexdigit())
-        {
-            return send_json(
-                request,
-                StatusCode(400),
-                &json!({"error": "invalid snapshot checksum"}),
-            );
-        }
-        for (key, card) in &import.cards {
-            if key != &card.item_uuid
-                || !valid_card_timestamps(card)
-                || repository
-                    .resolve_item_for_review(key, None, None)?
-                    .is_none()
-            {
-                return send_json(
-                    request,
-                    StatusCode(400),
-                    &json!({"error": format!("unknown item UUID: {key}")}),
-                );
-            }
-            if let (Some(book), Some(source_index)) =
-                (&card.preferred_book_code, card.preferred_source_index)
-                && repository
-                    .resolve_item_for_review(key, Some(book), Some(source_index))?
-                    .is_none()
-            {
-                return send_json(
-                    request,
-                    StatusCode(400),
-                    &json!({"error": format!("invalid preferred source for: {key}")}),
-                );
-            }
-        }
-        return match users.import_guest(
-            auth.user.id,
-            &import.import_id,
-            &import.snapshot_checksum,
-            import.version,
-            import.cards.into_values().collect(),
-        ) {
-            Ok(snapshot) => send_json(request, StatusCode(200), &snapshot),
-            Err(error) if error.to_string().contains("already used") => send_json(
-                request,
-                StatusCode(409),
-                &json!({"error": error.to_string()}),
-            ),
-            Err(error) => Err(error),
-        };
+        return handle_guest_import(request, &users, &repository, &auth, body);
     }
 
+    handle_study_card_action(request, &users, &repository, &auth, &path, &body)
+}
+
+fn handle_study_card_action(
+    request: Request,
+    users: &UserStore,
+    repository: &WordRepository,
+    auth: &AuthContext,
+    path: &str,
+    body: &serde_json::Value,
+) -> Result<()> {
     let Some(rest) = path.strip_prefix("/api/study/cards/") else {
         return send_json(request, StatusCode(404), &json!({"error": "not found"}));
     };
@@ -274,6 +195,120 @@ pub(super) fn handle_post(
         };
     }
     send_json(request, StatusCode(404), &json!({"error": "not found"}))
+}
+
+fn handle_credentials(
+    request: Request,
+    users: &UserStore,
+    body: serde_json::Value,
+    register: bool,
+) -> Result<()> {
+    let credentials: Credentials = match serde_json::from_value(body) {
+        Ok(value) => value,
+        Err(_) => {
+            return send_json(
+                request,
+                StatusCode(400),
+                &json!({"error": "email and password are required"}),
+            );
+        }
+    };
+    let result = if register {
+        users.register(&credentials.email, &credentials.password)
+    } else {
+        users.login(&credentials.email, &credentials.password)
+    };
+    match result {
+        Ok(session) => send_json_with_headers(
+            request,
+            StatusCode(200),
+            &json!({"user": session.user, "csrf_token": session.csrf_token}),
+            vec![session_cookie(&session.token)],
+        ),
+        Err(error) => {
+            let message = error.to_string();
+            let status = if message.contains("too many login") {
+                StatusCode(429)
+            } else if message.contains("invalid email or password") {
+                StatusCode(401)
+            } else {
+                StatusCode(400)
+            };
+            send_json(request, status, &json!({"error": message}))
+        }
+    }
+}
+
+fn handle_guest_import(
+    request: Request,
+    users: &UserStore,
+    repository: &WordRepository,
+    auth: &AuthContext,
+    body: serde_json::Value,
+) -> Result<()> {
+    let import: GuestImport = match serde_json::from_value(body) {
+        Ok(value) => value,
+        Err(_) => {
+            return send_json(
+                request,
+                StatusCode(400),
+                &json!({"error": "invalid guest snapshot"}),
+            );
+        }
+    };
+    if import.snapshot_checksum.len() != 64
+        || !import
+            .snapshot_checksum
+            .bytes()
+            .all(|byte| byte.is_ascii_hexdigit())
+    {
+        return send_json(
+            request,
+            StatusCode(400),
+            &json!({"error": "invalid snapshot checksum"}),
+        );
+    }
+    for (key, card) in &import.cards {
+        if key != &card.item_uuid
+            || !valid_card_timestamps(card)
+            || repository
+                .resolve_item_for_review(key, None, None)?
+                .is_none()
+        {
+            return send_json(
+                request,
+                StatusCode(400),
+                &json!({"error": format!("unknown item UUID: {key}")}),
+            );
+        }
+        if let (Some(book), Some(source_index)) =
+            (&card.preferred_book_code, card.preferred_source_index)
+            && repository
+                .resolve_item_for_review(key, Some(book), Some(source_index))?
+                .is_none()
+        {
+            return send_json(
+                request,
+                StatusCode(400),
+                &json!({"error": format!("invalid preferred source for: {key}")}),
+            );
+        }
+    }
+    match users.import_guest(
+        auth.user.id,
+        &import.import_id,
+        &import.snapshot_checksum,
+        import.version,
+        import.cards.into_values().collect(),
+    ) {
+        Ok(snapshot) => send_json(request, StatusCode(200), &snapshot),
+        Err(error) if error.to_string().contains("already used") => send_json(
+            request,
+            StatusCode(409),
+            &json!({"error": error.to_string()}),
+        ),
+        Err(error) => Err(error),
+    }
 }
 
 fn valid_card_timestamps(card: &StudyCard) -> bool {
