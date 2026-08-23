@@ -323,15 +323,12 @@ pub fn wait_for_service(
             Err(error) => last_error = error.to_string(),
         }
 
-        if let Some(service_child) = child.as_deref_mut() {
-            if let Some(status) = service_child
+        if let Some(service_child) = child.as_deref_mut()
+            && let Some(status) = service_child
                 .try_wait()
                 .context("check whether WordService exited")?
-            {
-                bail!(
-                    "WordService exited before becoming ready ({status}); last probe: {last_error}"
-                );
-            }
+        {
+            bail!("WordService exited before becoming ready ({status}); last probe: {last_error}");
         }
 
         if started_at.elapsed() >= timeout {
@@ -406,7 +403,7 @@ fn open_browser(url: &str) -> Result<()> {
         command
             .spawn()
             .context("run Windows default-browser handler")?;
-        return Ok(());
+        Ok(())
     }
 
     #[cfg(target_os = "macos")]

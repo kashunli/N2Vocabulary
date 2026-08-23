@@ -50,9 +50,10 @@ pub struct NewSession {
     pub csrf_token: String,
 }
 
-#[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum MarkStatus {
+    #[default]
     Unmarked,
     Known,
     Flagged,
@@ -75,12 +76,6 @@ impl MarkStatus {
             Self::Known => "known",
             Self::Flagged => "flagged",
         }
-    }
-}
-
-impl Default for MarkStatus {
-    fn default() -> Self {
-        Self::Unmarked
     }
 }
 
@@ -153,9 +148,7 @@ impl<'de> Deserialize<'de> for StudyCard {
         D: serde::Deserializer<'de>,
     {
         let input = StudyCardInput::deserialize(deserializer)?;
-        let status = if input.flagged {
-            MarkStatus::Flagged
-        } else if input.status == Some(MarkStatus::Flagged) {
+        let status = if input.flagged || input.status == Some(MarkStatus::Flagged) {
             MarkStatus::Flagged
         } else if input.status == Some(MarkStatus::Known) || input.known {
             MarkStatus::Known

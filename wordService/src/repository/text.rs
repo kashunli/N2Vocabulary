@@ -102,10 +102,7 @@ fn group_has_choice(value: &str) -> bool {
 }
 
 fn first_choice(value: &str) -> String {
-    let first = value
-        .split(|ch| ch == '/' || ch == '／')
-        .next()
-        .unwrap_or(value);
+    let first = value.split(['/', '／']).next().unwrap_or(value);
     clean_choice_fragment(first)
 }
 
@@ -123,12 +120,12 @@ fn collapse_slash_ellipsis_lists(text: &str) -> String {
     for ellipsis in ["……", "…", "..."] {
         while let Some(ellipsis_at) = output.find(ellipsis) {
             let before = &output[..ellipsis_at];
-            let Some(slash_at) = before.rfind(|ch| ch == '/' || ch == '／') else {
+            let Some(slash_at) = before.rfind(['/', '／']) else {
                 break;
             };
             let list_start = find_choice_list_start(before, slash_at);
             let remove_start = before[list_start..]
-                .find(|ch| ch == '/' || ch == '／')
+                .find(['/', '／'])
                 .map(|offset| list_start + offset)
                 .unwrap_or(slash_at);
             output.replace_range(remove_start..ellipsis_at + ellipsis.len(), "");
