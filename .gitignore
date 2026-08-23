@@ -88,7 +88,21 @@ wordService/data/*.sqlite-shm
 wordService/data/*.sqlite-journal
 wordService/data/*.sqlite.backup*
 wordService/data/users.sqlite
-*.json
+# JSON is often source, review evidence, or a reproducible workflow manifest in
+# this project. Ignore only known generated/local JSON locations; a broad
+# `*.json` rule used to hide the frontend package and TypeScript configuration.
+output/**/*.json
+downloads/**/*.json
+cache/**/*.json
+wordService/tmp/**/*.json
+# Local workflow inputs and generated audit/run manifests. Their schemas are
+# documented in the owning skills; they are not source code to add incidentally
+# when a broad JSON ignore is removed.
+data/
+work/
+bazi-ziwei-output/
+wordService/audio_generation_runs/
+wordService/data/*_candidates.json
 # Human-reviewed audit decisions are authoritative, inspectable project data.
 !reviews/vocabulary_audio/
 !reviews/vocabulary_audio/*.json

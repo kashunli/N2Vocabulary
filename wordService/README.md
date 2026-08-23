@@ -356,15 +356,14 @@ cd wordService
 cargo fmt --check
 cargo test
 cd frontend
-pnpm test
-pnpm exec tsc --noEmit
-pnpm exec vite build
+corepack pnpm install --frozen-lockfile
+pnpm check
 ```
 
-The Rust tests build a temporary SQLite database and do not touch the real
-vocabulary DB. The backend writes mutable SQLite state through a temporary copy
-and copies it back after commit; this keeps writes reliable on this Windows
-workspace when stale SQLite sidecar files exist.
+The frontend is an independent pinned pnpm project. Always install and run its
+commands from `wordService/frontend`; the repository root is not a JavaScript
+workspace. The Rust tests build a temporary SQLite database and do not touch
+the real vocabulary DB.
 
 ## Legacy Python
 
