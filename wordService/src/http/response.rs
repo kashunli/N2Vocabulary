@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use serde::Serialize;
 use serde_json::json;
-use std::fs;
+use std::fs::File;
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use tiny_http::{Header, Method, Request, Response, StatusCode};
@@ -87,12 +87,10 @@ pub(super) fn send_file(request: Request, path: &Path, content_type: &str) -> Re
     serve_file(request, path, content_type, "no-store")
 }
 
-/// Audio clips never change once written, so a long `max-age` lets the browser
-/// serve repeat plays straight from its disk cache. `immutable` is deliberately
-/// omitted: the flagged-unit export is regenerated in place at the same URL, and
-/// leaving it revalidatable lets a reload pick up the fresh file.
+/// Existing corpus and flagged-export paths can be replaced in place. Requiring
+/// revalidation keeps repeat playback correct until every URL is content-addressed.
 pub(super) fn send_audio(request: Request, path: &Path) -> Result<()> {
-    serve_file(request, path, "audio/mpeg", "public, max-age=31536000")
+    serve_file(request, path, "audio/mpeg", "no-cache")
 }
 
 fn serve_file(
@@ -114,16 +112,18 @@ fn serve_file(
     } else {
         content_type.to_string()
     };
+    let file_size = path.metadata()?.len();
     let headers = vec![
         header("Cache-Control", cache_control),
         header("Content-Type", &ctype),
+        header("Content-Length", &file_size.to_string()),
     ];
 
     if request.method() == &Method::Head {
         request.respond(add_headers(Response::empty(StatusCode(200)), headers))?;
     } else {
         request.respond(add_headers(
-            Response::from_data(fs::read(path)?).with_status_code(StatusCode(200)),
+            Response::from_file(File::open(path)?).with_status_code(StatusCode(200)),
             headers,
         ))?;
     }
