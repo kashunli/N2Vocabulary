@@ -12,11 +12,11 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
-use std::thread;
-use std::time::{Duration, SystemTime};
+use std::time::SystemTime;
 use tempfile::TempDir;
 
 mod audio_export;
+mod marks;
 mod paths;
 mod schema;
 mod search;
@@ -887,62 +887,6 @@ impl WordRepository {
         Some(clips_parent.join(normalized))
     }
 
-    pub fn set_mark(&self, entry_id: i64, known: bool, flagged: bool) -> Result<()> {
-        // Mark writes go through a temporary DB copy because stale WAL sidecars
-        // on this Windows workspace have made direct writes fragile. The mutex
-        // makes that copy-mutate-copy-back sequence one-at-a-time.
-        // Keep the deprecated boolean endpoint safe during the transition.
-        // Once Flagged is requested it wins, so this path cannot create a
-        // dual-mark row even if an older browser sends both values.
-        let known = known && !flagged;
-
-        let _guard = self
-            .write_lock
-            .lock()
-            .expect("mark write lock should not be poisoned");
-        let temp_dir = TempDir::with_prefix("n2_word_mark_")?;
-        let temp_db = temp_dir.path().join(
-            self.db_path
-                .file_name()
-                .context("database path should have a filename")?,
-        );
-        fs::copy(&self.db_path, &temp_db)?;
-
-        {
-            let conn = Connection::open(&temp_db)?;
-            conn.execute_batch("PRAGMA foreign_keys = ON; PRAGMA journal_mode = DELETE;")?;
-            let item_id: Option<i64> = conn
-                .query_row(
-                    "SELECT item_id FROM book_entries WHERE book_code = ? AND entry_id = ?",
-                    params![&self.book_code, entry_id],
-                    |row| row.get(0),
-                )
-                .optional()?;
-            let Some(item_id) = item_id else {
-                bail!("unknown entry_id");
-            };
-
-            if !known && !flagged {
-                conn.execute("DELETE FROM item_marks WHERE item_id = ?", [item_id])?;
-            } else {
-                conn.execute(
-                    r#"
-                    INSERT INTO item_marks(item_id, known, flagged, updated_at)
-                    VALUES(?, ?, ?, ?)
-                    ON CONFLICT(item_id) DO UPDATE SET
-                      known = excluded.known,
-                      flagged = excluded.flagged,
-                      updated_at = excluded.updated_at
-                    "#,
-                    params![item_id, bool_to_int(known), bool_to_int(flagged), now_utc()],
-                )?;
-            }
-        }
-
-        copy_database_back_with_retry(&temp_db, &self.db_path)?;
-        Ok(())
-    }
-
     pub fn ensure_example_audio<F>(
         &self,
         entry_id: i64,
@@ -1299,22 +1243,6 @@ impl WordRepository {
     }
 }
 
-fn copy_database_back_with_retry(temp_db: &Path, db_path: &Path) -> Result<()> {
-    let mut last_error = None;
-    for _ in 0..10 {
-        match fs::copy(temp_db, db_path) {
-            Ok(_) => return Ok(()),
-            Err(error) => {
-                last_error = Some(error);
-                thread::sleep(Duration::from_millis(150));
-            }
-        }
-    }
-    Err(last_error
-        .context("database copy should have been attempted")?
-        .into())
-}
-
 fn collect_rows<T>(
     rows: rusqlite::MappedRows<'_, impl FnMut(&rusqlite::Row<'_>) -> rusqlite::Result<T>>,
 ) -> Result<Vec<T>> {
@@ -1371,10 +1299,6 @@ fn write_file_atomically(path: &Path, data: &[u8]) -> Result<()> {
 
 fn int_to_bool(value: i64) -> bool {
     value != 0
-}
-
-fn bool_to_int(value: bool) -> i64 {
-    if value { 1 } else { 0 }
 }
 
 fn sqlite_table_exists(conn: &Connection, table_name: &str) -> Result<bool> {
