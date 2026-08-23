@@ -24,14 +24,12 @@ import {
   type PlaybackRunMode,
 } from "./playbackSettings";
 import { readStudyFocus, saveStudyFocus } from "../study/studyFocus";
-import type { NativeAudioQueueItem } from "./nativeAudio";
 import {
-  nativeCueId,
-  nativeCueLocation,
   playbackEndAction,
   recordCompletedPhase,
 } from "./studyPlaybackState.mjs";
 import { useBoundarySilence } from "./useBoundarySilence";
+import { useNativeStudyPlayback } from "./useNativeStudyPlayback";
 
 type ManualSelection = {
   entryUuid: string;
@@ -83,8 +81,6 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
   const [replayRequest, setReplayRequest] = useState(0);
   const [pauseRequest, setPauseRequest] = useState(0);
   const completedPhasesRef = useRef<{itemUuid?: string; word: boolean; sentence: boolean; cardCompleted: boolean}>({word: false, sentence: false, cardCompleted: false});
-  const completedNativeCueIdsRef = useRef(new Set<string>());
-  const activeNativeCueIdRef = useRef<string | undefined>(undefined);
   const autoAdvanceRef = useRef(autoAdvance);
   const boundarySilence = useBoundarySilence(autoAdvanceRef);
   const {
@@ -97,10 +93,14 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
     resume: resumeBoundarySilence,
     schedule: scheduleAfterSilence,
   } = boundarySilence;
+  const cuesForEntry = useCallback(
+    (entry: Entry | undefined) => sequenceCuesFor(sequence, entry),
+    [sequence],
+  );
   const activeEntry = entries[activeIndex];
   const activeCues = useMemo(
-    () => sequenceCuesFor(sequence, activeEntry),
-    [activeEntry, sequence],
+    () => cuesForEntry(activeEntry),
+    [activeEntry, cuesForEntry],
   );
   const safeCueIndex = activeCues.length ? Math.min(activeCueIndex, activeCues.length - 1) : 0;
   const sequenceCue = activeCues[safeCueIndex];
@@ -113,38 +113,6 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
   const target = activeEntry
     ? targetFor(activeEntry, activePhase, activeCue?.occurrenceId || `manual:${activePhase}`)
     : null;
-
-  // A complete consecutive run must be materialized before the screen locks.
-  // The Android service owns this queue and its pauses, so it never depends on
-  // WebView timers to move from one word/sentence to the next.
-  const nativeQueue = useMemo((): NativeAudioQueueItem[] => {
-    if (!activeEntry) return [];
-    const selectedCueIndex = selectedManualPhase
-      ? firstCueIndexForPhase(activeCues, selectedManualPhase)
-      : safeCueIndex;
-    const firstCueIndex = selectedCueIndex >= 0 ? selectedCueIndex : safeCueIndex;
-    const result: NativeAudioQueueItem[] = [];
-    for (let entryIndex = activeIndex; entryIndex < entries.length; entryIndex += 1) {
-      if (entryIndex > activeIndex && stopAfterEntry) break;
-      const entry = entries[entryIndex];
-      const cues = sequenceCuesFor(sequence, entry);
-      const startCueIndex = entryIndex === activeIndex ? firstCueIndex : 0;
-      for (let cueIndex = startCueIndex; cueIndex < cues.length; cueIndex += 1) {
-        const cue = cues[cueIndex];
-        const url = cue.phase === "word" ? entry.word_audio_url : entry.sentence_audio_url;
-        if (!url) continue;
-        result.push({
-          id: nativeCueId(entryIndex, cueIndex),
-          title: `${entry.kanji} · ${cue.phase === "word" ? "Word" : "Sentence"}`,
-          url,
-          pauseAfterMs: cue.pauseAfterMs
-            ?? (cue.phase === "word" ? postWordSilence : postSentenceSilence),
-        });
-      }
-      if (stopAfterEntry) break;
-    }
-    return result;
-  }, [activeCues, activeEntry, activeIndex, entries, postSentenceSilence, postWordSilence, safeCueIndex, selectedManualPhase, sequence, stopAfterEntry]);
 
   useEffect(() => {
     if (activeIndex >= entries.length) {
@@ -218,9 +186,19 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
   }, [requestPlayback, resumeBoundarySilence]);
 
   const playableEntryAt = useCallback((index: number) => {
-    const entry = entries[index];
-    return entry ? sequenceCuesFor(sequence, entry) : [];
-  }, [entries, sequence]);
+    return cuesForEntry(entries[index]);
+  }, [cuesForEntry, entries]);
+
+  const completeEntryPhase = useCallback((entry: Entry, phase: PlaybackPhase) => {
+    const completion = recordCompletedPhase(
+      completedPhasesRef.current,
+      entry.item_uuid,
+      phase,
+      !!entry.sentence_audio_url,
+    );
+    completedPhasesRef.current = completion.progress;
+    if (completion.completesCard) onCompleteCard?.(entry);
+  }, [onCompleteCard]);
 
   const selectEntry = useCallback((index: number, phase?: PlaybackPhase) => {
     if (index < 0 || index >= entries.length) return;
@@ -276,16 +254,7 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
   }, [activeEntry, activeIndex, entries.length, playableEntryAt]);
 
   const handlePlaybackEnd = useCallback(() => {
-    if (activeEntry) {
-      const completion = recordCompletedPhase(
-        completedPhasesRef.current,
-        activeEntry.item_uuid,
-        activePhase,
-        !!activeEntry.sentence_audio_url,
-      );
-      completedPhasesRef.current = completion.progress;
-      if (completion.completesCard) onCompleteCard?.(activeEntry);
-    }
+    if (activeEntry) completeEntryPhase(activeEntry, activePhase);
 
     const nextCueIndex = safeCueIndex + 1;
     const currentPause = activeCue?.pauseAfterMs
@@ -325,59 +294,45 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
       return;
     }
     scheduleAfterSilence(currentPause, advanceAfterPlayback);
-  }, [activeCue, activeCues.length, activeEntry, activeIndex, activePhase, advanceAfterPlayback, entries.length, onCompleteCard, onConsecutiveSequenceComplete, playableEntryAt, playbackRunMode, postSentenceSilence, postWordSilence, safeCueIndex, scheduleAfterSilence, stopAfterEntry]);
+  }, [activeCue, activeCues.length, activeEntry, activeIndex, activePhase, advanceAfterPlayback, completeEntryPhase, entries.length, onConsecutiveSequenceComplete, playableEntryAt, playbackRunMode, postSentenceSilence, postWordSilence, safeCueIndex, scheduleAfterSilence, stopAfterEntry]);
 
   const handlePlayingChange = useCallback((playing: boolean) => {
     setIsPlaying(playing);
     if (playing) hideSilenceState();
   }, [hideSilenceState]);
 
-  const completeNativeCue = useCallback((id: string) => {
-    if (completedNativeCueIdsRef.current.has(id)) return;
-    const location = nativeCueLocation(id);
-    if (!location) return;
-    const entry = entries[location.entryIndex];
-    const cue = entry ? playableEntryAt(location.entryIndex)[location.cueIndex] : undefined;
-    if (!entry || !cue) return;
-    completedNativeCueIdsRef.current.add(id);
-    const completion = recordCompletedPhase(
-      completedPhasesRef.current,
-      entry.item_uuid,
-      cue.phase,
-      !!entry.sentence_audio_url,
-    );
-    completedPhasesRef.current = completion.progress;
-    if (completion.completesCard) onCompleteCard?.(entry);
-  }, [entries, onCompleteCard, playableEntryAt]);
-
-  const syncNativeQueueItem = useCallback((id: string) => {
-    const location = nativeCueLocation(id);
-    if (!location || location.entryIndex < 0 || location.entryIndex >= entries.length) return;
-    const cues = playableEntryAt(location.entryIndex);
-    if (location.cueIndex < 0 || location.cueIndex >= cues.length) return;
-    // A locked WebView may miss several service callbacks. The queue is still
-    // materialized locally, so on unlock we can record every earlier cue that
-    // Android has already passed before showing the current cue.
-    const queuePosition = nativeQueue.findIndex((item) => item.id === id);
-    if (queuePosition >= 0) {
-      nativeQueue.slice(0, queuePosition).forEach((item) => completeNativeCue(item.id));
-    } else if (activeNativeCueIdRef.current && activeNativeCueIdRef.current !== id) {
-      completeNativeCue(activeNativeCueIdRef.current);
-    }
-    activeNativeCueIdRef.current = id;
-    setActiveIndex(location.entryIndex);
-    setActiveCueIndex(location.cueIndex);
+  const activateNativeCue = useCallback((entryIndex: number, cueIndex: number) => {
+    setActiveIndex(entryIndex);
+    setActiveCueIndex(cueIndex);
     setManualSelection(null);
-  }, [completeNativeCue, entries.length, nativeQueue, playableEntryAt]);
+  }, []);
 
-  const completeNativeQueue = useCallback(() => {
-    if (activeNativeCueIdRef.current) completeNativeCue(activeNativeCueIdRef.current);
-    activeNativeCueIdRef.current = undefined;
+  const handleNativeQueueComplete = useCallback(() => {
     cancelEndTimer();
     autoAdvanceRef.current = false;
     setAutoAdvance(false);
     if (activeEntry) onConsecutiveSequenceComplete?.(activeEntry);
-  }, [activeEntry, cancelEndTimer, completeNativeCue, onConsecutiveSequenceComplete]);
+  }, [activeEntry, cancelEndTimer, onConsecutiveSequenceComplete]);
+
+  const {
+    nativeQueue,
+    syncQueueItem: syncNativeQueueItem,
+    completeQueue: completeNativeQueue,
+  } = useNativeStudyPlayback({
+    entries,
+    activeEntry,
+    activeIndex,
+    activeCues,
+    safeCueIndex,
+    selectedManualPhase,
+    stopAfterEntry,
+    postWordSilence,
+    postSentenceSilence,
+    cuesForEntry,
+    onCompleteCue: completeEntryPhase,
+    onActivateCue: activateNativeCue,
+    onQueueComplete: handleNativeQueueComplete,
+  });
 
   const togglePlayback = useCallback(() => {
     if (isPlaying) {
