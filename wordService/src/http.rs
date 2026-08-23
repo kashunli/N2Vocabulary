@@ -92,6 +92,23 @@ fn handle_request(
     audio_review: AudioReviewStore,
     user_store: UserStore,
 ) -> Result<()> {
+    if matches!(
+        request.method(),
+        Method::Post | Method::Put | Method::Delete
+    ) && !origin_matches(
+        request
+            .headers()
+            .iter()
+            .find(|header| header.field.equiv("Origin"))
+            .map(|header| header.value.as_str()),
+        &config.origin,
+    ) {
+        return send_json(
+            request,
+            StatusCode(403),
+            &json!({"error": "invalid request origin"}),
+        );
+    }
     let request_path = request
         .url()
         .split('?')
@@ -139,4 +156,29 @@ fn handle_request(
     }
 
     handle_read(request, config, repository, audio_review)
+}
+
+/// A same-origin browser sends Origin for unsafe fetches. Requiring an exact
+/// configured value prevents another website from triggering local or public
+/// mutations with a victim's cookies; CSRF tokens still protect sessions too.
+fn origin_matches(request_origin: Option<&str>, expected_origin: &str) -> bool {
+    request_origin.is_some_and(|origin| origin == expected_origin)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::origin_matches;
+
+    #[test]
+    fn unsafe_requests_require_the_exact_configured_origin() {
+        assert!(origin_matches(
+            Some("http://127.0.0.1:8767"),
+            "http://127.0.0.1:8767"
+        ));
+        assert!(!origin_matches(
+            Some("http://localhost:8767"),
+            "http://127.0.0.1:8767"
+        ));
+        assert!(!origin_matches(None, "http://127.0.0.1:8767"));
+    }
 }
