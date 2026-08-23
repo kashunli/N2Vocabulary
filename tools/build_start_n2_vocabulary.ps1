@@ -53,7 +53,7 @@ try {
         cargo fmt --manifest-path $manifestPath --all -- --check
     }
     Invoke-CheckedCommand 'Run strict Rust linting' {
-        cargo clippy --manifest-path $manifestPath --all-targets -- -D warnings
+        cargo clippy --manifest-path $manifestPath --all-targets --all-features -- -D warnings
     }
     Invoke-CheckedCommand 'Run Rust tests' { cargo test --manifest-path $manifestPath }
 

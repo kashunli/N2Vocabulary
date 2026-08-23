@@ -54,6 +54,6 @@ jobs:
       - name: Check formatting
         run: cargo fmt --manifest-path wordService/Cargo.toml --all -- --check
       - name: Run strict Clippy
-        run: cargo clippy --manifest-path wordService/Cargo.toml --all-targets -- -D warnings
+        run: cargo clippy --manifest-path wordService/Cargo.toml --all-targets --all-features -- -D warnings
       - name: Run Rust tests
         run: cargo test --manifest-path wordService/Cargo.toml
