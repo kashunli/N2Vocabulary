@@ -1,5 +1,8 @@
 param(
-    [switch]$RegenerateIcon
+    [switch]$RegenerateIcon,
+    # Local iteration can reuse an already verified frontend install. Release
+    # builds keep installation enabled so a clean checkout is always tested.
+    [switch]$SkipInstall
 )
 
 $ErrorActionPreference = 'Stop'
@@ -16,9 +19,44 @@ $launcherSource = Join-Path $releaseDirectory 'start_n2_vocabulary.exe'
 $launcherDestination = Join-Path $repoRoot 'Start N2 Vocabulary.exe'
 $iconGenerator = Join-Path $repoRoot 'tools\generate_n2_vocabulary_icon.py'
 $iconPath = Join-Path $repoRoot 'wordService\assets\n2-vocabulary.ico'
+$frontendDirectory = Join-Path $repoRoot 'wordService\frontend'
+
+function Invoke-CheckedCommand {
+    param(
+        [Parameter(Mandatory = $true)][string]$Label,
+        [Parameter(Mandatory = $true)][scriptblock]$Command
+    )
+
+    Write-Host "==> $Label"
+    & $Command
+    if ($LASTEXITCODE -ne 0) {
+        throw "$Label failed with exit code $LASTEXITCODE"
+    }
+}
 
 Push-Location $repoRoot
 try {
+    Push-Location $frontendDirectory
+    try {
+        if (-not $SkipInstall) {
+            Invoke-CheckedCommand 'Install frontend dependencies' { corepack pnpm install --frozen-lockfile }
+        }
+        Invoke-CheckedCommand 'Run frontend tests' { pnpm test }
+        Invoke-CheckedCommand 'Type-check frontend' { pnpm typecheck }
+        Invoke-CheckedCommand 'Build frontend assets' { pnpm build }
+    }
+    finally {
+        Pop-Location
+    }
+
+    Invoke-CheckedCommand 'Check Rust formatting' {
+        cargo fmt --manifest-path $manifestPath --all -- --check
+    }
+    Invoke-CheckedCommand 'Run strict Rust linting' {
+        cargo clippy --manifest-path $manifestPath --all-targets -- -D warnings
+    }
+    Invoke-CheckedCommand 'Run Rust tests' { cargo test --manifest-path $manifestPath }
+
     if ($RegenerateIcon -or -not (Test-Path -LiteralPath $iconPath -PathType Leaf)) {
         & python $iconGenerator
         if ($LASTEXITCODE -ne 0) {
@@ -30,9 +68,8 @@ try {
         throw "The Windows icon was not found at $iconPath"
     }
 
-    & cargo build --release --target-dir $buildTargetDirectory --manifest-path $manifestPath --bin n2-word-service-rust --bin start_n2_vocabulary
-    if ($LASTEXITCODE -ne 0) {
-        throw "Cargo failed with exit code $LASTEXITCODE"
+    Invoke-CheckedCommand 'Build WordService and launcher' {
+        cargo build --release --target-dir $buildTargetDirectory --manifest-path $manifestPath --bin n2-word-service-rust --bin start_n2_vocabulary
     }
 }
 finally {
