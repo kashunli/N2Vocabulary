@@ -17,6 +17,7 @@ use tempfile::TempDir;
 
 mod audio_export;
 mod marks;
+mod media;
 mod paths;
 mod schema;
 mod search;
@@ -26,8 +27,7 @@ use audio_export::{
     FlaggedAudioExportItem, ensure_silence_clip, run_ffmpeg, write_flagged_audio_concat_list,
 };
 use paths::{
-    generated_sentence_clip_path, generated_word_clip_path, normalize_clip_path,
-    normalize_generated_audio_dir,
+    generated_sentence_clip_path, generated_word_clip_path, normalize_generated_audio_dir,
 };
 use search::{search_matches, search_terms};
 use text::word_text_for_tts;
@@ -822,69 +822,6 @@ impl WordRepository {
             search_matches,
             explanation_md,
         }
-    }
-
-    pub fn audio_url(&self, clip_path: Option<&str>) -> Option<String> {
-        // Returning Option is deliberate: bad or missing DB paths simply become
-        // absent audio URLs instead of crashing the whole entry response.
-        let normalized = normalize_clip_path(clip_path?, true)?;
-        let resolved = self.resolve_audio_path(&normalized)?;
-        let version = self.audio_version_for_path(&resolved)?;
-        Some(format!("/audio/{normalized}?v={version}"))
-    }
-
-    /// Return the full content hash for a request path after the same strict
-    /// clip-path normalization used by the file server.
-    pub fn audio_version(&self, request_path: &str) -> Option<String> {
-        self.resolve_audio_path(request_path)
-            .and_then(|path| self.audio_version_for_path(&path))
-    }
-
-    fn audio_version_for_path(&self, path: &Path) -> Option<String> {
-        let metadata = path.metadata().ok()?;
-        if !metadata.is_file() {
-            return None;
-        }
-        let size = metadata.len();
-        let modified = metadata.modified().ok()?;
-        if let Some(cached) = self
-            .audio_versions
-            .lock()
-            .expect("audio version cache lock should not be poisoned")
-            .get(path)
-            .filter(|cached| cached.size == size && cached.modified == modified)
-        {
-            return Some(cached.sha256.clone());
-        }
-        let sha256 = format!("{:x}", Sha256::digest(fs::read(path).ok()?));
-        self.audio_versions
-            .lock()
-            .expect("audio version cache lock should not be poisoned")
-            .insert(
-                path.to_path_buf(),
-                CachedAudioVersion {
-                    size,
-                    modified,
-                    sha256: sha256.clone(),
-                },
-            );
-        Some(sha256)
-    }
-
-    fn forget_audio_version(&self, path: &Path) {
-        self.audio_versions
-            .lock()
-            .expect("audio version cache lock should not be poisoned")
-            .remove(path);
-    }
-
-    pub fn resolve_audio_path(&self, request_path: &str) -> Option<PathBuf> {
-        let normalized = normalize_clip_path(request_path, false)?;
-        // Stored paths start with `clips/...`; the configured clips_dir points
-        // at the `clips` folder itself, so joining from its parent preserves the
-        // stored relative path exactly.
-        let clips_parent = self.clips_dir.parent().unwrap_or_else(|| Path::new("."));
-        Some(clips_parent.join(normalized))
     }
 
     pub fn ensure_example_audio<F>(
