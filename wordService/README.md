@@ -293,6 +293,14 @@ TTS request runs at a time. They store generated MP3s under
 the selected `book_entries.word_clip` or `item_examples.audio_clip`. Clicking a card outside its
 buttons ensures and downloads both the word and main-sentence files.
 
+Every audio URL returned by the API includes `?v=<full-sha256>`, calculated
+from the MP3 bytes. Those exact versioned URLs are served with
+`Cache-Control: public, max-age=31536000, immutable`; a file that changes gets
+a different URL. Older unversioned `/audio/...` links remain usable for one
+compatibility period: they receive a `307` redirect with `Cache-Control:
+no-store` to the current versioned URL. A stale or forged version hash returns
+`404` instead of serving new bytes under an old immutable cache key.
+
 The flagged-audio export endpoint builds one MP3 for the selected unit's
 flagged words. The listening order is word audio, 1 second of silence, main
 sentence audio, 2 seconds of silence, then the next flagged word. Exports are

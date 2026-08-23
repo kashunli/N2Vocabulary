@@ -1,11 +1,15 @@
 use anyhow::{Context, Result};
 use serde::Serialize;
 use serde_json::json;
+use sha2::{Digest, Sha256};
 use std::fs::File;
-use std::io::Read;
+use std::io::{Read, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
 use tiny_http::{Header, Method, Request, Response, StatusCode};
 use url::Url;
+
+const VERSIONED_AUDIO_CACHE_CONTROL: &str = "public, max-age=31536000, immutable";
+const LEGACY_AUDIO_REDIRECT_CACHE_CONTROL: &str = "no-store";
 
 pub(super) fn static_asset_path(static_dir: &Path, request_path: &str) -> Option<PathBuf> {
     match request_path {
@@ -87,10 +91,63 @@ pub(super) fn send_file(request: Request, path: &Path, content_type: &str) -> Re
     serve_file(request, path, content_type, "no-store")
 }
 
-/// Existing corpus and flagged-export paths can be replaced in place. Requiring
-/// revalidation keeps repeat playback correct until every URL is content-addressed.
-pub(super) fn send_audio(request: Request, path: &Path) -> Result<()> {
-    serve_file(request, path, "audio/mpeg", "no-cache")
+/// Serve only the exact bytes named by a versioned URL. Hash through the same
+/// open handle that is sent to the client so a concurrent replacement cannot
+/// put changed bytes behind an already-immutable cache key.
+pub(super) fn send_audio(request: Request, path: &Path, expected_version: &str) -> Result<()> {
+    let Ok(mut file) = File::open(path) else {
+        return send_json(
+            request,
+            StatusCode(404),
+            &json!({"error": "audio not found"}),
+        );
+    };
+    let metadata = file.metadata()?;
+    if !metadata.is_file() {
+        return send_json(
+            request,
+            StatusCode(404),
+            &json!({"error": "audio not found"}),
+        );
+    }
+
+    let actual_version = sha256_open_file(&mut file)?;
+    if actual_version != expected_version {
+        return send_json(
+            request,
+            StatusCode(404),
+            &json!({"error": "audio version not found"}),
+        );
+    }
+    file.seek(SeekFrom::Start(0))?;
+    let headers = vec![
+        header("Cache-Control", VERSIONED_AUDIO_CACHE_CONTROL),
+        header("Content-Type", "audio/mpeg"),
+        header("Content-Length", &metadata.len().to_string()),
+    ];
+
+    if request.method() == &Method::Head {
+        request.respond(add_headers(Response::empty(StatusCode(200)), headers))?;
+    } else {
+        request.respond(add_headers(
+            Response::from_file(file).with_status_code(StatusCode(200)),
+            headers,
+        ))?;
+    }
+    Ok(())
+}
+
+/// Old links remain valid without reusing their cache key for changed bytes.
+/// Browsers and native players follow this redirect to the hash-versioned URL.
+pub(super) fn redirect_to_versioned_audio(request: Request, location: &str) -> Result<()> {
+    request.respond(add_headers(
+        Response::empty(StatusCode(307)),
+        vec![
+            header("Location", location),
+            header("Cache-Control", LEGACY_AUDIO_REDIRECT_CACHE_CONTROL),
+        ],
+    ))?;
+    Ok(())
 }
 
 fn serve_file(
@@ -130,6 +187,19 @@ fn serve_file(
     Ok(())
 }
 
+fn sha256_open_file(file: &mut File) -> Result<String> {
+    let mut hasher = Sha256::new();
+    let mut buffer = [0_u8; 32 * 1024];
+    loop {
+        let read = file.read(&mut buffer)?;
+        if read == 0 {
+            break;
+        }
+        hasher.update(&buffer[..read]);
+    }
+    Ok(format!("{:x}", hasher.finalize()))
+}
+
 fn add_headers<R: Read>(mut response: Response<R>, headers: Vec<Header>) -> Response<R> {
     for header in headers {
         response.add_header(header);
@@ -156,7 +226,9 @@ pub(super) fn header(name: &str, value: &str) -> Header {
 
 #[cfg(test)]
 mod tests {
-    use super::static_asset_path;
+    use super::{
+        LEGACY_AUDIO_REDIRECT_CACHE_CONTROL, VERSIONED_AUDIO_CACHE_CONTROL, static_asset_path,
+    };
     use std::path::Path;
 
     #[test]
@@ -193,5 +265,14 @@ mod tests {
         assert!(static_asset_path(root, "/api/summary").is_none());
         assert!(static_asset_path(root, "/study-wall-react/assets/../index.js").is_none());
         assert!(static_asset_path(root, "/study-wall-react/assets/index.html").is_none());
+    }
+
+    #[test]
+    fn audio_cache_contract_separates_versioned_and_legacy_urls() {
+        assert_eq!(
+            VERSIONED_AUDIO_CACHE_CONTROL,
+            "public, max-age=31536000, immutable"
+        );
+        assert_eq!(LEGACY_AUDIO_REDIRECT_CACHE_CONTROL, "no-store");
     }
 }

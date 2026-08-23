@@ -17,6 +17,16 @@ struct Fixture {
     clips_dir: PathBuf,
 }
 
+fn assert_versioned_audio_url(actual: Option<&str>, path: &str) {
+    let actual = actual.expect("audio URL should be present");
+    let (base, version) = actual
+        .split_once("?v=")
+        .expect("audio URL should carry a version query parameter");
+    assert_eq!(base, format!("/audio/{path}"));
+    assert_eq!(version.len(), 64, "audio version must be a full SHA-256");
+    assert!(version.bytes().all(|byte| byte.is_ascii_hexdigit()));
+}
+
 impl Fixture {
     fn new() -> Self {
         let tempdir = TempDir::new().expect("create tempdir");
@@ -407,9 +417,9 @@ fn mimikara_main_sentences_take_priority_in_n1_n2_n3_order() {
     let preferred = fixture.repo.get_entry(1).unwrap().expect("entry exists");
     assert_eq!(preferred.sentence, "N1で人生を学ぶ。");
     assert_eq!(preferred.sentence_position, 5);
-    assert_eq!(
+    assert_versioned_audio_url(
         preferred.sentence_audio_url.as_deref(),
-        Some("/audio/clips/sentences/n1-main.mp3")
+        "clips/sentences/n1-main.mp3",
     );
 
     let conn = Connection::open(&fixture.db_path).unwrap();
@@ -452,13 +462,10 @@ fn detail_includes_examples_and_audio_urls() {
     let entry = fixture.repo.get_entry(1).unwrap().expect("entry exists");
     let examples = entry.examples.unwrap();
     assert_eq!(examples.len(), 3);
-    assert_eq!(
-        entry.word_audio_url.as_deref(),
-        Some("/audio/clips/words/word1.mp3")
-    );
-    assert_eq!(
+    assert_versioned_audio_url(entry.word_audio_url.as_deref(), "clips/words/word1.mp3");
+    assert_versioned_audio_url(
         entry.sentence_audio_url.as_deref(),
-        Some("/audio/clips/sentences/sentence1.mp3")
+        "clips/sentences/sentence1.mp3",
     );
 }
 
@@ -529,23 +536,23 @@ fn book_entry_audio_overrides_shared_item_audio() {
 
     let listed = fixture.repo.list_entries(Some(1), "all", "人生").unwrap();
     let list_entry = &listed.items[0];
-    assert_eq!(
+    assert_versioned_audio_url(
         list_entry.word_audio_url.as_deref(),
-        Some("/audio/clips/book_audio/word1.mp3")
+        "clips/book_audio/word1.mp3",
     );
-    assert_eq!(
+    assert_versioned_audio_url(
         list_entry.sentence_audio_url.as_deref(),
-        Some("/audio/clips/book_audio/sentence1.mp3")
+        "clips/book_audio/sentence1.mp3",
     );
 
     let detail = fixture.repo.get_entry(1).unwrap().expect("entry exists");
-    assert_eq!(
+    assert_versioned_audio_url(
         detail.word_audio_url.as_deref(),
-        Some("/audio/clips/book_audio/word1.mp3")
+        "clips/book_audio/word1.mp3",
     );
-    assert_eq!(
+    assert_versioned_audio_url(
         detail.sentence_audio_url.as_deref(),
-        Some("/audio/clips/book_audio/sentence1.mp3")
+        "clips/book_audio/sentence1.mp3",
     );
 }
 
@@ -636,11 +643,12 @@ fn audio_resolution_stays_inside_clips() {
 fn audio_urls_require_existing_files_and_normalize_legacy_db_prefixes() {
     let fixture = Fixture::new();
 
-    assert_eq!(
+    assert_versioned_audio_url(
         fixture
             .repo
-            .audio_url(Some("output\\clips\\unit07\\word003.mp3")),
-        Some("/audio/clips/unit07/word003.mp3".to_string())
+            .audio_url(Some("output\\clips\\unit07\\word003.mp3"))
+            .as_deref(),
+        "clips/unit07/word003.mp3",
     );
     assert_eq!(
         fixture
@@ -652,6 +660,16 @@ fn audio_urls_require_existing_files_and_normalize_legacy_db_prefixes() {
         fixture.repo.audio_url(Some("clips/words/missing.mp3")),
         None
     );
+
+    let before = fixture.repo.audio_url(Some("clips/unit07/word003.mp3"));
+    fs::write(
+        fixture.clips_dir.join("unit07").join("word003.mp3"),
+        b"replaced legacy word",
+    )
+    .unwrap();
+    let reloaded = WordRepository::new(fixture.db_path.clone(), fixture.clips_dir.clone(), "N2");
+    let after = reloaded.audio_url(Some("clips/unit07/word003.mp3"));
+    assert_ne!(before, after, "changed bytes must receive a new cache key");
 }
 
 #[test]
@@ -661,9 +679,9 @@ fn entry_omits_missing_audio_urls() {
 
     let entry = fixture.repo.get_entry(1).unwrap().expect("entry exists");
     assert_eq!(entry.word_audio_url, None);
-    assert_eq!(
+    assert_versioned_audio_url(
         entry.sentence_audio_url.as_deref(),
-        Some("/audio/clips/sentences/sentence1.mp3")
+        "clips/sentences/sentence1.mp3",
     );
 }
 
@@ -683,9 +701,9 @@ fn missing_example_audio_is_generated_and_stored() {
         .unwrap();
 
     assert!(response.generated);
-    assert_eq!(
-        response.audio_url,
-        "/audio/clips/generated_sentences/edge_tts/word1_sentence1.mp3"
+    assert_versioned_audio_url(
+        Some(response.audio_url.as_str()),
+        "clips/generated_sentences/edge_tts/word1_sentence1.mp3",
     );
     assert_eq!(
         fs::read(
@@ -727,9 +745,9 @@ fn missing_word_audio_is_generated_and_stored() {
         .unwrap();
 
     assert!(response.generated);
-    assert_eq!(
-        response.audio_url,
-        "/audio/clips/generated_sentences/edge_tts/word1.mp3"
+    assert_versioned_audio_url(
+        Some(response.audio_url.as_str()),
+        "clips/generated_sentences/edge_tts/word1.mp3",
     );
     assert_eq!(
         fs::read(
@@ -766,7 +784,7 @@ fn existing_word_audio_is_reused_without_tts() {
         .unwrap();
 
     assert!(!response.generated);
-    assert_eq!(response.audio_url, "/audio/clips/words/word1.mp3");
+    assert_versioned_audio_url(Some(response.audio_url.as_str()), "clips/words/word1.mp3");
 }
 
 #[test]
@@ -821,7 +839,10 @@ fn existing_example_audio_is_reused_without_tts() {
         .unwrap();
 
     assert!(!response.generated);
-    assert_eq!(response.audio_url, "/audio/clips/sentences/sentence1.mp3");
+    assert_versioned_audio_url(
+        Some(response.audio_url.as_str()),
+        "clips/sentences/sentence1.mp3",
+    );
 }
 
 #[test]

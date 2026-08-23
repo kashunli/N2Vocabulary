@@ -13,7 +13,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, SystemTime};
 use tempfile::TempDir;
 
 mod audio_export;
@@ -51,6 +51,18 @@ pub struct WordRepository {
     // per-book clones every request creates. The frontend uses it to validate
     // its local content cache.
     content_revision: Arc<Mutex<Option<String>>>,
+    // Hashing a clip once gives its browser URL a content identity. Cache by
+    // metadata so normal list responses do not reread every MP3 on every
+    // request, while replacements invalidate naturally through their mtime or
+    // length and service-generated writes explicitly evict their entry.
+    audio_versions: Arc<Mutex<HashMap<PathBuf, CachedAudioVersion>>>,
+}
+
+#[derive(Clone, Debug)]
+struct CachedAudioVersion {
+    size: u64,
+    modified: SystemTime,
+    sha256: String,
 }
 
 /// A raw joined row from the `entries` query.
@@ -98,6 +110,7 @@ impl WordRepository {
             book_code: book_code.to_string(),
             write_lock: Arc::new(Mutex::new(())),
             content_revision: Arc::new(Mutex::new(None)),
+            audio_versions: Arc::new(Mutex::new(HashMap::new())),
         }
     }
 
@@ -108,6 +121,7 @@ impl WordRepository {
             book_code: normalize_book_code(book_code),
             write_lock: self.write_lock.clone(),
             content_revision: self.content_revision.clone(),
+            audio_versions: self.audio_versions.clone(),
         }
     }
 
@@ -976,10 +990,53 @@ impl WordRepository {
         // absent audio URLs instead of crashing the whole entry response.
         let normalized = normalize_clip_path(clip_path?, true)?;
         let resolved = self.resolve_audio_path(&normalized)?;
-        if !resolved.is_file() {
+        let version = self.audio_version_for_path(&resolved)?;
+        Some(format!("/audio/{normalized}?v={version}"))
+    }
+
+    /// Return the full content hash for a request path after the same strict
+    /// clip-path normalization used by the file server.
+    pub fn audio_version(&self, request_path: &str) -> Option<String> {
+        self.resolve_audio_path(request_path)
+            .and_then(|path| self.audio_version_for_path(&path))
+    }
+
+    fn audio_version_for_path(&self, path: &Path) -> Option<String> {
+        let metadata = path.metadata().ok()?;
+        if !metadata.is_file() {
             return None;
         }
-        Some(format!("/audio/{normalized}"))
+        let size = metadata.len();
+        let modified = metadata.modified().ok()?;
+        if let Some(cached) = self
+            .audio_versions
+            .lock()
+            .expect("audio version cache lock should not be poisoned")
+            .get(path)
+            .filter(|cached| cached.size == size && cached.modified == modified)
+        {
+            return Some(cached.sha256.clone());
+        }
+        let sha256 = format!("{:x}", Sha256::digest(fs::read(path).ok()?));
+        self.audio_versions
+            .lock()
+            .expect("audio version cache lock should not be poisoned")
+            .insert(
+                path.to_path_buf(),
+                CachedAudioVersion {
+                    size,
+                    modified,
+                    sha256: sha256.clone(),
+                },
+            );
+        Some(sha256)
+    }
+
+    fn forget_audio_version(&self, path: &Path) {
+        self.audio_versions
+            .lock()
+            .expect("audio version cache lock should not be poisoned")
+            .remove(path);
     }
 
     pub fn resolve_audio_path(&self, request_path: &str) -> Option<PathBuf> {
@@ -1111,6 +1168,7 @@ impl WordRepository {
             bail!("TTS returned no audio bytes");
         }
         write_file_atomically(&final_path, &audio_bytes)?;
+        self.forget_audio_version(&final_path);
         self.update_example_audio_clip(item_id, position, &generated_rel_path, generated_dir)?;
         let generated_url = self
             .audio_url(Some(&generated_rel_path))
@@ -1182,6 +1240,7 @@ impl WordRepository {
             bail!("TTS returned no audio bytes");
         }
         write_file_atomically(&final_path, &audio_bytes)?;
+        self.forget_audio_version(&final_path);
         self.update_word_audio_clip(entry_id, &generated_rel_path, generated_dir)?;
         let generated_url = self
             .audio_url(Some(&generated_rel_path))

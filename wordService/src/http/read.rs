@@ -1,6 +1,7 @@
 use super::mutations::repository_for_params;
 use super::response::{
-    parse_local_url, query_map, send_audio, send_file, send_json, static_asset_path,
+    parse_local_url, query_map, redirect_to_versioned_audio, send_audio, send_file, send_json,
+    static_asset_path,
 };
 use crate::audio_review::AudioReviewStore;
 use crate::config::AppConfig;
@@ -9,6 +10,27 @@ use anyhow::{Context, Result};
 use serde_json::json;
 use std::path::{Path, PathBuf};
 use tiny_http::{Request, StatusCode};
+
+#[derive(Debug, PartialEq, Eq)]
+enum AudioVersionRequest {
+    ServeImmutable,
+    RedirectToVersioned,
+    Missing,
+}
+
+/// Only the exact SHA-256 URL published by the API may receive an immutable
+/// cache lifetime. A missing version is a legacy route and is redirected once;
+/// a different version must not accidentally serve the current file bytes.
+fn classify_audio_version_request(
+    requested_version: Option<&str>,
+    current_version: &str,
+) -> AudioVersionRequest {
+    match requested_version {
+        Some(requested) if requested == current_version => AudioVersionRequest::ServeImmutable,
+        Some(_) => AudioVersionRequest::Missing,
+        None => AudioVersionRequest::RedirectToVersioned,
+    }
+}
 
 pub(super) fn handle_read(
     request: Request,
@@ -98,7 +120,34 @@ pub(super) fn handle_read(
                 &json!({"error": "audio not found"}),
             );
         };
-        return send_audio(request, &file_path);
+        let Some(version) = repository.audio_version(audio_path) else {
+            return send_json(
+                request,
+                StatusCode(404),
+                &json!({"error": "audio not found"}),
+            );
+        };
+        match classify_audio_version_request(params.get("v").map(String::as_str), &version) {
+            AudioVersionRequest::ServeImmutable => {
+                return send_audio(request, &file_path, &version);
+            }
+            AudioVersionRequest::Missing => {
+                return send_json(
+                    request,
+                    StatusCode(404),
+                    &json!({"error": "audio version not found"}),
+                );
+            }
+            AudioVersionRequest::RedirectToVersioned => {
+                // Build the redirect from the repository rather than echoing
+                // the request path, keeping old URLs canonical and safely
+                // normalized before a browser stores the new location.
+                let versioned_url = repository
+                    .audio_url(Some(audio_path))
+                    .context("resolved audio file did not produce an audio URL")?;
+                return redirect_to_versioned_audio(request, &versioned_url);
+            }
+        }
     }
 
     let _ = method;
@@ -120,7 +169,7 @@ fn static_page_path(static_dir: &Path, request_path: &str) -> Option<PathBuf> {
 
 #[cfg(test)]
 mod tests {
-    use super::static_page_path;
+    use super::{AudioVersionRequest, classify_audio_version_request, static_page_path};
     use std::path::Path;
 
     #[test]
@@ -137,5 +186,27 @@ mod tests {
         assert!(static_page_path(root, "/classic").is_none());
         assert!(static_page_path(root, "/classic/").is_none());
         assert!(static_page_path(root, "/missing").is_none());
+    }
+
+    #[test]
+    fn audio_version_request_never_serves_changed_bytes_from_an_old_url() {
+        let current = "a".repeat(64);
+
+        assert_eq!(
+            classify_audio_version_request(None, &current),
+            AudioVersionRequest::RedirectToVersioned
+        );
+        assert_eq!(
+            classify_audio_version_request(Some(&current), &current),
+            AudioVersionRequest::ServeImmutable
+        );
+        assert_eq!(
+            classify_audio_version_request(Some(&"b".repeat(64)), &current),
+            AudioVersionRequest::Missing
+        );
+        assert_eq!(
+            classify_audio_version_request(Some("short"), &current),
+            AudioVersionRequest::Missing
+        );
     }
 }
