@@ -44,6 +44,10 @@ pub fn run_server(config: AppConfig) -> Result<()> {
         "N2 wordService Rust running at http://{}:{}",
         config.host, config.port
     );
+    println!(
+        "  mode: {:?}; browser origin: {}",
+        config.mode, config.origin
+    );
     println!("  db: {}", config.db_path.display());
     println!("  clips: {}", config.clips_dir.display());
     println!("  audio review db: {}", config.review_db_path.display());

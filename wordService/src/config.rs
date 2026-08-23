@@ -1,6 +1,7 @@
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, bail};
 use std::env;
 use std::path::PathBuf;
+use url::Url;
 
 // These defaults are part of the local workflow contract. They point generated
 // word and sentence audio into the served `clips/` tree so the browser can play
@@ -26,8 +27,35 @@ pub struct AppConfig {
     pub clips_dir: PathBuf,
     pub host: String,
     pub port: u16,
+    pub mode: RuntimeMode,
+    /// Exact browser origin allowed to submit same-origin mutations.
+    pub origin: String,
     pub book_code: String,
     pub tts: TtsConfig,
+}
+
+/// Runtime profiles deliberately separate the trusted desktop workflow from a
+/// reverse-proxy HTTPS deployment. Public mode becomes usable only after its
+/// mail, CAPTCHA, and rate-limit settings are introduced in later changes.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum RuntimeMode {
+    Local,
+    Public,
+}
+
+impl RuntimeMode {
+    fn from_env() -> Result<Self> {
+        match env::var("N2_WORD_SERVICE_MODE")
+            .unwrap_or_else(|_| "local".to_string())
+            .trim()
+            .to_ascii_lowercase()
+            .as_str()
+        {
+            "local" => Ok(Self::Local),
+            "public" => Ok(Self::Public),
+            value => bail!("N2_WORD_SERVICE_MODE must be either local or public, got {value:?}"),
+        }
+    }
 }
 
 /// Microsoft Edge TTS options used by the single backend worker.
@@ -55,6 +83,17 @@ impl AppConfig {
         let default_static = word_service_dir.join("static");
         let default_clips = project_root.join("clips");
 
+        let host = env::var("N2_WORD_SERVICE_HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
+        let port = env::var("N2_WORD_SERVICE_PORT")
+            .unwrap_or_else(|_| "8767".to_string())
+            .parse()
+            .context("N2_WORD_SERVICE_PORT must be an integer from 0 to 65535")?;
+        let mode = RuntimeMode::from_env()?;
+        let origin = canonical_origin(
+            env::var("N2_WORD_SERVICE_ORIGIN").unwrap_or_else(|_| format!("http://{host}:{port}")),
+            mode,
+        )?;
+
         Ok(Self {
             users_db_path: env_path(
                 "N2_WORD_SERVICE_USERS_DB",
@@ -81,11 +120,10 @@ impl AppConfig {
             db_path: env_path("N2_WORD_SERVICE_DB", default_db),
             static_dir: env_path("N2_WORD_SERVICE_STATIC", default_static),
             clips_dir: env_path("N2_WORD_SERVICE_CLIPS", default_clips),
-            host: env::var("N2_WORD_SERVICE_HOST").unwrap_or_else(|_| "127.0.0.1".to_string()),
-            port: env::var("N2_WORD_SERVICE_PORT")
-                .unwrap_or_else(|_| "8767".to_string())
-                .parse()
-                .context("N2_WORD_SERVICE_PORT must be an integer from 0 to 65535")?,
+            host,
+            port,
+            mode,
+            origin,
             book_code: env::var("N2_WORD_SERVICE_BOOK").unwrap_or_else(|_| "N2".to_string()),
             tts: TtsConfig {
                 voice: env::var("N2_WORD_SERVICE_TTS_VOICE")
@@ -100,8 +138,48 @@ impl AppConfig {
     }
 }
 
+fn canonical_origin(raw: String, mode: RuntimeMode) -> Result<String> {
+    let url = Url::parse(raw.trim()).context("N2_WORD_SERVICE_ORIGIN must be an absolute URL")?;
+    if !url.username().is_empty()
+        || url.password().is_some()
+        || url.query().is_some()
+        || url.fragment().is_some()
+        || (url.path() != "" && url.path() != "/")
+    {
+        bail!("N2_WORD_SERVICE_ORIGIN must contain only a scheme, host, and optional port");
+    }
+    let origin = url.origin().ascii_serialization();
+    if origin == "null" {
+        bail!("N2_WORD_SERVICE_ORIGIN must use an HTTP or HTTPS origin");
+    }
+    if mode == RuntimeMode::Public && url.scheme() != "https" {
+        bail!("public mode requires an https N2_WORD_SERVICE_ORIGIN");
+    }
+    Ok(origin)
+}
+
 /// Read an environment variable as a path while preserving non-UTF-8 Windows
 /// paths. `env::var_os` is a small but useful Rust habit for filesystem paths.
 fn env_path(name: &str, fallback: PathBuf) -> PathBuf {
     env::var_os(name).map(PathBuf::from).unwrap_or(fallback)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{RuntimeMode, canonical_origin};
+
+    #[test]
+    fn canonical_origin_rejects_paths_and_requires_https_in_public_mode() {
+        assert_eq!(
+            canonical_origin("http://127.0.0.1:8767/".to_string(), RuntimeMode::Local).unwrap(),
+            "http://127.0.0.1:8767"
+        );
+        assert!(
+            canonical_origin("https://example.test/app".to_string(), RuntimeMode::Public).is_err()
+        );
+        assert!(canonical_origin("http://example.test".to_string(), RuntimeMode::Public).is_err());
+        assert!(
+            canonical_origin("https://user@example.test".to_string(), RuntimeMode::Public).is_err()
+        );
+    }
 }
