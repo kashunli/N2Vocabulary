@@ -46,9 +46,10 @@ pub(super) fn send_json<T: Serialize>(
     payload: &T,
 ) -> Result<()> {
     let data = serde_json::to_vec(payload)?;
-    let mut headers = cors_headers();
-    headers.push(header("Cache-Control", "no-store"));
-    headers.push(header("Content-Type", "application/json; charset=utf-8"));
+    let headers = vec![
+        header("Cache-Control", "no-store"),
+        header("Content-Type", "application/json; charset=utf-8"),
+    ];
 
     // HEAD should return the same status/headers as GET without a response
     // body. This helper centralizes that rule for every JSON endpoint.
@@ -70,9 +71,10 @@ pub(super) fn send_json_with_headers<T: Serialize>(
     extra_headers: Vec<Header>,
 ) -> Result<()> {
     let data = serde_json::to_vec(payload)?;
-    let mut headers = cors_headers();
-    headers.push(header("Cache-Control", "no-store"));
-    headers.push(header("Content-Type", "application/json; charset=utf-8"));
+    let mut headers = vec![
+        header("Cache-Control", "no-store"),
+        header("Content-Type", "application/json; charset=utf-8"),
+    ];
     headers.extend(extra_headers);
     request.respond(add_headers(
         Response::from_data(data).with_status_code(status),
@@ -112,11 +114,10 @@ fn serve_file(
     } else {
         content_type.to_string()
     };
-    let mut headers = vec![
+    let headers = vec![
         header("Cache-Control", cache_control),
         header("Content-Type", &ctype),
     ];
-    headers.extend(cors_headers());
 
     if request.method() == &Method::Head {
         request.respond(add_headers(Response::empty(StatusCode(200)), headers))?;
@@ -149,25 +150,8 @@ pub(super) fn query_map(url: &Url) -> std::collections::HashMap<String, String> 
         .collect()
 }
 
-pub(super) fn cors_headers() -> Vec<Header> {
-    vec![
-        header("Access-Control-Allow-Origin", "*"),
-        header(
-            "Access-Control-Allow-Methods",
-            "GET, PUT, POST, DELETE, OPTIONS",
-        ),
-        header("Access-Control-Allow-Headers", "Content-Type"),
-    ]
-}
-
 pub(super) fn header(name: &str, value: &str) -> Header {
     Header::from_bytes(name.as_bytes(), value.as_bytes()).expect("static header should be valid")
-}
-
-pub(super) fn send_options(request: Request) -> Result<()> {
-    let response = add_headers(Response::empty(StatusCode(204)), cors_headers());
-    request.respond(response)?;
-    Ok(())
 }
 
 #[cfg(test)]

@@ -15,7 +15,7 @@ mod response;
 
 use mutations::{handle_delete, handle_post, handle_put};
 use read::handle_read;
-use response::{send_json, send_options};
+use response::send_json;
 
 /// Start the local HTTP server.
 ///
@@ -99,7 +99,11 @@ fn handle_request(
             Method::Get | Method::Head => account::handle_get(request, user_store),
             Method::Post => account::handle_post(request, user_store, repository),
             Method::Put => account::handle_put(request, user_store, repository),
-            Method::Options => send_options(request),
+            Method::Options => send_json(
+                request,
+                StatusCode(405),
+                &json!({"error": "method not allowed"}),
+            ),
             _ => send_json(
                 request,
                 StatusCode(405),
@@ -110,7 +114,13 @@ fn handle_request(
     // Keep method routing near the top so unsupported mutation methods fail
     // before any path-specific logic runs.
     match request.method() {
-        Method::Options => return send_options(request),
+        Method::Options => {
+            return send_json(
+                request,
+                StatusCode(405),
+                &json!({"error": "method not allowed"}),
+            );
+        }
         Method::Get | Method::Head => {}
         Method::Put => return handle_put(request, audio_review),
         Method::Delete => return handle_delete(request, audio_review),
