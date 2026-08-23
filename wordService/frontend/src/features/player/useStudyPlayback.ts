@@ -1,25 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { AudioTarget, Entry } from "../../types";
-import {
-  addAudioSequenceStep,
-  createDefaultAudioSequence,
-  materializeAudioSequence,
-  moveAudioSequenceStep,
-  removeAudioSequenceStep,
-  updateAudioSequenceStep,
-} from "./audioSequence.mjs";
+import { materializeAudioSequence } from "./audioSequence.mjs";
 import type {
   AudioSequenceConfig,
-  AudioSequenceElement,
-  AudioSequenceStep,
   MaterializedAudioSequenceStep,
 } from "./audioSequenceTypes";
 import {
-  DEFAULT_PLAYBACK_RUN_MODE,
-  DEFAULT_SILENCE_MS,
-  readPlaybackSettings,
-  savePlaybackSettings,
   type PlaybackPhase,
   type PlaybackRunMode,
 } from "./playbackSettings";
@@ -30,6 +17,7 @@ import {
 } from "./studyPlaybackState.mjs";
 import { useBoundarySilence } from "./useBoundarySilence";
 import { useNativeStudyPlayback } from "./useNativeStudyPlayback";
+import { useStudyPlaybackSettings } from "./useStudyPlaybackSettings";
 
 type ManualSelection = {
   entryUuid: string;
@@ -68,13 +56,21 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
   const [activeIndex, setActiveIndex] = useState(0);
   const [activeCueIndex, setActiveCueIndex] = useState(0);
   const [manualSelection, setManualSelection] = useState<ManualSelection | null>(null);
-  const [savedSettings] = useState(() => readPlaybackSettings());
-  // Keep the old values in the stored shape for a gentle migration. New
-  // playback uses each recipe row's pauseAfterMs as its authoritative gap.
-  const [postWordSilence, setPostWordSilence] = useState(savedSettings.postWordSilence);
-  const [postSentenceSilence, setPostSentenceSilence] = useState(savedSettings.postSentenceSilence);
-  const [sequence, setSequence] = useState<AudioSequenceConfig>(savedSettings.sequence);
-  const [playbackRunMode, setPlaybackRunMode] = useState<PlaybackRunMode>(savedSettings.runMode);
+  const playbackSettings = useStudyPlaybackSettings();
+  const {
+    addSequenceStep,
+    changePostSentenceSilence,
+    changePostWordSilence,
+    changeSequenceStep,
+    moveSequenceStep,
+    playbackRunMode,
+    postSentenceSilence,
+    postWordSilence,
+    removeSequenceStep,
+    resetSettings,
+    saveRunMode,
+    sequence,
+  } = playbackSettings;
   const [autoAdvance, setAutoAdvance] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playRequest, setPlayRequest] = useState(0);
@@ -353,76 +349,20 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
     setReplayRequest((value) => value + 1);
   }, [cancelEndTimer]);
 
-  const persistSettings = useCallback((nextSequence: AudioSequenceConfig = sequence) => {
-    savePlaybackSettings(postWordSilence, postSentenceSilence, playbackRunMode, nextSequence);
-  }, [playbackRunMode, postSentenceSilence, postWordSilence, sequence]);
-
   const togglePlaybackRunMode = useCallback(() => {
     const nextMode: PlaybackRunMode = playbackRunMode === "single" ? "consecutive" : "single";
     cancelEndTimer();
-    setPlaybackRunMode(nextMode);
     const continueCurrentClip = nextMode === "consecutive" && isPlaying;
     autoAdvanceRef.current = continueCurrentClip;
     setAutoAdvance(continueCurrentClip);
-    savePlaybackSettings(postWordSilence, postSentenceSilence, nextMode, sequence);
-  }, [cancelEndTimer, isPlaying, playbackRunMode, postSentenceSilence, postWordSilence, sequence]);
-
-  const changePostWordSilence = useCallback((value: number) => {
-    setPostWordSilence(value);
-    savePlaybackSettings(value, postSentenceSilence, playbackRunMode, sequence);
-  }, [playbackRunMode, postSentenceSilence, sequence]);
-
-  const changePostSentenceSilence = useCallback((value: number) => {
-    setPostSentenceSilence(value);
-    savePlaybackSettings(postWordSilence, value, playbackRunMode, sequence);
-  }, [playbackRunMode, postWordSilence, sequence]);
-
-  const changeSequenceStep = useCallback((stepId: string, patch: Partial<AudioSequenceStep>) => {
-    const nextSequence = {
-      ...sequence,
-      steps: updateAudioSequenceStep(sequence.steps, stepId, patch) as AudioSequenceStep[],
-    };
-    setSequence(nextSequence);
-    persistSettings(nextSequence);
-  }, [persistSettings, sequence]);
-
-  const addSequenceStep = useCallback((element: AudioSequenceElement) => {
-    const nextSequence = {
-      ...sequence,
-      steps: addAudioSequenceStep(sequence.steps, element, element === "word" ? postWordSilence : postSentenceSilence) as AudioSequenceStep[],
-    };
-    setSequence(nextSequence);
-    persistSettings(nextSequence);
-  }, [postSentenceSilence, postWordSilence, persistSettings, sequence]);
-
-  const removeSequenceStep = useCallback((stepId: string) => {
-    const nextSequence = {
-      ...sequence,
-      steps: removeAudioSequenceStep(sequence.steps, stepId) as AudioSequenceStep[],
-    };
-    setSequence(nextSequence);
-    persistSettings(nextSequence);
-  }, [persistSettings, sequence]);
-
-  const moveSequenceStep = useCallback((stepId: string, direction: "up" | "down") => {
-    const nextSequence = {
-      ...sequence,
-      steps: moveAudioSequenceStep(sequence.steps, stepId, direction) as AudioSequenceStep[],
-    };
-    setSequence(nextSequence);
-    persistSettings(nextSequence);
-  }, [persistSettings, sequence]);
+    saveRunMode(nextMode);
+  }, [cancelEndTimer, isPlaying, playbackRunMode, saveRunMode]);
 
   const resetPlaybackSettings = useCallback(() => {
-    const nextSequence = createDefaultAudioSequence(DEFAULT_SILENCE_MS, DEFAULT_SILENCE_MS) as AudioSequenceConfig;
-    setPostWordSilence(DEFAULT_SILENCE_MS);
-    setPostSentenceSilence(DEFAULT_SILENCE_MS);
-    setSequence(nextSequence);
-    setPlaybackRunMode(DEFAULT_PLAYBACK_RUN_MODE);
     setActiveCueIndex(0);
     setManualSelection(null);
-    savePlaybackSettings(DEFAULT_SILENCE_MS, DEFAULT_SILENCE_MS, DEFAULT_PLAYBACK_RUN_MODE, nextSequence);
-  }, []);
+    resetSettings();
+  }, [resetSettings]);
 
   const selectPhase = useCallback((phase: PlaybackPhase) => {
     if (!activeEntry) return;
