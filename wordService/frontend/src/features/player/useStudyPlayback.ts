@@ -31,12 +31,7 @@ import {
   playbackEndAction,
   recordCompletedPhase,
 } from "./studyPlaybackState.mjs";
-
-type PendingSilence = {
-  remainingMs: number;
-  startedAt: number | null;
-  callback: () => void;
-};
+import { useBoundarySilence } from "./useBoundarySilence";
 
 type ManualSelection = {
   entryUuid: string;
@@ -87,15 +82,21 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
   const [playRequest, setPlayRequest] = useState(0);
   const [replayRequest, setReplayRequest] = useState(0);
   const [pauseRequest, setPauseRequest] = useState(0);
-  const [isSilencePlaying, setIsSilencePlaying] = useState(false);
-  const [isSilencePaused, setIsSilencePaused] = useState(false);
-  const endTimerRef = useRef<number | null>(null);
-  const endGenerationRef = useRef(0);
-  const pendingSilenceRef = useRef<PendingSilence | null>(null);
   const completedPhasesRef = useRef<{itemUuid?: string; word: boolean; sentence: boolean; cardCompleted: boolean}>({word: false, sentence: false, cardCompleted: false});
   const completedNativeCueIdsRef = useRef(new Set<string>());
   const activeNativeCueIdRef = useRef<string | undefined>(undefined);
   const autoAdvanceRef = useRef(autoAdvance);
+  const boundarySilence = useBoundarySilence(autoAdvanceRef);
+  const {
+    cancel: cancelEndTimer,
+    clearTimer: clearEndTimer,
+    hideState: hideSilenceState,
+    isSilencePaused,
+    isSilencePlaying,
+    pause: pauseBoundarySilence,
+    resume: resumeBoundarySilence,
+    schedule: scheduleAfterSilence,
+  } = boundarySilence;
   const activeEntry = entries[activeIndex];
   const activeCues = useMemo(
     () => sequenceCuesFor(sequence, activeEntry),
@@ -175,10 +176,6 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
     autoAdvanceRef.current = autoAdvance;
   }, [autoAdvance]);
 
-  useEffect(() => () => {
-    if (endTimerRef.current !== null) window.clearTimeout(endTimerRef.current);
-  }, []);
-
   const resetPosition = useCallback((nextEntries: Entry[]) => {
     const savedFocus = readStudyFocus();
     const savedIndex = savedFocus && nextEntries[0]?.book_code === savedFocus.bookCode
@@ -199,66 +196,6 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
       : {entryUuid: nextEntry.item_uuid, phase: preferredPhase});
   }, [sequence]);
 
-  const clearEndTimer = useCallback(() => {
-    endGenerationRef.current += 1;
-    if (endTimerRef.current !== null) {
-      window.clearTimeout(endTimerRef.current);
-      endTimerRef.current = null;
-    }
-  }, []);
-
-  const cancelEndTimer = useCallback(() => {
-    clearEndTimer();
-    pendingSilenceRef.current = null;
-    setIsSilencePlaying(false);
-    setIsSilencePaused(false);
-  }, [clearEndTimer]);
-
-  const startPendingSilence = useCallback(() => {
-    // The AudioBuffer source has already ended, but this configured boundary
-    // gap is still part of the learner's playback run. Keeping it here lets
-    // Space pause/resume the gap instead of treating the ended clip as new.
-    const pending = pendingSilenceRef.current;
-    if (!pending) return false;
-
-    if (pending.remainingMs <= 0) {
-      pendingSilenceRef.current = null;
-      setIsSilencePlaying(false);
-      setIsSilencePaused(false);
-      if (autoAdvanceRef.current) pending.callback();
-      return true;
-    }
-
-    pending.startedAt = performance.now();
-    setIsSilencePlaying(true);
-    setIsSilencePaused(false);
-    const generation = endGenerationRef.current;
-    endTimerRef.current = window.setTimeout(() => {
-      if (generation !== endGenerationRef.current) return;
-      endTimerRef.current = null;
-      const finished = pendingSilenceRef.current;
-      pendingSilenceRef.current = null;
-      setIsSilencePlaying(false);
-      setIsSilencePaused(false);
-      if (finished && autoAdvanceRef.current) finished.callback();
-    }, pending.remainingMs);
-    return true;
-  }, []);
-
-  const scheduleAfterSilence = useCallback((silenceMs: number, callback: () => void) => {
-    cancelEndTimer();
-    if (silenceMs <= 0) {
-      callback();
-      return;
-    }
-    pendingSilenceRef.current = {
-      remainingMs: silenceMs,
-      startedAt: null,
-      callback,
-    };
-    startPendingSilence();
-  }, [cancelEndTimer, startPendingSilence]);
-
   const requestPlayback = useCallback(() => {
     cancelEndTimer();
     autoAdvanceRef.current = true;
@@ -267,40 +204,18 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
   }, [cancelEndTimer]);
 
   const pauseSilence = useCallback(() => {
-    const pending = pendingSilenceRef.current;
-    if (!pending) {
-      cancelEndTimer();
-      autoAdvanceRef.current = false;
-      setAutoAdvance(false);
-      return;
-    }
-
-    const elapsedMs = pending.startedAt === null
-      ? 0
-      : Math.max(0, performance.now() - pending.startedAt);
-    const remainingMs = Math.max(0, pending.remainingMs - elapsedMs);
-    clearEndTimer();
+    pauseBoundarySilence();
     autoAdvanceRef.current = false;
     setAutoAdvance(false);
-    setIsSilencePlaying(false);
-    if (remainingMs > 0) {
-      pendingSilenceRef.current = {...pending, remainingMs, startedAt: null};
-      setIsSilencePaused(true);
-    } else {
-      pendingSilenceRef.current = null;
-      setIsSilencePaused(false);
-    }
-  }, [cancelEndTimer, clearEndTimer]);
+  }, [pauseBoundarySilence]);
 
   const resumeSilence = useCallback(() => {
-    if (!pendingSilenceRef.current) {
-      requestPlayback();
-      return;
-    }
     autoAdvanceRef.current = true;
     setAutoAdvance(true);
-    startPendingSilence();
-  }, [requestPlayback, startPendingSilence]);
+    if (!resumeBoundarySilence()) {
+      requestPlayback();
+    }
+  }, [requestPlayback, resumeBoundarySilence]);
 
   const playableEntryAt = useCallback((index: number) => {
     const entry = entries[index];
@@ -414,11 +329,8 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
 
   const handlePlayingChange = useCallback((playing: boolean) => {
     setIsPlaying(playing);
-    if (playing) {
-      setIsSilencePlaying(false);
-      setIsSilencePaused(false);
-    }
-  }, []);
+    if (playing) hideSilenceState();
+  }, [hideSilenceState]);
 
   const completeNativeCue = useCallback((id: string) => {
     if (completedNativeCueIdsRef.current.has(id)) return;
@@ -464,8 +376,6 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
     cancelEndTimer();
     autoAdvanceRef.current = false;
     setAutoAdvance(false);
-    setIsSilencePlaying(false);
-    setIsSilencePaused(false);
     if (activeEntry) onConsecutiveSequenceComplete?.(activeEntry);
   }, [activeEntry, cancelEndTimer, completeNativeCue, onConsecutiveSequenceComplete]);
 
