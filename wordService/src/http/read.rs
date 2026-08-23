@@ -10,6 +10,7 @@ use anyhow::{Context, Result};
 use serde_json::json;
 use std::path::{Path, PathBuf};
 use tiny_http::{Request, StatusCode};
+use url::Url;
 
 #[derive(Debug, PartialEq, Eq)]
 enum AudioVersionRequest {
@@ -29,6 +30,20 @@ fn classify_audio_version_request(
         Some(requested) if requested == current_version => AudioVersionRequest::ServeImmutable,
         Some(_) => AudioVersionRequest::Missing,
         None => AudioVersionRequest::RedirectToVersioned,
+    }
+}
+
+fn classify_audio_version_parameters(url: &Url, current_version: &str) -> AudioVersionRequest {
+    let requested_versions: Vec<_> = url
+        .query_pairs()
+        .filter_map(|(key, value)| (key == "v").then_some(value))
+        .collect();
+    match requested_versions.as_slice() {
+        [] => classify_audio_version_request(None, current_version),
+        [requested] => classify_audio_version_request(Some(requested), current_version),
+        // A cache key with multiple version values is non-canonical. Do not
+        // give it immutable semantics even if one value happens to be current.
+        _ => AudioVersionRequest::Missing,
     }
 }
 
@@ -127,7 +142,7 @@ pub(super) fn handle_read(
                 &json!({"error": "audio not found"}),
             );
         };
-        match classify_audio_version_request(params.get("v").map(String::as_str), &version) {
+        match classify_audio_version_parameters(&parsed, &version) {
             AudioVersionRequest::ServeImmutable => {
                 return send_audio(request, &file_path, &version);
             }
@@ -169,7 +184,10 @@ fn static_page_path(static_dir: &Path, request_path: &str) -> Option<PathBuf> {
 
 #[cfg(test)]
 mod tests {
-    use super::{AudioVersionRequest, classify_audio_version_request, static_page_path};
+    use super::{
+        AudioVersionRequest, classify_audio_version_parameters, classify_audio_version_request,
+        parse_local_url, static_page_path,
+    };
     use std::path::Path;
 
     #[test]
@@ -206,6 +224,21 @@ mod tests {
         );
         assert_eq!(
             classify_audio_version_request(Some("short"), &current),
+            AudioVersionRequest::Missing
+        );
+        assert_eq!(
+            classify_audio_version_parameters(
+                &parse_local_url(&format!("/audio/clips/example.mp3?v={current}")).unwrap(),
+                &current,
+            ),
+            AudioVersionRequest::ServeImmutable
+        );
+        assert_eq!(
+            classify_audio_version_parameters(
+                &parse_local_url(&format!("/audio/clips/example.mp3?v={current}&v=forged"))
+                    .unwrap(),
+                &current,
+            ),
             AudioVersionRequest::Missing
         );
     }
