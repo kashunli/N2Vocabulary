@@ -2,10 +2,48 @@ import { createDefaultAudioSequence, normalizeAudioSequence } from "./audioSeque
 import type { AudioSequenceConfig } from "./audioSequenceTypes";
 
 export type PlaybackPhase = "word" | "sentence";
-export type PlaybackRunMode = "single" | "consecutive";
+/** How far automatic playback may continue after the focused occurrence. */
+export type PlaybackRunMode = "single" | "list" | "cycle-list" | "next-list";
 
 export const DEFAULT_SILENCE_MS = 500;
-export const DEFAULT_PLAYBACK_RUN_MODE: PlaybackRunMode = "consecutive";
+export const DEFAULT_PLAYBACK_RUN_MODE: PlaybackRunMode = "list";
+
+export const PLAYBACK_RUN_MODE_ORDER: PlaybackRunMode[] = [
+  "single",
+  "list",
+  "cycle-list",
+  "next-list",
+];
+
+export function isPlaybackRunMode(value: unknown): value is PlaybackRunMode {
+  return value === "single"
+    || value === "list"
+    || value === "cycle-list"
+    || value === "next-list";
+}
+
+export function playbackRunModeLabel(mode: PlaybackRunMode) {
+  switch (mode) {
+    case "single": return "Single audio";
+    case "list": return "Play list once";
+    case "cycle-list": return "Cycle this list";
+    case "next-list": return "Continue to next list";
+  }
+}
+
+export function playbackRunModeDescription(mode: PlaybackRunMode) {
+  switch (mode) {
+    case "single": return "Stop after the focused audio occurrence.";
+    case "list": return "Play every available row in this list once, then stop.";
+    case "cycle-list": return "When this list ends, start it again from the beginning.";
+    case "next-list": return "When this section ends, continue with the following section.";
+  }
+}
+
+export function nextPlaybackRunMode(mode: PlaybackRunMode) {
+  const currentIndex = PLAYBACK_RUN_MODE_ORDER.indexOf(mode);
+  return PLAYBACK_RUN_MODE_ORDER[(currentIndex + 1) % PLAYBACK_RUN_MODE_ORDER.length];
+}
 
 const PLAYBACK_SETTINGS_KEY = "n2-word-service:react-playback-settings:v2";
 const LEGACY_PLAYBACK_SETTINGS_KEY = "n2-word-service:react-playback-settings:v1";
@@ -13,7 +51,7 @@ const LEGACY_PLAYBACK_SETTINGS_KEY = "n2-word-service:react-playback-settings:v1
 type StoredPlaybackSettings = {
   postWordSilenceMs?: number;
   postSentenceSilenceMs?: number;
-  playbackRunMode?: PlaybackRunMode;
+  playbackRunMode?: PlaybackRunMode | "consecutive";
   sequence?: unknown;
 };
 
@@ -38,9 +76,13 @@ export function readPlaybackSettings(): PlaybackSettings {
     const saved = raw ? JSON.parse(raw) as StoredPlaybackSettings : {};
     const postWordSilence = normalizeSilence(saved.postWordSilenceMs);
     const postSentenceSilence = normalizeSilence(saved.postSentenceSilenceMs);
-    const runMode = saved.playbackRunMode === "single" || saved.playbackRunMode === "consecutive"
-      ? saved.playbackRunMode
-      : DEFAULT_PLAYBACK_RUN_MODE;
+    // v1/v2 called the one-pass list mode "consecutive". Keep learners'
+    // existing preference when adding the two new list-boundary modes.
+    const runMode = saved.playbackRunMode === "consecutive"
+      ? "list"
+      : isPlaybackRunMode(saved.playbackRunMode)
+        ? saved.playbackRunMode
+        : DEFAULT_PLAYBACK_RUN_MODE;
     return {
       postWordSilence,
       postSentenceSilence,

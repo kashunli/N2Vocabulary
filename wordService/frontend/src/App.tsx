@@ -30,6 +30,9 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [reviewSession, setReviewSession] = useState<ReviewSession>();
   const reviewCompletionInFlight = useRef(new Set<string>());
+  // A next-list run changes the section asynchronously. Remember the target
+  // section until its derived entries replace the outgoing visible list.
+  const pendingFollowingUnitRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     if (filterState !== "review") setReviewSession(undefined);
@@ -60,6 +63,7 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
     playRequest,
     replayFocused,
     replayRequest,
+    requestPlayback,
     resetPlaybackSettings,
     resetPosition,
     selectEntry: selectPlaybackEntry,
@@ -94,6 +98,18 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
         reviewCompletionInFlight.current.delete(entry.item_uuid);
         setStatus(error instanceof Error ? error.message : "Could not save review completion.");
       });
+    },
+    onFollowingList: () => {
+      // "List" means the selected Section. All sections are already one
+      // combined list, so there is no following list to jump to.
+      if (selectedUnit === null) return false;
+      const currentUnitIndex = units.findIndex((unit) => unit.number === selectedUnit);
+      const followingUnit = currentUnitIndex >= 0 ? units[currentUnitIndex + 1] : undefined;
+      if (!followingUnit) return false;
+      pendingFollowingUnitRef.current = followingUnit.number;
+      setSelectedUnit(followingUnit.number);
+      setReviewSession(undefined);
+      return true;
     },
   });
   const activeEntry = playbackEntry;
@@ -155,6 +171,16 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
     setStatus,
     studySnapshot: snapshot,
   });
+
+  useEffect(() => {
+    const pendingUnit = pendingFollowingUnitRef.current;
+    if (pendingUnit === undefined || selectedUnit !== pendingUnit) return;
+    // Wait for the new derived list, rather than replaying the ending list in
+    // the render where the section picker has changed but its rows have not.
+    if (!entries.length || entries[0]?.unit.number !== pendingUnit) return;
+    pendingFollowingUnitRef.current = undefined;
+    requestPlayback();
+  }, [entries, requestPlayback, selectedUnit]);
 
   useStudyKeyboardShortcuts({
     onBlurToggle: () => setBlurred((current) => !current),

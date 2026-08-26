@@ -47,9 +47,11 @@ test("word-only entries complete after their word and a new item resets progress
 });
 
 test("end-of-cue decisions preserve paused, single, cue, entry, and completion behavior", () => {
-  assert.equal(playbackEndAction({autoAdvance: false, runMode: "consecutive", hasNextCue: true, hasNextEntry: true}), "none");
+  assert.equal(playbackEndAction({autoAdvance: false, runMode: "list", hasNextCue: true, hasNextEntry: true}), "none");
   assert.equal(playbackEndAction({autoAdvance: true, runMode: "single", hasNextCue: true, hasNextEntry: true}), "stop");
-  assert.equal(playbackEndAction({autoAdvance: true, runMode: "consecutive", hasNextCue: true, hasNextEntry: true}), "next-cue");
-  assert.equal(playbackEndAction({autoAdvance: true, runMode: "consecutive", hasNextCue: false, hasNextEntry: true}), "next-entry");
-  assert.equal(playbackEndAction({autoAdvance: true, runMode: "consecutive", hasNextCue: false, hasNextEntry: false}), "complete-sequence");
+  assert.equal(playbackEndAction({autoAdvance: true, runMode: "list", hasNextCue: true, hasNextEntry: true}), "next-cue");
+  assert.equal(playbackEndAction({autoAdvance: true, runMode: "list", hasNextCue: false, hasNextEntry: true}), "next-entry");
+  assert.equal(playbackEndAction({autoAdvance: true, runMode: "list", hasNextCue: false, hasNextEntry: false}), "complete-sequence");
+  assert.equal(playbackEndAction({autoAdvance: true, runMode: "cycle-list", hasNextCue: false, hasNextEntry: false}), "restart-list");
+  assert.equal(playbackEndAction({autoAdvance: true, runMode: "next-list", hasNextCue: false, hasNextEntry: false}), "next-list");
 });

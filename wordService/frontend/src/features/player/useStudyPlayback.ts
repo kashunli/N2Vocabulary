@@ -7,6 +7,7 @@ import type {
   MaterializedAudioSequenceStep,
 } from "./audioSequenceTypes";
 import {
+  nextPlaybackRunMode,
   type PlaybackPhase,
   type PlaybackRunMode,
 } from "./playbackSettings";
@@ -29,6 +30,8 @@ type UseStudyPlaybackOptions = {
   stopAfterEntry?: boolean;
   onCompleteCard?: (entry: Entry) => void;
   onConsecutiveSequenceComplete?: (entry: Entry) => void;
+  /** Selects and prepares the following visible list. Returns false at the final list. */
+  onFollowingList?: (entry: Entry) => boolean;
 };
 
 function targetFor(
@@ -52,7 +55,7 @@ function firstCueIndexForPhase(cues: MaterializedAudioSequenceStep[], phase: Pla
   return cues.findIndex((cue) => cue?.phase === phase);
 }
 
-export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCard, onConsecutiveSequenceComplete}: UseStudyPlaybackOptions) {
+export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCard, onConsecutiveSequenceComplete, onFollowingList}: UseStudyPlaybackOptions) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [activeCueIndex, setActiveCueIndex] = useState(0);
   const [manualSelection, setManualSelection] = useState<ManualSelection | null>(null);
@@ -249,6 +252,26 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
     setManualSelection(null);
   }, [activeEntry, activeIndex, entries.length, playableEntryAt]);
 
+  const restartCurrentList = useCallback(() => {
+    let firstIndex = 0;
+    while (firstIndex < entries.length && !playableEntryAt(firstIndex).length) firstIndex += 1;
+    if (firstIndex >= entries.length) {
+      autoAdvanceRef.current = false;
+      setAutoAdvance(false);
+      return;
+    }
+    setActiveIndex(firstIndex);
+    setActiveCueIndex(0);
+    setManualSelection(null);
+  }, [entries.length, playableEntryAt]);
+
+  const advanceToFollowingList = useCallback(() => {
+    if (!activeEntry || !onFollowingList?.(activeEntry)) {
+      autoAdvanceRef.current = false;
+      setAutoAdvance(false);
+    }
+  }, [activeEntry, onFollowingList]);
+
   const handlePlaybackEnd = useCallback(() => {
     if (activeEntry) completeEntryPhase(activeEntry, activePhase);
 
@@ -283,6 +306,14 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
       });
       return;
     }
+    if (action === "restart-list") {
+      scheduleAfterSilence(currentPause, restartCurrentList);
+      return;
+    }
+    if (action === "next-list") {
+      scheduleAfterSilence(currentPause, advanceToFollowingList);
+      return;
+    }
     if (action === "complete-sequence") {
       autoAdvanceRef.current = false;
       setAutoAdvance(false);
@@ -290,7 +321,7 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
       return;
     }
     scheduleAfterSilence(currentPause, advanceAfterPlayback);
-  }, [activeCue, activeCues.length, activeEntry, activeIndex, activePhase, advanceAfterPlayback, completeEntryPhase, entries.length, onConsecutiveSequenceComplete, playableEntryAt, playbackRunMode, postSentenceSilence, postWordSilence, safeCueIndex, scheduleAfterSilence, stopAfterEntry]);
+  }, [activeCue, activeCues.length, activeEntry, activeIndex, activePhase, advanceAfterPlayback, advanceToFollowingList, completeEntryPhase, entries.length, onConsecutiveSequenceComplete, playableEntryAt, playbackRunMode, postSentenceSilence, postWordSilence, restartCurrentList, safeCueIndex, scheduleAfterSilence, stopAfterEntry]);
 
   const handlePlayingChange = useCallback((playing: boolean) => {
     setIsPlaying(playing);
@@ -305,10 +336,16 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
 
   const handleNativeQueueComplete = useCallback(() => {
     cancelEndTimer();
+    if (playbackRunMode === "cycle-list") {
+      restartCurrentList();
+      setPlayRequest((value) => value + 1);
+      return;
+    }
+    if (playbackRunMode === "next-list" && onFollowingList?.(activeEntry!)) return;
     autoAdvanceRef.current = false;
     setAutoAdvance(false);
     if (activeEntry) onConsecutiveSequenceComplete?.(activeEntry);
-  }, [activeEntry, cancelEndTimer, onConsecutiveSequenceComplete]);
+  }, [activeEntry, cancelEndTimer, onConsecutiveSequenceComplete, onFollowingList, playbackRunMode, restartCurrentList]);
 
   const {
     nativeQueue,
@@ -350,9 +387,9 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
   }, [cancelEndTimer]);
 
   const togglePlaybackRunMode = useCallback(() => {
-    const nextMode: PlaybackRunMode = playbackRunMode === "single" ? "consecutive" : "single";
+    const nextMode = nextPlaybackRunMode(playbackRunMode);
     cancelEndTimer();
-    const continueCurrentClip = nextMode === "consecutive" && isPlaying;
+    const continueCurrentClip = nextMode !== "single" && isPlaying;
     autoAdvanceRef.current = continueCurrentClip;
     setAutoAdvance(continueCurrentClip);
     saveRunMode(nextMode);

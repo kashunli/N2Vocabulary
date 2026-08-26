@@ -4,7 +4,12 @@ import type {
   AudioSequenceElement,
   AudioSequenceStep,
 } from "./audioSequenceTypes";
-import type { PlaybackRunMode } from "./playbackSettings";
+import {
+  nextPlaybackRunMode,
+  playbackRunModeDescription,
+  playbackRunModeLabel,
+  type PlaybackRunMode,
+} from "./playbackSettings";
 
 interface PlaybackSettingsModalProps {
   playbackRunMode: PlaybackRunMode;
@@ -107,10 +112,10 @@ export function PlaybackSettingsModal({
 
           <div className="react-setting-copy">
             <span>List playback</span>
-            <p>{playbackRunMode === "single" ? "Stop after the focused occurrence." : "Continue through every available row, then move to the next entry."}</p>
+            <p>{playbackRunModeDescription(playbackRunMode)}</p>
           </div>
-          <button type="button" className="react-sequence-run-mode" onClick={onTogglePlaybackRunMode} aria-pressed={playbackRunMode === "consecutive"}>
-            {playbackRunMode === "single" ? "Single occurrence" : "Continue through list"}
+          <button type="button" className="react-sequence-run-mode" onClick={onTogglePlaybackRunMode} aria-pressed={playbackRunMode !== "single"}>
+            {playbackRunModeLabel(playbackRunMode)} → {playbackRunModeLabel(nextPlaybackRunMode(playbackRunMode))}
           </button>
 
           <button type="button" className="react-settings-reset" onClick={onReset}>Reset sequence</button>

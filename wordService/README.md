@@ -314,11 +314,20 @@ During playback, the wall keeps the previously played card on the left, the
 current card enlarged in the center, and the next card on the right. Each card
 transition advances the page by one smooth vertical step.
 
-The player’s `Single` / `Consecutive` button controls the transport run:
+The player’s playback-mode button cycles through four transport runs. Its
+icons are intentionally distinct: a speaker for one audio, a bulleted list
+for one list, repeat arrows for a cycling list, and a queue for continuing to
+the following section.
 
-- `Single` plays only the currently focused recipe occurrence, then stops.
-- `Consecutive` follows every available occurrence in the listening sequence,
-  then moves to the next visible entry.
+- `Single audio` plays only the currently focused recipe occurrence, then
+  stops.
+- `Play list once` follows every available occurrence in the listening
+  sequence and every visible entry, then stops at the end of the current list.
+- `Cycle this list` returns to the first playable entry when the current list
+  ends and continues until the learner pauses it.
+- `Continue to next list` moves to the following Section when the current
+  Section ends. It stops after the final Section. With `All sections` selected,
+  the visible entries are already one list, so it also stops at that list's end.
 
 Open the gear button to edit the local `Listening sequence` recipe. Each row
 has an audio element (`word` or `sentence`), a repeat count, and its own

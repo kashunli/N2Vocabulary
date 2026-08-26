@@ -32,5 +32,7 @@ export function playbackEndAction({
   if (runMode === "single") return "stop";
   if (hasNextCue) return "next-cue";
   if (hasNextEntry) return "next-entry";
+  if (runMode === "cycle-list") return "restart-list";
+  if (runMode === "next-list") return "next-list";
   return "complete-sequence";
 }

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowCounterClockwise, Pause, Play, Repeat, RepeatOnce, SkipBack, SkipForward } from "@phosphor-icons/react";
+import { ArrowCounterClockwise, ListBullets, Pause, Play, Queue, Repeat, SkipBack, SkipForward, SpeakerHigh } from "@phosphor-icons/react";
 
 import { useAudioBufferPlayer } from "./useAudioBufferPlayer";
 import { LineWaveform } from "./LineWaveform";
@@ -15,7 +15,11 @@ import {
   type NativeAudioQueueItem,
   type NativeAudioState,
 } from "./nativeAudio";
-import type { PlaybackRunMode } from "./playbackSettings";
+import {
+  nextPlaybackRunMode,
+  playbackRunModeLabel,
+  type PlaybackRunMode,
+} from "./playbackSettings";
 import type { MarkStatus } from "../study/markStatus";
 import type { AudioTarget } from "../../types";
 
@@ -46,6 +50,16 @@ interface RailPlayerProps {
 
 function isNativeActive(state: NativeAudioState | undefined) {
   return state?.status === "playing" || state?.status === "gap";
+}
+
+function PlaybackRunModeIcon({mode}: {mode: PlaybackRunMode}) {
+  switch (mode) {
+    // Single uses a speaker, deliberately avoiding a repeat-shaped icon.
+    case "single": return <SpeakerHigh size={18} weight="fill" />;
+    case "list": return <ListBullets size={18} weight="bold" />;
+    case "cycle-list": return <Repeat size={18} weight="bold" />;
+    case "next-list": return <Queue size={18} weight="bold" />;
+  }
 }
 
 export function RailPlayer({
@@ -142,7 +156,7 @@ export function RailPlayer({
   }, [autoPlay, nativeAvailable, target?.url, targetKey]);
 
   const nativeItemsForRun = useCallback(() => {
-    if (playbackRunMode === "consecutive") return nativeQueue;
+    if (playbackRunMode !== "single") return nativeQueue;
     const first = nativeQueue[0];
     return first ? [{...first, pauseAfterMs: 0}] : [];
   }, [nativeQueue, playbackRunMode]);
@@ -303,18 +317,18 @@ export function RailPlayer({
         <button type="button" onClick={onNext} disabled={!canNext} aria-label="Play next word or sentence" title="Next (D / →)"><SkipForward size={18} weight="fill" /></button>
         <button
           type="button"
-          className={playbackRunMode === "consecutive" ? "is-selected" : ""}
+          className={playbackRunMode === "single" ? "" : "is-selected"}
           onClick={onTogglePlaybackRunMode}
-          aria-pressed={playbackRunMode === "consecutive"}
-          aria-label={playbackRunMode === "single" ? "Switch to consecutive playback" : "Switch to single clip playback"}
-          title={playbackRunMode === "single" ? "Switch to consecutive playback" : "Switch to single clip playback"}
+          aria-pressed={playbackRunMode !== "single"}
+          aria-label={`Playback mode: ${playbackRunModeLabel(playbackRunMode)}. Switch to ${playbackRunModeLabel(nextPlaybackRunMode(playbackRunMode))}.`}
+          title={`Playback mode: ${playbackRunModeLabel(playbackRunMode)}. Click to switch to ${playbackRunModeLabel(nextPlaybackRunMode(playbackRunMode))}.`}
         >
-          {playbackRunMode === "consecutive" ? <Repeat size={18} weight="bold" /> : <RepeatOnce size={18} weight="bold" />}
+          <PlaybackRunModeIcon mode={playbackRunMode} />
         </button>
         <span className="react-player-controls-sep" aria-hidden="true" />
         <button type="button" className={`mark-known${markStatus === "known" ? " is-on" : ""}`} onClick={() => void onToggleMark("known")} disabled={!target} aria-label="Mark as known" title="Mark as known" aria-pressed={markStatus === "known"}>✓</button>
         <button type="button" className={`mark-flagged${markStatus === "flagged" ? " is-on" : ""}`} onClick={() => void onToggleMark("flagged")} disabled={!target} aria-label="Flag for review" title="Flag for review" aria-pressed={markStatus === "flagged"}>⚑</button>
-        <span className="react-player-status">{error || nativeState?.error || nativeStatus || `${playbackRunMode === "single" ? "Single clip" : "Play through list"} · Click the wave to seek or play · Space to play/pause`}</span>
+        <span className="react-player-status">{error || nativeState?.error || nativeStatus || `${playbackRunModeLabel(playbackRunMode)} · Click the wave to seek or play · Space to play/pause`}</span>
       </div>
     </section>
   );
