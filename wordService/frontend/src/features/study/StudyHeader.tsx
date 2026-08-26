@@ -60,10 +60,10 @@ export function StudyHeader({
     <header className="react-header">
       <div className="react-brand">
         <span className="eyebrow"><span className="brand-seal" aria-hidden="true">印</span><span className="brand-caption">JLPT N2 · VOCABULARY</span></span>
-        <h1>{currentBook?.title || "スタディウォール"}</h1>
+        <h1>{currentBook?.code || "スタディウォール"}</h1>
       </div>
       <div className="react-pickers">
-        <label><span>Book</span><select value={selectedBook} onChange={(event) => onSelectBook(event.target.value)}><option value="">Choose book</option>{books.map((book) => <option key={book.code} value={book.code}>{book.code} · {book.title}</option>)}</select></label>
+        <label><span>Book</span><select value={selectedBook} onChange={(event) => onSelectBook(event.target.value)}><option value="">Choose book</option>{books.map((book) => <option key={book.code} value={book.code}>{book.code}</option>)}</select></label>
         <label><span>Section</span><select value={selectedUnit ?? ""} onChange={(event) => onSelectUnit(event.target.value ? Number(event.target.value) : null)}><option value="">All sections</option>{units.map((item) => <option key={item.number} value={item.number}>{unitLabel(item)} · {item.entry_count} words</option>)}</select></label>
       </div>
       <select className="react-filter-select" value={filterState} onChange={(event) => onSelectFilter(event.target.value as FilterState)} aria-label="Filter items">
