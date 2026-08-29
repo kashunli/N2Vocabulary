@@ -13,6 +13,14 @@ symlink. The workflow restarts systemd and calls `/api/summary`; if the new
 release is unhealthy, it switches the symlink back to the previous release and
 restarts the service again.
 
+The Rust release binary is built inside the official `rust:1-bookworm` container
+on GitHub Actions. Bookworm is Debian 12 and uses glibc 2.36, so the artifact is
+compatible with Debian 12 even though the GitHub runner itself may use a newer
+glibc. The package step also inspects the ELF version requirements and rejects
+anything newer than glibc 2.36. If the VPS is Debian 11 or older, build and test
+against that older release instead; a binary built on Debian 12 is not a
+guarantee for an older glibc.
+
 ## 1. Prepare the Linux host
 
 Create an application user and the state directory. Replace `deploy` with the

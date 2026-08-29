@@ -69,10 +69,31 @@ jobs:
           cargo fmt --all -- --check
           cargo clippy --all-targets --all-features -- -D warnings
           cargo test
-          cargo build --release --bin n2-word-service-rust
+
+      - name: Build Debian-compatible release binary
+        working-directory: wordService
+        shell: bash
+        env:
+          # Debian Bookworm ships glibc 2.36. Building in this image keeps the
+          # release runnable on Debian 12 instead of inheriting ubuntu-latest's
+          # newer glibc baseline.
+          DEBIAN_BUILD_IMAGE: rust:1-bookworm
+        run: |
+          docker run --rm \
+            --user "$(id -u):$(id -g)" \
+            --env HOME=/tmp/n2-vocabulary-home \
+            --env CARGO_HOME=/tmp/n2-vocabulary-cargo \
+            --env CARGO_TARGET_DIR=/workspace/wordService/target-debian \
+            --volume "$GITHUB_WORKSPACE:/workspace" \
+            --workdir /workspace/wordService \
+            "$DEBIAN_BUILD_IMAGE" \
+            cargo build --locked --release --bin n2-word-service-rust
 
       - name: Create deterministic release archive
         id: package
+        env:
+          MAX_GLIBC_VERSION: '2.36'
+          RELEASE_BINARY: wordService/target-debian/release/n2-word-service-rust
         run: bash .github/scripts/package-word-service-release.sh
 
       - name: Transfer release and switch the server
