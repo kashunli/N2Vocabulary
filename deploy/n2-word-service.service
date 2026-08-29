@@ -1,0 +1,19 @@
+[Unit]
+Description=N2 Vocabulary WordService
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=n2vocabulary
+Group=n2vocabulary
+WorkingDirectory=/opt/n2-vocabulary/current
+EnvironmentFile=/etc/n2-word-service.env
+ExecStart=/opt/n2-vocabulary/current/n2-word-service-rust
+Restart=on-failure
+RestartSec=5s
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
