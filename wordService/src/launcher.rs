@@ -889,31 +889,34 @@ mod tests {
 
     #[test]
     fn candidate_paths_include_repository_and_distribution_layouts() {
-        let launcher = Path::new(r"D:\N2Vocabulary\Start N2 Vocabulary.exe");
-        let candidates = service_executable_candidates(launcher);
-        assert!(candidates.iter().any(|path| {
-            path == Path::new(
-                r"D:\N2Vocabulary\wordService\target\release\n2-word-service-rust.exe",
-            )
-        }));
-        assert!(candidates.iter().any(|path| {
-            path == Path::new(r"D:\N2Vocabulary\wordService\n2-word-service-rust.exe")
-        }));
+        // Keep the fixture relative and construct expectations with `join` so
+        // this checks path construction rather than Windows path parsing.
+        let launcher = PathBuf::from("fixture-repository").join("Start N2 Vocabulary.exe");
+        let launcher_directory = launcher.parent().unwrap();
+        let word_service_directory = launcher_directory.join("wordService");
+        let normal_release_path = word_service_directory
+            .join("target")
+            .join("release")
+            .join(SERVICE_EXECUTABLE_NAME);
+        let launcher_release_path = word_service_directory
+            .join("target")
+            .join("launcher-release")
+            .join("release")
+            .join(SERVICE_EXECUTABLE_NAME);
+        let candidates = service_executable_candidates(&launcher);
+        assert!(candidates.iter().any(|path| path == &normal_release_path));
+        assert!(
+            candidates
+                .iter()
+                .any(|path| path == &word_service_directory.join(SERVICE_EXECUTABLE_NAME))
+        );
         let launcher_release = candidates
             .iter()
-            .position(|path| {
-                path == Path::new(
-                    r"D:\N2Vocabulary\wordService\target\launcher-release\release\n2-word-service-rust.exe",
-                )
-            })
+            .position(|path| path == &launcher_release_path)
             .unwrap();
         let normal_release = candidates
             .iter()
-            .position(|path| {
-                path == Path::new(
-                    r"D:\N2Vocabulary\wordService\target\release\n2-word-service-rust.exe",
-                )
-            })
+            .position(|path| path == &normal_release_path)
             .unwrap();
         assert!(launcher_release < normal_release);
     }
