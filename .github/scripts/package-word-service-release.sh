@@ -43,9 +43,11 @@ else
 fi
 
 rm -rf "$package_dir" "$archive" "$checksum"
-mkdir -p "$package_dir/wordService/data" "$package_dir/wordService/static" "$package_dir/reviews/vocabulary_audio"
+mkdir -p "$package_dir/bootstrap" "$package_dir/wordService/data" "$package_dir/wordService/static" "$package_dir/reviews/vocabulary_audio"
 
 install -Dm755 "$binary" "$package_dir/n2-word-service-rust"
+install -Dm644 deploy/n2-word-service.service "$package_dir/bootstrap/n2-word-service.service"
+install -Dm644 deploy/n2-word-service.env.example "$package_dir/bootstrap/n2-word-service.env.example"
 cp -a wordService/static/. "$package_dir/wordService/static/"
 install -Dm644 wordService/data/n2vocab.sqlite "$package_dir/wordService/data/n2vocab.sqlite"
 cp -a clips "$package_dir/clips"

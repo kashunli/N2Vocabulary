@@ -27,6 +27,9 @@ jobs:
       DEPLOY_ROOT: ${{ vars.DEPLOY_ROOT || '/opt/n2-vocabulary' }}
       DEPLOY_SERVICE: ${{ vars.DEPLOY_SERVICE || 'n2-word-service.service' }}
       DEPLOY_HEALTHCHECK_URL: ${{ vars.DEPLOY_HEALTHCHECK_URL || 'http://127.0.0.1:8767/api/summary' }}
+      # Required only when the VPS does not yet have /etc/n2-word-service.env.
+      # DEPLOY_URL remains a compatibility fallback for the existing variable.
+      DEPLOY_PUBLIC_ORIGIN: ${{ vars.DEPLOY_PUBLIC_ORIGIN || vars.DEPLOY_URL || '' }}
       DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}
       DEPLOY_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
     steps:

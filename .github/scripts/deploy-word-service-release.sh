@@ -5,6 +5,7 @@ set -Eeuo pipefail
 : "${CHECKSUM:?Package step must provide CHECKSUM}"
 : "${GITHUB_SHA:?GitHub Actions must provide GITHUB_SHA}"
 : "${RUNNER_TEMP:?GitHub Actions must provide RUNNER_TEMP}"
+: "${DEPLOY_PUBLIC_ORIGIN:=}"
 
 key_file="$RUNNER_TEMP/n2-vocabulary-deploy-key"
 known_hosts_file="$RUNNER_TEMP/n2-vocabulary-known-hosts"
@@ -21,8 +22,10 @@ else
   ssh-keyscan -T 10 -H -p "$DEPLOY_PORT" "$DEPLOY_HOST" > "$known_hosts_file"
   [[ -s "$known_hosts_file" ]] || { echo 'Could not discover the VPS SSH host key' >&2; exit 1; }
 fi
-ssh_opts=(-i "$key_file" -p "$DEPLOY_PORT" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$known_hosts_file")
-scp_opts=(-i "$key_file" -P "$DEPLOY_PORT" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$known_hosts_file")
+# A throttled or unavailable VPS should fail this job promptly instead of
+# leaving an SSH/SCP process running until GitHub Actions cancels the job.
+ssh_opts=(-i "$key_file" -p "$DEPLOY_PORT" -o BatchMode=yes -o IdentitiesOnly=yes -o ConnectTimeout=15 -o ConnectionAttempts=1 -o ServerAliveInterval=15 -o ServerAliveCountMax=4 -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$known_hosts_file")
+scp_opts=(-i "$key_file" -P "$DEPLOY_PORT" -o BatchMode=yes -o IdentitiesOnly=yes -o ConnectTimeout=15 -o ConnectionAttempts=1 -o ServerAliveInterval=15 -o ServerAliveCountMax=4 -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$known_hosts_file")
 
 ssh "${ssh_opts[@]}" "$target" "install -d -m 0755 '$DEPLOY_ROOT/incoming' '$DEPLOY_ROOT/releases'"
 scp "${scp_opts[@]}" "$ARCHIVE" "$target:$remote_archive"
@@ -34,9 +37,10 @@ quoted_archive=$(printf '%q' "$remote_archive")
 quoted_checksum=$(printf '%q' "$remote_checksum")
 quoted_service=$(printf '%q' "$DEPLOY_SERVICE")
 quoted_healthcheck=$(printf '%q' "$DEPLOY_HEALTHCHECK_URL")
+quoted_public_origin=$(printf '%q' "$DEPLOY_PUBLIC_ORIGIN")
 
 ssh "${ssh_opts[@]}" "$target" \
-  "DEPLOY_ROOT=$quoted_root RELEASE_SHA=$quoted_sha REMOTE_ARCHIVE=$quoted_archive REMOTE_CHECKSUM=$quoted_checksum SERVICE=$quoted_service HEALTHCHECK_URL=$quoted_healthcheck bash -s" <<'REMOTE_SCRIPT'
+  "DEPLOY_ROOT=$quoted_root RELEASE_SHA=$quoted_sha REMOTE_ARCHIVE=$quoted_archive REMOTE_CHECKSUM=$quoted_checksum SERVICE=$quoted_service HEALTHCHECK_URL=$quoted_healthcheck PUBLIC_ORIGIN=$quoted_public_origin bash -s" <<'REMOTE_SCRIPT'
 set -Eeuo pipefail
 
 release_dir="$DEPLOY_ROOT/releases/$RELEASE_SHA"
@@ -62,20 +66,79 @@ else
   mv "$temporary_dir" "$release_dir"
 fi
 
+bootstrap_service() {
+  local service_unit="/etc/systemd/system/$SERVICE"
+  local environment_file='/etc/n2-word-service.env'
+  local bootstrap_dir="$release_dir/bootstrap"
+  local generated_environment="$bootstrap_dir/n2-word-service.env"
+  local need_unit=false
+  local need_environment=false
+
+  [[ -e "$service_unit" ]] || need_unit=true
+  [[ -e "$environment_file" ]] || need_environment=true
+  if [[ "$need_unit" == false && "$need_environment" == false ]]; then
+    return
+  fi
+
+  if [[ "$SERVICE" != 'n2-word-service.service' ]]; then
+    echo "Automatic bootstrap supports only n2-word-service.service, not $SERVICE" >&2
+    exit 1
+  fi
+  test -f "$bootstrap_dir/n2-word-service.service"
+  test -f "$bootstrap_dir/n2-word-service.env.example"
+
+  if ! id -u n2vocabulary >/dev/null 2>&1; then
+    sudo -n useradd --system --create-home --shell /usr/sbin/nologin n2vocabulary
+  fi
+  sudo -n install -d -o n2vocabulary -g n2vocabulary -m 0750 /var/lib/n2-word-service
+
+  if [[ "$need_environment" == true ]]; then
+    if [[ -z "$PUBLIC_ORIGIN" ]]; then
+      echo 'Cannot create /etc/n2-word-service.env: set the DEPLOY_PUBLIC_ORIGIN repository variable to the public HTTPS origin first.' >&2
+      exit 1
+    fi
+    case "$PUBLIC_ORIGIN" in
+      https://*) ;;
+      *)
+        echo 'DEPLOY_PUBLIC_ORIGIN must begin with https:// for the public service.' >&2
+        exit 1
+        ;;
+    esac
+    while IFS= read -r line || [[ -n "$line" ]]; do
+      if [[ "$line" == N2_WORD_SERVICE_ORIGIN=* ]]; then
+        printf 'N2_WORD_SERVICE_ORIGIN=%s\n' "$PUBLIC_ORIGIN"
+      else
+        printf '%s\n' "$line"
+      fi
+    done < "$bootstrap_dir/n2-word-service.env.example" > "$generated_environment"
+    sudo -n install -o root -g root -m 0644 "$generated_environment" "$environment_file"
+    echo "Installed initial $environment_file. Future deployments will preserve it."
+  fi
+
+  if [[ "$need_unit" == true ]]; then
+    sudo -n install -o root -g root -m 0644 "$bootstrap_dir/n2-word-service.service" "$service_unit"
+    sudo -n systemctl daemon-reload
+    sudo -n systemctl enable "$SERVICE"
+    echo "Installed and enabled $SERVICE. Future deployments will preserve the unit file."
+  fi
+}
+
+bootstrap_service
+
 ln -sfn "$release_dir" "$DEPLOY_ROOT/current.next"
 mv -Tf "$DEPLOY_ROOT/current.next" "$DEPLOY_ROOT/current"
 
 healthy() {
-  sudo systemctl is-active --quiet "$SERVICE" && \
+  sudo -n systemctl is-active --quiet "$SERVICE" && \
     curl --fail --silent --show-error --retry 20 --retry-delay 1 "$HEALTHCHECK_URL" >/dev/null
 }
 
-if ! sudo systemctl restart "$SERVICE" || ! healthy; then
+if ! sudo -n systemctl restart "$SERVICE" || ! healthy; then
   echo 'New release failed its service or health check; attempting rollback.' >&2
   if [[ -n "$previous_target" ]]; then
     ln -sfn "$previous_target" "$DEPLOY_ROOT/current.next"
     mv -Tf "$DEPLOY_ROOT/current.next" "$DEPLOY_ROOT/current"
-    sudo systemctl restart "$SERVICE"
+    sudo -n systemctl restart "$SERVICE"
   fi
   exit 1
 fi

@@ -6,12 +6,12 @@ remain an ordinary Linux VPS rather than needing a cloud-specific GitHub
 Action.
 
 The deployment package contains the release Rust binary, the committed React
-assets, `wordService/data/n2vocab.sqlite`, the tracked `clips/` tree, and the
-review evidence files that the service reads at startup. The package is
-extracted into a commit-named directory and exposed through the `current`
-symlink. The workflow restarts systemd and calls `/api/summary`; if the new
-release is unhealthy, it switches the symlink back to the previous release and
-restarts the service again.
+assets, `wordService/data/n2vocab.sqlite`, the tracked `clips/` tree, review
+evidence files, and bootstrap copies of the systemd unit and environment-file
+template. The package is extracted into a commit-named directory and exposed
+through the `current` symlink. The workflow restarts systemd and calls
+`/api/summary`; if the new release is unhealthy, it switches the symlink back
+to the previous release and restarts the service again.
 
 The Rust release binary is built inside the official `rust:1-bookworm` container
 on GitHub Actions. Bookworm is Debian 12 and uses glibc 2.36, so the artifact is
@@ -45,17 +45,23 @@ Treat the tracked content database and clips as the deployment source of truth:
 review any server-side generated changes before a later release replaces that
 content snapshot.
 
-## 2. Install the systemd unit
+## 2. Automatic systemd bootstrap
 
-Copy the example environment file, change the HTTPS origin to the real public
-origin, then install and enable the unit:
+On its first successful connection, the deployment installs and enables
+`n2-word-service.service` if it is absent. It also creates
+`/etc/n2-word-service.env` only if that file is absent; later deployments never
+overwrite either file.
+
+Before that first deployment, add the non-secret repository or `production`
+environment variable `DEPLOY_PUBLIC_ORIGIN`, for example
+`https://vocabulary.example.com`. It is used to set the exact HTTPS browser
+origin required by the public service. `DEPLOY_URL` remains a compatibility
+fallback when it already holds that same origin.
+
+After bootstrap, inspect and adjust the preserved environment file if needed:
 
 ```bash
-sudo install -o root -g root -m 0644 deploy/n2-word-service.env.example /etc/n2-word-service.env
 sudoedit /etc/n2-word-service.env
-sudo install -o root -g root -m 0644 deploy/n2-word-service.service /etc/systemd/system/n2-word-service.service
-sudo systemctl daemon-reload
-sudo systemctl enable n2-word-service.service
 ```
 
 The reverse proxy should terminate HTTPS and forward to
@@ -74,20 +80,23 @@ are based on the directory used when Rust compiled it. This is why the unit
 must use `/etc/n2-word-service.env` rather than relying on the local Windows
 defaults.
 
-## 3. Permit the deployment restart
+## 3. Permit deployment bootstrap and restart
 
-The deployment account needs passwordless permission for only this unit's
-restart and status checks. Create a sudoers drop-in and validate it before
-enabling Actions:
+The deployment account needs passwordless permission to create the dedicated
+service account/state directory during first bootstrap, install the two
+authoritative service files only when absent, and manage this unit. Create a
+sudoers drop-in and validate it before enabling Actions:
 
 ```text
 # /etc/sudoers.d/n2-word-service-deploy
-n2vocabulary ALL=(root) NOPASSWD: /usr/bin/systemctl restart n2-word-service.service, /usr/bin/systemctl is-active n2-word-service.service
+deploy ALL=(root) NOPASSWD: /usr/sbin/useradd --system --create-home --shell /usr/sbin/nologin n2vocabulary, /usr/bin/install -d -o n2vocabulary -g n2vocabulary -m 0750 /var/lib/n2-word-service, /usr/bin/install -o root -g root -m 0644 /opt/n2-vocabulary/releases/*/bootstrap/n2-word-service.service /etc/systemd/system/n2-word-service.service, /usr/bin/install -o root -g root -m 0644 /opt/n2-vocabulary/releases/*/bootstrap/n2-word-service.env /etc/n2-word-service.env, /usr/bin/systemctl daemon-reload, /usr/bin/systemctl enable n2-word-service.service, /usr/bin/systemctl restart n2-word-service.service, /usr/bin/systemctl is-active n2-word-service.service
 ```
 
 Use `sudo visudo -cf /etc/sudoers.d/n2-word-service-deploy` to validate the
-syntax. If the SSH account differs from `n2vocabulary`, replace the username
-in this rule.
+syntax. The rule above uses the current GitHub Actions SSH account, `deploy`.
+If that account changes, replace it with the new SSH username. Treat write
+access to `main` as privileged: the first deployment can install the shipped
+unit and environment template as root, while later runs preserve them.
 
 ## 4. Configure the GitHub deployment settings
 
@@ -102,7 +111,7 @@ Add these repository secrets under `Settings > Secrets and variables > Actions`:
 | `VPS_KNOWN_HOSTS` | Verified `ssh-keyscan -H -p <port> <host>` output | Optional but recommended host-key pinning |
 
 Optional non-sensitive overrides such as `DEPLOY_ROOT`, `DEPLOY_SERVICE`,
-`DEPLOY_HEALTHCHECK_URL`, and `DEPLOY_URL` can be added as repository or
+`DEPLOY_HEALTHCHECK_URL`, `DEPLOY_PUBLIC_ORIGIN`, and `DEPLOY_URL` can be added as repository or
 `production` environment variables. When `VPS_KNOWN_HOSTS` is absent, the
 workflow discovers the host key for that run and then enables strict host-key
 checking. Pinning the verified key in the secret protects against a first-use
