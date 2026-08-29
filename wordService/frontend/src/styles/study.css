@@ -4,7 +4,7 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
-  padding: 18px 0 8px;
+  padding: 10px 0 8px;
   scrollbar-color: var(--line) transparent;
 }
 .react-content-scroll.is-blurred .react-list,
@@ -70,8 +70,8 @@
   overflow: auto;
   display: flex;
   flex-direction: column;
-  padding: clamp(12px, 1.8vw, 22px) clamp(20px, 5vw, 72px) 56px;
-  scroll-padding-block: clamp(12px, 1.8vw, 22px);
+  padding: clamp(8px, 1.2vw, 16px) clamp(20px, 5vw, 72px) 56px;
+  scroll-padding-block: clamp(8px, 1.2vw, 16px);
 }
 
 .react-word-summary {
@@ -155,7 +155,7 @@
   color: var(--indigo-deep);
 }
 
-.react-sentence-explanation { max-width: 760px; margin-top: 22px; font: 0.88rem/1.6 var(--sans); }
+.react-sentence-explanation { max-width: 760px; margin-top: 10px; font: 0.88rem/1.6 var(--sans); }
 .react-explanation, .react-markdown { color: var(--ink-soft); }
 .react-markdown p { margin: 0 0 12px; }
 .react-markdown h3, .react-markdown h4, .react-markdown h5 {

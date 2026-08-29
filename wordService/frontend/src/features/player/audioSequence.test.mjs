@@ -44,3 +44,13 @@ test("adding a step preserves stable ids and limits the editor size", () => {
   const next = addAudioSequenceStep(steps, "word");
   assert.deepEqual(next.map((step) => step.id), ["word-1", "word-2"]);
 });
+
+test("pause values support the five-second editor range", () => {
+  const sequence = normalizeAudioSequence({
+    steps: [
+      {id: "short", element: "word", repeatCount: 1, pauseAfterMs: 5050},
+      {id: "long", element: "sentence", repeatCount: 1, pauseAfterMs: 5000},
+    ],
+  });
+  assert.deepEqual(sequence.steps.map((step) => step.pauseAfterMs), [5000, 5000]);
+});

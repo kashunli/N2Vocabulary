@@ -120,7 +120,20 @@
 .react-sequence-field { display: grid; gap: 5px; }
 .react-sequence-slider-row { display: flex; align-items: center; gap: 8px; }
 .react-sequence-slider-row input[type="range"] { flex: 1 1 120px; min-width: 120px; accent-color: var(--indigo); }
-.react-sequence-slider-row output { min-width: 40px; text-align: right; font: 650 0.85rem/1 var(--mono); color: var(--indigo); }
+.react-sequence-pause-value { display: inline-flex; align-items: baseline; gap: 2px; min-width: 48px; color: var(--indigo); font: 650 0.85rem/1 var(--mono); }
+.react-sequence-pause-input {
+  width: 42px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  padding: 2px 0;
+  text-align: right;
+  font: inherit;
+}
+.react-sequence-pause-input:focus { border-bottom-color: var(--indigo); outline: 2px solid color-mix(in srgb, var(--indigo) 22%, transparent); outline-offset: 2px; }
+.react-sequence-pause-input::-webkit-inner-spin-button, .react-sequence-pause-input::-webkit-outer-spin-button { margin: 0; }
 .react-sequence-stepper { display: grid; gap: 5px; }
 .react-sequence-stepper > span:first-child { color: var(--muted); font: 650 0.68rem/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; }
 .react-sequence-stepper-control { display: flex; align-items: center; gap: 4px; }

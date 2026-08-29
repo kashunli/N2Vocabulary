@@ -50,3 +50,46 @@ The three playback roles and active-card mark controls are readable at full-view
 - P3 follow-up: none required.
 
 final result: passed
+
+## Targeted follow-up - RepeatOnce, editable pause, and study spacing
+
+### Source visual truth
+
+- Pause-control reference: `C:/Users/lochl/AppData/Local/Temp/codex-clipboard-27e4bd2a-51b8-47cb-8787-c8b2ab5461dd.png` (1539 x 233 px).
+- Selected RepeatOnce reference: `C:/Users/lochl/AppData/Local/Temp/codex-clipboard-975eb552-49c7-4aea-999b-6f87c56b3df3.png` (300 x 267 px).
+- Spacing references: `C:/Users/lochl/AppData/Local/Temp/codex-clipboard-af278041-329c-4977-a1b7-74bea2be3ffb.png` (1119 x 258 px) and `C:/Users/lochl/AppData/Local/Temp/codex-clipboard-45dea117-d383-42f1-ac69-12aebb8af6e3.png` (1083 x 207 px).
+
+### Implementation evidence
+
+- Single-mode toolbar: `C:/Users/lochl/.codex/visualizations/2026/08/29/01a04bb2-4a29-7380-af77-728190d832d7/n2vocab-single-mode.png` (1280 x 900 px, CSS viewport 1280 x 900, density 1).
+- Playback settings before manual edit: `C:/Users/lochl/.codex/visualizations/2026/08/29/01a04bb2-4a29-7380-af77-728190d832d7/n2vocab-playback-settings.png` (1280 x 900 px, CSS viewport 1280 x 900, density 1).
+- Playback settings after typing `4.2`: `C:/Users/lochl/.codex/visualizations/2026/08/29/01a04bb2-4a29-7380-af77-728190d832d7/n2vocab-playback-settings-edited.png` (1280 x 900 px, CSS viewport 1280 x 900, density 1).
+- Study-wall spacing after adjustment: `C:/Users/lochl/.codex/visualizations/2026/08/29/01a04bb2-4a29-7380-af77-728190d832d7/n2vocab-spacing-after.png` (1280 x 900 px, CSS viewport 1280 x 900, density 1).
+
+### State and comparison evidence
+
+- Loaded N2 study wall, All sections, vocabulary list visible, Single audio mode selected.
+- The toolbar uses the selected `RepeatOnce` icon from the existing Phosphor icon package.
+- The settings modal shows a keyboard-editable pause value beside a 0–5 second slider.
+- The typed interaction assertion changed the pause field from `0.5` to `4.2`; after blur, both the field and slider reported `4.2`.
+- The current-word content begins higher after reducing the content/current top padding, and the sentence explanation begins closer after reducing its top margin from `22px` to `10px`.
+
+### Required fidelity surfaces
+
+- Fonts and typography: existing product fonts, weights, and sizes are unchanged; the editable pause value keeps the existing monospace numeric treatment.
+- Spacing and layout rhythm: the two requested vertical gaps are reduced without changing the word, sentence, translation, or explanation content.
+- Colors and visual tokens: existing paper, indigo, line, and focus tokens remain in use.
+- Image quality and asset fidelity: no new raster assets or custom icon drawings were added; `RepeatOnce` is rendered from the installed icon library.
+- Copy and content: existing learner-facing copy is unchanged.
+
+### Comparison history
+
+- Earlier pass: the selected RepeatOnce icon and editable pause control were captured in the single-mode and settings screenshots above.
+- Follow-up pass: the two spacing adjustments were applied, rebuilt, and captured in `n2vocab-spacing-after.png`; no P0, P1, or P2 differences remain in the requested regions.
+
+### Findings
+
+- No remaining P0, P1, or P2 issues in the requested icon, pause-control, or study-content spacing regions.
+- P3 follow-up: none required.
+
+final result: passed

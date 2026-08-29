@@ -1,4 +1,8 @@
-import { createDefaultAudioSequence, normalizeAudioSequence } from "./audioSequence.mjs";
+import {
+  createDefaultAudioSequence,
+  MAX_SEQUENCE_PAUSE_MS,
+  normalizeAudioSequence,
+} from "./audioSequence.mjs";
 import type { AudioSequenceConfig } from "./audioSequenceTypes";
 
 export type PlaybackPhase = "word" | "sentence";
@@ -65,7 +69,7 @@ export type PlaybackSettings = {
 function normalizeSilence(value: unknown) {
   const silence = Number(value);
   return Number.isFinite(silence)
-    ? Math.min(3000, Math.max(0, Math.round(silence / 100) * 100))
+    ? Math.min(MAX_SEQUENCE_PAUSE_MS, Math.max(0, Math.round(silence / 100) * 100))
     : DEFAULT_SILENCE_MS;
 }
 

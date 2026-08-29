@@ -1,4 +1,6 @@
-import { MAX_AUDIO_SEQUENCE_STEPS } from "./audioSequence.mjs";
+import { useEffect, useState } from "react";
+
+import { MAX_AUDIO_SEQUENCE_STEPS, MAX_SEQUENCE_PAUSE_MS } from "./audioSequence.mjs";
 import type {
   AudioSequenceConfig,
   AudioSequenceElement,
@@ -25,6 +27,68 @@ interface PlaybackSettingsModalProps {
 
 function pauseSeconds(value: number) {
   return (value / 1000).toFixed(1);
+}
+
+interface PauseAfterControlProps {
+  stepIndex: number;
+  value: number;
+  onChange: (value: number) => void;
+}
+
+function PauseAfterControl({stepIndex, value, onChange}: PauseAfterControlProps) {
+  const [draft, setDraft] = useState(pauseSeconds(value));
+
+  useEffect(() => {
+    setDraft(pauseSeconds(value));
+  }, [value]);
+
+  const commitDraft = () => {
+    const seconds = Number(draft);
+    if (!Number.isFinite(seconds)) {
+      setDraft(pauseSeconds(value));
+      return;
+    }
+    const boundedSeconds = Math.min(MAX_SEQUENCE_PAUSE_MS / 1000, Math.max(0, seconds));
+    const milliseconds = Math.round(boundedSeconds * 10) * 100;
+    onChange(milliseconds);
+    setDraft(pauseSeconds(milliseconds));
+  };
+
+  return (
+    <span className="react-sequence-slider-row">
+      <input
+        type="range"
+        min="0"
+        max={MAX_SEQUENCE_PAUSE_MS / 1000}
+        step="0.1"
+        value={value / 1000}
+        aria-label={`Pause after step ${stepIndex}`}
+        onChange={(event) => onChange(Math.round(Number(event.target.value) * 1000))}
+      />
+      <span className="react-sequence-pause-value">
+        <input
+          className="react-sequence-pause-input"
+          type="number"
+          min="0"
+          max={MAX_SEQUENCE_PAUSE_MS / 1000}
+          step="0.1"
+          inputMode="decimal"
+          value={draft}
+          aria-label={`Pause after step ${stepIndex} in seconds`}
+          onChange={(event) => setDraft(event.target.value)}
+          onBlur={commitDraft}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") event.currentTarget.blur();
+            if (event.key === "Escape") {
+              setDraft(pauseSeconds(value));
+              event.currentTarget.blur();
+            }
+          }}
+        />
+        <span aria-hidden="true">s</span>
+      </span>
+    </span>
+  );
 }
 
 export function PlaybackSettingsModal({
@@ -83,21 +147,14 @@ export function PlaybackSettingsModal({
                       <button type="button" onClick={() => onChangeSequenceStep(step.id, {repeatCount: Math.min(9, step.repeatCount + 1)})} disabled={step.repeatCount >= 9} aria-label={`Increase repeat for step ${index + 1}`}>+</button>
                     </span>
                   </div>
-                  <label className="react-sequence-field">
+                  <div className="react-sequence-field">
                     <span>Pause after</span>
-                    <span className="react-sequence-slider-row">
-                      <input
-                        type="range"
-                        min="0"
-                        max="3"
-                        step="0.1"
-                        value={step.pauseAfterMs / 1000}
-                        aria-label={`Pause after step ${index + 1}`}
-                        onChange={(event) => onChangeSequenceStep(step.id, {pauseAfterMs: Math.round(Number(event.target.value) * 1000)})}
-                      />
-                      <output>{pauseSeconds(step.pauseAfterMs)}s</output>
-                    </span>
-                  </label>
+                    <PauseAfterControl
+                      stepIndex={index + 1}
+                      value={step.pauseAfterMs}
+                      onChange={(pauseAfterMs) => onChangeSequenceStep(step.id, {pauseAfterMs})}
+                    />
+                  </div>
                   <button type="button" className="react-sequence-remove" onClick={() => onRemoveSequenceStep(step.id)} disabled={sequence.steps.length <= 1} aria-label={`Remove step ${index + 1}`}>Remove</button>
                 </div>
               </div>

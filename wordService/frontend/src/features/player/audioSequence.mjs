@@ -2,6 +2,7 @@ export const AUDIO_SEQUENCE_VERSION = 1;
 export const MAX_AUDIO_SEQUENCE_STEPS = 12;
 export const DEFAULT_SEQUENCE_REPEAT_COUNT = 1;
 export const DEFAULT_SEQUENCE_PAUSE_MS = 500;
+export const MAX_SEQUENCE_PAUSE_MS = 5000;
 
 function clampNumber(value, minimum, maximum, fallback) {
   const number = Number(value);
@@ -35,7 +36,7 @@ function normalizedRepeatCount(value, fallback = DEFAULT_SEQUENCE_REPEAT_COUNT) 
 }
 
 function normalizedPauseMs(value, fallback = DEFAULT_SEQUENCE_PAUSE_MS) {
-  return Math.round(clampNumber(value, 0, 3000, fallback) / 100) * 100;
+  return Math.round(clampNumber(value, 0, MAX_SEQUENCE_PAUSE_MS, fallback) / 100) * 100;
 }
 
 export function createDefaultAudioSequence(

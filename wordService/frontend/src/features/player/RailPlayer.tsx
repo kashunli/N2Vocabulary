@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowCounterClockwise, ListBullets, Pause, Play, Queue, Repeat, SkipBack, SkipForward, SpeakerHigh } from "@phosphor-icons/react";
+import { ArrowCounterClockwise, ListBullets, Pause, Play, Queue, Repeat, RepeatOnce, SkipBack, SkipForward } from "@phosphor-icons/react";
 
 import { useAudioBufferPlayer } from "./useAudioBufferPlayer";
 import { LineWaveform } from "./LineWaveform";
@@ -54,8 +54,8 @@ function isNativeActive(state: NativeAudioState | undefined) {
 
 function PlaybackRunModeIcon({mode}: {mode: PlaybackRunMode}) {
   switch (mode) {
-    // Single uses a speaker, deliberately avoiding a repeat-shaped icon.
-    case "single": return <SpeakerHigh size={18} weight="fill" />;
+    // Single uses a repeat-once symbol so the mode communicates its boundary.
+    case "single": return <RepeatOnce size={18} weight="bold" />;
     case "list": return <ListBullets size={18} weight="bold" />;
     case "cycle-list": return <Repeat size={18} weight="bold" />;
     case "next-list": return <Queue size={18} weight="bold" />;
