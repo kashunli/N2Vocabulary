@@ -112,23 +112,42 @@ bootstrap_service() {
   local need_unit=false
   local need_environment=false
 
-  [[ -e "$service_unit" ]] || need_unit=true
-  [[ -e "$environment_file" ]] || need_environment=true
-  if [[ "$need_unit" == false && "$need_environment" == false ]]; then
-    return
-  fi
-
   if [[ "$SERVICE" != 'n2-word-service.service' ]]; then
     echo "Automatic bootstrap supports only n2-word-service.service, not $SERVICE" >&2
     exit 1
   fi
-  test -f "$bootstrap_dir/n2-word-service.service"
-  test -f "$bootstrap_dir/n2-word-service.env.example"
 
+  # The deployed process is deliberately unprivileged. Ensure it exists even
+  # on later deployments, when the unit and environment files are preserved.
   if ! id -u n2vocabulary >/dev/null 2>&1; then
     sudo -n useradd --system --create-home --shell /usr/sbin/nologin n2vocabulary
   fi
   sudo -n install -d -o n2vocabulary -g n2vocabulary -m 0750 /var/lib/n2-word-service
+
+  [[ -e "$service_unit" ]] || need_unit=true
+  [[ -e "$environment_file" ]] || need_environment=true
+
+  # The first bootstrap package used a path relative to the release root. It
+  # causes generated MP3s to be written outside clips/, where the service has
+  # neither the intended URL layout nor deployment-managed permissions. Repair
+  # only that known bad value; any intentionally customized TTS directory is
+  # left untouched.
+  if [[ -f "$environment_file" ]] && \
+    grep --quiet --fixed-strings --line-regexp \
+      'N2_WORD_SERVICE_TTS_DIR=generated_sentences/edge_tts' "$environment_file"; then
+    sed \
+      's|^N2_WORD_SERVICE_TTS_DIR=generated_sentences/edge_tts$|N2_WORD_SERVICE_TTS_DIR=clips/generated_sentences/edge_tts|' \
+      "$environment_file" > "$generated_environment"
+    sudo -n install -o root -g root -m 0644 "$generated_environment" "$environment_file"
+    echo "Migrated $environment_file to the packaged generated-audio directory."
+  fi
+
+  if [[ "$need_unit" == false && "$need_environment" == false ]]; then
+    return
+  fi
+
+  test -f "$bootstrap_dir/n2-word-service.service"
+  test -f "$bootstrap_dir/n2-word-service.env.example"
 
   if [[ "$need_environment" == true ]]; then
     if [[ -z "$PUBLIC_ORIGIN" ]]; then
@@ -162,6 +181,23 @@ bootstrap_service() {
 }
 
 bootstrap_service
+
+prepare_runtime_content() {
+  local database_dir="$release_dir/wordService/data"
+  local clips_dir="$release_dir/clips"
+  local generated_audio_dir="$clips_dir/generated_sentences/edge_tts"
+
+  # SQLite can create a journal/WAL during schema checks and lazy audio writes
+  # both an MP3 and the matching path back into the content database. Keep the
+  # executable and static UI deploy-owned; only these mutable content paths are
+  # owned by the unprivileged systemd service account.
+  test -d "$database_dir"
+  test -d "$clips_dir"
+  sudo -n install -d -o n2vocabulary -g n2vocabulary -m 0755 "$generated_audio_dir"
+  sudo -n chown -R n2vocabulary:n2vocabulary "$database_dir" "$clips_dir"
+}
+
+prepare_runtime_content
 
 ln -sfn "$release_dir" "$DEPLOY_ROOT/current.next"
 mv -Tf "$DEPLOY_ROOT/current.next" "$DEPLOY_ROOT/current"

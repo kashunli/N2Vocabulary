@@ -40,18 +40,22 @@ user. If you use a separate deployment user, configure group membership and
 ownership on `/opt/n2-vocabulary` before the first run.
 
 The service currently supports lazy audio generation, which writes generated
-clips and their paths into the content SQLite database. Therefore the release
-content tree must be writable by `n2vocabulary` if those endpoints are enabled.
-Treat the tracked content database and clips as the deployment source of truth:
-review any server-side generated changes before a later release replaces that
-content snapshot.
+clips and their paths into the content SQLite database. On every deployment,
+the script therefore makes only `wordService/data/` and `clips/` inside the new
+release writable by `n2vocabulary`; the binary and static UI remain owned by
+the deployment account. Treat the tracked content database and clips as the
+deployment source of truth: review any server-side generated changes before a
+later release replaces that content snapshot. Generated sentence audio lives
+at `clips/generated_sentences/edge_tts/`.
 
 ## 2. Automatic systemd bootstrap
 
 On its first successful connection, the deployment installs and enables
 `n2-word-service.service` if it is absent. It also creates
 `/etc/n2-word-service.env` only if that file is absent; later deployments never
-overwrite either file.
+overwrite either file, except for a one-time repair of the original erroneous
+`N2_WORD_SERVICE_TTS_DIR=generated_sentences/edge_tts` value. Deliberately
+customized TTS locations remain unchanged.
 
 Before that first deployment, add the non-secret repository or `production`
 environment variable `DEPLOY_PUBLIC_ORIGIN`, for example
@@ -90,7 +94,7 @@ sudoers drop-in and validate it before enabling Actions:
 
 ```text
 # /etc/sudoers.d/n2-word-service-deploy
-deploy ALL=(root) NOPASSWD: /usr/sbin/useradd --system --create-home --shell /usr/sbin/nologin n2vocabulary, /usr/bin/install -d -o n2vocabulary -g n2vocabulary -m 0750 /var/lib/n2-word-service, /usr/bin/install -o root -g root -m 0644 /opt/n2-vocabulary/releases/*/bootstrap/n2-word-service.service /etc/systemd/system/n2-word-service.service, /usr/bin/install -o root -g root -m 0644 /opt/n2-vocabulary/releases/*/bootstrap/n2-word-service.env /etc/n2-word-service.env, /usr/bin/systemctl daemon-reload, /usr/bin/systemctl enable n2-word-service.service, /usr/bin/systemctl restart n2-word-service.service, /usr/bin/systemctl is-active n2-word-service.service
+deploy ALL=(root) NOPASSWD: /usr/sbin/useradd --system --create-home --shell /usr/sbin/nologin n2vocabulary, /usr/bin/install -d -o n2vocabulary -g n2vocabulary -m 0750 /var/lib/n2-word-service, /usr/bin/install -d -o n2vocabulary -g n2vocabulary -m 0755 /opt/n2-vocabulary/releases/*/clips/generated_sentences/edge_tts, /usr/bin/chown -R n2vocabulary:n2vocabulary /opt/n2-vocabulary/releases/*/wordService/data /opt/n2-vocabulary/releases/*/clips, /usr/bin/install -o root -g root -m 0644 /opt/n2-vocabulary/releases/*/bootstrap/n2-word-service.service /etc/systemd/system/n2-word-service.service, /usr/bin/install -o root -g root -m 0644 /opt/n2-vocabulary/releases/*/bootstrap/n2-word-service.env /etc/n2-word-service.env, /usr/bin/systemctl daemon-reload, /usr/bin/systemctl enable n2-word-service.service, /usr/bin/systemctl restart n2-word-service.service, /usr/bin/systemctl is-active n2-word-service.service
 ```
 
 Use `sudo visudo -cf /etc/sudoers.d/n2-word-service-deploy` to validate the
