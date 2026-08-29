@@ -7,8 +7,9 @@
 //! contract visible without adding desktop-app behavior to the HTTP server.
 
 use anyhow::{Context, Result, bail};
+use sha2::{Digest, Sha256};
 use std::env;
-use std::fs::OpenOptions;
+use std::fs;
 use std::io::{Read, Write};
 use std::net::{TcpStream, ToSocketAddrs};
 use std::path::{Path, PathBuf};
@@ -22,6 +23,14 @@ const DEFAULT_READY_TIMEOUT_SECONDS: u64 = 30;
 const READY_POLL_INTERVAL: Duration = Duration::from_millis(200);
 const SERVICE_EXECUTABLE_NAME: &str = "n2-word-service-rust.exe";
 const START_PAGE: &str = "/";
+const FRONTEND_BUILD_STAMP_NAME: &str = ".n2-frontend-build.sha256";
+const RUNTIME_BUILD_DIRECTORY_NAME: &str = "launcher-runtime";
+
+#[cfg(windows)]
+const COREPACK_COMMAND: &str = "corepack.cmd";
+
+#[cfg(not(windows))]
+const COREPACK_COMMAND: &str = "corepack";
 
 #[cfg(windows)]
 const CREATE_NO_WINDOW: u32 = 0x08000000;
@@ -80,17 +89,16 @@ pub struct LauncherConfig {
     pub endpoint: ServiceEndpoint,
     pub ready_timeout: Duration,
     pub poll_interval: Duration,
-    pub log_path: PathBuf,
 }
 
 impl LauncherConfig {
     pub fn from_current_executable(current_executable: &Path) -> Result<Self> {
         let service_executable = find_service_executable(current_executable)?;
+        Self::from_service_executable(service_executable)
+    }
+
+    fn from_service_executable(service_executable: PathBuf) -> Result<Self> {
         let service_working_directory = service_executable
-            .parent()
-            .map(Path::to_path_buf)
-            .unwrap_or_else(|| PathBuf::from("."));
-        let launcher_directory = current_executable
             .parent()
             .map(Path::to_path_buf)
             .unwrap_or_else(|| PathBuf::from("."));
@@ -108,7 +116,6 @@ impl LauncherConfig {
             endpoint: ServiceEndpoint::from_environment()?,
             ready_timeout: Duration::from_secs(timeout_seconds),
             poll_interval: READY_POLL_INTERVAL,
-            log_path: launcher_directory.join("n2-word-service-launcher.log"),
         })
     }
 }
@@ -116,7 +123,8 @@ impl LauncherConfig {
 /// Run the one-click workflow used by `Start N2 Vocabulary.exe`.
 pub fn run() -> Result<()> {
     let current_executable = env::current_exe().context("find the launcher executable path")?;
-    let config = LauncherConfig::from_current_executable(&current_executable)?;
+    let service_executable = ensure_latest_builds(&current_executable)?;
+    let config = LauncherConfig::from_service_executable(service_executable)?;
 
     println!("N2 Vocabulary launcher");
     println!("  service: {}", config.service_executable.display());
@@ -153,21 +161,341 @@ pub fn run() -> Result<()> {
         ) {
             stop_child(&mut child);
             return Err(error).with_context(|| {
-                format!(
-                    "WordService did not become ready; inspect {}",
-                    config.log_path.display()
-                )
+                "WordService did not become ready; inspect the backend output above".to_string()
             });
         }
-        // Dropping the handle does not terminate the Windows child process.
-        // WordService intentionally stays alive so later clicks can reuse it.
-        drop(child);
+
+        open_browser(&config.endpoint.browser_url())
+            .context("open the React study wall in the default browser")?;
+        println!("Browser opened.");
+        println!("WordService is running in this terminal. Press Ctrl+C to stop it.");
+
+        let status = child.wait().context("wait for WordService to stop")?;
+        if !status.success() {
+            bail!("WordService stopped with status {status}");
+        }
+        println!("WordService stopped.");
+        return Ok(());
     }
 
     open_browser(&config.endpoint.browser_url())
         .context("open the React study wall in the default browser")?;
-    println!("Browser opened.");
+    println!("Browser opened using the existing WordService process.");
+    println!(concat!(
+        "This launcher did not start that process, so Ctrl+C here cannot stop it; ",
+        "stop the process from the terminal that owns it before restarting."
+    ));
     Ok(())
+}
+
+/// Build only the stale frontend/backend inputs and return a runnable backend
+/// copy. The launcher itself is not rebuilt here: Windows keeps the currently
+/// running launcher executable locked, while the backend is copied to a
+/// fingerprinted directory after Cargo finishes compiling it.
+fn ensure_latest_builds(launcher_executable: &Path) -> Result<PathBuf> {
+    let project_root = find_project_root(launcher_executable)?;
+    let word_service_directory = project_root.join("wordService");
+
+    ensure_latest_frontend(&word_service_directory)?;
+
+    let backend_inputs = backend_input_files(&word_service_directory)?;
+    let backend_fingerprint = fingerprint_files(&project_root, &backend_inputs)?;
+    let runtime_executable = word_service_directory
+        .join("target")
+        .join(RUNTIME_BUILD_DIRECTORY_NAME)
+        .join(&backend_fingerprint)
+        .join(SERVICE_EXECUTABLE_NAME);
+
+    if runtime_executable.is_file() {
+        println!("Backend is already built for the current Rust source.");
+        return Ok(runtime_executable);
+    }
+
+    let distribution_executable = word_service_directory
+        .join("target")
+        .join("launcher-release")
+        .join("release")
+        .join(SERVICE_EXECUTABLE_NAME);
+    let backend_is_current = distribution_executable.is_file()
+        && output_is_at_least_as_new_as_inputs(&distribution_executable, &backend_inputs)?;
+
+    let built_executable = if backend_is_current {
+        println!("Backend release binary is current; preparing a runnable copy.");
+        distribution_executable
+    } else {
+        println!("Backend source is newer than its release binary; building WordService...");
+        build_backend(&project_root, &word_service_directory)?
+    };
+
+    let runtime_directory = runtime_executable
+        .parent()
+        .context("fingerprinted backend path should have a parent directory")?;
+    fs::create_dir_all(runtime_directory)
+        .with_context(|| format!("create runtime directory {}", runtime_directory.display()))?;
+    fs::copy(&built_executable, &runtime_executable).with_context(|| {
+        format!(
+            "copy backend {} to {}",
+            built_executable.display(),
+            runtime_executable.display()
+        )
+    })?;
+    println!("Prepared {}", runtime_executable.display());
+    Ok(runtime_executable)
+}
+
+fn ensure_latest_frontend(word_service_directory: &Path) -> Result<()> {
+    let frontend_directory = word_service_directory.join("frontend");
+    let output_directory = word_service_directory.join("static").join("react-rail");
+    let input_files = frontend_input_files(&frontend_directory)?;
+    let project_root = word_service_directory
+        .parent()
+        .context("wordService should have a project root")?;
+    let fingerprint = fingerprint_files(project_root, &input_files)?;
+    let stamp_path = word_service_directory.join(FRONTEND_BUILD_STAMP_NAME);
+    let stamp_matches = fs::read_to_string(&stamp_path)
+        .map(|stamp| stamp.trim() == fingerprint)
+        .unwrap_or(false);
+    let output_is_complete =
+        output_directory.join("index.html").is_file() && output_directory.join("assets").is_dir();
+    let output_is_current = output_is_complete
+        && output_is_at_least_as_new_as_inputs(&output_directory.join("index.html"), &input_files)?;
+
+    if stamp_matches && output_is_complete {
+        println!("Frontend is already built for the current source.");
+        return Ok(());
+    }
+    if output_is_current {
+        // This imports the state of a frontend build made by the standalone
+        // build script into the launcher's content-addressed bookkeeping.
+        write_build_stamp(&stamp_path, &fingerprint)?;
+        println!("Frontend build output is current.");
+        return Ok(());
+    }
+
+    if !frontend_directory.join("node_modules").is_dir() {
+        run_checked_command(
+            COREPACK_COMMAND,
+            &["pnpm", "install", "--frozen-lockfile"],
+            &frontend_directory,
+            "install frontend dependencies",
+        )?;
+    }
+    run_checked_command(
+        COREPACK_COMMAND,
+        &["pnpm", "run", "build"],
+        &frontend_directory,
+        "build frontend assets",
+    )?;
+    if !output_directory.join("index.html").is_file() {
+        bail!(
+            "frontend build completed but {} was not created",
+            output_directory.join("index.html").display()
+        );
+    }
+    write_build_stamp(&stamp_path, &fingerprint)?;
+    println!("Frontend build completed.");
+    Ok(())
+}
+
+fn build_backend(project_root: &Path, word_service_directory: &Path) -> Result<PathBuf> {
+    let manifest_path = word_service_directory.join("Cargo.toml");
+    let target_directory = word_service_directory.join("target").join("launcher-build");
+    run_checked_command(
+        "cargo",
+        &[
+            "build",
+            "--release",
+            "--target-dir",
+            target_directory
+                .to_str()
+                .context("backend target path should be valid UTF-8")?,
+            "--manifest-path",
+            manifest_path
+                .to_str()
+                .context("Cargo manifest path should be valid UTF-8")?,
+            "--bin",
+            "n2-word-service-rust",
+        ],
+        project_root,
+        "build WordService backend",
+    )?;
+
+    let executable = target_directory
+        .join("release")
+        .join(SERVICE_EXECUTABLE_NAME);
+    if !executable.is_file() {
+        bail!(
+            "Cargo completed but {} was not created",
+            executable.display()
+        );
+    }
+    Ok(executable)
+}
+
+fn run_checked_command(
+    program: &str,
+    arguments: &[&str],
+    working_directory: &Path,
+    label: &str,
+) -> Result<()> {
+    println!("==> {label}");
+    let status = Command::new(program)
+        .args(arguments)
+        .current_dir(working_directory)
+        .status()
+        .with_context(|| format!("start {label} ({program})"))?;
+    if !status.success() {
+        bail!("{label} failed with status {status}");
+    }
+    Ok(())
+}
+
+fn find_project_root(launcher_executable: &Path) -> Result<PathBuf> {
+    if let Some(configured_root) = env::var_os("N2_WORD_SERVICE_REPO_ROOT") {
+        let root = PathBuf::from(configured_root);
+        if root.join("wordService").join("Cargo.toml").is_file() {
+            return Ok(root);
+        }
+        bail!(
+            "N2_WORD_SERVICE_REPO_ROOT does not contain wordService/Cargo.toml: {}",
+            root.display()
+        );
+    }
+
+    let launcher_directory = launcher_executable
+        .parent()
+        .unwrap_or_else(|| Path::new("."));
+    let candidates = [
+        launcher_directory.to_path_buf(),
+        launcher_directory
+            .parent()
+            .map(Path::to_path_buf)
+            .unwrap_or_else(|| PathBuf::from(".")),
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .map(Path::to_path_buf)
+            .unwrap_or_else(|| PathBuf::from(".")),
+    ];
+    candidates
+        .into_iter()
+        .find(|root| root.join("wordService").join("Cargo.toml").is_file())
+        .ok_or_else(|| {
+            anyhow::anyhow!(
+                "could not find the N2Vocabulary source tree; set N2_WORD_SERVICE_REPO_ROOT"
+            )
+        })
+}
+
+fn frontend_input_files(frontend_directory: &Path) -> Result<Vec<PathBuf>> {
+    let mut files = Vec::new();
+    collect_files(&frontend_directory.join("src"), &mut files)?;
+    let public_directory = frontend_directory.join("public");
+    if public_directory.is_dir() {
+        collect_files(&public_directory, &mut files)?;
+    }
+    for name in [
+        "index.html",
+        "package.json",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml",
+        "tsconfig.json",
+        "vite.config.mjs",
+    ] {
+        let path = frontend_directory.join(name);
+        if !path.is_file() {
+            bail!("frontend build input is missing: {}", path.display());
+        }
+        files.push(path);
+    }
+    files.sort();
+    Ok(files)
+}
+
+fn backend_input_files(word_service_directory: &Path) -> Result<Vec<PathBuf>> {
+    let mut files = Vec::new();
+    collect_files(&word_service_directory.join("src"), &mut files)?;
+    for path in [
+        word_service_directory.join("Cargo.toml"),
+        word_service_directory.join("Cargo.lock"),
+        word_service_directory.join("build.rs"),
+        word_service_directory
+            .join("assets")
+            .join("n2-vocabulary.ico"),
+    ] {
+        if !path.is_file() {
+            bail!("backend build input is missing: {}", path.display());
+        }
+        files.push(path);
+    }
+    files.sort();
+    Ok(files)
+}
+
+fn collect_files(directory: &Path, files: &mut Vec<PathBuf>) -> Result<()> {
+    if !directory.is_dir() {
+        bail!("build input directory is missing: {}", directory.display());
+    }
+    for entry in fs::read_dir(directory)
+        .with_context(|| format!("read build input directory {}", directory.display()))?
+    {
+        let path = entry
+            .with_context(|| format!("read entry in {}", directory.display()))?
+            .path();
+        if path.is_dir() {
+            collect_files(&path, files)?;
+        } else if path.is_file() {
+            files.push(path);
+        }
+    }
+    Ok(())
+}
+
+fn fingerprint_files(project_root: &Path, files: &[PathBuf]) -> Result<String> {
+    let mut hasher = Sha256::new();
+    for path in files {
+        let relative_path = path
+            .strip_prefix(project_root)
+            .unwrap_or(path)
+            .to_string_lossy()
+            .replace('\\', "/");
+        hasher.update(relative_path.as_bytes());
+        hasher.update([0]);
+        hasher.update(
+            fs::read(path).with_context(|| format!("read build input {}", path.display()))?,
+        );
+        hasher.update([0]);
+    }
+    Ok(hasher
+        .finalize()
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect())
+}
+
+fn write_build_stamp(path: &Path, fingerprint: &str) -> Result<()> {
+    fs::write(path, format!("{fingerprint}\n"))
+        .with_context(|| format!("write frontend build stamp {}", path.display()))
+}
+
+fn output_is_at_least_as_new_as_inputs(output: &Path, inputs: &[PathBuf]) -> Result<bool> {
+    let output_modified = if output.is_file() {
+        fs::metadata(output)
+            .with_context(|| format!("read output metadata {}", output.display()))?
+            .modified()
+            .with_context(|| format!("read output timestamp {}", output.display()))?
+    } else {
+        return Ok(false);
+    };
+    for input in inputs {
+        let input_modified = fs::metadata(input)
+            .with_context(|| format!("read build input metadata {}", input.display()))?
+            .modified()
+            .with_context(|| format!("read build input timestamp {}", input.display()))?;
+        if input_modified > output_modified {
+            return Ok(false);
+        }
+    }
+    Ok(true)
 }
 
 /// Find the service executable in both the repository build layout and the
@@ -344,23 +672,14 @@ pub fn wait_for_service(
 }
 
 fn spawn_service(config: &LauncherConfig) -> Result<Child> {
-    let stdout = OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(&config.log_path)
-        .with_context(|| format!("open launcher log {}", config.log_path.display()))?;
-    let stderr = stdout
-        .try_clone()
-        .context("duplicate launcher log handle for stderr")?;
-
     let mut command = Command::new(&config.service_executable);
     command
         .current_dir(&config.service_working_directory)
-        .stdin(Stdio::null())
-        .stdout(Stdio::from(stdout))
-        .stderr(Stdio::from(stderr));
-    #[cfg(windows)]
-    command.creation_flags(CREATE_NO_WINDOW);
+        // Inherit the launcher's console. This makes backend diagnostics
+        // visible and lets Ctrl+C reach the foreground service session.
+        .stdin(Stdio::inherit())
+        .stdout(Stdio::inherit())
+        .stderr(Stdio::inherit());
 
     command.spawn().with_context(|| {
         format!(

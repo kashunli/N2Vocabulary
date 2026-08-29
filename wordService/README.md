@@ -148,18 +148,28 @@ To build the compiled service and create the friendly project-root executable
 .\tools\build_start_n2_vocabulary.ps1
 ```
 
-The launcher checks whether port `8767` is already serving WordService. If it
-is not, it starts the release service, waits for `HEAD /api/summary` to return
-HTTP 200, and opens the React study wall at `http://127.0.0.1:8767/`. The
-service remains a separate process and is reused by later clicks.
+When `Start N2 Vocabulary.exe` is double-clicked, the launcher checks the
+frontend source against `wordService\static\react-rail` and checks the Rust
+backend source against its runnable release copy. It runs the frontend build
+and/or backend release build only when the corresponding output is missing or
+stale. The launcher keeps backend copies under a source fingerprint so a
+currently running Windows executable never has to be overwritten.
 
-Startup output from the service is appended to
-`n2-word-service-launcher.log` beside the launcher. The build script uses
-`wordService\target\launcher-release\release` so a currently running service
-does not block a rebuild; the launcher also recognizes the normal
-`wordService\target\release` layout and a `wordService` subdirectory for a
-simple copied distribution. You can override the executable path with
-`N2_WORD_SERVICE_EXECUTABLE` when packaging it elsewhere.
+After the build check, the launcher starts WordService attached to the same
+console, waits for `HEAD /api/summary` to return HTTP 200, and opens the React
+study wall at `http://127.0.0.1:8767/`. The terminal remains open while the
+service is running; press `Ctrl+C` in that terminal to stop the service. If
+port `8767` is already owned by another WordService process, the launcher
+reuses that process and explains that its terminal cannot control the existing
+process.
+
+The standalone build script still uses
+`wordService\target\launcher-release\release` for its release artifacts. The
+launcher also recognizes the normal `wordService\target\release` layout and a
+`wordService` subdirectory for a simple copied distribution. You can override
+the executable path with `N2_WORD_SERVICE_EXECUTABLE` when packaging it
+elsewhere. For a copied launcher that still has access to the source tree, set
+`N2_WORD_SERVICE_REPO_ROOT` to the repository root.
 
 The Windows executable embeds the product icon from
 `wordService\assets\n2-vocabulary.ico`. The favicon, ICO, and Android launcher
@@ -372,7 +382,7 @@ complete and unambiguous.
 ```powershell
 cd wordService
 cargo fmt --check
-cargo test
+cargo test --lib
 cd frontend
 corepack pnpm install --frozen-lockfile
 pnpm check

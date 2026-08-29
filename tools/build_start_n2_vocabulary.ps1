@@ -55,7 +55,10 @@ try {
     Invoke-CheckedCommand 'Run strict Rust linting' {
         cargo clippy --manifest-path $manifestPath --all-targets --all-features -- -D warnings
     }
-    Invoke-CheckedCommand 'Run Rust tests' { cargo test --manifest-path $manifestPath }
+    # The package's binary test target executes main(), which starts the HTTP
+    # server and can lock target\debug\n2-word-service-rust.exe on Windows.
+    # Library tests cover the service modules without starting a server.
+    Invoke-CheckedCommand 'Run Rust library tests' { cargo test --manifest-path $manifestPath --lib }
 
     if ($RegenerateIcon -or -not (Test-Path -LiteralPath $iconPath -PathType Leaf)) {
         & python $iconGenerator
