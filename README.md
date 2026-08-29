@@ -39,6 +39,37 @@ Keep current workflows boring and explicit. Put reusable current code in `skills
 
 This repo is AI-operated first: prefer small concrete skill folders with `SKILL.md` plus nearby scripts, because future work will usually be performed by an AI agent reading the repo rather than by a human remembering command history.
 
+## Local verification gate
+
+The GitHub Actions verification gate is also available locally. After cloning
+the repository, install the versioned Git hook once from PowerShell:
+
+```powershell
+.\tools\install-git-hooks.ps1
+```
+
+Before a commit, the hook checks the staged paths. Frontend changes run locked
+dependency installation, tests, TypeScript type-checking, and the Vite build.
+Rust changes run formatting, strict Clippy, and tests. If the frontend build
+changes `wordService/static/react-rail`, the generated files must be reviewed
+and staged before the commit can proceed.
+
+The complete gate can be run explicitly at any time:
+
+```powershell
+.\tools\verify.ps1 -Scope All
+```
+
+Focused runs are available while developing:
+
+```powershell
+.\tools\verify.ps1 -Scope Frontend
+.\tools\verify.ps1 -Scope Rust
+```
+
+The hook is a local guard, so it can technically be bypassed with
+`git commit --no-verify`; GitHub Actions remains the required final check.
+
 ## Canonical Vocabulary Flow
 
 The study service and Anki builders do not read a separate JSON vocabulary file
