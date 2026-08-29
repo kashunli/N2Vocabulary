@@ -14,7 +14,13 @@ target="$DEPLOY_USER@$DEPLOY_HOST"
 
 umask 077
 printf '%s\n' "$DEPLOY_SSH_PRIVATE_KEY" > "$key_file"
-printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > "$known_hosts_file"
+if [[ -n "${DEPLOY_KNOWN_HOSTS:-}" ]]; then
+  printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > "$known_hosts_file"
+else
+  echo 'VPS_KNOWN_HOSTS is not configured; discovering the SSH host key for this run.'
+  ssh-keyscan -T 10 -H -p "$DEPLOY_PORT" "$DEPLOY_HOST" > "$known_hosts_file"
+  [[ -s "$known_hosts_file" ]] || { echo 'Could not discover the VPS SSH host key' >&2; exit 1; }
+fi
 ssh_opts=(-i "$key_file" -p "$DEPLOY_PORT" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$known_hosts_file")
 scp_opts=(-i "$key_file" -P "$DEPLOY_PORT" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$known_hosts_file")
 

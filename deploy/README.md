@@ -81,32 +81,28 @@ Use `sudo visudo -cf /etc/sudoers.d/n2-word-service-deploy` to validate the
 syntax. If the SSH account differs from `n2vocabulary`, replace the username
 in this rule.
 
-## 4. Configure the GitHub `production` environment
+## 4. Configure the GitHub deployment settings
 
-On the repository, open `Settings > Environments`, create an environment named
-`production`, and add these environment variables:
+Add these repository secrets under `Settings > Secrets and variables > Actions`:
 
-| Variable | Example | Purpose |
+| Secret | Example | Purpose |
 | --- | --- | --- |
-| `DEPLOY_HOST` | `vocabulary.example.com` | VPS hostname or IP |
-| `DEPLOY_USER` | `n2vocabulary` | SSH deployment account |
-| `DEPLOY_PORT` | `22` | Optional; defaults to `22` |
-| `DEPLOY_ROOT` | `/opt/n2-vocabulary` | Optional; defaults to this path |
-| `DEPLOY_SERVICE` | `n2-word-service.service` | Optional; defaults to this unit |
-| `DEPLOY_HEALTHCHECK_URL` | `http://127.0.0.1:8767/api/summary` | Optional local health URL |
-| `DEPLOY_URL` | `https://vocabulary.example.com/` | Optional Actions environment link |
+| `VPS_HOST` | `vocabulary.example.com` | VPS hostname or IP |
+| `VPS_USER` | `n2vocabulary` | SSH deployment account |
+| `VPS_PORT` | `22` | Optional; defaults to `22` |
+| `VPS_SSH_KEY` | An Ed25519 private key | SSH authentication; its public key must be in `authorized_keys` |
+| `VPS_KNOWN_HOSTS` | Verified `ssh-keyscan -H -p <port> <host>` output | Optional but recommended host-key pinning |
 
-Add these environment secrets:
-
-| Secret | Value |
-| --- | --- |
-| `DEPLOY_SSH_PRIVATE_KEY` | The private Ed25519 key whose public key is in the deployment account's `authorized_keys` |
-| `DEPLOY_KNOWN_HOSTS` | The verified `ssh-keyscan -H <host>` output for the VPS |
+Optional non-sensitive overrides such as `DEPLOY_ROOT`, `DEPLOY_SERVICE`,
+`DEPLOY_HEALTHCHECK_URL`, and `DEPLOY_URL` can be added as repository or
+`production` environment variables. When `VPS_KNOWN_HOSTS` is absent, the
+workflow discovers the host key for that run and then enables strict host-key
+checking. Pinning the verified key in the secret protects against a first-use
+man-in-the-middle attack and is preferred for production.
 
 Do not disable host-key checking or put a private key in the repository. GitHub
-secrets are passed to the job through the `secrets` context, while the
-non-sensitive destination settings are environment variables. GitHub's
-environment can additionally require approval before a production deployment.
+secrets are passed to the job through the `secrets` context. GitHub's production
+environment can additionally require approval before a deployment.
 
 ## 5. Branch and first run
 
