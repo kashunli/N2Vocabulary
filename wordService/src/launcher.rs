@@ -421,7 +421,7 @@ fn open_browser(url: &str) -> Result<()> {
             .arg(url)
             .spawn()
             .context("run Linux default-browser handler")?;
-        return Ok(());
+        Ok(())
     }
 
     #[cfg(not(any(windows, target_os = "macos", unix)))]
