@@ -63,11 +63,16 @@ fi
 # A throttled or unavailable VPS should fail this job promptly instead of
 # leaving an SSH/SCP process running until GitHub Actions cancels the job.
 ssh_opts=(-i "$key_file" -p "$DEPLOY_PORT" -o BatchMode=yes -o IdentitiesOnly=yes -o ConnectTimeout=15 -o ConnectionAttempts=1 -o ServerAliveInterval=15 -o ServerAliveCountMax=4 -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$known_hosts_file")
-scp_opts=(-i "$key_file" -P "$DEPLOY_PORT" -o BatchMode=yes -o IdentitiesOnly=yes -o ConnectTimeout=15 -o ConnectionAttempts=1 -o ServerAliveInterval=15 -o ServerAliveCountMax=4 -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$known_hosts_file")
+sftp_opts=(-i "$key_file" -P "$DEPLOY_PORT" -o BatchMode=yes -o IdentitiesOnly=yes -o ConnectTimeout=15 -o ConnectionAttempts=1 -o ServerAliveInterval=15 -o ServerAliveCountMax=4 -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$known_hosts_file")
 
 ssh "${ssh_opts[@]}" "$target" "install -d -m 0755 '$DEPLOY_ROOT/incoming' '$DEPLOY_ROOT/releases'"
-scp "${scp_opts[@]}" "$ARCHIVE" "$target:$remote_archive"
-scp "${scp_opts[@]}" "$CHECKSUM" "$target:$remote_checksum"
+# `reput` resumes a partial SFTP upload. Large release archives should not
+# restart from byte zero if a transient VPS or local-network interruption ends
+# a deployment command. The remote SHA-256 check below remains authoritative.
+{
+  printf 'reput %q %q\n' "$ARCHIVE" "$remote_archive"
+  printf 'put %q %q\n' "$CHECKSUM" "$remote_checksum"
+} | sftp "${sftp_opts[@]}" -b - "$target"
 
 quoted_root=$(printf '%q' "$DEPLOY_ROOT")
 quoted_sha=$(printf '%q' "$release_id")
