@@ -51,6 +51,24 @@ The three playback roles and active-card mark controls are readable at full-view
 
 final result: passed
 
+## Latest follow-up - remove remaining scroll-top inset
+
+### Source visual truth
+
+- User spacing reference: `C:/Users/lochl/AppData/Local/Temp/codex-clipboard-79f124ea-0452-488c-ae02-00ed8c1d7c01.png` (1122 x 252 px).
+
+### Implementation evidence
+
+- Previous rendered study-wall comparison before this final inset removal: `C:/Users/lochl/.codex/visualizations/2026/08/29/01a04bb2-4a29-7380-af77-728190d832d7/n2vocab-spacing-after.png` (1280 x 900 px, CSS viewport 1280 x 900, density 1).
+- The final change sets the scroll container top padding, current-panel top padding, scroll-padding, and mobile current-panel top padding to `0`.
+
+### Findings
+
+- The requested remaining top clearance is removed in source CSS, including the scroll-padding that affected bringing the word to the top.
+- A fresh raster capture after the final CSS-only change was blocked by the local headless browser renderer: it exited successfully but did not emit a screenshot. The preceding rendered capture is therefore not a pixel-perfect record of this last inset-only revision.
+
+final result: blocked
+
 ## Targeted follow-up - RepeatOnce, editable pause, and study spacing
 
 ### Source visual truth
@@ -93,3 +111,9 @@ final result: passed
 - P3 follow-up: none required.
 
 final result: passed
+
+## Latest follow-up status
+
+- The implementation and `pnpm check` passed, but the last inset-only visual capture remained unavailable because the local headless renderer exited without emitting a file. The previous rendered capture and the final CSS diff remain available for inspection.
+
+final result: blocked

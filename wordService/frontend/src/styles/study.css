@@ -4,7 +4,7 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
-  padding: 10px 0 8px;
+  padding: 0 0 8px;
   scrollbar-color: var(--line) transparent;
 }
 .react-content-scroll.is-blurred .react-list,
@@ -70,8 +70,8 @@
   overflow: auto;
   display: flex;
   flex-direction: column;
-  padding: clamp(8px, 1.2vw, 16px) clamp(20px, 5vw, 72px) 56px;
-  scroll-padding-block: clamp(8px, 1.2vw, 16px);
+  padding: 0 clamp(20px, 5vw, 72px) 56px;
+  scroll-padding-block: 0;
 }
 
 .react-word-summary {
