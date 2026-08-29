@@ -11,7 +11,6 @@ use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
 
 mod audio_export;
-mod audio_generation;
 mod catalog;
 mod marks;
 mod media;

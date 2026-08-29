@@ -11,5 +11,4 @@ pub mod http;
 pub mod launcher;
 pub mod models;
 pub mod repository;
-pub mod tts;
 pub mod user_store;

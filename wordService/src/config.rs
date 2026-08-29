@@ -3,14 +3,6 @@ use std::env;
 use std::path::PathBuf;
 use url::Url;
 
-// These defaults are part of the local workflow contract. They point generated
-// word and sentence audio into the served `clips/` tree so the browser can play
-// each file immediately after the backend updates SQLite.
-const DEFAULT_TTS_DIR: &str = "clips/generated_sentences/edge_tts";
-const DEFAULT_TTS_VOICE: &str = "ja-JP-KeitaNeural";
-const DEFAULT_TTS_RATE: &str = "-10%";
-const DEFAULT_TTS_PITCH: &str = "+0Hz";
-
 /// Runtime configuration after environment variables have been resolved.
 ///
 /// Cloning this struct is cheap enough for the tiny HTTP server because it only
@@ -31,7 +23,6 @@ pub struct AppConfig {
     /// Exact browser origin allowed to submit same-origin mutations.
     pub origin: String,
     pub book_code: String,
-    pub tts: TtsConfig,
 }
 
 /// Runtime profiles deliberately separate the trusted desktop workflow from a
@@ -56,15 +47,6 @@ impl RuntimeMode {
             value => bail!("N2_WORD_SERVICE_MODE must be either local or public, got {value:?}"),
         }
     }
-}
-
-/// Microsoft Edge TTS options used by the single backend worker.
-#[derive(Clone, Debug)]
-pub struct TtsConfig {
-    pub voice: String,
-    pub rate: String,
-    pub pitch: String,
-    pub generated_dir: String,
 }
 
 impl AppConfig {
@@ -125,15 +107,6 @@ impl AppConfig {
             mode,
             origin,
             book_code: env::var("N2_WORD_SERVICE_BOOK").unwrap_or_else(|_| "N2".to_string()),
-            tts: TtsConfig {
-                voice: env::var("N2_WORD_SERVICE_TTS_VOICE")
-                    .unwrap_or_else(|_| DEFAULT_TTS_VOICE.to_string()),
-                rate: env::var("N2_WORD_SERVICE_TTS_RATE")
-                    .unwrap_or_else(|_| DEFAULT_TTS_RATE.to_string()),
-                pitch: DEFAULT_TTS_PITCH.to_string(),
-                generated_dir: env::var("N2_WORD_SERVICE_TTS_DIR")
-                    .unwrap_or_else(|_| DEFAULT_TTS_DIR.to_string()),
-            },
         })
     }
 }

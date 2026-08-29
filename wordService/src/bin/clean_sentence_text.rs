@@ -242,7 +242,7 @@ fn backup_database(db_path: &Path) -> Result<()> {
 
 fn print_help() {
     println!(
-        "Clean entry_examples.text for natural sentence TTS.\n\
+        "Clean entry_examples.text into plain learner sentences.\n\
          \n\
          Usage:\n\
            cargo run --bin clean_sentence_text -- [--db data/n2vocab.sqlite] [--apply]\n\
@@ -250,7 +250,7 @@ fn print_help() {
          Without --apply this prints a preview only. With --apply it creates a\n\
          timestamped SQLite backup, updates entry_examples.text, deletes\n\
          marker-only rows, reindexes positions per entry, syncs entries.sentence\n\
-         from the main-sentence example row, and clears generated Edge TTS\n\
+         from the main-sentence example row, and clears stale generated-audio\n\
          links for rows whose text changed."
     );
 }

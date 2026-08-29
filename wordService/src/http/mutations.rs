@@ -1,19 +1,12 @@
 use super::response::{parse_local_url, query_map, send_json};
 use crate::audio_review::{AudioReviewStore, AudioReviewUpdate};
-use crate::config::AppConfig;
 use crate::repository::WordRepository;
-use crate::tts::TtsService;
 use anyhow::Result;
 use serde_json::json;
 use std::collections::HashMap;
 use tiny_http::{Request, StatusCode};
 
-pub(super) fn handle_post(
-    request: Request,
-    config: AppConfig,
-    repository: WordRepository,
-    tts_service: TtsService,
-) -> Result<()> {
+pub(super) fn handle_post(request: Request, repository: WordRepository) -> Result<()> {
     let parsed = parse_local_url(request.url())?;
     let path = parsed.path().trim_end_matches('/').to_string();
     let params = query_map(&parsed);
@@ -53,97 +46,13 @@ pub(super) fn handle_post(
         }
     }
 
-    let Some(rest) = path.strip_prefix("/api/entries/") else {
+    let Some(_rest) = path.strip_prefix("/api/entries/") else {
         return send_json(request, StatusCode(404), &json!({"error": "not found"}));
     };
-    // Expected shapes:
-    // /api/entries/{entry_id}/audio
-    // /api/entries/{entry_id}/examples/{position}/audio
-    // Splitting after the fixed prefix keeps parsing straightforward and makes
-    // invalid routes return 404 instead of accidentally matching a partial path.
-    let parts = rest.split('/').collect::<Vec<_>>();
-    if parts.len() == 2 && parts[1] == "audio" {
-        let entry_id = match parts[0].parse::<i64>() {
-            Ok(value) => value,
-            Err(_) => {
-                return send_json(
-                    request,
-                    StatusCode(400),
-                    &json!({"error": "invalid entry id"}),
-                );
-            }
-        };
-        return match repository.ensure_word_audio(entry_id, &config.tts.generated_dir, |word| {
-            tts_service.synthesize_sentence(word)
-        }) {
-            Ok(payload) => send_json(request, StatusCode(200), &payload),
-            Err(error)
-                if error.to_string().contains("unknown entry")
-                    || error.to_string().contains("empty word") =>
-            {
-                send_json(
-                    request,
-                    StatusCode(400),
-                    &json!({"error": error.to_string()}),
-                )
-            }
-            Err(error) => send_json(
-                request,
-                StatusCode(500),
-                &json!({"error": error.to_string()}),
-            ),
-        };
-    }
-    if parts.len() != 4 || parts[1] != "examples" || parts[3] != "audio" {
-        return send_json(request, StatusCode(404), &json!({"error": "not found"}));
-    }
-    let entry_id = match parts[0].parse::<i64>() {
-        Ok(value) => value,
-        Err(_) => {
-            return send_json(
-                request,
-                StatusCode(400),
-                &json!({"error": "invalid entry id"}),
-            );
-        }
-    };
-    let position = match parts[2].parse::<i64>() {
-        Ok(value) => value,
-        Err(_) => {
-            return send_json(
-                request,
-                StatusCode(400),
-                &json!({"error": "invalid sentence index"}),
-            );
-        }
-    };
-
-    let result = repository.ensure_example_audio(
-        entry_id,
-        position,
-        &config.tts.generated_dir,
-        |sentence| tts_service.synthesize_sentence(sentence),
-    );
-    // The repository returns domain errors as anyhow messages. Mapping the
-    // known ones here keeps HTTP status choices in the HTTP layer.
-    match result {
-        Ok(payload) => send_json(request, StatusCode(200), &payload),
-        Err(error) if error.to_string().contains("unknown example") => send_json(
-            request,
-            StatusCode(404),
-            &json!({"error": "unknown example"}),
-        ),
-        Err(error) if error.to_string().contains("empty sentence") => send_json(
-            request,
-            StatusCode(400),
-            &json!({"error": "empty sentence"}),
-        ),
-        Err(error) => send_json(
-            request,
-            StatusCode(500),
-            &json!({"error": error.to_string()}),
-        ),
-    }
+    // Entry-audio POST routes used to synthesize and persist Microsoft Edge
+    // TTS audio. Playback now serves only previously published clip URLs, so a
+    // click can never create or overwrite learner audio.
+    send_json(request, StatusCode(404), &json!({"error": "not found"}))
 }
 
 pub(super) fn handle_put(mut request: Request, audio_review: AudioReviewStore) -> Result<()> {

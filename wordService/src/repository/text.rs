@@ -1,23 +1,11 @@
-pub(super) fn word_text_for_tts(word: &str, reading: Option<&str>) -> String {
-    let display = word.trim();
-    let reading = reading.unwrap_or("").trim();
-    if display.is_empty()
-        || display.is_ascii()
-        || display.chars().any(|ch| ch.is_ascii_alphabetic())
-    {
-        return reading.to_string();
-    }
-    display.to_string()
-}
-
-/// Normalize OCR/study notation into a sentence Edge TTS can read naturally.
+/// Normalize OCR/study notation into a plain learner sentence.
 ///
 /// The database often keeps textbook shorthand such as `｛な／の｝`, leading
 /// sense indexes like `②`, and furigana in parentheses. Those are useful for a
-/// human reader, but the TTS request should contain one plain pronounceable
+/// human reader, but the normalized form should remain one plain pronounceable
 /// sentence. The rule is intentionally conservative and local: when the book
-/// offers alternatives, choose the first option instead of trying to invent a
-/// new sentence.
+/// offers alternatives, choose the first option instead of trying to invent
+/// a new sentence.
 pub fn clean_sentence_text_for_tts(raw: &str) -> String {
     let mut text = raw
         .replace('｛', "{")

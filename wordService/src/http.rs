@@ -1,7 +1,6 @@
 use crate::audio_review::AudioReviewStore;
 use crate::config::AppConfig;
 use crate::repository::WordRepository;
-use crate::tts::TtsService;
 use crate::user_store::UserStore;
 use anyhow::{Result, anyhow};
 use serde_json::json;
@@ -20,8 +19,8 @@ use response::send_json;
 /// Start the local HTTP server.
 ///
 /// This service uses `tiny_http`, which is intentionally simple and blocking.
-/// Each accepted request gets a short-lived thread so slow file reads or TTS
-/// queue waits do not stop the server from accepting the next browser request.
+/// Each accepted request gets a short-lived thread so slow file reads do not
+/// stop the server from accepting the next browser request.
 pub fn run_server(config: AppConfig) -> Result<()> {
     let repository = WordRepository::new(
         config.db_path.clone(),
@@ -36,7 +35,6 @@ pub fn run_server(config: AppConfig) -> Result<()> {
         &config.review_evidence_path,
         &config.review_seed_path,
     )?;
-    let tts_service = TtsService::new(&config.tts)?;
 
     let address = format!("{}:{}", config.host, config.port);
     let server = Server::http(&address).map_err(|error| anyhow!(error.to_string()))?;
@@ -52,19 +50,13 @@ pub fn run_server(config: AppConfig) -> Result<()> {
     println!("  clips: {}", config.clips_dir.display());
     println!("  audio review db: {}", config.review_db_path.display());
     println!("  users db: {}", config.users_db_path.display());
-    println!(
-        "  generated word/sentence audio: {}",
-        config.tts.generated_dir
-    );
 
     for request in server.incoming_requests() {
         // The shared state types are cheap handles:
         // - AppConfig clones strings/paths.
         // - WordRepository clones an Arc-backed write lock plus paths.
-        // - TtsService clones the queue sender, not the worker.
         let request_config = config.clone();
         let request_repository = repository.clone();
-        let request_tts_service = tts_service.clone();
         let request_audio_review = audio_review.clone();
         let request_user_store = user_store.clone();
         thread::spawn(move || {
@@ -72,7 +64,6 @@ pub fn run_server(config: AppConfig) -> Result<()> {
                 request,
                 request_config,
                 request_repository,
-                request_tts_service,
                 request_audio_review,
                 request_user_store,
             ) {
@@ -88,7 +79,6 @@ fn handle_request(
     request: Request,
     config: AppConfig,
     repository: WordRepository,
-    tts_service: TtsService,
     audio_review: AudioReviewStore,
     user_store: UserStore,
 ) -> Result<()> {
@@ -145,7 +135,7 @@ fn handle_request(
         Method::Get | Method::Head => {}
         Method::Put => return handle_put(request, audio_review),
         Method::Delete => return handle_delete(request, audio_review),
-        Method::Post => return handle_post(request, config, repository, tts_service),
+        Method::Post => return handle_post(request, repository),
         _ => {
             return send_json(
                 request,

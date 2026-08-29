@@ -15,7 +15,6 @@ The code is intentionally split into a few small learning-oriented modules:
 - `src/repository.rs` is the SQLite boundary and contains most business logic.
 - `src/http.rs` is the tiny HTTP server and route table.
 - `src/models.rs` contains JSON response structs.
-- `src/tts.rs` owns the single-worker Microsoft Edge TTS queue.
 - `tests/repository_tests.rs` exercises repository behavior with a temporary
   SQLite database.
 
@@ -27,7 +26,6 @@ The code is intentionally split into a few small learning-oriented modules:
 - Frontend assets: `static/`
 - Guest study state: browser localStorage key `n2-word-service:study-state:v1`
 - Account study state: `data/users.sqlite` (or `N2_WORD_SERVICE_USERS_DB`)
-- Generated sentence audio: `../clips/generated_sentences/edge_tts/`
 - Review candidates: `../reviews/vocabulary_audio/n2_all_both_candidates.json`
 - Seeded human decisions: `../reviews/vocabulary_audio/n2_all_both.json`
 - Live review decisions: `data/audio_reviews.sqlite` (separate from the
@@ -191,9 +189,6 @@ Optional environment variables:
 - `N2_WORD_SERVICE_HOST`
 - `N2_WORD_SERVICE_PORT`
 - `N2_WORD_SERVICE_BOOK`
-- `N2_WORD_SERVICE_TTS_VOICE` defaults to `ja-JP-KeitaNeural`
-- `N2_WORD_SERVICE_TTS_RATE` defaults to `-10%`
-- `N2_WORD_SERVICE_TTS_DIR` defaults to `clips/generated_sentences/edge_tts`
 - `N2_WORD_SERVICE_REVIEW_DB`
 - `N2_WORD_SERVICE_REVIEW_EVIDENCE`
 - `N2_WORD_SERVICE_REVIEW_SEED`
@@ -205,8 +200,6 @@ Optional environment variables:
 - `GET /api/entries?unit=1&state=all|known|flagged|unmarked&search=...`
   (`unit` is optional; omit it to search/list all units)
 - `GET /api/entries/<entry_id>`
-- `POST /api/entries/<entry_id>/audio`
-- `POST /api/entries/<entry_id>/examples/<position>/audio`
 - `POST /api/units/<unit_number>/flagged-audio`
 - `GET /audio/<clips/...>`
 
@@ -298,12 +291,6 @@ first initialized. Later browser edits are authoritative in
 `audio_reviews.sqlite`; they never modify canonical vocabulary text or audio.
 Use **Export decisions** before applying changes through the validator/repair
 workflow.
-
-The audio-generation endpoints queue Microsoft Edge TTS jobs so only one remote
-TTS request runs at a time. They store generated MP3s under
-`../clips/generated_sentences/edge_tts/` and write the relative paths back to
-the selected `book_entries.word_clip` or `item_examples.audio_clip`. Clicking a card outside its
-buttons ensures and downloads both the word and main-sentence files.
 
 Every audio URL returned by the API includes `?v=<full-sha256>`, calculated
 from the MP3 bytes. Those exact versioned URLs are served with

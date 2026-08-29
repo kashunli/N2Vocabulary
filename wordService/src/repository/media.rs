@@ -51,13 +51,6 @@ impl WordRepository {
         Some(sha256)
     }
 
-    pub(super) fn forget_audio_version(&self, path: &Path) {
-        self.audio_versions
-            .lock()
-            .expect("audio version cache lock should not be poisoned")
-            .remove(path);
-    }
-
     pub fn resolve_audio_path(&self, request_path: &str) -> Option<PathBuf> {
         let normalized = normalize_clip_path(request_path, false)?;
         // Stored paths begin with `clips/`; clips_dir names that directory, so
