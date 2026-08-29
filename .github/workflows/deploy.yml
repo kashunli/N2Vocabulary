@@ -21,17 +21,29 @@ jobs:
       name: production
       url: ${{ vars.DEPLOY_URL }}
     env:
-      DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
-      DEPLOY_USER: ${{ vars.DEPLOY_USER }}
-      DEPLOY_PORT: ${{ vars.DEPLOY_PORT || '22' }}
+      DEPLOY_HOST: ${{ secrets.VPS_HOST }}
+      DEPLOY_USER: ${{ secrets.VPS_USER }}
+      DEPLOY_PORT: ${{ secrets.VPS_PORT || '22' }}
       DEPLOY_ROOT: ${{ vars.DEPLOY_ROOT || '/opt/n2-vocabulary' }}
       DEPLOY_SERVICE: ${{ vars.DEPLOY_SERVICE || 'n2-word-service.service' }}
       DEPLOY_HEALTHCHECK_URL: ${{ vars.DEPLOY_HEALTHCHECK_URL || 'http://127.0.0.1:8767/api/summary' }}
-      DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
-      DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+      DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}
+      DEPLOY_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
     steps:
       - name: Check out the exact pushed commit
         uses: actions/checkout@v4
+
+      - name: Validate deployment configuration
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          : "${DEPLOY_HOST:?Set repository secret VPS_HOST}"
+          : "${DEPLOY_USER:?Set repository secret VPS_USER}"
+          : "${DEPLOY_SSH_PRIVATE_KEY:?Set repository secret VPS_SSH_KEY}"
+          : "${DEPLOY_KNOWN_HOSTS:?Set repository secret VPS_KNOWN_HOSTS to the target SSH host key}"
+          [[ "$DEPLOY_PORT" =~ ^[0-9]+$ ]] || { echo 'VPS_PORT must be numeric' >&2; exit 1; }
+          [[ "$DEPLOY_ROOT" =~ ^/[A-Za-z0-9_-]+(/[A-Za-z0-9._-]+)*$ ]] || { echo 'DEPLOY_ROOT must be an absolute path without shell-special characters' >&2; exit 1; }
+          [[ "$DEPLOY_SERVICE" =~ ^[A-Za-z0-9_.@-]+$ ]] || { echo 'DEPLOY_SERVICE contains unsupported characters' >&2; exit 1; }
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -96,7 +108,7 @@ jobs:
           rm -rf "$package_dir" "$archive"
           mkdir -p "$package_dir/wordService/data" "$package_dir/wordService/static" "$package_dir/reviews/vocabulary_audio"
 
-          install -Dm755 target/release/n2-word-service-rust "$package_dir/n2-word-service-rust"
+          install -Dm755 wordService/target/release/n2-word-service-rust "$package_dir/n2-word-service-rust"
           cp -a wordService/static/. "$package_dir/wordService/static/"
           install -Dm644 wordService/data/n2vocab.sqlite "$package_dir/wordService/data/n2vocab.sqlite"
           cp -a clips "$package_dir/clips"
@@ -123,18 +135,6 @@ jobs:
           cat "$archive.sha256"
           echo "archive=$archive" >> "$GITHUB_OUTPUT"
           echo "checksum=$archive.sha256" >> "$GITHUB_OUTPUT"
-
-      - name: Validate deployment configuration
-        shell: bash
-        run: |
-          set -Eeuo pipefail
-          : "${DEPLOY_HOST:?Set production environment variable DEPLOY_HOST}"
-          : "${DEPLOY_USER:?Set production environment variable DEPLOY_USER}"
-          : "${DEPLOY_SSH_PRIVATE_KEY:?Set production secret DEPLOY_SSH_PRIVATE_KEY}"
-          : "${DEPLOY_KNOWN_HOSTS:?Set production secret DEPLOY_KNOWN_HOSTS to the target SSH host key}"
-          [[ "$DEPLOY_PORT" =~ ^[0-9]+$ ]] || { echo 'DEPLOY_PORT must be numeric' >&2; exit 1; }
-          [[ "$DEPLOY_ROOT" =~ ^/[A-Za-z0-9_-]+(/[A-Za-z0-9._-]+)*$ ]] || { echo 'DEPLOY_ROOT must be an absolute path without shell-special characters' >&2; exit 1; }
-          [[ "$DEPLOY_SERVICE" =~ ^[A-Za-z0-9_.@-]+$ ]] || { echo 'DEPLOY_SERVICE contains unsupported characters' >&2; exit 1; }
 
       - name: Transfer release and switch the server
         shell: bash
