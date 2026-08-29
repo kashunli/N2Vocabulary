@@ -1,40 +1,24 @@
-name: Deploy WordService
+name: Build WordService Release
 
 on:
-  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
-  group: production-word-service
+  group: word-service-release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  deploy:
-    name: Verify, package, and deploy
+  release:
+    name: Verify, package, and publish release
     runs-on: ubuntu-latest
-    environment:
-      name: production
-      url: ${{ vars.DEPLOY_URL }}
-    env:
-      DEPLOY_HOST: ${{ secrets.VPS_HOST }}
-      DEPLOY_USER: ${{ secrets.VPS_USER }}
-      DEPLOY_PORT: ${{ secrets.VPS_PORT || '22' }}
-      DEPLOY_ROOT: ${{ vars.DEPLOY_ROOT || '/opt/n2-vocabulary' }}
-      DEPLOY_SERVICE: ${{ vars.DEPLOY_SERVICE || 'n2-word-service.service' }}
-      DEPLOY_HEALTHCHECK_URL: ${{ vars.DEPLOY_HEALTHCHECK_URL || 'http://127.0.0.1:8767/api/summary' }}
-      # Required only when the VPS does not yet have /etc/n2-word-service.env.
-      # DEPLOY_URL remains a compatibility fallback for the existing variable.
-      DEPLOY_PUBLIC_ORIGIN: ${{ vars.DEPLOY_PUBLIC_ORIGIN || vars.DEPLOY_URL || '' }}
-      DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}
-      DEPLOY_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
     steps:
-      - name: Check out the exact pushed commit
+      - name: Check out the tagged commit
         uses: actions/checkout@v4
-
-      - name: Validate deployment configuration
-        run: bash .github/scripts/validate-deploy-config.sh
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -62,7 +46,7 @@ jobs:
         with:
           workspaces: wordService -> target
 
-      - name: Verify and build WordService
+      - name: Verify WordService
         working-directory: wordService
         shell: bash
         run: |
@@ -74,9 +58,6 @@ jobs:
         working-directory: wordService
         shell: bash
         env:
-          # Debian Bookworm ships glibc 2.36. Building in this image keeps the
-          # release runnable on Debian 12 instead of inheriting ubuntu-latest's
-          # newer glibc baseline.
           DEBIAN_BUILD_IMAGE: rust:1-bookworm
         run: |
           docker run --rm \
@@ -94,10 +75,21 @@ jobs:
         env:
           MAX_GLIBC_VERSION: '2.36'
           RELEASE_BINARY: wordService/target-debian/release/n2-word-service-rust
+          RELEASE_LABEL: ${{ github.ref_name }}
         run: bash .github/scripts/package-word-service-release.sh
 
-      - name: Transfer release and switch the server
+      - name: Publish downloadable GitHub Release assets
         env:
+          GH_TOKEN: ${{ github.token }}
           ARCHIVE: ${{ steps.package.outputs.archive }}
           CHECKSUM: ${{ steps.package.outputs.checksum }}
-        run: bash .github/scripts/deploy-word-service-release.sh
+        shell: bash
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "$ARCHIVE" "$CHECKSUM" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" "$ARCHIVE" "$CHECKSUM" \
+              --target "$GITHUB_SHA" \
+              --title "WordService $GITHUB_REF_NAME" \
+              --generate-notes
+          fi

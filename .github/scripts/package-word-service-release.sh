@@ -6,9 +6,18 @@ set -Eeuo pipefail
 : "${GITHUB_OUTPUT:?GitHub Actions must provide GITHUB_OUTPUT}"
 : "${MAX_GLIBC_VERSION:=2.36}"
 : "${RELEASE_BINARY:=wordService/target/release/n2-word-service-rust}"
+: "${RELEASE_LABEL:=}"
 
 package_dir="$RUNNER_TEMP/n2-vocabulary-package"
-archive="$RUNNER_TEMP/n2-vocabulary-${GITHUB_SHA}.tar.gz"
+archive_stem="n2-vocabulary-${GITHUB_SHA}"
+if [[ -n "$RELEASE_LABEL" ]]; then
+  [[ "$RELEASE_LABEL" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]] || {
+    echo 'RELEASE_LABEL must contain only letters, numbers, dots, underscores, and hyphens' >&2
+    exit 1
+  }
+  archive_stem="n2-vocabulary-${RELEASE_LABEL}-${GITHUB_SHA}"
+fi
+archive="$RUNNER_TEMP/${archive_stem}.tar.gz"
 checksum="${archive}.sha256"
 binary="$RELEASE_BINARY"
 

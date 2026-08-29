@@ -1,9 +1,10 @@
 # WordService deployment
 
-`.github/workflows/deploy.yml` deploys the Linux WordService when a commit is
-pushed to `main`. It is deliberately an SSH-based deployment so the target can
-remain an ordinary Linux VPS rather than needing a cloud-specific GitHub
-Action.
+`.github/workflows/release.yml` builds a downloadable Linux WordService package
+when a `v*` Git tag is pushed. `.github/workflows/deploy.yml` remains available
+only as an explicit manual GitHub Actions fallback. Normal deployment is
+deliberately an SSH-based local procedure so the target can remain an ordinary
+Linux VPS rather than needing a cloud-specific GitHub Action.
 
 The deployment package contains the release Rust binary, the committed React
 assets, `wordService/data/n2vocab.sqlite`, the tracked `clips/` tree, review
@@ -121,18 +122,42 @@ Do not disable host-key checking or put a private key in the repository. GitHub
 secrets are passed to the job through the `secrets` context. GitHub's production
 environment can additionally require approval before a deployment.
 
-## 5. Branch and first run
+## 5. Build a tagged release, then deploy it manually
 
-The current repository checkout still has `master` as its default branch. The
-deployment workflow intentionally listens only to `main`, so create or rename
-the production branch and make it the repository default before expecting an
-automatic run. The existing verification workflow accepts both `master` and
-`main` during this transition.
+Push a version tag such as `v0.1.0`. The tag workflow verifies the frontend and
+Rust service, builds the binary in Debian Bookworm, verifies the glibc ABI, and
+attaches the archive and its `.sha256` file to the matching GitHub Release.
 
-After the workflow file is present on `main`, push a small verified commit to
-that branch. In the Actions tab, confirm that the run passes the frontend and
-Rust checks, then watch the package, SSH, systemd, and health-check steps. A
-successful run ends with `Deployment <commit> is healthy.`
+```bash
+git tag -a v0.1.0 -m "WordService v0.1.0"
+git push origin v0.1.0
+```
+
+Download both release assets into the same local directory. Before the first
+manual deployment, set `DEPLOY_PUBLIC_ORIGIN` to the real public HTTPS origin.
+From a Bash environment with OpenSSH, run the repository deploy script against
+the downloaded package:
+
+```bash
+export ARCHIVE='/path/to/n2-vocabulary-v0.1.0-<commit>.tar.gz'
+export CHECKSUM="${ARCHIVE}.sha256"
+export DEPLOY_HOST='masterofpuppet.cc'
+export DEPLOY_USER='deploy'
+export DEPLOY_PORT='22222'
+export DEPLOY_ROOT='/opt/n2-vocabulary'
+export DEPLOY_SERVICE='n2-word-service.service'
+export DEPLOY_HEALTHCHECK_URL='http://127.0.0.1:8767/api/summary'
+export DEPLOY_PUBLIC_ORIGIN='https://your-public-site.example'
+export DEPLOY_SSH_KEY_FILE='/path/to/n2_deploy'
+export DEPLOY_KNOWN_HOSTS_FILE='/path/to/known_hosts'
+bash .github/scripts/deploy-word-service-release.sh
+```
+
+The script verifies the downloaded archive checksum locally, transfers the
+exact archive, validates it again on the VPS, installs missing bootstrap files,
+switches the `current` symlink only after extraction, restarts the service, and
+checks `/api/summary`. The `RELEASE` file inside the archive supplies the commit
+identifier, so no separate `RELEASE_ID` is normally needed.
 
 The workflow keeps old release directories so rollback remains possible. Add a
 separate, reviewed cleanup procedure after measuring the size of this repo's
