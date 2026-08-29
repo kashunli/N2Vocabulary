@@ -13,7 +13,7 @@ const LEGACY_AUDIO_REDIRECT_CACHE_CONTROL: &str = "no-store";
 
 pub(super) fn static_asset_path(static_dir: &Path, request_path: &str) -> Option<PathBuf> {
     match request_path {
-        "/favicon.svg" | "/audio-review.html" | "/audio-review.css" | "/audio-review.js" => {
+        "/favicon.png" | "/audio-review.html" | "/audio-review.css" | "/audio-review.js" => {
             Some(static_dir.join(request_path.trim_start_matches('/')))
         }
         _ => {
@@ -235,8 +235,8 @@ mod tests {
     fn static_asset_path_allows_current_static_files_and_react_assets() {
         let root = Path::new("static");
         assert_eq!(
-            static_asset_path(root, "/favicon.svg").as_deref(),
-            Some(Path::new("static/favicon.svg"))
+            static_asset_path(root, "/favicon.png").as_deref(),
+            Some(Path::new("static/favicon.png"))
         );
         assert_eq!(
             static_asset_path(root, "/audio-review.html").as_deref(),

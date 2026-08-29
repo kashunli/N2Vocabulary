@@ -162,9 +162,10 @@ simple copied distribution. You can override the executable path with
 `N2_WORD_SERVICE_EXECUTABLE` when packaging it elsewhere.
 
 The Windows executable embeds the product icon from
-`wordService\assets\n2-vocabulary.ico`. That committed ICO is generated from
-the existing `wordService\static\favicon.svg` design. To regenerate it after
-changing the design, run:
+`wordService\assets\n2-vocabulary.ico`. The favicon, ICO, and Android launcher
+icons are generated from the approved
+`wordService\assets\n2-vocabulary-tanuki-master.png` artwork. To regenerate
+them after changing that source art, run:
 
 ```powershell
 .\tools\build_start_n2_vocabulary.ps1 -RegenerateIcon
