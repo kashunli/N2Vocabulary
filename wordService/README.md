@@ -155,13 +155,14 @@ and/or backend release build only when the corresponding output is missing or
 stale. The launcher keeps backend copies under a source fingerprint so a
 currently running Windows executable never has to be overwritten.
 
-After the build check, the launcher starts WordService attached to the same
-console, waits for `HEAD /api/summary` to return HTTP 200, and opens the React
-study wall at `http://127.0.0.1:8767/`. The terminal remains open while the
-service is running; press `Ctrl+C` in that terminal to stop the service. If
-port `8767` is already owned by another WordService process, the launcher
-reuses that process and explains that its terminal cannot control the existing
-process.
+After the build check, the launcher starts WordService through
+`cmd.exe /D /C` attached to the same console, waits for `HEAD /api/summary` to
+return HTTP 200, and opens the React study wall at
+`http://127.0.0.1:8767/`. The terminal remains open while the service is
+running; press `Ctrl+C` in that terminal to stop the foreground command
+session. If port `8767` is occupied by a previous project-owned WordService,
+the launcher stops that stale process first. It refuses to terminate an
+unrelated process using the port.
 
 The standalone build script still uses
 `wordService\target\launcher-release\release` for its release artifacts. The

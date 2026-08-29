@@ -130,61 +130,49 @@ pub fn run() -> Result<()> {
     println!("  service: {}", config.service_executable.display());
     println!("  browser: {}", config.endpoint.browser_url());
 
-    // If the port is already open, wait for that process instead of starting
-    // a second server. A second server would fail to bind and would make a
-    // normal double-click look like a startup failure.
+    // A previous launcher version left the service running after the launcher
+    // exited. Remove only that project-owned service so every normal launch
+    // creates a foreground session controlled by this terminal.
     if port_is_open(&config.endpoint, Duration::from_millis(300)) {
         println!(
-            "An existing process is using {}. Waiting for WordService...",
+            "An existing process is using {}. Checking whether it is this project's WordService...",
             config.endpoint.socket_address()
         );
-        wait_for_service(
-            &config.endpoint,
-            config.ready_timeout,
-            config.poll_interval,
-            None,
-        )
-        .with_context(|| {
-            format!(
-                "the existing process at {} did not become WordService-ready",
+        if stop_project_owned_service(&current_executable, &config.endpoint)? {
+            wait_for_port_to_close(&config.endpoint, config.ready_timeout)?;
+            println!("Stopped the previous background WordService process.");
+        } else {
+            bail!(
+                "port {} is already in use by another process; refusing to terminate it",
                 config.endpoint.socket_address()
-            )
-        })?;
-    } else {
-        println!("Starting WordService...");
-        let mut child = spawn_service(&config)?;
-        if let Err(error) = wait_for_service(
-            &config.endpoint,
-            config.ready_timeout,
-            config.poll_interval,
-            Some(&mut child),
-        ) {
-            stop_child(&mut child);
-            return Err(error).with_context(|| {
-                "WordService did not become ready; inspect the backend output above".to_string()
-            });
+            );
         }
+    }
 
-        open_browser(&config.endpoint.browser_url())
-            .context("open the React study wall in the default browser")?;
-        println!("Browser opened.");
-        println!("WordService is running in this terminal. Press Ctrl+C to stop it.");
-
-        let status = child.wait().context("wait for WordService to stop")?;
-        if !status.success() {
-            bail!("WordService stopped with status {status}");
-        }
-        println!("WordService stopped.");
-        return Ok(());
+    println!("Starting WordService in a foreground cmd.exe session...");
+    let mut child = spawn_service(&config)?;
+    if let Err(error) = wait_for_service(
+        &config.endpoint,
+        config.ready_timeout,
+        config.poll_interval,
+        Some(&mut child),
+    ) {
+        stop_child(&mut child);
+        return Err(error).with_context(|| {
+            "WordService did not become ready; inspect the backend output above".to_string()
+        });
     }
 
     open_browser(&config.endpoint.browser_url())
         .context("open the React study wall in the default browser")?;
-    println!("Browser opened using the existing WordService process.");
-    println!(concat!(
-        "This launcher did not start that process, so Ctrl+C here cannot stop it; ",
-        "stop the process from the terminal that owns it before restarting."
-    ));
+    println!("Browser opened.");
+    println!("WordService is running in this terminal. Press Ctrl+C to stop it.");
+
+    let status = child.wait().context("wait for WordService to stop")?;
+    if !status.success() {
+        bail!("WordService stopped with status {status}");
+    }
+    println!("WordService stopped.");
     Ok(())
 }
 
@@ -498,6 +486,122 @@ fn output_is_at_least_as_new_as_inputs(output: &Path, inputs: &[PathBuf]) -> Res
     Ok(true)
 }
 
+/// Stop a stale service only when its listening process is the project's own
+/// backend executable. Returning false means that the process could not be
+/// identified safely; callers must not kill an unrelated process merely
+/// because it happens to use the configured port.
+fn stop_project_owned_service(
+    launcher_executable: &Path,
+    endpoint: &ServiceEndpoint,
+) -> Result<bool> {
+    #[cfg(windows)]
+    {
+        let Some(process_id) = listening_process_id(endpoint.port)? else {
+            return Ok(false);
+        };
+        let Some(process_path) = process_path(process_id)? else {
+            return Ok(false);
+        };
+        let project_root = find_project_root(launcher_executable)?
+            .canonicalize()
+            .context("canonicalize the N2Vocabulary project root")?;
+        let canonical_process_path = process_path
+            .canonicalize()
+            .with_context(|| format!("canonicalize process path {}", process_path.display()))?;
+        let is_expected_process = canonical_process_path
+            .file_name()
+            .is_some_and(|name| name.eq_ignore_ascii_case(SERVICE_EXECUTABLE_NAME))
+            && canonical_process_path.starts_with(&project_root);
+        if !is_expected_process {
+            return Ok(false);
+        }
+
+        println!(
+            "Stopping project-owned WordService PID {} at {}...",
+            process_id,
+            canonical_process_path.display()
+        );
+        let status = Command::new("taskkill")
+            .args(["/PID", &process_id.to_string(), "/T", "/F"])
+            .status()
+            .context("stop the previous project-owned WordService process")?;
+        if !status.success() {
+            bail!("taskkill failed with status {status}");
+        }
+        Ok(true)
+    }
+
+    #[cfg(not(windows))]
+    {
+        let _ = (launcher_executable, endpoint);
+        Ok(false)
+    }
+}
+
+#[cfg(windows)]
+fn listening_process_id(port: u16) -> Result<Option<u32>> {
+    let output = Command::new("netstat")
+        .args(["-ano", "-p", "tcp"])
+        .output()
+        .context("inspect TCP listeners with netstat")?;
+    if !output.status.success() {
+        bail!("netstat failed with status {}", output.status);
+    }
+
+    for line in String::from_utf8_lossy(&output.stdout).lines() {
+        let fields = line.split_whitespace().collect::<Vec<_>>();
+        if fields.len() < 5 || fields[0] != "TCP" || fields[3] != "LISTENING" {
+            continue;
+        }
+        let local_port = fields[1]
+            .rsplit(':')
+            .next()
+            .and_then(|value| value.parse().ok());
+        if local_port == Some(port) {
+            return Ok(fields[4].parse().ok());
+        }
+    }
+    Ok(None)
+}
+
+#[cfg(windows)]
+fn process_path(process_id: u32) -> Result<Option<PathBuf>> {
+    // The PID is parsed as an integer before it reaches this fixed PowerShell
+    // expression, so the command cannot be altered by listener output.
+    let output = Command::new("powershell.exe")
+        .args([
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            &format!("(Get-Process -Id {process_id} -ErrorAction SilentlyContinue).Path"),
+        ])
+        .output()
+        .context("inspect the existing WordService process path")?;
+    if !output.status.success() {
+        return Ok(None);
+    }
+    let path = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    if path.is_empty() {
+        Ok(None)
+    } else {
+        Ok(Some(PathBuf::from(path)))
+    }
+}
+
+fn wait_for_port_to_close(endpoint: &ServiceEndpoint, timeout: Duration) -> Result<()> {
+    let started_at = Instant::now();
+    while port_is_open(endpoint, Duration::from_millis(100)) {
+        if started_at.elapsed() >= timeout {
+            bail!(
+                "WordService port {} remained occupied after stopping the previous process",
+                endpoint.socket_address()
+            );
+        }
+        thread::sleep(READY_POLL_INTERVAL);
+    }
+    Ok(())
+}
+
 /// Find the service executable in both the repository build layout and the
 /// simple local distribution layout used by the build script.
 pub fn find_service_executable(launcher_executable: &Path) -> Result<PathBuf> {
@@ -672,11 +776,24 @@ pub fn wait_for_service(
 }
 
 fn spawn_service(config: &LauncherConfig) -> Result<Child> {
+    #[cfg(windows)]
+    let mut command = {
+        let mut command = Command::new("cmd.exe");
+        // `call` makes cmd.exe execute a quoted path reliably, including
+        // paths containing spaces, without leaving quote characters in the
+        // command token it tries to resolve.
+        command.args(["/D", "/C", "call"]);
+        command.arg(&config.service_executable);
+        command
+    };
+
+    #[cfg(not(windows))]
     let mut command = Command::new(&config.service_executable);
+
     command
         .current_dir(&config.service_working_directory)
-        // Inherit the launcher's console. This makes backend diagnostics
-        // visible and lets Ctrl+C reach the foreground service session.
+        // Inherit the launcher's console. The Windows cmd.exe wrapper and the
+        // backend therefore share the terminal and its Ctrl+C event.
         .stdin(Stdio::inherit())
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit());
