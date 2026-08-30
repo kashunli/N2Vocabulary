@@ -30,11 +30,40 @@ jobs:
         with:
           node-version: 24.14.1
           cache: pnpm
-          cache-dependency-path: wordService/frontend/pnpm-lock.yaml
+          cache-dependency-path: |
+            wordService/frontend/pnpm-lock.yaml
+            wordService/mobile/pnpm-lock.yaml
 
       - name: Verify frontend
         working-directory: wordService/frontend
         run: pnpm install --frozen-lockfile && pnpm check
+
+      - name: Set up Java for Android build
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Ensure Android SDK 36 is installed
+        shell: bash
+        run: sdkmanager --install "platforms;android-36"
+
+      - name: Install mobile dependencies
+        working-directory: wordService/mobile
+        run: pnpm install --frozen-lockfile
+
+      - name: Synchronize Capacitor Android project
+        working-directory: wordService/mobile
+        run: pnpm sync
+
+      - name: Build Android release APK
+        working-directory: wordService/mobile/android
+        shell: bash
+        run: bash gradlew assembleRelease --no-daemon --console=plain
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
@@ -78,17 +107,32 @@ jobs:
           RELEASE_LABEL: ${{ github.ref_name }}
         run: bash .github/scripts/package-word-service-release.sh
 
+      - name: Name and checksum Android release APK
+        id: android
+        shell: bash
+        env:
+          RELEASE_LABEL: ${{ github.ref_name }}
+        run: |
+          apk="n2-vocabulary-android-${RELEASE_LABEL}.apk"
+          checksum="${apk}.sha256"
+          cp wordService/mobile/android/app/build/outputs/apk/release/app-release.apk "$apk"
+          sha256sum "$apk" > "$checksum"
+          echo "apk=$apk" >> "$GITHUB_OUTPUT"
+          echo "checksum=$checksum" >> "$GITHUB_OUTPUT"
+
       - name: Publish downloadable GitHub Release assets
         env:
           GH_TOKEN: ${{ github.token }}
           ARCHIVE: ${{ steps.package.outputs.archive }}
           CHECKSUM: ${{ steps.package.outputs.checksum }}
+          APK: ${{ steps.android.outputs.apk }}
+          APK_CHECKSUM: ${{ steps.android.outputs.checksum }}
         shell: bash
         run: |
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            gh release upload "$GITHUB_REF_NAME" "$ARCHIVE" "$CHECKSUM" --clobber
+            gh release upload "$GITHUB_REF_NAME" "$ARCHIVE" "$CHECKSUM" "$APK" "$APK_CHECKSUM" --clobber
           else
-            gh release create "$GITHUB_REF_NAME" "$ARCHIVE" "$CHECKSUM" \
+            gh release create "$GITHUB_REF_NAME" "$ARCHIVE" "$CHECKSUM" "$APK" "$APK_CHECKSUM" \
               --target "$GITHUB_SHA" \
               --title "WordService $GITHUB_REF_NAME" \
               --generate-notes

@@ -129,13 +129,39 @@ environment can additionally require approval before a deployment.
 ## 5. Build a tagged release, then deploy it manually
 
 Push a version tag such as `v0.1.0`. The tag workflow verifies the frontend and
-Rust service, builds the binary in Debian Bookworm, verifies the glibc ABI, and
-attaches the archive and its `.sha256` file to the matching GitHub Release.
+Rust service, builds the binary in Debian Bookworm, builds the Android release
+APK against `https://words.kashunli.com/`, verifies the Linux binary's glibc
+ABI, and attaches the package archive, the Android APK, and a `.sha256` file
+for each to the matching GitHub Release.
 
 ```bash
 git tag -a v0.1.0 -m "WordService v0.1.0"
 git push origin v0.1.0
 ```
+
+The Android asset is named `n2-vocabulary-android-v0.1.0.apk`. For a local
+rebuild, first rebuild the committed frontend assets, then synchronize the
+Capacitor project and assemble the Android release variant:
+
+```powershell
+Set-Location wordService/frontend
+pnpm install --frozen-lockfile
+pnpm check
+
+Set-Location ../mobile
+pnpm install --frozen-lockfile
+pnpm sync
+
+Set-Location android
+.\gradlew.bat clean assembleRelease --console=plain
+```
+
+The local Android output is
+`wordService/mobile/android/app/build/outputs/apk/release/app-release.apk`.
+The Android Gradle configuration reads a local, gitignored `keystore.properties`
+file when one is present; otherwise it uses the debug signing key so the APK is
+installable for testing. A production distribution should add a protected
+release keystore and keep its signing identity stable across releases.
 
 Download both release assets into the same local directory. Before the first
 manual deployment, set `DEPLOY_PUBLIC_ORIGIN` to the real public HTTPS origin.
