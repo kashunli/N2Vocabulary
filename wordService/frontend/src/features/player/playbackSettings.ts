@@ -51,11 +51,6 @@ export function playbackRunModeDescription(mode: PlaybackRunMode) {
   }
 }
 
-export function nextPlaybackRunMode(mode: PlaybackRunMode) {
-  const currentIndex = PLAYBACK_RUN_MODE_ORDER.indexOf(mode);
-  return PLAYBACK_RUN_MODE_ORDER[(currentIndex + 1) % PLAYBACK_RUN_MODE_ORDER.length];
-}
-
 const PLAYBACK_SETTINGS_KEY = "n2-word-service:react-playback-settings:v3";
 const LEGACY_PLAYBACK_SETTINGS_KEY_V2 = "n2-word-service:react-playback-settings:v2";
 const LEGACY_PLAYBACK_SETTINGS_KEY = "n2-word-service:react-playback-settings:v1";

@@ -7,7 +7,6 @@ import type {
   MaterializedAudioSequenceStep,
 } from "./audioSequenceTypes";
 import {
-  nextPlaybackRunMode,
   type PlaybackPhase,
   type PlaybackRunMode,
 } from "./playbackSettings";
@@ -389,8 +388,8 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
     setReplayRequest((value) => value + 1);
   }, [cancelEndTimer]);
 
-  const togglePlaybackRunMode = useCallback(() => {
-    const nextMode = nextPlaybackRunMode(playbackRunMode);
+  const changePlaybackRunMode = useCallback((nextMode: PlaybackRunMode) => {
+    if (nextMode === playbackRunMode) return;
     cancelEndTimer();
     const continueCurrentClip = nextMode !== "single" && isPlaying;
     autoAdvanceRef.current = continueCurrentClip;
@@ -425,6 +424,7 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
     cancelSilence: cancelEndTimer,
     canNext,
     canPrevious,
+    changePlaybackRunMode,
     changePostSentenceSilence,
     changePostWordSilence,
     changePlaybackEndBehavior,
@@ -456,7 +456,6 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
     sequence,
     addSequenceStep,
     target,
-    togglePlaybackRunMode,
     togglePlayback,
   };
 }

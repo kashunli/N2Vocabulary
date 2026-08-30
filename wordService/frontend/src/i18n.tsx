@@ -55,8 +55,6 @@ export interface LanguageCopy {
     nextTitle: string;
     modeLabel: (mode: PlaybackRunMode) => string;
     modeDescription: (mode: PlaybackRunMode) => string;
-    modeSwitchAria: (current: string, next: string) => string;
-    modeSwitchTitle: (current: string, next: string) => string;
     defaultStatus: (mode: string) => string;
     nativeQueuePause: string;
     nativeQueuePaused: string;
@@ -182,8 +180,6 @@ const EN_COPY: LanguageCopy = {
     nextTitle: "Next (D / →)",
     modeLabel: (mode) => ({single: "Manual / single play", continuous: "Continuous"}[mode]),
     modeDescription: (mode) => ({single: "Play only the focused audio occurrence. Use Next or Previous to choose another.", continuous: "Play the configured sequence through the current visible list."}[mode]),
-    modeSwitchAria: (current, next) => `Playback mode: ${current}. Switch to ${next}.`,
-    modeSwitchTitle: (current, next) => `Playback mode: ${current}. Click to switch to ${next}.`,
     defaultStatus: (mode) => `${mode} · Click the wave to seek or play · Space to play/pause`,
     nativeQueuePause: "Native queue pause",
     nativeQueuePaused: "Native queue paused",
@@ -309,8 +305,6 @@ const ZH_COPY: LanguageCopy = {
     nextTitle: "下一个（D / →）",
     modeLabel: (mode) => ({single: "手动 / 单次播放", continuous: "连续播放"}[mode]),
     modeDescription: (mode) => ({single: "只播放当前音频。使用“下一个”或“上一个”选择其他内容。", continuous: "按设定的播放序列播放当前可见列表。"}[mode]),
-    modeSwitchAria: (current, next) => `播放模式：当前为${current}。切换为${next}。`,
-    modeSwitchTitle: (current, next) => `播放模式：当前为${current}。点击切换为${next}。`,
     defaultStatus: (mode) => `${mode} · 点击波形进行定位或播放 · 空格键播放/暂停`,
     nativeQueuePause: "原生播放队列暂停中",
     nativeQueuePaused: "原生播放队列已暂停",

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowCounterClockwise, List, Pause, Play, Playlist, Repeat, SkipBack, SkipForward } from "@phosphor-icons/react";
+import { ArrowCounterClockwise, List, Pause, Play, SkipBack, SkipForward } from "@phosphor-icons/react";
 
 import { useI18n } from "../../i18n";
 import { useAudioBufferPlayer } from "./useAudioBufferPlayer";
@@ -16,12 +16,9 @@ import {
   type NativeAudioQueueItem,
   type NativeAudioState,
 } from "./nativeAudio";
-import {
-  nextPlaybackRunMode,
-  type PlaybackRunMode,
-} from "./playbackSettings";
 import type { MarkStatus } from "../study/markStatus";
 import type { AudioTarget } from "../../types";
+import type { PlaybackRunMode } from "./playbackSettings";
 
 interface RailPlayerProps {
   target: AudioTarget | null;
@@ -41,7 +38,6 @@ interface RailPlayerProps {
   onPlayingChange: (playing: boolean) => void;
   onToggleMark: (key: "known" | "flagged") => void | Promise<void>;
   onTogglePlayback: () => void;
-  onTogglePlaybackRunMode: () => void;
   onToggleBlur: () => void;
   onToggleList: () => void;
   onCancelSilence: () => void;
@@ -54,15 +50,6 @@ interface RailPlayerProps {
 
 function isNativeActive(state: NativeAudioState | undefined) {
   return state?.status === "playing" || state?.status === "gap";
-}
-
-function PlaybackRunModeIcon({mode}: {mode: PlaybackRunMode}) {
-  switch (mode) {
-    // The playlist icon communicates a manually controlled single play; the
-    // repeat arrows communicate that Continuous mode crosses list entries.
-    case "single": return <Playlist size={18} weight="bold" />;
-    case "continuous": return <Repeat size={18} weight="bold" />;
-  }
 }
 
 export function RailPlayer({
@@ -83,7 +70,6 @@ export function RailPlayer({
   onPlayingChange,
   onToggleMark,
   onTogglePlayback,
-  onTogglePlaybackRunMode,
   onToggleBlur,
   onToggleList,
   onCancelSilence,
@@ -328,8 +314,6 @@ export function RailPlayer({
         ? copy.player.nativeBackgroundPlayer
         : "";
   const currentModeLabel = copy.player.modeLabel(playbackRunMode);
-  const nextModeLabel = copy.player.modeLabel(nextPlaybackRunMode(playbackRunMode));
-
   return (
     <section className="react-player" aria-label={copy.player.controlsLabel}>
       <div className="react-player-wave-row">
@@ -354,16 +338,6 @@ export function RailPlayer({
         <button type="button" onClick={onPrevious} disabled={!canPrevious} aria-label={copy.player.previousAria} title={copy.player.previousTitle}><SkipBack size={18} weight="fill" /></button>
         <button type="button" onClick={onReplay} disabled={!canPlay} aria-label={copy.player.replayAria} title={copy.player.replayTitle}><ArrowCounterClockwise size={18} weight="bold" /></button>
         <button type="button" onClick={onNext} disabled={!canNext} aria-label={copy.player.nextAria} title={copy.player.nextTitle}><SkipForward size={18} weight="fill" /></button>
-        <button
-          type="button"
-          className={playbackRunMode === "single" ? "" : "is-selected"}
-          onClick={onTogglePlaybackRunMode}
-          aria-pressed={playbackRunMode !== "single"}
-          aria-label={copy.player.modeSwitchAria(currentModeLabel, nextModeLabel)}
-          title={copy.player.modeSwitchTitle(currentModeLabel, nextModeLabel)}
-        >
-          <PlaybackRunModeIcon mode={playbackRunMode} />
-        </button>
         <span className="react-player-controls-sep" aria-hidden="true" />
         <div className="react-player-control-group react-player-mark-controls">
           <button type="button" className={`mark-known${markStatus === "known" ? " is-on" : ""}`} onClick={() => void onToggleMark("known")} disabled={!target} aria-label={copy.player.markKnown} title={copy.player.markKnown} aria-pressed={markStatus === "known"}>✓</button>

@@ -59,6 +59,7 @@ function StudyApp(state: ReturnType<typeof useStudyState>) {
     cancelSilence,
     canNext,
     canPrevious,
+    changePlaybackRunMode,
     changePlaybackEndBehavior,
     changeSequenceStep,
     moveSequenceStep,
@@ -83,7 +84,6 @@ function StudyApp(state: ReturnType<typeof useStudyState>) {
     selectPhase,
     sequence,
     target,
-    togglePlaybackRunMode,
     togglePlayback,
   } = useStudyPlayback({
     entries,
@@ -306,7 +306,6 @@ function StudyApp(state: ReturnType<typeof useStudyState>) {
         pauseRequest={pauseRequest}
         onEnded={handlePlaybackEnd}
         onTogglePlayback={togglePlayback}
-        onTogglePlaybackRunMode={togglePlaybackRunMode}
         onToggleBlur={() => setBlurred((current) => !current)}
         onToggleList={() => setListVisible((current) => !current)}
         onReplay={replayFocused}
@@ -325,7 +324,7 @@ function StudyApp(state: ReturnType<typeof useStudyState>) {
         onAddSequenceStep={addSequenceStep}
         onMoveSequenceStep={moveSequenceStep}
         onRemoveSequenceStep={removeSequenceStep}
-        onTogglePlaybackRunMode={togglePlaybackRunMode}
+        onChangePlaybackRunMode={changePlaybackRunMode}
         onChangePlaybackEndBehavior={changePlaybackEndBehavior}
         onClose={() => setSettingsOpen(false)}
         onReset={resetPlaybackSettings}

@@ -10,7 +10,7 @@ import type {
 } from "./audioSequenceTypes";
 import {
   PLAYBACK_END_BEHAVIOR_ORDER,
-  nextPlaybackRunMode,
+  PLAYBACK_RUN_MODE_ORDER,
   type PlaybackEndBehavior,
   type PlaybackRunMode,
 } from "./playbackSettings";
@@ -24,7 +24,7 @@ interface PlaybackSettingsModalProps {
   onAddSequenceStep: (element: AudioSequenceElement) => void;
   onMoveSequenceStep: (stepId: string, direction: "up" | "down") => void;
   onRemoveSequenceStep: (stepId: string) => void;
-  onTogglePlaybackRunMode: () => void;
+  onChangePlaybackRunMode: (mode: PlaybackRunMode) => void;
   onChangePlaybackEndBehavior: (behavior: PlaybackEndBehavior) => void;
   onClose: () => void;
   onReset: () => void;
@@ -106,14 +106,12 @@ export function PlaybackSettingsModal({
   onAddSequenceStep,
   onMoveSequenceStep,
   onRemoveSequenceStep,
-  onTogglePlaybackRunMode,
+  onChangePlaybackRunMode,
   onChangePlaybackEndBehavior,
   onClose,
   onReset,
 }: PlaybackSettingsModalProps) {
   const {copy, language, setLanguage} = useI18n();
-  const currentModeLabel = copy.player.modeLabel(playbackRunMode);
-  const nextModeLabel = copy.player.modeLabel(nextPlaybackRunMode(playbackRunMode));
   return (
     <div className="react-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <section className="react-settings-modal react-sequence-modal" role="dialog" aria-modal="true" aria-labelledby="react-settings-title">
@@ -190,9 +188,19 @@ export function PlaybackSettingsModal({
             <span>{copy.settings.playbackMode}</span>
             <p>{copy.player.modeDescription(playbackRunMode)}</p>
           </div>
-          <button type="button" className="react-sequence-run-mode" onClick={onTogglePlaybackRunMode} aria-pressed={playbackRunMode !== "single"}>
-            {currentModeLabel} → {nextModeLabel}
-          </button>
+          <div className="react-setting-options react-playback-mode-options" role="group" aria-label={copy.settings.playbackMode}>
+            {PLAYBACK_RUN_MODE_ORDER.map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                className={playbackRunMode === mode ? "is-selected" : ""}
+                onClick={() => onChangePlaybackRunMode(mode)}
+                aria-pressed={playbackRunMode === mode}
+              >
+                {copy.player.modeLabel(mode)}
+              </button>
+            ))}
+          </div>
 
           <div className="react-setting-copy">
             <span>{copy.settings.whenListEnds}</span>
