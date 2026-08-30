@@ -1,6 +1,9 @@
 name: Deploy WordService
 
 on:
+  push:
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 permissions:

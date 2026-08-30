@@ -1,10 +1,12 @@
 # WordService deployment
 
-`.github/workflows/release.yml` builds a downloadable Linux WordService package
-when a `v*` Git tag is pushed. `.github/workflows/deploy.yml` remains available
-only as an explicit manual GitHub Actions fallback. Normal deployment is
-deliberately an SSH-based local procedure so the target can remain an ordinary
-Linux VPS rather than needing a cloud-specific GitHub Action.
+`.github/workflows/release.yml` builds downloadable Linux and Android
+WordService assets when a `v*` Git tag is pushed. `.github/workflows/deploy.yml`
+deploys the same tagged commit to the VPS on that tag push and remains available
+through `workflow_dispatch` as an explicit manual fallback. Ordinary branch
+pushes do not trigger deployment. The deployment is deliberately SSH-based so
+the target can remain an ordinary Linux VPS rather than needing a cloud-specific
+GitHub Action.
 
 The deployment package contains the release Rust binary, the committed React
 assets, `wordService/data/n2vocab.sqlite`, the tracked `clips/` tree, review
@@ -126,18 +128,32 @@ Do not disable host-key checking or put a private key in the repository. GitHub
 secrets are passed to the job through the `secrets` context. GitHub's production
 environment can additionally require approval before a deployment.
 
-## 5. Build a tagged release, then deploy it manually
+## 5. Build a tagged release and deploy it automatically
 
-Push a version tag such as `v0.1.0`. The tag workflow verifies the frontend and
-Rust service, builds the binary in Debian Bookworm, builds the Android release
-APK against `https://words.kashunli.com/`, verifies the Linux binary's glibc
-ABI, and attaches the package archive, the Android APK, and a `.sha256` file
-for each to the matching GitHub Release.
+Before pushing a release tag, configure the production environment and set the
+repository variable `DEPLOY_PUBLIC_ORIGIN` to
+`https://words.kashunli.com`. The required VPS secrets and deployment variables
+are listed in the sections above.
+
+Push a version tag such as `v0.1.0`. This starts both tag-only workflows:
+
+- `Build WordService Release` verifies the frontend and Rust service, builds the
+  Debian-compatible binary and Android release APK, and attaches the package
+  archive, the APK, and a `.sha256` file for each to the matching GitHub
+  Release.
+- `Deploy WordService` verifies and packages the same tagged commit, transfers
+  it to the VPS, switches the release atomically, restarts systemd, and checks
+  the service health endpoint.
 
 ```bash
 git tag -a v0.1.0 -m "WordService v0.1.0"
 git push origin v0.1.0
 ```
+
+If the `production` environment requires approval, approve the deployment job
+after the tag starts. The release asset workflow and the deployment workflow are
+separate, so an infrastructure failure is visible without preventing the APK
+build from reporting its own result.
 
 The Android asset is named `n2-vocabulary-android-v0.1.0.apk`. For a local
 rebuild, first rebuild the committed frontend assets, then synchronize the
@@ -163,8 +179,12 @@ file when one is present; otherwise it uses the debug signing key so the APK is
 installable for testing. A production distribution should add a protected
 release keystore and keep its signing identity stable across releases.
 
-Download both release assets into the same local directory. Before the first
-manual deployment, set `DEPLOY_PUBLIC_ORIGIN` to the real public HTTPS origin.
+### Manual deployment fallback
+
+The `workflow_dispatch` path remains available when a deployment needs to be
+rerun without creating a new release tag. For a local/manual deployment, download
+the Linux release archive and its checksum into the same local directory, then
+set `DEPLOY_PUBLIC_ORIGIN` to the public HTTPS origin before running the script.
 From a Bash environment with OpenSSH, run the repository deploy script against
 the downloaded package:
 
