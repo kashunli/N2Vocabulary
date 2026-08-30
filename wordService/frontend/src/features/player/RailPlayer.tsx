@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowCounterClockwise, List, ListBullets, Pause, Play, Queue, Repeat, RepeatOnce, SkipBack, SkipForward } from "@phosphor-icons/react";
+import { ArrowCounterClockwise, List, Pause, Play, Playlist, Repeat, SkipBack, SkipForward } from "@phosphor-icons/react";
 
 import { useI18n } from "../../i18n";
 import { useAudioBufferPlayer } from "./useAudioBufferPlayer";
@@ -58,11 +58,10 @@ function isNativeActive(state: NativeAudioState | undefined) {
 
 function PlaybackRunModeIcon({mode}: {mode: PlaybackRunMode}) {
   switch (mode) {
-    // Single uses a repeat-once symbol so the mode communicates its boundary.
-    case "single": return <RepeatOnce size={18} weight="bold" />;
-    case "list": return <ListBullets size={18} weight="bold" />;
-    case "cycle-list": return <Repeat size={18} weight="bold" />;
-    case "next-list": return <Queue size={18} weight="bold" />;
+    // The playlist icon communicates a manually controlled single play; the
+    // repeat arrows communicate that Continuous mode crosses list entries.
+    case "single": return <Playlist size={18} weight="bold" />;
+    case "continuous": return <Repeat size={18} weight="bold" />;
   }
 }
 
@@ -165,7 +164,7 @@ export function RailPlayer({
   }, [autoPlay, nativeAvailable, target?.url, targetKey]);
 
   const nativeItemsForRun = useCallback(() => {
-    if (playbackRunMode !== "single") return nativeQueue;
+    if (playbackRunMode === "continuous") return nativeQueue;
     const first = nativeQueue[0];
     return first ? [{...first, pauseAfterMs: 0}] : [];
   }, [nativeQueue, playbackRunMode]);

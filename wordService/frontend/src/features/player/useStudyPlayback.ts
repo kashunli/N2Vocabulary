@@ -64,8 +64,10 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
     addSequenceStep,
     changePostSentenceSilence,
     changePostWordSilence,
+    changePlaybackEndBehavior,
     changeSequenceStep,
     moveSequenceStep,
+    playbackEndBehavior,
     playbackRunMode,
     postSentenceSilence,
     postWordSilence,
@@ -290,6 +292,7 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
     const action = playbackEndAction({
       autoAdvance: autoAdvanceRef.current,
       runMode: playbackRunMode,
+      endBehavior: playbackEndBehavior,
       hasNextCue,
       hasNextEntry,
     });
@@ -321,7 +324,7 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
       return;
     }
     scheduleAfterSilence(currentPause, advanceAfterPlayback);
-  }, [activeCue, activeCues.length, activeEntry, activeIndex, activePhase, advanceAfterPlayback, advanceToFollowingList, completeEntryPhase, entries.length, onConsecutiveSequenceComplete, playableEntryAt, playbackRunMode, postSentenceSilence, postWordSilence, restartCurrentList, safeCueIndex, scheduleAfterSilence, stopAfterEntry]);
+  }, [activeCue, activeCues.length, activeEntry, activeIndex, activePhase, advanceAfterPlayback, advanceToFollowingList, completeEntryPhase, entries.length, onConsecutiveSequenceComplete, playableEntryAt, playbackEndBehavior, playbackRunMode, postSentenceSilence, postWordSilence, restartCurrentList, safeCueIndex, scheduleAfterSilence, stopAfterEntry]);
 
   const handlePlayingChange = useCallback((playing: boolean) => {
     setIsPlaying(playing);
@@ -336,16 +339,16 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
 
   const handleNativeQueueComplete = useCallback(() => {
     cancelEndTimer();
-    if (playbackRunMode === "cycle-list") {
+    if (playbackRunMode === "continuous" && playbackEndBehavior === "restart-list") {
       restartCurrentList();
       setPlayRequest((value) => value + 1);
       return;
     }
-    if (playbackRunMode === "next-list" && onFollowingList?.(activeEntry!)) return;
+    if (playbackRunMode === "continuous" && playbackEndBehavior === "next-list" && activeEntry && onFollowingList?.(activeEntry)) return;
     autoAdvanceRef.current = false;
     setAutoAdvance(false);
     if (activeEntry) onConsecutiveSequenceComplete?.(activeEntry);
-  }, [activeEntry, cancelEndTimer, onConsecutiveSequenceComplete, onFollowingList, playbackRunMode, restartCurrentList]);
+  }, [activeEntry, cancelEndTimer, onConsecutiveSequenceComplete, onFollowingList, playbackEndBehavior, playbackRunMode, restartCurrentList]);
 
   const {
     nativeQueue,
@@ -424,6 +427,7 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
     canPrevious,
     changePostSentenceSilence,
     changePostWordSilence,
+    changePlaybackEndBehavior,
     changeSequenceStep,
     handlePlaybackEnd,
     handlePlayingChange,
@@ -438,6 +442,7 @@ export function useStudyPlayback({entries, stopAfterEntry = false, onCompleteCar
     playbackActive,
     postSentenceSilence,
     postWordSilence,
+    playbackEndBehavior,
     playbackRunMode,
     playRequest,
     removeSequenceStep,

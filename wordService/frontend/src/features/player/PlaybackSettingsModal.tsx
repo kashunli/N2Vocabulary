@@ -9,19 +9,23 @@ import type {
   AudioSequenceStep,
 } from "./audioSequenceTypes";
 import {
+  PLAYBACK_END_BEHAVIOR_ORDER,
   nextPlaybackRunMode,
+  type PlaybackEndBehavior,
   type PlaybackRunMode,
 } from "./playbackSettings";
 
 interface PlaybackSettingsModalProps {
   accountState: AccountState;
   playbackRunMode: PlaybackRunMode;
+  playbackEndBehavior: PlaybackEndBehavior;
   sequence: AudioSequenceConfig;
   onChangeSequenceStep: (stepId: string, patch: Partial<AudioSequenceStep>) => void;
   onAddSequenceStep: (element: AudioSequenceElement) => void;
   onMoveSequenceStep: (stepId: string, direction: "up" | "down") => void;
   onRemoveSequenceStep: (stepId: string) => void;
   onTogglePlaybackRunMode: () => void;
+  onChangePlaybackEndBehavior: (behavior: PlaybackEndBehavior) => void;
   onClose: () => void;
   onReset: () => void;
 }
@@ -96,12 +100,14 @@ function PauseAfterControl({stepIndex, value, onChange}: PauseAfterControlProps)
 export function PlaybackSettingsModal({
   accountState,
   playbackRunMode,
+  playbackEndBehavior,
   sequence,
   onChangeSequenceStep,
   onAddSequenceStep,
   onMoveSequenceStep,
   onRemoveSequenceStep,
   onTogglePlaybackRunMode,
+  onChangePlaybackEndBehavior,
   onClose,
   onReset,
 }: PlaybackSettingsModalProps) {
@@ -181,12 +187,30 @@ export function PlaybackSettingsModal({
           </div>
 
           <div className="react-setting-copy">
-            <span>{copy.settings.listPlayback}</span>
+            <span>{copy.settings.playbackMode}</span>
             <p>{copy.player.modeDescription(playbackRunMode)}</p>
           </div>
           <button type="button" className="react-sequence-run-mode" onClick={onTogglePlaybackRunMode} aria-pressed={playbackRunMode !== "single"}>
             {currentModeLabel} → {nextModeLabel}
           </button>
+
+          <div className="react-setting-copy">
+            <span>{copy.settings.whenListEnds}</span>
+            <p>{copy.settings.whenListEndsDescription}</p>
+          </div>
+          <div className="react-setting-options" role="group" aria-label={copy.settings.whenListEnds}>
+            {PLAYBACK_END_BEHAVIOR_ORDER.map((behavior) => (
+              <button
+                key={behavior}
+                type="button"
+                className={playbackEndBehavior === behavior ? "is-selected" : ""}
+                onClick={() => onChangePlaybackEndBehavior(behavior)}
+                aria-pressed={playbackEndBehavior === behavior}
+              >
+                {copy.settings.endBehaviorLabel(behavior)}
+              </button>
+            ))}
+          </div>
 
           <AccountControls state={accountState} />
 

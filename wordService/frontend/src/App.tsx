@@ -41,7 +41,7 @@ function StudyApp(state: ReturnType<typeof useStudyState>) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [reviewSession, setReviewSession] = useState<ReviewSession>();
   const reviewCompletionInFlight = useRef(new Set<string>());
-  // A next-list run changes the section asynchronously. Remember the target
+  // The next-list end choice changes the section asynchronously. Remember the target
   // section until its derived entries replace the outgoing visible list.
   const pendingFollowingUnitRef = useRef<number | undefined>(undefined);
 
@@ -59,6 +59,7 @@ function StudyApp(state: ReturnType<typeof useStudyState>) {
     cancelSilence,
     canNext,
     canPrevious,
+    changePlaybackEndBehavior,
     changeSequenceStep,
     moveSequenceStep,
     nativeQueue,
@@ -71,6 +72,7 @@ function StudyApp(state: ReturnType<typeof useStudyState>) {
     pauseRequest,
     playbackActive,
     playbackRunMode,
+    playbackEndBehavior,
     playRequest,
     replayFocused,
     replayRequest,
@@ -317,12 +319,14 @@ function StudyApp(state: ReturnType<typeof useStudyState>) {
       {settingsOpen ? <PlaybackSettingsModal
         accountState={state}
         playbackRunMode={playbackRunMode}
+        playbackEndBehavior={playbackEndBehavior}
         sequence={sequence}
         onChangeSequenceStep={changeSequenceStep}
         onAddSequenceStep={addSequenceStep}
         onMoveSequenceStep={moveSequenceStep}
         onRemoveSequenceStep={removeSequenceStep}
         onTogglePlaybackRunMode={togglePlaybackRunMode}
+        onChangePlaybackEndBehavior={changePlaybackEndBehavior}
         onClose={() => setSettingsOpen(false)}
         onReset={resetPlaybackSettings}
       /> : null}

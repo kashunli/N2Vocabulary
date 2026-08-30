@@ -14,9 +14,11 @@ import type {
 } from "./audioSequenceTypes";
 import {
   DEFAULT_PLAYBACK_RUN_MODE,
+  DEFAULT_PLAYBACK_END_BEHAVIOR,
   DEFAULT_SILENCE_MS,
   readPlaybackSettings,
   savePlaybackSettings,
+  type PlaybackEndBehavior,
   type PlaybackRunMode,
 } from "./playbackSettings";
 
@@ -29,26 +31,32 @@ export function useStudyPlaybackSettings() {
   const [postSentenceSilence, setPostSentenceSilence] = useState(savedSettings.postSentenceSilence);
   const [sequence, setSequence] = useState<AudioSequenceConfig>(savedSettings.sequence);
   const [playbackRunMode, setPlaybackRunMode] = useState<PlaybackRunMode>(savedSettings.runMode);
+  const [playbackEndBehavior, setPlaybackEndBehavior] = useState<PlaybackEndBehavior>(savedSettings.endBehavior);
 
   const saveRunMode = useCallback((nextMode: PlaybackRunMode) => {
     setPlaybackRunMode(nextMode);
-    savePlaybackSettings(postWordSilence, postSentenceSilence, nextMode, sequence);
-  }, [postSentenceSilence, postWordSilence, sequence]);
+    savePlaybackSettings(postWordSilence, postSentenceSilence, nextMode, playbackEndBehavior, sequence);
+  }, [playbackEndBehavior, postSentenceSilence, postWordSilence, sequence]);
+
+  const changePlaybackEndBehavior = useCallback((nextBehavior: PlaybackEndBehavior) => {
+    setPlaybackEndBehavior(nextBehavior);
+    savePlaybackSettings(postWordSilence, postSentenceSilence, playbackRunMode, nextBehavior, sequence);
+  }, [playbackRunMode, postSentenceSilence, postWordSilence, sequence]);
 
   const changePostWordSilence = useCallback((value: number) => {
     setPostWordSilence(value);
-    savePlaybackSettings(value, postSentenceSilence, playbackRunMode, sequence);
-  }, [playbackRunMode, postSentenceSilence, sequence]);
+    savePlaybackSettings(value, postSentenceSilence, playbackRunMode, playbackEndBehavior, sequence);
+  }, [playbackEndBehavior, playbackRunMode, postSentenceSilence, sequence]);
 
   const changePostSentenceSilence = useCallback((value: number) => {
     setPostSentenceSilence(value);
-    savePlaybackSettings(postWordSilence, value, playbackRunMode, sequence);
-  }, [playbackRunMode, postWordSilence, sequence]);
+    savePlaybackSettings(postWordSilence, value, playbackRunMode, playbackEndBehavior, sequence);
+  }, [playbackEndBehavior, playbackRunMode, postWordSilence, sequence]);
 
   const persistSequence = useCallback((nextSequence: AudioSequenceConfig) => {
     setSequence(nextSequence);
-    savePlaybackSettings(postWordSilence, postSentenceSilence, playbackRunMode, nextSequence);
-  }, [playbackRunMode, postSentenceSilence, postWordSilence]);
+    savePlaybackSettings(postWordSilence, postSentenceSilence, playbackRunMode, playbackEndBehavior, nextSequence);
+  }, [playbackEndBehavior, playbackRunMode, postSentenceSilence, postWordSilence]);
 
   const changeSequenceStep = useCallback((stepId: string, patch: Partial<AudioSequenceStep>) => {
     persistSequence({
@@ -91,10 +99,12 @@ export function useStudyPlaybackSettings() {
     setPostSentenceSilence(DEFAULT_SILENCE_MS);
     setSequence(nextSequence);
     setPlaybackRunMode(DEFAULT_PLAYBACK_RUN_MODE);
+    setPlaybackEndBehavior(DEFAULT_PLAYBACK_END_BEHAVIOR);
     savePlaybackSettings(
       DEFAULT_SILENCE_MS,
       DEFAULT_SILENCE_MS,
       DEFAULT_PLAYBACK_RUN_MODE,
+      DEFAULT_PLAYBACK_END_BEHAVIOR,
       nextSequence,
     );
   }, []);
@@ -104,7 +114,9 @@ export function useStudyPlaybackSettings() {
     changePostSentenceSilence,
     changePostWordSilence,
     changeSequenceStep,
+    changePlaybackEndBehavior,
     moveSequenceStep,
+    playbackEndBehavior,
     playbackRunMode,
     postSentenceSilence,
     postWordSilence,

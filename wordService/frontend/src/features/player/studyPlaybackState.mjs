@@ -25,6 +25,7 @@ export function recordCompletedPhase(current, itemUuid, phase, hasSentenceAudio)
 export function playbackEndAction({
   autoAdvance,
   runMode,
+  endBehavior,
   hasNextCue,
   hasNextEntry,
 }) {
@@ -32,7 +33,7 @@ export function playbackEndAction({
   if (runMode === "single") return "stop";
   if (hasNextCue) return "next-cue";
   if (hasNextEntry) return "next-entry";
-  if (runMode === "cycle-list") return "restart-list";
-  if (runMode === "next-list") return "next-list";
+  if (endBehavior === "restart-list") return "restart-list";
+  if (endBehavior === "next-list") return "next-list";
   return "complete-sequence";
 }

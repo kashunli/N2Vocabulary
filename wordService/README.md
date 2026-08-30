@@ -313,22 +313,24 @@ During playback, the wall keeps the previously played card on the left, the
 current card enlarged in the center, and the next card on the right. Each card
 transition advances the page by one smooth vertical step.
 
-The player’s playback-mode button cycles through four transport runs. Its
-icons are intentionally distinct: a speaker for one audio, a bulleted list
-for one list, repeat arrows for a cycling list, and a queue for continuing to
-the following section.
+The player’s playback-mode button toggles between two transport modes. Its
+icons are intentionally distinct: a playlist for manual/single playback and
+repeat arrows for Continuous playback.
 
-- `Single audio` plays only the currently focused recipe occurrence, then
-  stops.
-- `Play list once` follows every available occurrence in the listening
-  sequence and every visible entry, then stops at the end of the current list.
-- `Cycle this list` returns to the first playable entry when the current list
-  ends and continues until the learner pauses it.
-- `Continue to next list` moves to the following Section when the current
-  Section ends. It stops after the final Section. With `All sections` selected,
-  the visible entries are already one list, so it also stops at that list's end.
+- `Manual / single play` plays only the currently focused recipe occurrence,
+  then stops. Use Previous or Next when you want to choose another occurrence.
+- `Continuous` follows every available occurrence in the listening sequence
+  and every visible entry. When the current list ends, choose the boundary
+  behavior in playback settings: `Stop`, `Play from start again`, or `Jump to
+  next list`.
 
-Open the gear button to edit the local `Listening sequence` recipe. Each row
+Here, a list means the selected Section. `Jump to next list` moves to the next
+available Section and waits for its entries to load before continuing. It stops
+after the final Section. With `All sections` selected, the visible entries are
+already one combined list, so playback stops at that list’s end.
+
+Open the gear button to edit the local `Listening sequence` recipe and the
+continuous list-end behavior. Each row
 has an audio element (`word` or `sentence`), a repeat count, and its own
 pause-after duration. Add the same element more than once when a
 learner wants a pattern such as word → sentence → sentence or word → sentence
@@ -336,9 +338,9 @@ learner wants a pattern such as word → sentence → sentence or word → sente
 automatically. The compatibility default remains one word followed by one
 sentence, each with a 500 ms pause.
 
-The recipe, transport mode, and pause values are saved in the browser’s local
-playback settings. Existing v1 settings are migrated the first
-time the React wall reads them; the runtime still uses only the browser’s
+The recipe, transport mode, list-end behavior, and pause values are saved in the
+browser’s local playback settings. Existing v1/v2 settings are migrated the
+first time the React wall reads them; the runtime still uses only the browser’s
 local learner state and the server’s SQLite/media projection.
 
 - `Space`: start, pause immediately, or resume, even when a button has focus

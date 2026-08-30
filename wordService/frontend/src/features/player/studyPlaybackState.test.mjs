@@ -46,12 +46,12 @@ test("word-only entries complete after their word and a new item resets progress
   });
 });
 
-test("end-of-cue decisions preserve paused, single, cue, entry, and completion behavior", () => {
-  assert.equal(playbackEndAction({autoAdvance: false, runMode: "list", hasNextCue: true, hasNextEntry: true}), "none");
-  assert.equal(playbackEndAction({autoAdvance: true, runMode: "single", hasNextCue: true, hasNextEntry: true}), "stop");
-  assert.equal(playbackEndAction({autoAdvance: true, runMode: "list", hasNextCue: true, hasNextEntry: true}), "next-cue");
-  assert.equal(playbackEndAction({autoAdvance: true, runMode: "list", hasNextCue: false, hasNextEntry: true}), "next-entry");
-  assert.equal(playbackEndAction({autoAdvance: true, runMode: "list", hasNextCue: false, hasNextEntry: false}), "complete-sequence");
-  assert.equal(playbackEndAction({autoAdvance: true, runMode: "cycle-list", hasNextCue: false, hasNextEntry: false}), "restart-list");
-  assert.equal(playbackEndAction({autoAdvance: true, runMode: "next-list", hasNextCue: false, hasNextEntry: false}), "next-list");
+test("end-of-cue decisions separate the two run modes from list-end behavior", () => {
+  assert.equal(playbackEndAction({autoAdvance: false, runMode: "continuous", endBehavior: "stop", hasNextCue: true, hasNextEntry: true}), "none");
+  assert.equal(playbackEndAction({autoAdvance: true, runMode: "single", endBehavior: "restart-list", hasNextCue: true, hasNextEntry: true}), "stop");
+  assert.equal(playbackEndAction({autoAdvance: true, runMode: "continuous", endBehavior: "stop", hasNextCue: true, hasNextEntry: true}), "next-cue");
+  assert.equal(playbackEndAction({autoAdvance: true, runMode: "continuous", endBehavior: "stop", hasNextCue: false, hasNextEntry: true}), "next-entry");
+  assert.equal(playbackEndAction({autoAdvance: true, runMode: "continuous", endBehavior: "stop", hasNextCue: false, hasNextEntry: false}), "complete-sequence");
+  assert.equal(playbackEndAction({autoAdvance: true, runMode: "continuous", endBehavior: "restart-list", hasNextCue: false, hasNextEntry: false}), "restart-list");
+  assert.equal(playbackEndAction({autoAdvance: true, runMode: "continuous", endBehavior: "next-list", hasNextCue: false, hasNextEntry: false}), "next-list");
 });

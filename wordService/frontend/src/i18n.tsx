@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { normalizeLanguage, preferredTranslation, readStoredLanguage, LANGUAGE_STORAGE_KEY } from "./language.mjs";
-import type { PlaybackRunMode } from "./features/player/playbackSettings";
+import type { PlaybackEndBehavior, PlaybackRunMode } from "./features/player/playbackSettings";
 import type { MarkStatus } from "./features/study/markStatus";
 import type { FilterState } from "./features/study/studyTypes";
 
@@ -89,7 +89,10 @@ export interface LanguageCopy {
     addStep: string;
     addWord: string;
     addSentence: string;
-    listPlayback: string;
+    playbackMode: string;
+    whenListEnds: string;
+    whenListEndsDescription: string;
+    endBehaviorLabel: (behavior: PlaybackEndBehavior) => string;
     resetSequence: string;
   };
   account: {
@@ -177,8 +180,8 @@ const EN_COPY: LanguageCopy = {
     replayTitle: "Replay (R)",
     nextAria: "Play next word or sentence",
     nextTitle: "Next (D / →)",
-    modeLabel: (mode) => ({single: "Single audio", list: "Play list once", "cycle-list": "Cycle this list", "next-list": "Continue to next list"}[mode]),
-    modeDescription: (mode) => ({single: "Stop after the focused audio occurrence.", list: "Play every available row in this list once, then stop.", "cycle-list": "When this list ends, start it again from the beginning.", "next-list": "When this section ends, continue with the following section."}[mode]),
+    modeLabel: (mode) => ({single: "Manual / single play", continuous: "Continuous"}[mode]),
+    modeDescription: (mode) => ({single: "Play only the focused audio occurrence. Use Next or Previous to choose another.", continuous: "Play the configured sequence through the current visible list."}[mode]),
     modeSwitchAria: (current, next) => `Playback mode: ${current}. Switch to ${next}.`,
     modeSwitchTitle: (current, next) => `Playback mode: ${current}. Click to switch to ${next}.`,
     defaultStatus: (mode) => `${mode} · Click the wave to seek or play · Space to play/pause`,
@@ -213,7 +216,10 @@ const EN_COPY: LanguageCopy = {
     addStep: "Add step",
     addWord: "+ Word",
     addSentence: "+ Sentence",
-    listPlayback: "List playback",
+    playbackMode: "Playback mode",
+    whenListEnds: "When the current list finishes",
+    whenListEndsDescription: "These choices apply in Continuous mode. With All sections selected, the full selection is one list, so it stops at the end.",
+    endBehaviorLabel: (behavior) => ({stop: "Stop", "restart-list": "Play from start again", "next-list": "Jump to next list"}[behavior]),
     resetSequence: "Reset sequence",
   },
   account: {
@@ -301,8 +307,8 @@ const ZH_COPY: LanguageCopy = {
     replayTitle: "重播（R）",
     nextAria: "播放下一个单词或句子",
     nextTitle: "下一个（D / →）",
-    modeLabel: (mode) => ({single: "单次播放", list: "播放列表一次", "cycle-list": "循环播放列表", "next-list": "继续下一个单元"}[mode]),
-    modeDescription: (mode) => ({single: "播放当前音频后停止。", list: "播放此列表中所有可用行各一次，然后停止。", "cycle-list": "列表结束后从头开始。", "next-list": "本单元结束后继续下一个单元。"}[mode]),
+    modeLabel: (mode) => ({single: "手动 / 单次播放", continuous: "连续播放"}[mode]),
+    modeDescription: (mode) => ({single: "只播放当前音频。使用“下一个”或“上一个”选择其他内容。", continuous: "按设定的播放序列播放当前可见列表。"}[mode]),
     modeSwitchAria: (current, next) => `播放模式：当前为${current}。切换为${next}。`,
     modeSwitchTitle: (current, next) => `播放模式：当前为${current}。点击切换为${next}。`,
     defaultStatus: (mode) => `${mode} · 点击波形进行定位或播放 · 空格键播放/暂停`,
@@ -337,7 +343,10 @@ const ZH_COPY: LanguageCopy = {
     addStep: "添加步骤",
     addWord: "+ 单词",
     addSentence: "+ 句子",
-    listPlayback: "列表播放",
+    playbackMode: "播放模式",
+    whenListEnds: "当前列表播放结束时",
+    whenListEndsDescription: "这些选项只适用于连续播放。选择“全部单元”时，全部内容是一个列表，因此会在末尾停止。",
+    endBehaviorLabel: (behavior) => ({stop: "停止", "restart-list": "从头再播放", "next-list": "跳到下一个列表"}[behavior]),
     resetSequence: "重置播放序列",
   },
   account: {
