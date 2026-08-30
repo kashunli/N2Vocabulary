@@ -207,14 +207,24 @@ export function RailPlayer({
     }
   }, [activeUrl, copy.errors.audioPlayback, nativeAvailable, nativeItemsForRun, player.audioBuffer, player.playRange, target]);
 
-  // Clicking the wave while paused starts from that point. Android receives
-  // the seek after creating the native queue, rather than React starting an
-  // AudioBufferSourceNode that cannot outlive the locked WebView.
+  // Clicking the wave while paused starts from that point. If Android still
+  // owns the selected paused item, seek it in place; rebuilding the queue here
+  // would reset to its first item before the seek and sound like a full replay.
   const handleWaveSeekPlay = useCallback((time: number) => {
     if (effectivePlaying) return;
     onCancelSilence();
+    if (
+      nativeAvailable
+      && (nativeState?.status === "paused" || nativeState?.status === "ready")
+      && nativeState.itemId === nativeQueue[0]?.id
+    ) {
+      void seekNativeAudio(time * 1000)
+        .then(() => resumeNativeAudio())
+        .catch(() => reportNativeError());
+      return;
+    }
     void playFrom(time);
-  }, [effectivePlaying, onCancelSilence, playFrom]);
+  }, [effectivePlaying, nativeAvailable, nativeQueue, nativeState?.itemId, nativeState?.status, onCancelSilence, playFrom, reportNativeError]);
 
   // The hosted browser retains the existing decoded-buffer route. In the APK,
   // React sends one materialized queue and Android advances it in the service.
@@ -302,11 +312,13 @@ export function RailPlayer({
 
   const handleSeek = useCallback((time: number) => {
     if (nativeAvailable) {
-      void seekNativeAudio(time * 1000).catch(() => reportNativeError());
+      // A paused waveform drag is finalized by handleWaveSeekPlay. Deferring
+      // this native call avoids racing a seek with the resume operation above.
+      if (effectivePlaying) void seekNativeAudio(time * 1000).catch(() => reportNativeError());
       return;
     }
     void player.seek(time);
-  }, [nativeAvailable, player.seek, reportNativeError]);
+  }, [effectivePlaying, nativeAvailable, player.seek, reportNativeError]);
 
   const nativeStatus = nativeState?.status === "gap"
     ? copy.player.nativeQueuePause
