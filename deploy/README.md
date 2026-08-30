@@ -2,11 +2,10 @@
 
 `.github/workflows/release.yml` builds downloadable Linux and Android
 WordService assets when a `v*` Git tag is pushed. `.github/workflows/deploy.yml`
-deploys the same tagged commit to the VPS on that tag push and remains available
-through `workflow_dispatch` as an explicit manual fallback. Ordinary branch
-pushes do not trigger deployment. The deployment is deliberately SSH-based so
-the target can remain an ordinary Linux VPS rather than needing a cloud-specific
-GitHub Action.
+deploys the same tagged commit to the VPS on that tag push. Branch pushes and
+manual workflow dispatches do not trigger either workflow. The deployment is
+deliberately SSH-based so the target can remain an ordinary Linux VPS rather
+than needing a cloud-specific GitHub Action.
 
 The deployment package contains the release Rust binary, the committed React
 assets, `wordService/data/n2vocab.sqlite`, the tracked `clips/` tree, review
@@ -179,14 +178,12 @@ file when one is present; otherwise it uses the debug signing key so the APK is
 installable for testing. A production distribution should add a protected
 release keystore and keep its signing identity stable across releases.
 
-### Manual deployment fallback
+### Local deployment fallback
 
-The `workflow_dispatch` path remains available when a deployment needs to be
-rerun without creating a new release tag. For a local/manual deployment, download
+If a tagged deployment needs to be reproduced outside GitHub Actions, download
 the Linux release archive and its checksum into the same local directory, then
-set `DEPLOY_PUBLIC_ORIGIN` to the public HTTPS origin before running the script.
-From a Bash environment with OpenSSH, run the repository deploy script against
-the downloaded package:
+set `DEPLOY_PUBLIC_ORIGIN` to the public HTTPS origin. From a Bash environment
+with OpenSSH, run the repository deploy script against the downloaded package:
 
 ```bash
 export ARCHIVE='/path/to/n2-vocabulary-v0.1.0-<commit>.tar.gz'
