@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useRef } from "react";
 
+import { useI18n } from "../../i18n";
 import type { Entry } from "../../types";
 import type { MaterializedAudioSequenceStep } from "./audioSequenceTypes";
 import type { NativeAudioQueueItem } from "./nativeAudio";
@@ -45,6 +46,7 @@ export function useNativeStudyPlayback({
   onActivateCue,
   onQueueComplete,
 }: UseNativeStudyPlaybackOptions) {
+  const {copy} = useI18n();
   const completedCueIdsRef = useRef(new Set<string>());
   const activeCueIdRef = useRef<string | undefined>(undefined);
 
@@ -69,7 +71,7 @@ export function useNativeStudyPlayback({
         if (!url) continue;
         result.push({
           id: nativeCueId(entryIndex, cueIndex),
-          title: `${entry.kanji} · ${cue.phase === "word" ? "Word" : "Sentence"}`,
+          title: `${entry.kanji} · ${cue.phase === "word" ? copy.word : copy.sentence}`,
           url,
           pauseAfterMs: cue.pauseAfterMs
             ?? (cue.phase === "word" ? postWordSilence : postSentenceSilence),
@@ -78,7 +80,7 @@ export function useNativeStudyPlayback({
       if (stopAfterEntry) break;
     }
     return result;
-  }, [activeCues, activeEntry, activeIndex, cuesForEntry, entries, postSentenceSilence, postWordSilence, safeCueIndex, selectedManualPhase, stopAfterEntry]);
+  }, [activeCues, activeEntry, activeIndex, copy.sentence, copy.word, cuesForEntry, entries, postSentenceSilence, postWordSilence, safeCueIndex, selectedManualPhase, stopAfterEntry]);
 
   const completeCue = useCallback((id: string) => {
     if (completedCueIdsRef.current.has(id)) return;

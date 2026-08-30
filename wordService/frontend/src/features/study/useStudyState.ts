@@ -1,6 +1,7 @@
 import {useCallback, useEffect, useMemo, useState} from "react";
 
 import {getAccountStudyState, getCurrentUser, getLegacyMarkSeed, importGuestStudyState, loginAccount, logoutAccount, registerAccount, type AuthSession} from "../../api";
+import { useI18n } from "../../i18n";
 import {AccountStudyStateStore} from "./AccountStudyStateStore";
 import {LocalStudyStateStore} from "./localStudyState.mjs";
 import type {MarkStatus} from "./markStatus";
@@ -25,6 +26,7 @@ class DecisionBlockedStudyStateStore implements StudyStateStore {
 }
 
 export function useStudyState() {
+  const {copy, localizeMessage} = useI18n();
   const localStore = useMemo(() => new LocalStudyStateStore(), []);
   const [store, setStore] = useState<StudyStateStore>(localStore as StudyStateStore);
   const [snapshot, setSnapshot] = useState<StudySnapshot>(() => store.load());
@@ -73,8 +75,8 @@ export function useStudyState() {
     try {
       const account = mode === "login" ? await loginAccount(email, password) : await registerAccount(email, password);
       await considerAccount(account);
-    } catch (error) { setAccountError(error instanceof Error ? error.message : "Account request failed."); throw error; }
-  }, [considerAccount]);
+    } catch (error) { setAccountError(error instanceof Error ? localizeMessage(error.message) : copy.errors.accountRequest); throw error; }
+  }, [considerAccount, copy.errors.accountRequest, localizeMessage]);
 
   const logout = useCallback(async () => {
     if (session) await logoutAccount(session.csrf_token);
@@ -90,8 +92,8 @@ export function useStudyState() {
       const merged = await importGuestStudyState(pendingImport.account.csrf_token, {version: guest.version, import_id: importId, snapshot_checksum: pendingImport.guestChecksum, cards: guest.cards});
       localStore.clearActive();
       activateAccount(pendingImport.account, merged);
-    } catch (error) { setAccountError(error instanceof Error ? error.message : "Guest import failed."); throw error; }
-  }, [activateAccount, localStore, pendingImport]);
+    } catch (error) { setAccountError(error instanceof Error ? localizeMessage(error.message) : copy.errors.guestImport); throw error; }
+  }, [activateAccount, copy.errors.guestImport, localStore, localizeMessage, pendingImport]);
 
   const keepAccount = useCallback(() => {
     if (!pendingImport) return;

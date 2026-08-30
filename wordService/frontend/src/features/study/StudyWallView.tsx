@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
+import { useI18n } from "../../i18n";
 import { SentenceExplanation } from "../explanation/SentenceExplanation";
 import type { PlaybackPhase } from "../player/playbackSettings";
 import type { Entry } from "../../types";
@@ -29,12 +30,20 @@ export function StudyWallView({
   bookCode,
   entries,
   entriesLoading,
-  emptyMessage = "Loading vocabulary…",
+  emptyMessage,
   listVisible,
   onSelectEntry,
   onSelectPhase,
   reviewSession,
 }: StudyWallViewProps) {
+  const {copy, language, selectText} = useI18n();
+  const resolvedEmptyMessage = emptyMessage || copy.loadingVocabulary;
+  const sentenceTranslation = activeEntry ? selectText(activeEntry.sentence_translation_en, activeEntry.sentence_translation_zh) : "";
+  const sentenceTranslationLanguage = language === "zh" && activeEntry?.sentence_translation_zh?.trim()
+    ? "zh-CN"
+    : language === "en" && activeEntry?.sentence_translation_en?.trim()
+      ? "en"
+      : language === "zh" ? "en" : "zh-CN";
   const [listWidth, setListWidth] = useState(320);
   const [draggingDivider, setDraggingDivider] = useState(false);
   const activeRef = useRef<HTMLButtonElement | null>(null);
@@ -88,17 +97,17 @@ export function StudyWallView({
 
   return (
     <div className="react-layout" ref={layoutRef} style={{gridTemplateColumns: listVisible ? `${listWidth}px 12px minmax(0, 1fr)` : "minmax(0, 1fr)"}}>
-      {listVisible ? <section ref={listRef} className="react-list" aria-label="Vocabulary playback list">
+      {listVisible ? <section ref={listRef} className="react-list" aria-label={copy.vocabularyPlaybackList}>
         {entries.length ? entries.map((entry, index) => {
           const reviewCompleted = reviewSession?.completedByItemUuid[entry.item_uuid];
           const status = markStatusOf(entry.mark);
-          const statusLabel = [status === "known" ? "Known" : status === "flagged" ? "Flagged" : "", reviewCompleted ? "Reviewed" : ""].filter(Boolean).join(", ");
+          const statusLabel = [copy.statusLabel(status), reviewCompleted ? copy.reviewedLabel : ""].filter(Boolean).join(copy.statusSeparator);
           const statusIcon = status === "known" ? "✓" : status === "flagged" ? "⚑" : reviewCompleted ? "✓" : "";
-          return <button key={entry.entry_id} ref={index === activeIndex ? activeRef : null} className={`${index === activeIndex ? "is-active " : ""}${reviewCompleted ? " is-reviewed" : ""} status-${status}`} aria-label={`${entry.kanji}${statusLabel ? `, ${statusLabel}` : ""}`} aria-current={index === activeIndex ? "true" : undefined} onClick={() => onSelectEntry(index)}><span className="react-row-kanji">{entry.kanji}</span>{statusLabel ? <span className="react-row-status" aria-label={statusLabel} title={statusLabel}>{statusIcon}</span> : null}</button>;
-        }) : entriesLoading ? <p className="react-empty">{emptyMessage}</p> : <p className="react-empty">No words match the current filters.</p>}
+          return <button key={entry.entry_id} ref={index === activeIndex ? activeRef : null} className={`${index === activeIndex ? "is-active " : ""}${reviewCompleted ? " is-reviewed" : ""} status-${status}`} aria-label={`${entry.kanji}${statusLabel ? `${copy.statusSeparator}${statusLabel}` : ""}`} aria-current={index === activeIndex ? "true" : undefined} onClick={() => onSelectEntry(index)}><span className="react-row-kanji">{entry.kanji}</span>{statusLabel ? <span className="react-row-status" aria-label={statusLabel} title={statusLabel}>{statusIcon}</span> : null}</button>;
+        }) : entriesLoading ? <p className="react-empty">{resolvedEmptyMessage}</p> : <p className="react-empty">{copy.noWordsMatch}</p>}
       </section> : null}
-      {listVisible ? <button className="react-divider" type="button" role="separator" aria-orientation="vertical" aria-label="Adjust playback list width" aria-valuemin={220} aria-valuemax={620} aria-valuenow={listWidth} tabIndex={0} onPointerDown={(event) => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); setDraggingDivider(true); }} onKeyDown={(event) => { if (event.key === "ArrowLeft") setListWidth((value) => Math.max(220, value - (event.shiftKey ? 50 : 20))); else if (event.key === "ArrowRight") setListWidth((value) => Math.min(620, value + (event.shiftKey ? 50 : 20))); else return; event.preventDefault(); }}> </button> : null}
-      <section ref={currentRef} className="react-current" aria-live="polite" aria-label="Current vocabulary item">
+      {listVisible ? <button className="react-divider" type="button" role="separator" aria-orientation="vertical" aria-label={copy.adjustPlaybackListWidth} aria-valuemin={220} aria-valuemax={620} aria-valuenow={listWidth} tabIndex={0} onPointerDown={(event) => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); setDraggingDivider(true); }} onKeyDown={(event) => { if (event.key === "ArrowLeft") setListWidth((value) => Math.max(220, value - (event.shiftKey ? 50 : 20))); else if (event.key === "ArrowRight") setListWidth((value) => Math.min(620, value + (event.shiftKey ? 50 : 20))); else return; event.preventDefault(); }}> </button> : null}
+      <section ref={currentRef} className="react-current" aria-live="polite" aria-label={copy.currentVocabularyItem}>
         {activeEntry ? <>
           <div className="react-word-summary">
             <h2>
@@ -108,15 +117,16 @@ export function StudyWallView({
                 onClick={() => onSelectPhase("word")}
                 disabled={!activeEntry.word_audio_url}
                 aria-current={activePhase === "word" ? "true" : undefined}
-                aria-label={`Play word audio: ${activeEntry.kanji}`}
-                title="Play word audio"
+                aria-label={copy.playWordAudio(activeEntry.kanji)}
+                title={copy.playWordAudio(activeEntry.kanji)}
+                lang="ja"
               >
                 <WordDisplay word={activeEntry.kanji} reading={activeEntry.reading} />
               </button>
             </h2>
             <MeaningDisplay meaningEn={activeEntry.meaning_en} meaningZh={activeEntry.meaning_zh} />
           </div>
-          {reviewSession?.completedByItemUuid[activeEntry.item_uuid] ? <p className="react-review-completed">Reviewed · level {reviewSession.completedByItemUuid[activeEntry.item_uuid].reviewLevel} · next {new Date(reviewSession.completedByItemUuid[activeEntry.item_uuid].nextDueAt).toLocaleDateString()}</p> : null}
+          {reviewSession?.completedByItemUuid[activeEntry.item_uuid] ? <p className="react-review-completed">{copy.reviewed(reviewSession.completedByItemUuid[activeEntry.item_uuid].reviewLevel, copy.formatDate(reviewSession.completedByItemUuid[activeEntry.item_uuid].nextDueAt))}</p> : null}
           {activeEntry.sentence ? <div className="react-sentence">
               <button
                 type="button"
@@ -124,14 +134,15 @@ export function StudyWallView({
                 onClick={() => onSelectPhase("sentence")}
                 disabled={!activeEntry.sentence_audio_url}
                 aria-current={activePhase === "sentence" ? "true" : undefined}
-                aria-label="Play sentence audio"
-                title="Play sentence audio"
+                aria-label={copy.playSentenceAudio}
+                title={copy.playSentenceAudio}
               >
-                <strong>{activeEntry.sentence}</strong>
+                <strong lang="ja">{activeEntry.sentence}</strong>
               </button>
+              {sentenceTranslation ? <p className="react-sentence-translation" lang={sentenceTranslationLanguage} aria-label={copy.sentenceTranslation}>{sentenceTranslation}</p> : null}
             </div> : null}
           {activeEntry.explanation_md ? <SentenceExplanation value={activeEntry.explanation_md} /> : null}
-        </> : <p className="react-empty">{emptyMessage}</p>}
+        </> : <p className="react-empty">{resolvedEmptyMessage}</p>}
       </section>
     </div>
   );

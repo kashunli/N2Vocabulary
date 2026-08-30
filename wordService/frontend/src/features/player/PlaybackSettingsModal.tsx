@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import { useI18n } from "../../i18n";
 import { MAX_AUDIO_SEQUENCE_STEPS, MAX_SEQUENCE_PAUSE_MS } from "./audioSequence.mjs";
 import type {
   AudioSequenceConfig,
@@ -8,8 +9,6 @@ import type {
 } from "./audioSequenceTypes";
 import {
   nextPlaybackRunMode,
-  playbackRunModeDescription,
-  playbackRunModeLabel,
   type PlaybackRunMode,
 } from "./playbackSettings";
 
@@ -36,6 +35,7 @@ interface PauseAfterControlProps {
 }
 
 function PauseAfterControl({stepIndex, value, onChange}: PauseAfterControlProps) {
+  const {copy} = useI18n();
   const [draft, setDraft] = useState(pauseSeconds(value));
 
   useEffect(() => {
@@ -62,7 +62,7 @@ function PauseAfterControl({stepIndex, value, onChange}: PauseAfterControlProps)
         max={MAX_SEQUENCE_PAUSE_MS / 1000}
         step="0.1"
         value={value / 1000}
-        aria-label={`Pause after step ${stepIndex}`}
+        aria-label={copy.settings.pauseAfterStep(stepIndex)}
         onChange={(event) => onChange(Math.round(Number(event.target.value) * 1000))}
       />
       <span className="react-sequence-pause-value">
@@ -74,7 +74,7 @@ function PauseAfterControl({stepIndex, value, onChange}: PauseAfterControlProps)
           step="0.1"
           inputMode="decimal"
           value={draft}
-          aria-label={`Pause after step ${stepIndex} in seconds`}
+          aria-label={copy.settings.pauseAfterStepSeconds(stepIndex)}
           onChange={(event) => setDraft(event.target.value)}
           onBlur={commitDraft}
           onKeyDown={(event) => {
@@ -102,80 +102,83 @@ export function PlaybackSettingsModal({
   onClose,
   onReset,
 }: PlaybackSettingsModalProps) {
+  const {copy} = useI18n();
+  const currentModeLabel = copy.player.modeLabel(playbackRunMode);
+  const nextModeLabel = copy.player.modeLabel(nextPlaybackRunMode(playbackRunMode));
   return (
     <div className="react-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <section className="react-settings-modal react-sequence-modal" role="dialog" aria-modal="true" aria-labelledby="react-settings-title">
         <div className="react-settings-head">
           <div>
-            <span className="eyebrow">PLAYBACK RECIPE</span>
-            <h2 id="react-settings-title">Listening sequence</h2>
+            <span className="eyebrow">{copy.settings.eyebrow}</span>
+            <h2 id="react-settings-title">{copy.settings.title}</h2>
           </div>
-          <button type="button" onClick={onClose} aria-label="Close playback settings">×</button>
+          <button type="button" onClick={onClose} aria-label={copy.settings.close}>×</button>
         </div>
         <div className="react-settings-body">
           <div className="react-sequence-intro">
-            <p>Each row is one playback occurrence. Add the same audio more than once when you want it repeated later.</p>
-            <span>{sequence.steps.length}/{MAX_AUDIO_SEQUENCE_STEPS} steps</span>
+            <p>{copy.settings.introduction}</p>
+            <span>{copy.settings.steps(sequence.steps.length, MAX_AUDIO_SEQUENCE_STEPS)}</span>
           </div>
 
-          <div className="react-sequence-list" role="list" aria-label="Listening sequence steps">
+          <div className="react-sequence-list" role="list" aria-label={copy.settings.sequenceSteps}>
             {sequence.steps.map((step, index) => (
               <div className="react-sequence-row" role="listitem" key={step.id}>
                 <span className="react-sequence-number" aria-hidden="true">{index + 1}</span>
                 <div className="react-sequence-main">
-                  <label htmlFor={`react-sequence-element-${step.id}`}>Audio element</label>
+                  <label htmlFor={`react-sequence-element-${step.id}`}>{copy.settings.audioElement}</label>
                   <select
                     id={`react-sequence-element-${step.id}`}
                     value={step.element}
                     onChange={(event) => onChangeSequenceStep(step.id, {element: event.target.value as AudioSequenceElement})}
                   >
-                    <option value="word">Word</option>
-                    <option value="sentence">Sentence</option>
+                    <option value="word">{copy.word}</option>
+                    <option value="sentence">{copy.sentence}</option>
                   </select>
-                  <small>Unavailable audio is skipped automatically.</small>
+                  <small>{copy.settings.unavailableAudio}</small>
                 </div>
                 <div className="react-sequence-controls">
-                  <div className="react-sequence-order" aria-label={`Move step ${index + 1}`}>
-                    <button type="button" onClick={() => onMoveSequenceStep(step.id, "up")} disabled={index === 0} aria-label={`Move step ${index + 1} up`}>↑</button>
-                    <button type="button" onClick={() => onMoveSequenceStep(step.id, "down")} disabled={index === sequence.steps.length - 1} aria-label={`Move step ${index + 1} down`}>↓</button>
+                  <div className="react-sequence-order" aria-label={copy.settings.moveStep(index + 1)}>
+                    <button type="button" onClick={() => onMoveSequenceStep(step.id, "up")} disabled={index === 0} aria-label={copy.settings.moveStepUp(index + 1)}>↑</button>
+                    <button type="button" onClick={() => onMoveSequenceStep(step.id, "down")} disabled={index === sequence.steps.length - 1} aria-label={copy.settings.moveStepDown(index + 1)}>↓</button>
                   </div>
                   <div className="react-sequence-stepper">
-                    <span>Repeat</span>
+                    <span>{copy.settings.repeat}</span>
                     <span className="react-sequence-stepper-control">
-                      <button type="button" onClick={() => onChangeSequenceStep(step.id, {repeatCount: Math.max(0, step.repeatCount - 1)})} disabled={step.repeatCount <= 0} aria-label={`Decrease repeat for step ${index + 1}`}>−</button>
-                      <output aria-label={`Repeat count for step ${index + 1}`}>{step.repeatCount}</output>
-                      <button type="button" onClick={() => onChangeSequenceStep(step.id, {repeatCount: Math.min(9, step.repeatCount + 1)})} disabled={step.repeatCount >= 9} aria-label={`Increase repeat for step ${index + 1}`}>+</button>
+                      <button type="button" onClick={() => onChangeSequenceStep(step.id, {repeatCount: Math.max(0, step.repeatCount - 1)})} disabled={step.repeatCount <= 0} aria-label={copy.settings.decreaseRepeat(index + 1)}>−</button>
+                      <output aria-label={copy.settings.repeatCount(index + 1)}>{step.repeatCount}</output>
+                      <button type="button" onClick={() => onChangeSequenceStep(step.id, {repeatCount: Math.min(9, step.repeatCount + 1)})} disabled={step.repeatCount >= 9} aria-label={copy.settings.increaseRepeat(index + 1)}>+</button>
                     </span>
                   </div>
                   <div className="react-sequence-field">
-                    <span>Pause after</span>
+                    <span>{copy.settings.pauseAfter}</span>
                     <PauseAfterControl
                       stepIndex={index + 1}
                       value={step.pauseAfterMs}
                       onChange={(pauseAfterMs) => onChangeSequenceStep(step.id, {pauseAfterMs})}
                     />
                   </div>
-                  <button type="button" className="react-sequence-remove" onClick={() => onRemoveSequenceStep(step.id)} disabled={sequence.steps.length <= 1} aria-label={`Remove step ${index + 1}`}>Remove</button>
+                  <button type="button" className="react-sequence-remove" onClick={() => onRemoveSequenceStep(step.id)} disabled={sequence.steps.length <= 1} aria-label={`${copy.settings.remove} ${index + 1}`}>{copy.settings.remove}</button>
                 </div>
               </div>
             ))}
           </div>
 
           <div className="react-sequence-add">
-            <span>Add step</span>
-            <button type="button" onClick={() => onAddSequenceStep("word")} disabled={sequence.steps.length >= MAX_AUDIO_SEQUENCE_STEPS}>+ Word</button>
-            <button type="button" onClick={() => onAddSequenceStep("sentence")} disabled={sequence.steps.length >= MAX_AUDIO_SEQUENCE_STEPS}>+ Sentence</button>
+            <span>{copy.settings.addStep}</span>
+            <button type="button" onClick={() => onAddSequenceStep("word")} disabled={sequence.steps.length >= MAX_AUDIO_SEQUENCE_STEPS}>{copy.settings.addWord}</button>
+            <button type="button" onClick={() => onAddSequenceStep("sentence")} disabled={sequence.steps.length >= MAX_AUDIO_SEQUENCE_STEPS}>{copy.settings.addSentence}</button>
           </div>
 
           <div className="react-setting-copy">
-            <span>List playback</span>
-            <p>{playbackRunModeDescription(playbackRunMode)}</p>
+            <span>{copy.settings.listPlayback}</span>
+            <p>{copy.player.modeDescription(playbackRunMode)}</p>
           </div>
           <button type="button" className="react-sequence-run-mode" onClick={onTogglePlaybackRunMode} aria-pressed={playbackRunMode !== "single"}>
-            {playbackRunModeLabel(playbackRunMode)} → {playbackRunModeLabel(nextPlaybackRunMode(playbackRunMode))}
+            {currentModeLabel} → {nextModeLabel}
           </button>
 
-          <button type="button" className="react-settings-reset" onClick={onReset}>Reset sequence</button>
+          <button type="button" className="react-settings-reset" onClick={onReset}>{copy.settings.resetSequence}</button>
         </div>
       </section>
     </div>

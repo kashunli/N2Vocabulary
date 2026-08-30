@@ -120,6 +120,34 @@
   background: var(--indigo);
   color: #fff;
 }
+.react-language-picker {
+  display: grid;
+  align-self: flex-end;
+  gap: 6px;
+  color: var(--muted);
+  font: 700 0.64rem/1.2 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.react-language-picker select {
+  min-width: 86px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  color: var(--ink);
+  padding: 9px 10px;
+  font: 0.82rem/1.2 var(--sans);
+  letter-spacing: 0;
+  text-transform: none;
+  cursor: pointer;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+.react-language-picker select:hover { border-color: var(--indigo-faint); }
+.react-language-picker select:focus {
+  border-color: var(--indigo);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--indigo-soft);
+}
 .react-header-actions .react-list-toggle {
   min-width: 34px;
   padding-inline: 7px;

@@ -129,8 +129,7 @@
   font: 0.82rem/1.4 var(--sans);
   color: var(--ink-soft);
 }
-.react-meaning .react-meaning-en { font-weight: 600; color: var(--ink); }
-.react-meaning .react-meaning-zh { color: var(--muted); }
+.react-meaning .react-meaning-en, .react-meaning .react-meaning-zh { font-weight: 600; color: var(--ink); }
 
 .react-review-completed { color: var(--sage); margin: 12px 0 0; font: 0.82rem/1.4 var(--sans); }
 
@@ -153,6 +152,11 @@
 }
 .react-sentence-trigger:hover strong, .react-sentence-trigger:focus-visible strong {
   color: var(--indigo-deep);
+}
+.react-sentence-translation {
+  margin: 0;
+  color: var(--muted);
+  font: 0.9rem/1.5 var(--sans);
 }
 
 .react-sentence-explanation { max-width: 760px; margin-top: 10px; font: 0.88rem/1.6 var(--sans); }

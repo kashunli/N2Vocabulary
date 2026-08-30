@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { getUnits } from "./api";
+import { LanguageProvider, useI18n } from "./i18n";
 import { PlaybackSettingsModal } from "./features/player/PlaybackSettingsModal";
 import { RailPlayer } from "./features/player/RailPlayer";
 import { useStudyKeyboardShortcuts } from "./features/player/useStudyKeyboardShortcuts";
@@ -20,6 +21,7 @@ import type { FilterState } from "./features/study/studyTypes";
 import type { Entry, UnitSummary } from "./types";
 
 function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
+  const {copy, localizeMessage} = useI18n();
   const [initialView] = useState(() => readStudyViewState());
   const [selectedBook, setSelectedBook] = useState(() => initialView.selectedBook || readStudyFocus()?.bookCode || "N2");
   const [selectedUnit, setSelectedUnit] = useState<number | null>(() => initialView.selectedUnit ?? null);
@@ -84,7 +86,7 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
     entries,
     onCompleteCard: entry => {
       if (filterState !== "review") {
-        void store.recordStudyCompleted(entry).catch(error => setStatus(error instanceof Error ? error.message : "Could not save study playback."));
+        void store.recordStudyCompleted(entry).catch(error => setStatus(error instanceof Error ? localizeMessage(error.message) : copy.errors.saveStudyPlayback));
         return;
       }
       const session = reviewSession;
@@ -95,16 +97,16 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
         const card = result.card;
         const nextDueAt = card?.due_at;
         if (!result.completed || !card || !nextDueAt) {
-          setStatus("This review was already completed elsewhere. Re-enter Review to refresh the due list.");
+          setStatus(copy.errors.reviewCompletedElsewhere);
           return;
         }
         setReviewSession(current => current?.scopeKey === session.scopeKey
           ? {...current, completedByItemUuid: {...current.completedByItemUuid, [entry.item_uuid]: {reviewLevel: card.review_level, nextDueAt}}}
           : current);
-        setStatus(`${entry.kanji} reviewed. Level ${card.review_level}; next review ${new Date(nextDueAt).toLocaleDateString()}.`);
+        setStatus(copy.reviewStatus(entry.kanji, card.review_level, copy.formatDate(nextDueAt)));
       }).catch(error => {
         reviewCompletionInFlight.current.delete(entry.item_uuid);
-        setStatus(error instanceof Error ? error.message : "Could not save review completion.");
+        setStatus(error instanceof Error ? localizeMessage(error.message) : copy.errors.saveReviewCompletion);
       });
     },
     onFollowingList: () => {
@@ -151,14 +153,14 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
       .catch((error: unknown) => {
         if (!cancelled) {
           setPendingUnits([]);
-          setStatus(error instanceof Error ? error.message : "Could not load sections.");
+          setStatus(error instanceof Error ? localizeMessage(error.message) : copy.errors.loadSections);
         }
       })
       .finally(() => {
         if (!cancelled) setPendingUnitsLoading(false);
       });
     return () => { cancelled = true; };
-  }, [pendingBook, selectedBook, setStatus]);
+  }, [copy.errors.loadSections, localizeMessage, pendingBook, selectedBook, setStatus]);
 
   useEffect(() => {
     // Playback can advance to the next section without going through the
@@ -326,8 +328,13 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
   );
 }
 
-export function App() {
+function AppContent() {
+  const {copy} = useI18n();
   const studyState = useStudyState();
-  if (!studyState.ready) return <main className="react-shell"><p className="react-empty">Loading study state…</p></main>;
+  if (!studyState.ready) return <main className="react-shell"><p className="react-empty">{copy.loadingStudyState}</p></main>;
   return <><AccountControls state={studyState} /><StudyApp key={studyState.session?.user.id ?? "guest"} {...studyState} /></>;
+}
+
+export function App() {
+  return <LanguageProvider><AppContent /></LanguageProvider>;
 }

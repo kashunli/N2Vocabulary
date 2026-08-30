@@ -14,9 +14,11 @@
   .react-pickers { flex: 1 1 auto; }
   .react-pickers label > span { display: none; }
   .react-pickers select, .react-filter-select { padding: 7px 7px; font-size: 0.75rem; }
-  .react-filter-select { flex: 0 1 118px; }
-  .react-header-actions { gap: 5px; }
-  .react-header-actions button { padding: 7px 9px; }
+  .react-filter-select { flex: 0 1 98px; }
+  .react-header-actions { gap: 3px; }
+  .react-header-actions button { padding: 7px 6px; }
+  .react-language-picker > span { display: none; }
+  .react-language-picker select { min-width: 64px; padding: 7px 5px; font-size: 0.75rem; }
   .account-corner { display: none; }
   .react-content-scroll { overflow: hidden; }
   .react-layout { display: flex; flex-direction: column; height: 100%; min-height: 0; }

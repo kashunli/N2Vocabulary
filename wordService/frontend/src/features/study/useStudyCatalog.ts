@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { getBooks, getEntries, getSummary, getUnits } from "../../api";
+import { useI18n } from "../../i18n";
 import { readContentBook, writeContentBook } from "./contentCache.mjs";
 import { deriveCatalogPresentation } from "./catalogPresentation.mjs";
 import type { BookSummary, Entry, UnitSummary, VocabularySummary } from "../../types";
@@ -18,6 +19,7 @@ export function useStudyCatalog({
   selectedUnit,
   studySnapshot,
 }: UseStudyCatalogOptions) {
+  const {copy, localizeMessage} = useI18n();
   const [books, setBooks] = useState<BookSummary[]>([]);
   const [bookSummary, setBookSummary] = useState<VocabularySummary>();
   const [sourceUnits, setSourceUnits] = useState<UnitSummary[]>([]);
@@ -28,8 +30,8 @@ export function useStudyCatalog({
   useEffect(() => {
     getBooks()
       .then((payload) => setBooks(payload.items))
-      .catch((error: unknown) => setStatus(error instanceof Error ? error.message : "Could not load books."));
-  }, [setStatus]);
+      .catch((error: unknown) => setStatus(error instanceof Error ? localizeMessage(error.message) : copy.errors.loadBooks));
+  }, [copy.errors.loadBooks, localizeMessage, setStatus]);
 
   // Load the selected book's content once and keep it local. Book content is
   // immutable, so a fresh summary only validates the cached revision; units and
@@ -64,13 +66,13 @@ export function useStudyCatalog({
         setAllEntries(bookPayload.items);
       })
       .catch((error: unknown) => {
-        if (!cancelled) setStatus(error instanceof Error ? error.message : "Could not load sections.");
+        if (!cancelled) setStatus(error instanceof Error ? localizeMessage(error.message) : copy.errors.loadSections);
       })
       .finally(() => {
         if (!cancelled) setContentLoading(false);
       });
     return () => { cancelled = true; };
-  }, [selectedBook, setStatus]);
+  }, [copy.errors.loadSections, localizeMessage, selectedBook, setStatus]);
 
   const presentation = useMemo<{summary: VocabularySummary; units: UnitSummary[]} | undefined>(() => {
     if (!bookSummary || !allEntries.length || allEntries[0].book_code !== selectedBook) {

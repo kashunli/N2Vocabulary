@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowCounterClockwise, ListBullets, Pause, Play, Queue, Repeat, RepeatOnce, SkipBack, SkipForward } from "@phosphor-icons/react";
 
+import { useI18n } from "../../i18n";
 import { useAudioBufferPlayer } from "./useAudioBufferPlayer";
 import { LineWaveform } from "./LineWaveform";
 import { detectSilenceGapsMs } from "./waveform.mjs";
@@ -17,7 +18,6 @@ import {
 } from "./nativeAudio";
 import {
   nextPlaybackRunMode,
-  playbackRunModeLabel,
   type PlaybackRunMode,
 } from "./playbackSettings";
 import type { MarkStatus } from "../study/markStatus";
@@ -86,6 +86,7 @@ export function RailPlayer({
   canPrevious,
   canNext,
 }: RailPlayerProps) {
+  const {copy, localizeMessage} = useI18n();
   const [activeUrl, setActiveUrl] = useState<string>();
   const [error, setError] = useState("");
   const [nativeState, setNativeState] = useState<NativeAudioState>();
@@ -179,9 +180,9 @@ export function RailPlayer({
         segmentId: `${target.entry.entry_id}:${target.phase}:${target.sequenceOccurrenceId || "direct"}`,
       });
     } catch {
-      setError("Audio could not be played.");
+      setError(copy.errors.audioPlayback);
     }
-  }, [activeUrl, nativeAvailable, nativeItemsForRun, player.audioBuffer, player.playRange, target]);
+  }, [activeUrl, copy.errors.audioPlayback, nativeAvailable, nativeItemsForRun, player.audioBuffer, player.playRange, target]);
 
   // Clicking the wave while paused starts from that point. Android receives
   // the seek after creating the native queue, rather than React starting an
@@ -285,17 +286,19 @@ export function RailPlayer({
   }, [nativeAvailable, player.seek]);
 
   const nativeStatus = nativeState?.status === "gap"
-    ? "Native queue pause"
+    ? copy.player.nativeQueuePause
     : nativeState?.status === "gap-paused"
-      ? "Native queue paused"
+      ? copy.player.nativeQueuePaused
       : nativeState?.status === "playing"
-        ? "Native background player"
+        ? copy.player.nativeBackgroundPlayer
         : "";
+  const currentModeLabel = copy.player.modeLabel(playbackRunMode);
+  const nextModeLabel = copy.player.modeLabel(nextPlaybackRunMode(playbackRunMode));
 
   return (
-    <section className="react-player" aria-label="Playback controls">
+    <section className="react-player" aria-label={copy.player.controlsLabel}>
       <div className="react-player-wave-row">
-        <button type="button" className="react-player-primary" onClick={onTogglePlayback} disabled={!canPlay} aria-keyshortcuts="Space" aria-label={isPlaybackActive ? "Pause" : "Play"} title={`${isPlaybackActive ? "Pause" : "Play"} (Space)`}>
+        <button type="button" className="react-player-primary" onClick={onTogglePlayback} disabled={!canPlay} aria-keyshortcuts="Space" aria-label={isPlaybackActive ? copy.player.pause : copy.player.play} title={`${isPlaybackActive ? copy.player.pause : copy.player.play} (Space)`}>
           {isPlaybackActive ? <Pause size={24} weight="fill" /> : <Play size={24} weight="fill" />}
         </button>
         <LineWaveform
@@ -312,23 +315,23 @@ export function RailPlayer({
         />
       </div>
       <div className="react-player-controls">
-        <button type="button" onClick={onPrevious} disabled={!canPrevious} aria-label="Play previous word or sentence" title="Previous (A / ←)"><SkipBack size={18} weight="fill" /></button>
-        <button type="button" onClick={onReplay} disabled={!canPlay} aria-label="Replay focused word or sentence" title="Replay (R)"><ArrowCounterClockwise size={18} weight="bold" /></button>
-        <button type="button" onClick={onNext} disabled={!canNext} aria-label="Play next word or sentence" title="Next (D / →)"><SkipForward size={18} weight="fill" /></button>
+        <button type="button" onClick={onPrevious} disabled={!canPrevious} aria-label={copy.player.previousAria} title={copy.player.previousTitle}><SkipBack size={18} weight="fill" /></button>
+        <button type="button" onClick={onReplay} disabled={!canPlay} aria-label={copy.player.replayAria} title={copy.player.replayTitle}><ArrowCounterClockwise size={18} weight="bold" /></button>
+        <button type="button" onClick={onNext} disabled={!canNext} aria-label={copy.player.nextAria} title={copy.player.nextTitle}><SkipForward size={18} weight="fill" /></button>
         <button
           type="button"
           className={playbackRunMode === "single" ? "" : "is-selected"}
           onClick={onTogglePlaybackRunMode}
           aria-pressed={playbackRunMode !== "single"}
-          aria-label={`Playback mode: ${playbackRunModeLabel(playbackRunMode)}. Switch to ${playbackRunModeLabel(nextPlaybackRunMode(playbackRunMode))}.`}
-          title={`Playback mode: ${playbackRunModeLabel(playbackRunMode)}. Click to switch to ${playbackRunModeLabel(nextPlaybackRunMode(playbackRunMode))}.`}
+          aria-label={copy.player.modeSwitchAria(currentModeLabel, nextModeLabel)}
+          title={copy.player.modeSwitchTitle(currentModeLabel, nextModeLabel)}
         >
           <PlaybackRunModeIcon mode={playbackRunMode} />
         </button>
         <span className="react-player-controls-sep" aria-hidden="true" />
-        <button type="button" className={`mark-known${markStatus === "known" ? " is-on" : ""}`} onClick={() => void onToggleMark("known")} disabled={!target} aria-label="Mark as known" title="Mark as known" aria-pressed={markStatus === "known"}>✓</button>
-        <button type="button" className={`mark-flagged${markStatus === "flagged" ? " is-on" : ""}`} onClick={() => void onToggleMark("flagged")} disabled={!target} aria-label="Flag for review" title="Flag for review" aria-pressed={markStatus === "flagged"}>⚑</button>
-        <span className="react-player-status">{error || nativeState?.error || nativeStatus || `${playbackRunModeLabel(playbackRunMode)} · Click the wave to seek or play · Space to play/pause`}</span>
+        <button type="button" className={`mark-known${markStatus === "known" ? " is-on" : ""}`} onClick={() => void onToggleMark("known")} disabled={!target} aria-label={copy.player.markKnown} title={copy.player.markKnown} aria-pressed={markStatus === "known"}>✓</button>
+        <button type="button" className={`mark-flagged${markStatus === "flagged" ? " is-on" : ""}`} onClick={() => void onToggleMark("flagged")} disabled={!target} aria-label={copy.player.markFlagged} title={copy.player.markFlagged} aria-pressed={markStatus === "flagged"}>⚑</button>
+        <span className="react-player-status">{error || (nativeState?.error ? localizeMessage(nativeState.error) : "") || nativeStatus || copy.player.defaultStatus(currentModeLabel)}</span>
       </div>
     </section>
   );

@@ -1,5 +1,6 @@
 import { useEffect, useId, useMemo } from "react";
 
+import { useI18n } from "../../i18n";
 import { formatTime } from "./playerState.mjs";
 import {
   buildWaveformBars,
@@ -33,6 +34,7 @@ export function LineWaveform({
   onSeekPlay,
   onNavigationPointsChange,
 }: LineWaveformProps) {
+  const {copy} = useI18n();
   const clipId = "waveform-progress-" + useId().replace(/:/g, "");
   const safeStart = Number.isFinite(start) ? Math.max(0, start) : 0;
   const safeEnd = Number.isFinite(end) ? Math.max(safeStart + 0.01, end) : safeStart + 0.01;
@@ -127,10 +129,10 @@ export function LineWaveform({
         value={safeCurrent}
         onChange={(event) => onSeek(Number(event.target.value))}
         onPointerUp={(event) => onSeekPlay?.(Number(event.currentTarget.value))}
-        aria-label="現在の行の再生位置"
+        aria-label={copy.player.waveformPosition}
         aria-valuetext={`${formatTime(safeCurrent - safeStart)} / ${formatTime(lineDuration)}`}
       />
-      {loadFailed ? <span className="sr-only">波形を読み込めませんでした。シーク操作は利用できます。</span> : null}
+      {loadFailed ? <span className="sr-only">{copy.player.waveformLoadFailed}</span> : null}
     </div>
   );
 }
