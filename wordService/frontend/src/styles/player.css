@@ -68,6 +68,25 @@
   background: var(--indigo-soft);
   color: var(--indigo-deep);
 }
+.react-player-control-group {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
+}
+.react-player-mark-controls,
+.react-player-view-controls { flex: 0 0 auto; }
+.react-player-view-controls button {
+  width: 32px;
+  padding-inline: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+.react-player-view-controls .react-list-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 .react-player-controls-sep {
   flex: 0 0 auto;
   width: 1px;

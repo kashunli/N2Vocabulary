@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowCounterClockwise, ListBullets, Pause, Play, Queue, Repeat, RepeatOnce, SkipBack, SkipForward } from "@phosphor-icons/react";
+import { ArrowCounterClockwise, List, ListBullets, Pause, Play, Queue, Repeat, RepeatOnce, SkipBack, SkipForward } from "@phosphor-icons/react";
 
 import { useI18n } from "../../i18n";
 import { useAudioBufferPlayer } from "./useAudioBufferPlayer";
@@ -28,6 +28,8 @@ interface RailPlayerProps {
   autoPlay: boolean;
   isPlaybackActive: boolean;
   playbackRunMode: PlaybackRunMode;
+  blurred: boolean;
+  listVisible: boolean;
   markStatus: MarkStatus;
   nativeQueue: NativeAudioQueueItem[];
   onNativeQueueItem: (id: string) => void;
@@ -40,6 +42,8 @@ interface RailPlayerProps {
   onToggleMark: (key: "known" | "flagged") => void | Promise<void>;
   onTogglePlayback: () => void;
   onTogglePlaybackRunMode: () => void;
+  onToggleBlur: () => void;
+  onToggleList: () => void;
   onCancelSilence: () => void;
   onReplay: () => void;
   onPrevious: () => void;
@@ -67,6 +71,8 @@ export function RailPlayer({
   autoPlay,
   isPlaybackActive,
   playbackRunMode,
+  blurred,
+  listVisible,
   markStatus,
   nativeQueue,
   onNativeQueueItem,
@@ -79,6 +85,8 @@ export function RailPlayer({
   onToggleMark,
   onTogglePlayback,
   onTogglePlaybackRunMode,
+  onToggleBlur,
+  onToggleList,
   onCancelSilence,
   onReplay,
   onPrevious,
@@ -329,8 +337,15 @@ export function RailPlayer({
           <PlaybackRunModeIcon mode={playbackRunMode} />
         </button>
         <span className="react-player-controls-sep" aria-hidden="true" />
-        <button type="button" className={`mark-known${markStatus === "known" ? " is-on" : ""}`} onClick={() => void onToggleMark("known")} disabled={!target} aria-label={copy.player.markKnown} title={copy.player.markKnown} aria-pressed={markStatus === "known"}>✓</button>
-        <button type="button" className={`mark-flagged${markStatus === "flagged" ? " is-on" : ""}`} onClick={() => void onToggleMark("flagged")} disabled={!target} aria-label={copy.player.markFlagged} title={copy.player.markFlagged} aria-pressed={markStatus === "flagged"}>⚑</button>
+        <div className="react-player-control-group react-player-mark-controls">
+          <button type="button" className={`mark-known${markStatus === "known" ? " is-on" : ""}`} onClick={() => void onToggleMark("known")} disabled={!target} aria-label={copy.player.markKnown} title={copy.player.markKnown} aria-pressed={markStatus === "known"}>✓</button>
+          <button type="button" className={`mark-flagged${markStatus === "flagged" ? " is-on" : ""}`} onClick={() => void onToggleMark("flagged")} disabled={!target} aria-label={copy.player.markFlagged} title={copy.player.markFlagged} aria-pressed={markStatus === "flagged"}>⚑</button>
+        </div>
+        <span className="react-player-controls-sep" aria-hidden="true" />
+        <div className="react-player-control-group react-player-view-controls">
+          <button type="button" className={`react-blur-toggle${blurred ? " is-selected" : ""}`} onClick={onToggleBlur} aria-pressed={blurred} aria-label={copy.blurStudyContent} title={copy.blurStudyContent}>B</button>
+          <button type="button" className={`react-list-toggle${listVisible ? " is-selected" : ""}`} onClick={onToggleList} aria-pressed={listVisible} aria-label={listVisible ? copy.hideVocabularyList : copy.showVocabularyList} title={listVisible ? copy.hideVocabularyList : copy.showVocabularyList}><List size={18} weight="bold" /></button>
+        </div>
         <span className="react-player-status">{error || (nativeState?.error ? localizeMessage(nativeState.error) : "") || nativeStatus || copy.player.defaultStatus(currentModeLabel)}</span>
       </div>
     </section>

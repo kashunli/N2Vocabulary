@@ -254,7 +254,6 @@ function StudyApp(state: ReturnType<typeof useStudyState>) {
   return (
     <main className="react-shell">
       <StudyHeader
-        blurred={blurred}
         books={books}
         currentBook={pendingBookSummary || currentBook}
         filterState={filterState}
@@ -264,13 +263,10 @@ function StudyApp(state: ReturnType<typeof useStudyState>) {
         reviewSessionCount={filterState === "review" ? Object.keys(reviewSession?.expectedDueAtByItemUuid || {}).length : undefined}
         units={visibleUnits}
         sectionLoading={pendingBook !== selectedBook && pendingUnitsLoading}
-        listVisible={listVisible}
         onOpenSettings={() => setSettingsOpen(true)}
         onSelectBook={handleSelectBook}
         onSelectFilter={(filter) => { setFilterState(filter); if (filter !== "review") setReviewSession(undefined); }}
         onSelectUnit={handleSelectUnit}
-        onToggleBlur={() => setBlurred((current) => !current)}
-        onToggleList={() => setListVisible((current) => !current)}
       />
       {status ? <div key={status} className="react-status" role="status" aria-live="polite" aria-atomic="true">{status}</div> : null}
 
@@ -294,6 +290,8 @@ function StudyApp(state: ReturnType<typeof useStudyState>) {
         autoPlay={autoAdvance}
         isPlaybackActive={playbackActive}
         playbackRunMode={playbackRunMode}
+        blurred={blurred}
+        listVisible={listVisible}
         markStatus={activeEntry ? markStatusOf(activeEntry.mark) : "unmarked"}
         onToggleMark={toggleMark}
         onPlayingChange={handlePlayingChange}
@@ -307,6 +305,8 @@ function StudyApp(state: ReturnType<typeof useStudyState>) {
         onEnded={handlePlaybackEnd}
         onTogglePlayback={togglePlayback}
         onTogglePlaybackRunMode={togglePlaybackRunMode}
+        onToggleBlur={() => setBlurred((current) => !current)}
+        onToggleList={() => setListVisible((current) => !current)}
         onReplay={replayFocused}
         onPrevious={() => movePlaybackClip(-1)}
         onNext={() => movePlaybackClip(1)}

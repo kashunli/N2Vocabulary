@@ -39,6 +39,35 @@
 }
 .react-settings-head > button:hover { color: var(--ink); }
 .react-settings-body { min-height: 0; display: grid; gap: 14px; overflow: auto; padding: 20px 22px 24px; font-family: var(--sans); }
+.react-language-picker {
+  display: grid;
+  align-self: flex-start;
+  gap: 6px;
+  color: var(--muted);
+  font: 700 0.64rem/1.2 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.react-language-picker select {
+  min-width: 86px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  color: var(--ink);
+  padding: 9px 10px;
+  font: 0.82rem/1.2 var(--sans);
+  letter-spacing: 0;
+  text-transform: none;
+  cursor: pointer;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+.react-language-picker select:hover { border-color: var(--indigo-faint); }
+.react-language-picker select:focus {
+  border-color: var(--indigo);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--indigo-soft);
+}
+.react-settings-language { justify-self: start; }
 .react-setting-copy { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 12px; }
 .react-setting-copy > span, .react-setting-copy > label { color: var(--ink); font-weight: 650; }
 .react-setting-copy output { color: var(--indigo); font-size: 0.82rem; font-family: var(--mono); }

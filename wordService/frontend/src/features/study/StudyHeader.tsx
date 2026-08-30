@@ -1,6 +1,4 @@
-import { List } from "@phosphor-icons/react";
-
-import { useI18n, type AppLanguage } from "../../i18n";
+import { useI18n } from "../../i18n";
 import type { BookSummary, UnitSummary, VocabularySummary } from "../../types";
 import { unitLabel } from "./unitLabel";
 import type { FilterState } from "./studyTypes";
@@ -8,11 +6,9 @@ import type { FilterState } from "./studyTypes";
 export type { FilterState } from "./studyTypes";
 
 interface StudyHeaderProps {
-  blurred: boolean;
   books: BookSummary[];
   currentBook?: BookSummary;
   filterState: FilterState;
-  listVisible: boolean;
   reviewSessionCount?: number;
   selectedBook: string;
   selectedUnit: number | null;
@@ -23,8 +19,6 @@ interface StudyHeaderProps {
   onSelectBook: (book: string) => void;
   onSelectFilter: (filter: FilterState) => void;
   onSelectUnit: (unit: number | null) => void;
-  onToggleBlur: () => void;
-  onToggleList: () => void;
 }
 
 function filterCount(summary?: VocabularySummary, reviewSessionCount?: number): (filter: FilterState) => number | undefined {
@@ -40,11 +34,9 @@ function filterCount(summary?: VocabularySummary, reviewSessionCount?: number): 
 }
 
 export function StudyHeader({
-  blurred,
   books,
   currentBook,
   filterState,
-  listVisible,
   reviewSessionCount,
   selectedBook,
   selectedUnit,
@@ -55,11 +47,9 @@ export function StudyHeader({
   onSelectBook,
   onSelectFilter,
   onSelectUnit,
-  onToggleBlur,
-  onToggleList,
 }: StudyHeaderProps) {
   const countFor = filterCount(summary, reviewSessionCount);
-  const {copy, language, setLanguage} = useI18n();
+  const {copy} = useI18n();
   return (
     <header className="react-header">
       <div className="react-brand">
@@ -77,9 +67,6 @@ export function StudyHeader({
         })}
       </select>
       <div className="react-header-actions">
-        <label className="react-language-picker"><span>{copy.languageLabel}</span><select value={language} onChange={(event) => setLanguage(event.target.value as AppLanguage)} aria-label={copy.languageLabel}><option value="en">{copy.english}</option><option value="zh">{copy.chinese}</option></select></label>
-        <button type="button" className={blurred ? "is-selected" : ""} onClick={onToggleBlur} aria-pressed={blurred} title={copy.blurStudyContent}>B</button>
-        <button type="button" className={`react-list-toggle${listVisible ? " is-selected" : ""}`} onClick={onToggleList} aria-pressed={listVisible} aria-label={listVisible ? copy.hideVocabularyList : copy.showVocabularyList} title={listVisible ? copy.hideVocabularyList : copy.showVocabularyList}><List size={16} weight="bold" /></button>
         <button type="button" className="react-settings-button" onClick={onOpenSettings} aria-label={copy.openPlaybackSettings} title={copy.playbackSettings}>⚙</button>
       </div>
     </header>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { useI18n } from "../../i18n";
+import { useI18n, type AppLanguage } from "../../i18n";
 import { AccountControls, type AccountState } from "../study/AccountControls";
 import { MAX_AUDIO_SEQUENCE_STEPS, MAX_SEQUENCE_PAUSE_MS } from "./audioSequence.mjs";
 import type {
@@ -105,7 +105,7 @@ export function PlaybackSettingsModal({
   onClose,
   onReset,
 }: PlaybackSettingsModalProps) {
-  const {copy} = useI18n();
+  const {copy, language, setLanguage} = useI18n();
   const currentModeLabel = copy.player.modeLabel(playbackRunMode);
   const nextModeLabel = copy.player.modeLabel(nextPlaybackRunMode(playbackRunMode));
   return (
@@ -119,6 +119,13 @@ export function PlaybackSettingsModal({
           <button type="button" onClick={onClose} aria-label={copy.settings.close}>×</button>
         </div>
         <div className="react-settings-body">
+          <label className="react-language-picker react-settings-language">
+            <span>{copy.languageLabel}</span>
+            <select value={language} onChange={(event) => setLanguage(event.target.value as AppLanguage)} aria-label={copy.languageLabel}>
+              <option value="en">{copy.english}</option>
+              <option value="zh">{copy.chinese}</option>
+            </select>
+          </label>
           <div className="react-sequence-intro">
             <p>{copy.settings.introduction}</p>
             <span>{copy.settings.steps(sequence.steps.length, MAX_AUDIO_SEQUENCE_STEPS)}</span>
