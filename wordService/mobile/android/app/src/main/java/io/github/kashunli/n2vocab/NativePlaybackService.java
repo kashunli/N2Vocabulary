@@ -1,8 +1,13 @@
 package io.github.kashunli.n2vocab;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.pm.ServiceInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -11,6 +16,7 @@ import androidx.media3.common.MediaItem;
 import androidx.media3.common.MediaMetadata;
 import androidx.media3.common.Player;
 import androidx.media3.common.util.UnstableApi;
+import androidx.core.app.NotificationCompat;
 import androidx.media3.database.StandaloneDatabaseProvider;
 import androidx.media3.datasource.DefaultHttpDataSource;
 import androidx.media3.datasource.cache.CacheDataSource;
@@ -54,9 +60,12 @@ public final class NativePlaybackService extends MediaSessionService {
     // storage pressure.
     private static final long CACHE_MAX_BYTES = 512L * 1024L * 1024L;
     private static final long PROGRESS_UPDATE_INTERVAL_MS = 50L;
+    private static final String NOTIFICATION_CHANNEL_ID = "n2-vocabulary-playback";
+    private static final int NOTIFICATION_ID = 1001;
     private static final String TAG = "N2NativePlayback";
     private static final Set<PlaybackListener> LISTENERS = new CopyOnWriteArraySet<>();
     private static volatile PlaybackSnapshot lastSnapshot = PlaybackSnapshot.idle();
+    private static volatile boolean serviceRunning;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable progressRunnable = this::publishProgress;
@@ -88,9 +97,19 @@ public final class NativePlaybackService extends MediaSessionService {
         return lastSnapshot;
     }
 
+    public static boolean isRunning() {
+        return serviceRunning;
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
+        // Android requires a foreground service started with
+        // startForegroundService() to promote itself within a short deadline.
+        // Do this before opening the Media3 cache so a slow first download or
+        // database initialization cannot make the whole app process exit.
+        startForegroundPlayback();
+        serviceRunning = true;
         databaseProvider = new StandaloneDatabaseProvider(this);
         File cacheDirectory = new File(getCacheDir(), "native-audio-v1");
         cache = new SimpleCache(
@@ -145,6 +164,36 @@ public final class NativePlaybackService extends MediaSessionService {
         publishSnapshot("idle");
     }
 
+    private void startForegroundPlayback() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                NOTIFICATION_CHANNEL_ID,
+                "N2 Vocabulary playback",
+                NotificationManager.IMPORTANCE_LOW
+            );
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            if (manager != null) manager.createNotificationChannel(channel);
+        }
+        Notification notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+            .setSmallIcon(android.R.drawable.ic_media_play)
+            .setContentTitle("N2 Vocabulary")
+            .setContentText("Audio playback")
+            .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setOngoing(true)
+            .setShowWhen(false)
+            .build();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(
+                NOTIFICATION_ID,
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+            );
+        } else {
+            startForeground(NOTIFICATION_ID, notification);
+        }
+    }
+
     @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
         if (intent != null && intent.getAction() != null) {
@@ -161,6 +210,7 @@ public final class NativePlaybackService extends MediaSessionService {
 
     @Override
     public void onDestroy() {
+        serviceRunning = false;
         handler.removeCallbacksAndMessages(null);
         if (mediaSession != null) {
             mediaSession.release();
@@ -343,7 +393,9 @@ public final class NativePlaybackService extends MediaSessionService {
         pendingGapEndsAtMs = 0L;
         pendingGapRemainingMs = 0L;
         publishSnapshot("completed");
-        stopSelf();
+        // Keep the already-promoted service available for a new queue after a
+        // background/Activity transition. Explicit stopPlayback still tears it
+        // down when the learner leaves playback.
     }
 
     private void startProgressUpdates() {
