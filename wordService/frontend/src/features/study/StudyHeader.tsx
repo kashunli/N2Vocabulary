@@ -53,7 +53,7 @@ export function StudyHeader({
   return (
     <header className="react-header">
       <div className="react-brand">
-        <span className="eyebrow"><span className="brand-seal" aria-hidden="true">印</span><span className="brand-caption">{copy.brandCaption}</span></span>
+        <span className="eyebrow"><img className="brand-seal" src="/favicon.png" alt="" aria-hidden="true" /><span className="brand-caption">{copy.brandCaption}</span></span>
         <h1>{currentBook?.code || copy.studyWall}</h1>
       </div>
       <div className="react-pickers">

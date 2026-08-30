@@ -20,17 +20,12 @@
 }
 .react-brand .eyebrow { display: flex; align-items: center; gap: 8px; }
 .brand-seal {
-  display: inline-grid;
-  place-items: center;
-  width: 20px;
-  height: 20px;
+  display: block;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
   border-radius: 4px;
-  background: var(--indigo);
-  color: var(--paper);
-  font-family: var(--mincho);
-  font-size: 0.74rem;
-  letter-spacing: 0;
-  line-height: 1;
+  object-fit: cover;
   box-shadow: var(--shadow);
 }
 

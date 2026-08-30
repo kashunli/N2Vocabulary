@@ -10,7 +10,7 @@
   .react-brand { flex: 0 0 auto; }
   .react-brand h1 { display: none; }
   .react-brand .brand-caption { display: none; }
-  .react-brand .brand-seal { width: 26px; height: 26px; font-size: 0.9rem; }
+  .react-brand .brand-seal { width: 30px; height: 30px; }
   .react-pickers { flex: 1 1 auto; }
   .react-pickers label > span { display: none; }
   .react-pickers select, .react-filter-select { padding: 7px 7px; font-size: 0.75rem; }
