@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
+import { getUnits } from "./api";
 import { PlaybackSettingsModal } from "./features/player/PlaybackSettingsModal";
 import { RailPlayer } from "./features/player/RailPlayer";
 import { useStudyKeyboardShortcuts } from "./features/player/useStudyKeyboardShortcuts";
@@ -16,12 +17,19 @@ import { useStudyState } from "./features/study/useStudyState";
 import { markStatusOf } from "./features/study/markStatus";
 import type { ReviewSession } from "./features/study/studyStateTypes";
 import type { FilterState } from "./features/study/studyTypes";
-import type { Entry } from "./types";
+import type { Entry, UnitSummary } from "./types";
 
 function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
   const [initialView] = useState(() => readStudyViewState());
   const [selectedBook, setSelectedBook] = useState(() => initialView.selectedBook || readStudyFocus()?.bookCode || "N2");
   const [selectedUnit, setSelectedUnit] = useState<number | null>(() => initialView.selectedUnit ?? null);
+  // Book changes are staged until the learner chooses a Section. This keeps a
+  // large book switch from replacing the current wall while the picker is
+  // still being used to define the next study scope.
+  const [pendingBook, setPendingBook] = useState(selectedBook);
+  const [pendingUnit, setPendingUnit] = useState<number | null>(selectedUnit);
+  const [pendingUnits, setPendingUnits] = useState<UnitSummary[]>([]);
+  const [pendingUnitsLoading, setPendingUnitsLoading] = useState(false);
   const [filterState, setFilterState] = useState<FilterState>(() => initialView.filterState || "all");
   const [entries, setEntries] = useState<Entry[]>([]);
   const [entriesLoading, setEntriesLoading] = useState(false);
@@ -125,6 +133,39 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
     units,
   } = useStudyCatalog({selectedBook, selectedUnit, studySnapshot: snapshot});
 
+  useEffect(() => {
+    if (pendingBook === selectedBook) {
+      setPendingUnits([]);
+      setPendingUnitsLoading(false);
+      return undefined;
+    }
+
+    let cancelled = false;
+    setPendingUnitsLoading(true);
+    // This request only supplies labels/counts for the next Section picker;
+    // the active wall remains on selectedBook until a section is chosen.
+    getUnits(pendingBook)
+      .then((payload) => {
+        if (!cancelled) setPendingUnits(payload.items);
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setPendingUnits([]);
+          setStatus(error instanceof Error ? error.message : "Could not load sections.");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setPendingUnitsLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [pendingBook, selectedBook, setStatus]);
+
+  useEffect(() => {
+    // Playback can advance to the next section without going through the
+    // picker. Keep the staged control value aligned when no book is pending.
+    if (pendingBook === selectedBook) setPendingUnit(selectedUnit);
+  }, [pendingBook, selectedBook, selectedUnit]);
+
   // Status messages are transient feedback, not part of the study layout.
   // Removing them after a short pause keeps an error or save confirmation from
   // permanently consuming a row of vertical space above the vocabulary wall.
@@ -148,6 +189,21 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
     }
   }, [selectedUnit, units]);
   const currentBook = books.find((book) => book.code === selectedBook);
+  const pendingBookSummary = books.find((book) => book.code === pendingBook);
+  const visibleUnits = pendingBook === selectedBook ? units : pendingUnits;
+
+  const handleSelectBook = (book: string) => {
+    if (!book) return;
+    setPendingBook(book);
+    setPendingUnit(book === selectedBook ? selectedUnit : null);
+  };
+
+  const handleSelectUnit = (unit: number | null) => {
+    setSelectedBook(pendingBook);
+    setSelectedUnit(unit);
+    setPendingUnit(unit);
+    setReviewSession(undefined);
+  };
 
   const {
     toggleMark,
@@ -197,18 +253,19 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
       <StudyHeader
         blurred={blurred}
         books={books}
-        currentBook={currentBook}
+        currentBook={pendingBookSummary || currentBook}
         filterState={filterState}
-        selectedBook={selectedBook}
-        selectedUnit={selectedUnit}
+        selectedBook={pendingBook}
+        selectedUnit={pendingUnit}
         summary={summary}
         reviewSessionCount={filterState === "review" ? Object.keys(reviewSession?.expectedDueAtByItemUuid || {}).length : undefined}
-        units={units}
+        units={visibleUnits}
+        sectionLoading={pendingBook !== selectedBook && pendingUnitsLoading}
         listVisible={listVisible}
         onOpenSettings={() => setSettingsOpen(true)}
-        onSelectBook={(book) => { setSelectedBook(book); setSelectedUnit(null); setReviewSession(undefined); }}
+        onSelectBook={handleSelectBook}
         onSelectFilter={(filter) => { setFilterState(filter); if (filter !== "review") setReviewSession(undefined); }}
-        onSelectUnit={(unit) => { setSelectedUnit(unit); setReviewSession(undefined); }}
+        onSelectUnit={handleSelectUnit}
         onToggleBlur={() => setBlurred((current) => !current)}
         onToggleList={() => setListVisible((current) => !current)}
       />

@@ -15,6 +15,7 @@ interface StudyHeaderProps {
   reviewSessionCount?: number;
   selectedBook: string;
   selectedUnit: number | null;
+  sectionLoading: boolean;
   summary?: VocabularySummary;
   units: UnitSummary[];
   onOpenSettings: () => void;
@@ -46,6 +47,7 @@ export function StudyHeader({
   reviewSessionCount,
   selectedBook,
   selectedUnit,
+  sectionLoading,
   summary,
   units,
   onOpenSettings,
@@ -64,7 +66,7 @@ export function StudyHeader({
       </div>
       <div className="react-pickers">
         <label><span>Book</span><select value={selectedBook} onChange={(event) => onSelectBook(event.target.value)}><option value="">Choose book</option>{books.map((book) => <option key={book.code} value={book.code}>{book.code}</option>)}</select></label>
-        <label><span>Section</span><select value={selectedUnit ?? ""} onChange={(event) => onSelectUnit(event.target.value ? Number(event.target.value) : null)}><option value="">All sections</option>{units.map((item) => <option key={item.number} value={item.number}>{unitLabel(item)} · {item.entry_count} words</option>)}</select></label>
+        <label><span>Section</span><select disabled={sectionLoading} value={selectedUnit ?? ""} onChange={(event) => onSelectUnit(event.target.value ? Number(event.target.value) : null)}><option value="">{sectionLoading ? "Loading sections…" : "All sections"}</option>{units.map((item) => <option key={item.number} value={item.number}>{unitLabel(item)} · {item.entry_count} words</option>)}</select></label>
       </div>
       <select className="react-filter-select" value={filterState} onChange={(event) => onSelectFilter(event.target.value as FilterState)} aria-label="Filter items">
         {(["all", "review", "unmarked", "known", "flagged"] as FilterState[]).map((filter) => {
