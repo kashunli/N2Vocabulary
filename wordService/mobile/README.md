@@ -25,7 +25,7 @@ Set-Location android
 The APK is written to
 `android/app/build/outputs/apk/release/app-release.apk` relative to this
 directory. The release workflow runs the same synchronization and Gradle build,
-then uploads a tag-named APK and its SHA-256 checksum to the GitHub Release.
+then publishes the tag-named APK as the only GitHub Release asset.
 
 The Android project uses `keystore.properties` when that gitignored file is
 available. Without it, `assembleRelease` uses the debug signing key, which is

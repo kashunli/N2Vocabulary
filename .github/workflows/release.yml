@@ -1,24 +1,52 @@
-name: Build WordService Release
+name: Build WordService Android Release
 
 on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag to build, for example v0.1.7
+        required: true
+        type: string
 
 permissions:
   contents: write
 
 concurrency:
-  group: word-service-release-${{ github.ref }}
+  group: word-service-release-${{ inputs.tag || github.ref }}
   cancel-in-progress: false
 
 jobs:
   release:
-    name: Verify, package, and publish release
+    name: Verify, build, and publish Android APK
     runs-on: ubuntu-latest
     steps:
-      - name: Check out the tagged commit
+      - name: Check out the release tag
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - name: Resolve and validate release tag
+        id: release
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          set -Eeuo pipefail
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
+            echo "Release tag must use vMAJOR.MINOR.PATCH: $RELEASE_TAG" >&2
+            exit 1
+          }
+          release_sha="$(git rev-parse HEAD)"
+          tag_sha="$(git rev-parse "${RELEASE_TAG}^{commit}")"
+          [[ "$release_sha" == "$tag_sha" ]] || {
+            echo "Checked-out commit does not match $RELEASE_TAG" >&2
+            exit 1
+          }
+          echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+          echo "sha=$release_sha" >> "$GITHUB_OUTPUT"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -65,75 +93,32 @@ jobs:
         shell: bash
         run: bash gradlew assembleRelease --no-daemon --console=plain
 
-      - name: Set up Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt, clippy
-
-      - name: Cache Rust build
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: wordService -> target
-
-      - name: Verify WordService
-        working-directory: wordService
-        shell: bash
-        run: |
-          cargo fmt --all -- --check
-          cargo clippy --all-targets --all-features -- -D warnings
-          cargo test
-
-      - name: Build Debian-compatible release binary
-        working-directory: wordService
-        shell: bash
-        env:
-          DEBIAN_BUILD_IMAGE: rust:1-bookworm
-        run: |
-          docker run --rm \
-            --user "$(id -u):$(id -g)" \
-            --env HOME=/tmp/n2-vocabulary-home \
-            --env CARGO_HOME=/tmp/n2-vocabulary-cargo \
-            --env CARGO_TARGET_DIR=/workspace/wordService/target-debian \
-            --volume "$GITHUB_WORKSPACE:/workspace" \
-            --workdir /workspace/wordService \
-            "$DEBIAN_BUILD_IMAGE" \
-            cargo build --locked --release --bin n2-word-service-rust
-
-      - name: Create deterministic release archive
-        id: package
-        env:
-          MAX_GLIBC_VERSION: '2.36'
-          RELEASE_BINARY: wordService/target-debian/release/n2-word-service-rust
-          RELEASE_LABEL: ${{ github.ref_name }}
-        run: bash .github/scripts/package-word-service-release.sh
-
-      - name: Name and checksum Android release APK
+      - name: Name Android release APK
         id: android
         shell: bash
         env:
-          RELEASE_LABEL: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
         run: |
-          apk="n2-vocabulary-android-${RELEASE_LABEL}.apk"
-          checksum="${apk}.sha256"
+          set -Eeuo pipefail
+          apk="n2-vocabulary-android-${RELEASE_TAG}.apk"
           cp wordService/mobile/android/app/build/outputs/apk/release/app-release.apk "$apk"
-          sha256sum "$apk" > "$checksum"
+          test -s "$apk"
           echo "apk=$apk" >> "$GITHUB_OUTPUT"
-          echo "checksum=$checksum" >> "$GITHUB_OUTPUT"
 
-      - name: Publish downloadable GitHub Release assets
+      - name: Publish APK-only GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
-          ARCHIVE: ${{ steps.package.outputs.archive }}
-          CHECKSUM: ${{ steps.package.outputs.checksum }}
           APK: ${{ steps.android.outputs.apk }}
-          APK_CHECKSUM: ${{ steps.android.outputs.checksum }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_SHA: ${{ steps.release.outputs.sha }}
         shell: bash
         run: |
-          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            gh release upload "$GITHUB_REF_NAME" "$ARCHIVE" "$CHECKSUM" "$APK" "$APK_CHECKSUM" --clobber
+          set -Eeuo pipefail
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "$APK" --clobber
           else
-            gh release create "$GITHUB_REF_NAME" "$ARCHIVE" "$CHECKSUM" "$APK" "$APK_CHECKSUM" \
-              --target "$GITHUB_SHA" \
-              --title "WordService $GITHUB_REF_NAME" \
+            gh release create "$RELEASE_TAG" "$APK" \
+              --target "$RELEASE_SHA" \
+              --title "WordService $RELEASE_TAG" \
               --generate-notes
           fi

@@ -2,20 +2,26 @@
 set -Eeuo pipefail
 
 : "${RUNNER_TEMP:?GitHub Actions must provide RUNNER_TEMP}"
-: "${GITHUB_SHA:?GitHub Actions must provide GITHUB_SHA}"
+: "${RELEASE_ID:=${GITHUB_SHA:-}}"
+: "${RELEASE_ID:?GitHub Actions must provide GITHUB_SHA or RELEASE_ID}"
 : "${GITHUB_OUTPUT:?GitHub Actions must provide GITHUB_OUTPUT}"
 : "${MAX_GLIBC_VERSION:=2.36}"
 : "${RELEASE_BINARY:=wordService/target/release/n2-word-service-rust}"
 : "${RELEASE_LABEL:=}"
 
+[[ "$RELEASE_ID" =~ ^[0-9a-f]{40}$ ]] || {
+  echo 'RELEASE_ID must be the 40-character commit SHA used for this package.' >&2
+  exit 1
+}
+
 package_dir="$RUNNER_TEMP/n2-vocabulary-package"
-archive_stem="n2-vocabulary-${GITHUB_SHA}"
+archive_stem="n2-vocabulary-${RELEASE_ID}"
 if [[ -n "$RELEASE_LABEL" ]]; then
   [[ "$RELEASE_LABEL" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]] || {
     echo 'RELEASE_LABEL must contain only letters, numbers, dots, underscores, and hyphens' >&2
     exit 1
   }
-  archive_stem="n2-vocabulary-${RELEASE_LABEL}-${GITHUB_SHA}"
+  archive_stem="n2-vocabulary-${RELEASE_LABEL}-${RELEASE_ID}"
 fi
 archive="$RUNNER_TEMP/${archive_stem}.tar.gz"
 checksum="${archive}.sha256"
@@ -62,7 +68,7 @@ install -Dm644 wordService/data/n2vocab.sqlite "$package_dir/wordService/data/n2
 cp -a clips "$package_dir/clips"
 install -Dm644 reviews/vocabulary_audio/n2_all_both_candidates.json "$package_dir/reviews/vocabulary_audio/n2_all_both_candidates.json"
 install -Dm644 reviews/vocabulary_audio/n2_all_both.json "$package_dir/reviews/vocabulary_audio/n2_all_both.json"
-printf '%s\n' "$GITHUB_SHA" > "$package_dir/RELEASE"
+printf '%s\n' "$RELEASE_ID" > "$package_dir/RELEASE"
 
 tar --create --gzip --file "$archive" --directory "$package_dir" --sort=name \
   --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner .

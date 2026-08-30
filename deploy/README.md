@@ -1,11 +1,14 @@
 # WordService deployment
 
-`.github/workflows/release.yml` builds downloadable Linux and Android
-WordService assets when a `v*` Git tag is pushed. `.github/workflows/deploy.yml`
-deploys the same tagged commit to the VPS on that tag push. Branch pushes and
-manual workflow dispatches do not trigger either workflow. The deployment is
-deliberately SSH-based so the target can remain an ordinary Linux VPS rather
-than needing a cloud-specific GitHub Action.
+`.github/workflows/release.yml` builds and publishes only a tag-named Android
+APK when a `v*` Git tag is pushed or the workflow is manually dispatched.
+`.github/workflows/deploy.yml` deploys the same tagged commit to the VPS on a
+tag push or manual dispatch. `.github/workflows/tag-version.yml` watches pushes
+to `main`, increments the latest numeric `vMAJOR.MINOR.PATCH` tag's patch
+component, creates and pushes the new annotated tag, and dispatches both
+workflows for that tag. The deployment is deliberately SSH-based so the target
+can remain an ordinary Linux VPS rather than needing a cloud-specific GitHub
+Action.
 
 The deployment package contains the release Rust binary, the committed React
 assets, `wordService/data/n2vocab.sqlite`, the tracked `clips/` tree, review
@@ -127,27 +130,39 @@ Do not disable host-key checking or put a private key in the repository. GitHub
 secrets are passed to the job through the `secrets` context. GitHub's production
 environment can additionally require approval before a deployment.
 
-## 5. Build a tagged release and deploy it automatically
+## 5. Build and deploy a tagged release
 
-Before pushing a release tag, configure the production environment and set the
-repository variable `DEPLOY_PUBLIC_ORIGIN` to
+Before using automatic or manual deployment, configure the production
+environment and set the repository variable `DEPLOY_PUBLIC_ORIGIN` to
 `https://words.kashunli.com`. The required VPS secrets and deployment variables
 are listed in the sections above.
 
-Push a version tag such as `v0.1.0`. This starts both tag-only workflows:
-
-- `Build WordService Release` verifies the frontend and Rust service, builds the
-  Debian-compatible binary and Android release APK, and attaches the package
-  archive, the APK, and a `.sha256` file for each to the matching GitHub
-  Release.
-- `Deploy WordService` verifies and packages the same tagged commit, transfers
-  it to the VPS, switches the release atomically, restarts systemd, and checks
-  the service health endpoint.
+The normal release path is a push to `main`:
 
 ```bash
-git tag -a v0.1.0 -m "WordService v0.1.0"
-git push origin v0.1.0
+git push origin main
 ```
+
+`Tag Main Version` finds the highest existing numeric version tag, increments
+its patch number (for example, `v0.1.6` becomes `v0.1.7`), creates an annotated
+tag on the pushed commit, pushes that tag, and manually dispatches both of the
+following workflows for the exact new tag:
+
+- `Build WordService Android Release` verifies the frontend, builds the Android
+  release APK, and publishes that APK as the only asset in the GitHub Release.
+- `Deploy WordService` verifies and packages the same tagged commit, transfers
+  the Linux deployment archive to the VPS, switches the release atomically,
+  restarts systemd, and checks the service health endpoint.
+
+The tag workflow dispatches the two downstream workflows explicitly because a
+tag pushed with the automatic Actions token does not create new `push`-triggered
+workflow runs. A tag pushed manually with normal Git credentials still matches
+the `v*` tag triggers directly.
+
+Both workflows can also be run manually from the GitHub Actions page. Choose
+the workflow, click `Run workflow`, and enter an existing `vMAJOR.MINOR.PATCH`
+tag in the required `tag` field. Each manual run checks out and validates that
+exact tag before building or deploying it.
 
 If the `production` environment requires approval, approve the deployment job
 after the tag starts. The release asset workflow and the deployment workflow are

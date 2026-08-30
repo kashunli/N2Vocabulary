@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag to deploy, for example v0.1.7
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -32,8 +38,30 @@ jobs:
       DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}
       DEPLOY_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
     steps:
-      - name: Check out the exact pushed commit
+      - name: Check out the release tag
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - name: Resolve and validate release tag
+        id: release
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          set -Eeuo pipefail
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
+            echo "Release tag must use vMAJOR.MINOR.PATCH: $RELEASE_TAG" >&2
+            exit 1
+          }
+          release_sha="$(git rev-parse HEAD)"
+          tag_sha="$(git rev-parse "${RELEASE_TAG}^{commit}")"
+          [[ "$release_sha" == "$tag_sha" ]] || {
+            echo "Checked-out commit does not match $RELEASE_TAG" >&2
+            exit 1
+          }
+          echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+          echo "sha=$release_sha" >> "$GITHUB_OUTPUT"
 
       - name: Validate deployment configuration
         run: bash .github/scripts/validate-deploy-config.sh
@@ -96,10 +124,13 @@ jobs:
         env:
           MAX_GLIBC_VERSION: '2.36'
           RELEASE_BINARY: wordService/target-debian/release/n2-word-service-rust
+          RELEASE_ID: ${{ steps.release.outputs.sha }}
+          RELEASE_LABEL: ${{ steps.release.outputs.tag }}
         run: bash .github/scripts/package-word-service-release.sh
 
       - name: Transfer release and switch the server
         env:
           ARCHIVE: ${{ steps.package.outputs.archive }}
           CHECKSUM: ${{ steps.package.outputs.checksum }}
+          RELEASE_ID: ${{ steps.release.outputs.sha }}
         run: bash .github/scripts/deploy-word-service-release.sh
