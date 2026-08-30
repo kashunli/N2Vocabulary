@@ -100,6 +100,7 @@ export function RailPlayer({
   const finish = useCallback(() => onEnded(), [onEnded]);
   const player = useAudioBufferPlayer(activeUrl, finish);
   const nativeAvailable = nativeAudioAvailable();
+  const reportNativeError = useCallback(() => setError(copy.errors.audioPlayback), [copy.errors.audioPlayback]);
   const currentTimeRef = useRef(player.currentTime);
   const lastPlayRequest = useRef(playRequest);
   const lastReplayRequest = useRef(replayRequest);
@@ -123,20 +124,35 @@ export function RailPlayer({
       if (state.status === "completed") onNativeQueueComplete();
       if (state.error) setError(state.error);
     };
-    const refresh = () => void nativeAudioState().then((state) => state && acceptState(state));
+    const refresh = () => void nativeAudioState()
+      .then((state) => state && acceptState(state))
+      .catch(() => {});
     refresh();
     const onVisibilityChange = () => {
       if (document.visibilityState === "visible") refresh();
     };
     document.addEventListener("visibilitychange", onVisibilityChange);
     let subscription: {remove(): Promise<void> | void} | undefined;
-    void listenForNativeAudioState(acceptState).then((nextSubscription) => {
-      subscription = nextSubscription;
-    });
+    const releaseSubscription = (candidate: typeof subscription) => {
+      try {
+        void Promise.resolve(candidate?.remove()).catch(() => {});
+      } catch {
+        // The native plugin may already be gone during Activity teardown.
+      }
+    };
+    void listenForNativeAudioState(acceptState)
+      .then((nextSubscription) => {
+        if (disposed) {
+          releaseSubscription(nextSubscription);
+          return;
+        }
+        subscription = nextSubscription;
+      })
+      .catch(() => {});
     return () => {
       disposed = true;
       document.removeEventListener("visibilitychange", onVisibilityChange);
-      void subscription?.remove();
+      releaseSubscription(subscription);
     };
   }, [nativeAvailable, onNativeQueueComplete, onNativeQueueItem]);
 
@@ -233,14 +249,14 @@ export function RailPlayer({
         (nativeState?.status === "paused" || nativeState?.status === "gap-paused")
         && nativeState.itemId === nativeQueue[0]?.id
       ) {
-        void resumeNativeAudio();
+        void resumeNativeAudio().catch(() => reportNativeError());
         return;
       }
       void playFrom();
       return;
     }
     if (activeUrl === target.url && player.loadedAudioUrl === activeUrl && player.audioBuffer) void playFrom();
-  }, [activeUrl, autoPlay, nativeAvailable, nativeQueue, nativeState?.itemId, nativeState?.status, playFrom, playRequest, player.audioBuffer, player.loadedAudioUrl, target]);
+  }, [activeUrl, autoPlay, nativeAvailable, nativeQueue, nativeState?.itemId, nativeState?.status, playFrom, playRequest, player.audioBuffer, player.loadedAudioUrl, reportNativeError, target]);
 
   useEffect(() => {
     if (replayRequest === lastReplayRequest.current) return;
@@ -259,11 +275,11 @@ export function RailPlayer({
     if (pauseRequest === lastPauseRequest.current) return;
     lastPauseRequest.current = pauseRequest;
     if (nativeAvailable) {
-      void pauseNativeAudio();
+      void pauseNativeAudio().catch(() => reportNativeError());
       return;
     }
     player.pause();
-  }, [nativeAvailable, pauseRequest, player.pause]);
+  }, [nativeAvailable, pauseRequest, player.pause, reportNativeError]);
 
   // React still decodes an audio buffer for the waveform, but native service
   // events become the source of displayed playback time in the APK.
@@ -286,11 +302,11 @@ export function RailPlayer({
 
   const handleSeek = useCallback((time: number) => {
     if (nativeAvailable) {
-      void seekNativeAudio(time * 1000);
+      void seekNativeAudio(time * 1000).catch(() => reportNativeError());
       return;
     }
     void player.seek(time);
-  }, [nativeAvailable, player.seek]);
+  }, [nativeAvailable, player.seek, reportNativeError]);
 
   const nativeStatus = nativeState?.status === "gap"
     ? copy.player.nativeQueuePause

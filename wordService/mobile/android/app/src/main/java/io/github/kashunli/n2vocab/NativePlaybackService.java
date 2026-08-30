@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.MediaMetadata;
@@ -52,6 +53,8 @@ public final class NativePlaybackService extends MediaSessionService {
     // *cache*, not user-visible storage, so Android may still evict it under
     // storage pressure.
     private static final long CACHE_MAX_BYTES = 512L * 1024L * 1024L;
+    private static final long PROGRESS_UPDATE_INTERVAL_MS = 50L;
+    private static final String TAG = "N2NativePlayback";
     private static final Set<PlaybackListener> LISTENERS = new CopyOnWriteArraySet<>();
     private static volatile PlaybackSnapshot lastSnapshot = PlaybackSnapshot.idle();
 
@@ -355,7 +358,7 @@ public final class NativePlaybackService extends MediaSessionService {
     private void publishProgress() {
         if (player == null || !player.isPlaying()) return;
         publishSnapshot("playing");
-        handler.postDelayed(progressRunnable, 500L);
+        handler.postDelayed(progressRunnable, PROGRESS_UPDATE_INTERVAL_MS);
     }
 
     private void publishSnapshot(String status) {
@@ -377,7 +380,16 @@ public final class NativePlaybackService extends MediaSessionService {
             error
         );
         lastSnapshot = snapshot;
-        for (PlaybackListener listener : LISTENERS) listener.onPlaybackState(snapshot);
+        for (PlaybackListener listener : LISTENERS) {
+            try {
+                listener.onPlaybackState(snapshot);
+            } catch (RuntimeException callbackError) {
+                // A WebView can disappear between an Activity lifecycle event
+                // and this callback. One stale bridge must not take down the
+                // foreground audio service or the next queue item.
+                Log.w(TAG, "Dropping a native playback callback", callbackError);
+            }
+        }
     }
 
     private static final class QueueItem {

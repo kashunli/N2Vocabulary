@@ -79,7 +79,10 @@ public final class NativeAudioPlugin extends Plugin {
     }
 
     private void publishState(NativePlaybackService.PlaybackSnapshot snapshot) {
-        notifyListeners("stateChange", toJs(snapshot), true);
+        // Position snapshots are transient. Retaining every one while the
+        // WebView is backgrounded would replay an unbounded backlog after an
+        // unlock, which can overwhelm the page and look like an app exit.
+        notifyListeners("stateChange", toJs(snapshot), false);
     }
 
     private JSObject toJs(NativePlaybackService.PlaybackSnapshot snapshot) {
