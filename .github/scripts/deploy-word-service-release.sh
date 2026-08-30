@@ -65,25 +65,27 @@ fi
 ssh_opts=(-i "$key_file" -p "$DEPLOY_PORT" -o BatchMode=yes -o IdentitiesOnly=yes -o ConnectTimeout=15 -o ConnectionAttempts=1 -o ServerAliveInterval=15 -o ServerAliveCountMax=4 -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$known_hosts_file")
 sftp_opts=(-i "$key_file" -P "$DEPLOY_PORT" -o BatchMode=yes -o IdentitiesOnly=yes -o ConnectTimeout=15 -o ConnectionAttempts=1 -o ServerAliveInterval=15 -o ServerAliveCountMax=4 -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$known_hosts_file")
 
-ssh "${ssh_opts[@]}" "$target" "install -d -m 0755 '$DEPLOY_ROOT/incoming' '$DEPLOY_ROOT/releases'"
+ssh "${ssh_opts[@]}" "$target" "install -d -m 0755 '$DEPLOY_ROOT/releases'"
 remote_directory="$(dirname "$remote_archive")"
 remote_checksum_name="$(basename "$remote_checksum")"
 local_archive_bytes="$(wc -c < "$ARCHIVE" | tr -d '[:space:]')"
 
-# Reuse a verified remote package. If an earlier upload stopped, `reput`
-# continues the shorter archive. An equal-or-larger archive whose checksum is
-# wrong is discarded first, because SFTP cannot safely append to it.
+# Reuse a verified remote package. A missing archive starts with `put`; `reput`
+# only resumes an existing shorter archive. An equal-or-larger archive whose
+# checksum is wrong is discarded first because SFTP cannot safely append to it.
 if ssh "${ssh_opts[@]}" "$target" \
   "test -f '$remote_archive' && test -f '$remote_checksum' && cd '$remote_directory' && sha256sum --status --check '$remote_checksum_name'"; then
   echo 'Reusing the verified archive already present on the VPS.'
 else
   remote_archive_bytes="$(ssh "${ssh_opts[@]}" "$target" "if test -f '$remote_archive'; then wc -c < '$remote_archive'; fi" | tr -d '[:space:]')"
-  if [[ "$remote_archive_bytes" =~ ^[0-9]+$ ]] && ((remote_archive_bytes >= local_archive_bytes)); then
-    echo 'Removing an invalid remote archive before uploading it again.'
-    ssh "${ssh_opts[@]}" "$target" "rm -f '$remote_archive' '$remote_checksum'"
-    upload_command='put'
-  else
-    upload_command='reput'
+  upload_command='put'
+  if [[ "$remote_archive_bytes" =~ ^[0-9]+$ ]]; then
+    if ((remote_archive_bytes < local_archive_bytes)); then
+      upload_command='reput'
+    else
+      echo 'Removing an invalid remote archive before uploading it again.'
+      ssh "${ssh_opts[@]}" "$target" "rm -f '$remote_archive' '$remote_checksum'"
+    fi
   fi
   {
     printf '%s %q %q\n' "$upload_command" "$ARCHIVE" "$remote_archive"
