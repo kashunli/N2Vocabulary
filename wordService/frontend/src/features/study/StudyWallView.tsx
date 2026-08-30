@@ -141,7 +141,7 @@ export function StudyWallView({
               </button>
               {sentenceTranslation ? <p className="react-sentence-translation" lang={sentenceTranslationLanguage} aria-label={copy.sentenceTranslation}>{sentenceTranslation}</p> : null}
             </div> : null}
-          {activeEntry.explanation_md ? <SentenceExplanation value={activeEntry.explanation_md} /> : null}
+          {activeEntry.explanation_md ? <SentenceExplanation sentenceTranslation={sentenceTranslation} value={activeEntry.explanation_md} /> : null}
         </> : <p className="react-empty">{resolvedEmptyMessage}</p>}
       </section>
     </div>

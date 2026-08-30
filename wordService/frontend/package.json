@@ -7,7 +7,7 @@
     "node": ">=24.14.1 <25"
   },
   "scripts": {
-    "test": "node --test src/features/player/audioSequence.test.mjs src/features/player/studyPlaybackState.test.mjs src/features/study/catalogPresentation.test.mjs src/features/study/contentCache.test.mjs src/features/study/localStudyState.test.mjs src/features/study/studyViewState.test.mjs src/features/study/language.test.mjs",
+    "test": "node --test src/features/player/audioSequence.test.mjs src/features/player/studyPlaybackState.test.mjs src/features/study/catalogPresentation.test.mjs src/features/study/contentCache.test.mjs src/features/study/localStudyState.test.mjs src/features/study/studyViewState.test.mjs src/features/study/language.test.mjs src/features/explanation/markdownText.test.mjs",
     "typecheck": "tsc --noEmit",
     "build": "vite build",
     "check": "pnpm test && pnpm typecheck && pnpm build"

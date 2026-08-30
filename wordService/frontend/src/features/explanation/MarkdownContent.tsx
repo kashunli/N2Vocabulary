@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import { isDuplicateMarkdownParagraph } from "./markdownText.mjs";
+
 type MarkdownBlock =
   | {kind: "paragraph"; lines: string[]}
   | {kind: "heading"; level: 1 | 2 | 3; text: string}
@@ -82,9 +84,10 @@ function parseMarkdown(value: string): MarkdownBlock[] {
   return blocks;
 }
 
-export function MarkdownContent({value}: {value: string}) {
+export function MarkdownContent({value, omitParagraph}: {value: string; omitParagraph?: string}) {
+  const blocks = parseMarkdown(value).filter((block) => block.kind !== "paragraph" || !isDuplicateMarkdownParagraph(block.lines, omitParagraph));
   return <div className="react-explanation react-markdown">
-    {parseMarkdown(value).map((block, index) => {
+    {blocks.map((block, index) => {
       if (block.kind === "rule") return <hr key={index} />;
       if (block.kind === "heading") {
         if (block.level === 1) return <h3 key={index}>{renderInlineMarkdown(block.text)}</h3>;
