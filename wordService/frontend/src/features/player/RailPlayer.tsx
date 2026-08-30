@@ -314,6 +314,7 @@ export function RailPlayer({
           start={0}
           end={duration || 0.01}
           currentTime={currentTime}
+          smoothPlayback={nativeAvailable && nativeState?.status === "playing"}
           silenceGaps={silenceGaps}
           vadNonSpeechIntervals={[]}
           onSeek={handleSeek}

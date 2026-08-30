@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef } from "react";
 
 import { useI18n } from "../../i18n";
 import { formatTime } from "./playerState.mjs";
@@ -13,6 +13,7 @@ interface LineWaveformProps {
   start: number;
   end: number;
   currentTime: number;
+  smoothPlayback?: boolean;
   silenceGaps: { start_ms: number; end_ms: number }[];
   vadNonSpeechIntervals: { start_ms: number; end_ms: number }[];
   onSeek: (time: number) => void;
@@ -28,6 +29,7 @@ export function LineWaveform({
   start,
   end,
   currentTime,
+  smoothPlayback = false,
   silenceGaps,
   vadNonSpeechIntervals,
   onSeek,
@@ -41,6 +43,49 @@ export function LineWaveform({
   const safeCurrent = Math.min(safeEnd, Math.max(safeStart, currentTime));
   const lineDuration = safeEnd - safeStart;
   const progress = (safeCurrent - safeStart) / lineDuration;
+  const waveformProgressRef = useRef<SVGRectElement | null>(null);
+  const waveformCursorRef = useRef<SVGLineElement | null>(null);
+  const visualAnchorTimeRef = useRef(safeCurrent);
+  const visualAnchorWallTimeRef = useRef(0);
+
+  const applyVisualTime = useCallback((time: number) => {
+    const safeTime = Math.min(safeEnd, Math.max(safeStart, time));
+    const visualProgress = (safeTime - safeStart) / lineDuration;
+    const x = visualProgress * 1000;
+    waveformProgressRef.current?.setAttribute("width", String(x));
+    waveformCursorRef.current?.setAttribute("x1", String(x));
+    waveformCursorRef.current?.setAttribute("x2", String(x));
+  }, [lineDuration, safeEnd, safeStart]);
+
+  // Native Android playback reports a coarse position heartbeat so that the
+  // bridge remains cheap while the screen is locked. Once the screen is
+  // visible, interpolate between heartbeats on the browser's animation frame
+  // clock; this keeps the visual cursor smooth without retaining 60 bridge
+  // events per second or rerendering the entire study wall.
+  useEffect(() => {
+    visualAnchorTimeRef.current = safeCurrent;
+    visualAnchorWallTimeRef.current = performance.now();
+    applyVisualTime(safeCurrent);
+  }, [applyVisualTime, safeCurrent, smoothPlayback]);
+
+  useEffect(() => {
+    if (!smoothPlayback) return undefined;
+    let frame: number | null = null;
+    const update = (now: number) => {
+      const elapsed = Math.max(0, (now - visualAnchorWallTimeRef.current) / 1000);
+      const nextTime = visualAnchorTimeRef.current + elapsed;
+      applyVisualTime(nextTime);
+      if (nextTime < safeEnd) {
+        frame = requestAnimationFrame(update);
+      } else {
+        frame = null;
+      }
+    };
+    frame = requestAnimationFrame(update);
+    return () => {
+      if (frame !== null) cancelAnimationFrame(frame);
+    };
+  }, [applyVisualTime, safeEnd, smoothPlayback]);
 
   const bars = useMemo(() => {
     if (!audioBuffer) return [];
@@ -112,14 +157,14 @@ export function LineWaveform({
       <svg viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true">
         <defs>
           <clipPath id={clipId}>
-            <rect x="0" y="0" width={progress * 1000} height="100" />
+            <rect ref={waveformProgressRef} x="0" y="0" width={progress * 1000} height="100" />
           </clipPath>
         </defs>
         <g className="waveform-silence-gaps">{silenceElements}</g>
         <g className="waveform-vad-silence-gaps">{vadSilenceElements}</g>
         <g className="waveform-unplayed">{barElements}</g>
         <g className="waveform-played" clipPath={`url(#${clipId})`}>{barElements}</g>
-        <line className="waveform-cursor" x1={progress * 1000} x2={progress * 1000} y1="4" y2="96" />
+        <line ref={waveformCursorRef} className="waveform-cursor" x1={progress * 1000} x2={progress * 1000} y1="4" y2="96" />
       </svg>
       <input
         type="range"
