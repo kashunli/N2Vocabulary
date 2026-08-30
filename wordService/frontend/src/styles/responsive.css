@@ -19,7 +19,6 @@
   .react-header-actions button { padding: 7px 6px; }
   .react-language-picker > span { display: none; }
   .react-language-picker select { min-width: 64px; padding: 7px 5px; font-size: 0.75rem; }
-  .account-corner { display: none; }
   .react-content-scroll { overflow: hidden; }
   .react-layout { display: flex; flex-direction: column; height: 100%; min-height: 0; }
   .react-list { order: 2; flex: 0 0 auto; min-height: 0; max-height: 150px; padding-right: 0; }

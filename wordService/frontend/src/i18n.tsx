@@ -93,6 +93,10 @@ export interface LanguageCopy {
     resetSequence: string;
   };
   account: {
+    eyebrow: string;
+    title: string;
+    signedInAs: string;
+    notSignedIn: string;
     logOut: string;
     signInOrRegister: string;
     signIn: string;
@@ -213,6 +217,10 @@ const EN_COPY: LanguageCopy = {
     resetSequence: "Reset sequence",
   },
   account: {
+    eyebrow: "ACCOUNT",
+    title: "Account",
+    signedInAs: "Signed in as",
+    notSignedIn: "Not signed in",
     logOut: "Log out",
     signInOrRegister: "Sign in / Register",
     signIn: "Sign in",
@@ -333,6 +341,10 @@ const ZH_COPY: LanguageCopy = {
     resetSequence: "重置播放序列",
   },
   account: {
+    eyebrow: "账户",
+    title: "账户",
+    signedInAs: "当前登录账户",
+    notSignedIn: "尚未登录",
     logOut: "退出登录",
     signInOrRegister: "登录 / 注册",
     signIn: "登录",

@@ -6,7 +6,7 @@ import { PlaybackSettingsModal } from "./features/player/PlaybackSettingsModal";
 import { RailPlayer } from "./features/player/RailPlayer";
 import { useStudyKeyboardShortcuts } from "./features/player/useStudyKeyboardShortcuts";
 import { useStudyPlayback } from "./features/player/useStudyPlayback";
-import {AccountControls} from "./features/study/AccountControls";
+import {AccountImportDialog} from "./features/study/AccountControls";
 import { StudyHeader } from "./features/study/StudyHeader";
 import { StudyWallView } from "./features/study/StudyWallView";
 import { useStudyActions } from "./features/study/useStudyActions";
@@ -20,7 +20,8 @@ import type { ReviewSession } from "./features/study/studyStateTypes";
 import type { FilterState } from "./features/study/studyTypes";
 import type { Entry, UnitSummary } from "./types";
 
-function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
+function StudyApp(state: ReturnType<typeof useStudyState>) {
+  const {store, snapshot} = state;
   const {copy, localizeMessage} = useI18n();
   const [initialView] = useState(() => readStudyViewState());
   const [selectedBook, setSelectedBook] = useState(() => initialView.selectedBook || readStudyFocus()?.bookCode || "N2");
@@ -314,6 +315,7 @@ function StudyApp({store, snapshot}: ReturnType<typeof useStudyState>) {
       />
 
       {settingsOpen ? <PlaybackSettingsModal
+        accountState={state}
         playbackRunMode={playbackRunMode}
         sequence={sequence}
         onChangeSequenceStep={changeSequenceStep}
@@ -332,7 +334,7 @@ function AppContent() {
   const {copy} = useI18n();
   const studyState = useStudyState();
   if (!studyState.ready) return <main className="react-shell"><p className="react-empty">{copy.loadingStudyState}</p></main>;
-  return <><AccountControls state={studyState} /><StudyApp key={studyState.session?.user.id ?? "guest"} {...studyState} /></>;
+  return <><AccountImportDialog state={studyState} /><StudyApp key={studyState.session?.user.id ?? "guest"} {...studyState} /></>;
 }
 
 export function App() {

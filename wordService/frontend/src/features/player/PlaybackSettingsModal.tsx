@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { useI18n } from "../../i18n";
+import { AccountControls, type AccountState } from "../study/AccountControls";
 import { MAX_AUDIO_SEQUENCE_STEPS, MAX_SEQUENCE_PAUSE_MS } from "./audioSequence.mjs";
 import type {
   AudioSequenceConfig,
@@ -13,6 +14,7 @@ import {
 } from "./playbackSettings";
 
 interface PlaybackSettingsModalProps {
+  accountState: AccountState;
   playbackRunMode: PlaybackRunMode;
   sequence: AudioSequenceConfig;
   onChangeSequenceStep: (stepId: string, patch: Partial<AudioSequenceStep>) => void;
@@ -92,6 +94,7 @@ function PauseAfterControl({stepIndex, value, onChange}: PauseAfterControlProps)
 }
 
 export function PlaybackSettingsModal({
+  accountState,
   playbackRunMode,
   sequence,
   onChangeSequenceStep,
@@ -177,6 +180,8 @@ export function PlaybackSettingsModal({
           <button type="button" className="react-sequence-run-mode" onClick={onTogglePlaybackRunMode} aria-pressed={playbackRunMode !== "single"}>
             {currentModeLabel} → {nextModeLabel}
           </button>
+
+          <AccountControls state={accountState} />
 
           <button type="button" className="react-settings-reset" onClick={onReset}>{copy.settings.resetSequence}</button>
         </div>
