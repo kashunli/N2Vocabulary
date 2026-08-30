@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'N2 Vocabulary',
   webDir: '../static/react-rail',
   server: {
-    url: 'https://joeswords.weneednowall.monster/',
+    url: 'https://words.kashunli.com/',
     cleartext: false
   }
 };
