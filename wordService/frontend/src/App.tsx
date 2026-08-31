@@ -132,6 +132,7 @@ function StudyApp(state: ReturnType<typeof useStudyState>) {
     allEntries,
     books,
     contentLoading,
+    scopeReady,
     setStatus,
     status,
     summary,
@@ -221,6 +222,7 @@ function StudyApp(state: ReturnType<typeof useStudyState>) {
 
   useStudyEntries({
     allEntries,
+    entriesReady: scopeReady,
     filterState,
     resetPosition,
     selectedBook,

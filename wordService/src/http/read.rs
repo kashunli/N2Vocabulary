@@ -1,7 +1,7 @@
 use super::mutations::repository_for_params;
 use super::response::{
     parse_local_url, query_map, redirect_to_versioned_audio, send_audio, send_file, send_json,
-    static_asset_path,
+    send_versioned_json, static_asset_path,
 };
 use crate::audio_review::AudioReviewStore;
 use crate::config::AppConfig;
@@ -17,6 +17,26 @@ enum AudioVersionRequest {
     ServeImmutable,
     RedirectToVersioned,
     Missing,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+enum ContentVersionRequest {
+    ServeImmutable,
+    ServeUnversioned,
+    Missing,
+}
+
+fn classify_content_version_request(
+    requested_version: Option<&str>,
+    current_version: &str,
+) -> ContentVersionRequest {
+    match requested_version {
+        Some(requested) if !current_version.is_empty() && requested == current_version => {
+            ContentVersionRequest::ServeImmutable
+        }
+        Some(_) => ContentVersionRequest::Missing,
+        None => ContentVersionRequest::ServeUnversioned,
+    }
 }
 
 /// Only the exact SHA-256 URL published by the API may receive an immutable
@@ -94,6 +114,17 @@ pub(super) fn handle_read(
             return send_json(request, StatusCode(200), &audio_review.list()?);
         }
         "/api/entries" => {
+            let version_request = classify_content_version_request(
+                params.get("v").map(String::as_str),
+                &repository.content_revision(),
+            );
+            if version_request == ContentVersionRequest::Missing {
+                return send_json(
+                    request,
+                    StatusCode(404),
+                    &json!({"error": "content version not found"}),
+                );
+            }
             let unit = match params.get("unit").filter(|value| !value.is_empty()) {
                 Some(value) => Some(value.parse::<i64>().context("unit must be an integer")?),
                 None => None,
@@ -101,7 +132,15 @@ pub(super) fn handle_read(
             let state = params.get("state").map(String::as_str).unwrap_or("all");
             let search = params.get("search").map(String::as_str).unwrap_or("");
             let payload = repository.list_entries(unit, state, search)?;
-            return send_json(request, StatusCode(200), &payload);
+            return match version_request {
+                ContentVersionRequest::ServeImmutable => {
+                    send_versioned_json(request, StatusCode(200), &payload)
+                }
+                ContentVersionRequest::ServeUnversioned => {
+                    send_json(request, StatusCode(200), &payload)
+                }
+                ContentVersionRequest::Missing => unreachable!(),
+            };
         }
         _ => {}
     }
@@ -185,8 +224,9 @@ fn static_page_path(static_dir: &Path, request_path: &str) -> Option<PathBuf> {
 #[cfg(test)]
 mod tests {
     use super::{
-        AudioVersionRequest, classify_audio_version_parameters, classify_audio_version_request,
-        parse_local_url, static_page_path,
+        AudioVersionRequest, ContentVersionRequest, classify_audio_version_parameters,
+        classify_audio_version_request, classify_content_version_request, parse_local_url,
+        static_page_path,
     };
     use std::path::Path;
 
@@ -240,6 +280,27 @@ mod tests {
                 &current,
             ),
             AudioVersionRequest::Missing
+        );
+    }
+
+    #[test]
+    fn content_version_request_only_makes_the_current_revision_immutable() {
+        let current = "a".repeat(64);
+        assert_eq!(
+            classify_content_version_request(Some(&current), &current),
+            ContentVersionRequest::ServeImmutable
+        );
+        assert_eq!(
+            classify_content_version_request(Some(&"b".repeat(64)), &current),
+            ContentVersionRequest::Missing
+        );
+        assert_eq!(
+            classify_content_version_request(None, &current),
+            ContentVersionRequest::ServeUnversioned
+        );
+        assert_eq!(
+            classify_content_version_request(Some(""), ""),
+            ContentVersionRequest::Missing
         );
     }
 }

@@ -118,7 +118,7 @@ impl WordRepository {
     /// The hash is taken lazily on first access and cached, so the 35 MB read
     /// happens at most once per run. A fresh process after an offline import or
     /// migration sees a different hash and the browser refetches its content.
-    fn content_revision(&self) -> String {
+    pub fn content_revision(&self) -> String {
         let mut guard = self
             .content_revision
             .lock()

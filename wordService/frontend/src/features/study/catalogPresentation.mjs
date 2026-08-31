@@ -15,6 +15,7 @@ export function deriveCatalogPresentation({
   const scopedEntries = selectedUnit === null
     ? bookEntries
     : bookEntries.filter((entry) => entry.unit.number === selectedUnit);
+  const loadedUnitNumbers = new Set(bookEntries.map((entry) => entry.unit.number));
 
   const countsFor = (entries) => {
     const marks = entries.map((entry) => cards[entry.item_uuid]);
@@ -36,9 +37,9 @@ export function deriveCatalogPresentation({
       units: selectedUnit === null ? bookSummary.units : 1,
       ...countsFor(scopedEntries),
     },
-    units: sourceUnits.map((unit) => ({
+    units: sourceUnits.map((unit) => loadedUnitNumbers.has(unit.number) ? ({
       ...unit,
       ...countsFor(bookEntries.filter((entry) => entry.unit.number === unit.number)),
-    })),
+    }) : unit),
   };
 }

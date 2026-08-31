@@ -9,6 +9,7 @@ use tiny_http::{Header, Method, Request, Response, StatusCode};
 use url::Url;
 
 const VERSIONED_AUDIO_CACHE_CONTROL: &str = "public, max-age=31536000, immutable";
+const VERSIONED_CONTENT_CACHE_CONTROL: &str = "public, max-age=31536000, immutable";
 const LEGACY_AUDIO_REDIRECT_CACHE_CONTROL: &str = "no-store";
 
 pub(super) fn static_asset_path(static_dir: &Path, request_path: &str) -> Option<PathBuf> {
@@ -57,6 +58,29 @@ pub(super) fn send_json<T: Serialize>(
 
     // HEAD should return the same status/headers as GET without a response
     // body. This helper centralizes that rule for every JSON endpoint.
+    if request.method() == &Method::Head {
+        request.respond(add_headers(Response::empty(status), headers))?;
+    } else {
+        request.respond(add_headers(
+            Response::from_data(data).with_status_code(status),
+            headers,
+        ))?;
+    }
+    Ok(())
+}
+
+/// Versioned content URLs name immutable database bytes, so browsers and
+/// intermediary caches may retain their JSON without revalidation.
+pub(super) fn send_versioned_json<T: Serialize>(
+    request: Request,
+    status: StatusCode,
+    payload: &T,
+) -> Result<()> {
+    let data = serde_json::to_vec(payload)?;
+    let headers = vec![
+        header("Cache-Control", VERSIONED_CONTENT_CACHE_CONTROL),
+        header("Content-Type", "application/json; charset=utf-8"),
+    ];
     if request.method() == &Method::Head {
         request.respond(add_headers(Response::empty(status), headers))?;
     } else {
@@ -227,7 +251,8 @@ pub(super) fn header(name: &str, value: &str) -> Header {
 #[cfg(test)]
 mod tests {
     use super::{
-        LEGACY_AUDIO_REDIRECT_CACHE_CONTROL, VERSIONED_AUDIO_CACHE_CONTROL, static_asset_path,
+        LEGACY_AUDIO_REDIRECT_CACHE_CONTROL, VERSIONED_AUDIO_CACHE_CONTROL,
+        VERSIONED_CONTENT_CACHE_CONTROL, static_asset_path,
     };
     use std::path::Path;
 
@@ -274,5 +299,13 @@ mod tests {
             "public, max-age=31536000, immutable"
         );
         assert_eq!(LEGACY_AUDIO_REDIRECT_CACHE_CONTROL, "no-store");
+    }
+
+    #[test]
+    fn versioned_content_uses_an_immutable_cache_lifetime() {
+        assert_eq!(
+            VERSIONED_CONTENT_CACHE_CONTROL,
+            "public, max-age=31536000, immutable"
+        );
     }
 }

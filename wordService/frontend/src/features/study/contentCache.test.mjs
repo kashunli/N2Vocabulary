@@ -2,12 +2,13 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
-  CONTENT_CACHE_MAX_BOOKS,
+  CONTENT_CACHE_MAX_UNITS,
   CONTENT_CACHE_PREFIX,
-  contentKey,
+  contentUnitKey,
+  loadContentScope,
   pruneContentCache,
-  readContentBook,
-  writeContentBook,
+  readContentUnit,
+  writeContentUnit,
 } from "./contentCache.mjs";
 
 class MemoryStorage {
@@ -19,83 +20,94 @@ class MemoryStorage {
   removeItem(key) { this.values.delete(key); }
 }
 
-function bookContent(revision, entries = 2) {
-  return {
-    revision,
-    summary: {entries, units: 1, known: 0, flagged: 0, unmarked: entries, content_revision: revision},
-    units: [{number: 1, header: "H", title: "T", entry_count: entries}],
-    allEntries: Array.from({length: entries}, (_, index) => ({entry_id: index, item_uuid: `u${index}`})),
-  };
-}
+const entriesFor = (unit) => [{entry_id: unit, item_uuid: `unit-${unit}`}];
 
-test("write then read returns the same content", () => {
+test("unit entries are keyed by book, revision, and unit", () => {
   const storage = new MemoryStorage();
-  const content = bookContent("rev-1");
-  writeContentBook("N2", content, storage, () => 1);
-  assert.deepEqual(readContentBook("N2", storage), content);
-  assert.ok(storage.getItem(contentKey("N2")));
+  writeContentUnit("GWB_N2", "rev-1", 3, entriesFor(3), storage, () => 1);
+  assert.deepEqual(readContentUnit("GWB_N2", "rev-1", 3, storage), entriesFor(3));
+  assert.equal(readContentUnit("GWB_N2", "rev-2", 3, storage), undefined);
+  assert.equal(readContentUnit("GWB_N2", "rev-1", 4, storage), undefined);
+  assert.ok(contentUnitKey("GWB_N2", "rev-1", 3).startsWith(`${CONTENT_CACHE_PREFIX}:`));
 });
 
-test("read returns undefined when the book was never cached", () => {
+test("selected section fetches only that unit and then reuses local cache", async () => {
   const storage = new MemoryStorage();
-  assert.equal(readContentBook("N1", storage), undefined);
+  const requests = [];
+  const load = () => loadContentScope({
+    book: "GWB_N2",
+    revision: "rev-1",
+    selectedUnit: 2,
+    units: [{number: 1}, {number: 2}],
+    readUnit: (book, revision, unit) => readContentUnit(book, revision, unit, storage),
+    writeUnit: (book, revision, unit, entries) => writeContentUnit(book, revision, unit, entries, storage),
+    fetchUnit: async (unit) => { requests.push(unit); return entriesFor(unit); },
+  });
+  assert.deepEqual(await load(), entriesFor(2));
+  assert.deepEqual(await load(), entriesFor(2));
+  assert.deepEqual(requests, [2]);
 });
 
-test("read returns undefined for malformed payloads", () => {
+test("all sections is assembled from cached and missing unit payloads", async () => {
   const storage = new MemoryStorage();
-  storage.setItem(contentKey("N2"), "not json");
-  assert.equal(readContentBook("N2", storage), undefined);
-  storage.setItem(contentKey("N2"), JSON.stringify({revision: 7, summary: {}, units: [], allEntries: []}));
-  assert.equal(readContentBook("N2", storage), undefined);
-  storage.setItem(contentKey("N2"), JSON.stringify({revision: "r", units: [], allEntries: []}));
-  assert.equal(readContentBook("N2", storage), undefined);
+  writeContentUnit("N2", "rev", 1, entriesFor(1), storage);
+  const requests = [];
+  const entries = await loadContentScope({
+    book: "N2",
+    revision: "rev",
+    selectedUnit: null,
+    units: [{number: 1}, {number: 2}, {number: 3}],
+    readUnit: (book, revision, unit) => readContentUnit(book, revision, unit, storage),
+    writeUnit: (book, revision, unit, value) => writeContentUnit(book, revision, unit, value, storage),
+    fetchUnit: async (unit) => { requests.push(unit); return entriesFor(unit); },
+  });
+  assert.deepEqual(requests.sort(), [2, 3]);
+  assert.deepEqual(entries.map((entry) => entry.entry_id), [1, 2, 3]);
 });
 
-test("prune keeps only the most recently used books", () => {
+test("a new content revision cannot read the old unit cache", async () => {
   const storage = new MemoryStorage();
-  writeContentBook("A", bookContent("a"), storage, () => 1);
-  writeContentBook("B", bookContent("b"), storage, () => 2);
-  writeContentBook("C", bookContent("c"), storage, () => 3);
-  writeContentBook("D", bookContent("d"), storage, () => 4);
-  assert.equal(readContentBook("A", storage), undefined);
-  assert.ok(readContentBook("B", storage));
-  assert.ok(readContentBook("C", storage));
-  assert.ok(readContentBook("D", storage));
-  assert.ok(storage.values.size <= CONTENT_CACHE_MAX_BOOKS + 1); // content keys + index
+  writeContentUnit("N2", "old", 1, entriesFor(1), storage);
+  const requests = [];
+  await loadContentScope({
+    book: "N2",
+    revision: "new",
+    selectedUnit: 1,
+    units: [{number: 1}],
+    readUnit: (book, revision, unit) => readContentUnit(book, revision, unit, storage),
+    writeUnit: (book, revision, unit, value) => writeContentUnit(book, revision, unit, value, storage),
+    fetchUnit: async (unit) => { requests.push(unit); return entriesFor(unit); },
+  });
+  assert.deepEqual(requests, [1]);
 });
 
-test("touching a cached book makes it recent again", () => {
+test("prune keeps only the most recently used unit payloads", () => {
   const storage = new MemoryStorage();
-  writeContentBook("A", bookContent("a"), storage, () => 1);
-  writeContentBook("B", bookContent("b"), storage, () => 2);
-  writeContentBook("A", bookContent("a-v2"), storage, () => 3);
-  writeContentBook("C", bookContent("c"), storage, () => 4);
-  writeContentBook("D", bookContent("d"), storage, () => 5);
-  // A is recent again and survives; B was never re-touched and falls off.
-  assert.ok(readContentBook("A", storage));
-  assert.ok(readContentBook("C", storage));
-  assert.ok(readContentBook("D", storage));
-  assert.equal(readContentBook("B", storage), undefined);
+  for (let unit = 1; unit <= CONTENT_CACHE_MAX_UNITS + 1; unit += 1) {
+    writeContentUnit("N2", "rev", unit, entriesFor(unit), storage, () => unit);
+  }
+  assert.equal(readContentUnit("N2", "rev", 1, storage), undefined);
+  assert.ok(readContentUnit("N2", "rev", CONTENT_CACHE_MAX_UNITS + 1, storage));
+  assert.ok(storage.values.size <= CONTENT_CACHE_MAX_UNITS + 1);
 });
 
-test("quota failure does not throw and leaves the cache usable", () => {
+test("malformed data and quota failures degrade to a cache miss", () => {
   const storage = new MemoryStorage();
-  writeContentBook("A", bookContent("a", 100), storage, () => 1);
-  // Pretend the origin is full: fail every setItem after the first book.
+  storage.setItem(contentUnitKey("N2", "rev", 1), "not json");
+  assert.equal(readContentUnit("N2", "rev", 1, storage), undefined);
+  storage.setItem(contentUnitKey("N2", "rev", 1), JSON.stringify({items: []}));
+  assert.equal(readContentUnit("N2", "rev", 1, storage), undefined);
+
   const full = new MemoryStorage();
   full.setItem = () => { throw new Error("quota"); };
-  assert.doesNotThrow(() => writeContentBook("B", bookContent("b"), full, () => 2));
+  assert.doesNotThrow(() => writeContentUnit("N2", "rev", 1, entriesFor(1), full));
 });
 
-test("manual prune to zero removes every book", () => {
+test("manual prune to zero removes every indexed unit", () => {
   const storage = new MemoryStorage();
-  writeContentBook("A", bookContent("a"), storage, () => 1);
-  writeContentBook("B", bookContent("b"), storage, () => 2);
+  writeContentUnit("N2", "rev", 1, entriesFor(1), storage);
+  writeContentUnit("N2", "rev", 2, entriesFor(2), storage);
   pruneContentCache(0, storage);
-  assert.equal(readContentBook("A", storage), undefined);
-  assert.equal(readContentBook("B", storage), undefined);
-});
-
-test("cache keys are scoped to the v1 prefix", () => {
-  assert.ok(contentKey("N2").startsWith(`${CONTENT_CACHE_PREFIX}:`));
+  assert.equal(readContentUnit("N2", "rev", 1, storage), undefined);
+  assert.equal(readContentUnit("N2", "rev", 2, storage), undefined);
 });

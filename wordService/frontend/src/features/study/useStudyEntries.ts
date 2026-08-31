@@ -7,6 +7,7 @@ import { isReviewDue, type ReviewSession, type StudySnapshot } from "./studyStat
 
 interface UseStudyEntriesOptions {
   allEntries: Entry[];
+  entriesReady: boolean;
   filterState: FilterState;
   resetPosition: (entries: Entry[]) => void;
   selectedBook: string;
@@ -21,6 +22,7 @@ interface UseStudyEntriesOptions {
 
 export function useStudyEntries({
   allEntries,
+  entriesReady,
   filterState,
   resetPosition,
   selectedBook,
@@ -44,21 +46,29 @@ export function useStudyEntries({
   const resetPositionRef = useRef(resetPosition);
   resetPositionRef.current = resetPosition;
 
-  // The visible queue is a client-side derivation of the book's cached entries.
-  // Content is immutable for a scope, so unit/filter switches never hit the
-  // network; only a book switch reloads allEntries upstream.
+  // The visible queue is a client-side derivation of the selected scope's
+  // immutable cached entries. Filter changes never hit the content API.
   useEffect(() => {
-    if (!allEntries.length || allEntries[0].book_code !== selectedBook) return;
     const scopeKey = JSON.stringify([selectedBook, selectedUnit]);
     const queryKey = JSON.stringify([filterState, scopeKey]);
+    if (!entriesReady) {
+      setEntries([]);
+      setEntriesLoading(true);
+      return;
+    }
+    if (!allEntries.length) {
+      setEntries([]);
+      loadedQueryRef.current = queryKey;
+      setEntriesLoading(false);
+      return;
+    }
+    if (allEntries[0].book_code !== selectedBook) return;
     const preserveLoadedPlaylist = loadedQueryRef.current === queryKey;
     // Playing a card updates studySnapshot so its progress can be saved. Keep
     // the current rows mounted during that background refresh; replacing them
     // with the loading message empties the scroll pane and resets it to row 1.
     if (loadedQueryRef.current !== queryKey) setEntriesLoading(true);
-    const scopedItems = selectedUnit === null
-      ? allEntries
-      : allEntries.filter(entry => entry.unit.number === selectedUnit);
+    const scopedItems = allEntries;
     const loadedItems = scopedItems.map(entry => {
       const card = studySnapshotRef.current.cards[entry.item_uuid];
       return {...entry, mark: {status: markStatusOf(card), due_at: card?.due_at, review_level: card?.review_level, last_reviewed_at: card?.last_reviewed_at, updated_at: card?.updated_at}};
@@ -93,7 +103,7 @@ export function useStudyEntries({
     }
     loadedQueryRef.current = queryKey;
     setEntriesLoading(false);
-  }, [allEntries, filterState, selectedBook, selectedUnit, setEntries, setEntriesLoading, setReviewSession, setStatus]);
+  }, [allEntries, entriesReady, filterState, selectedBook, selectedUnit, setEntries, setEntriesLoading, setReviewSession, setStatus]);
 
   // Refresh visible marks from the snapshot without recomputing the queue. The
   // scope derivation above runs once per (book, unit, filter) selection; each

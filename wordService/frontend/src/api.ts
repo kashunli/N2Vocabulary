@@ -28,12 +28,16 @@ export function getSummary(book = "N2") {
 }
 
 export function getEntries(
-  book = "N2",
-  unit?: number,
+  book: string,
+  contentRevision: string,
+  unit: number,
   state: "all" | "unmarked" | "known" | "flagged" = "all",
 ) {
-  const params = new URLSearchParams({ book });
-  if (unit !== undefined) params.set("unit", String(unit));
+  const params = new URLSearchParams({
+    book,
+    unit: String(unit),
+    v: contentRevision,
+  });
   if (state !== "all") params.set("state", state);
   return getJson<{ items: Entry[] }>(`/api/entries?${params}`);
 }

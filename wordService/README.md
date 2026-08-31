@@ -197,8 +197,11 @@ Optional environment variables:
 
 - `GET /api/summary`
 - `GET /api/units`
-- `GET /api/entries?unit=1&state=all|known|flagged|unmarked&search=...`
-  (`unit` is optional; omit it to search/list all units)
+- `GET /api/entries?book=N2&unit=1&v=<content_revision>` is the preferred
+  immutable-content request. The React client gets `content_revision` from
+  `/api/summary`, requests one unit at a time, and caches by book/revision/unit.
+- `GET /api/entries?book=N2&unit=1&state=all|known|flagged|unmarked&search=...`
+  remains available for unversioned compatibility (`unit` is optional there).
 - `GET /api/entries/<entry_id>`
 - `POST /api/units/<unit_number>/flagged-audio`
 - `GET /audio/<clips/...>`
