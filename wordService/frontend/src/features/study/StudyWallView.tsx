@@ -36,14 +36,13 @@ export function StudyWallView({
   onSelectPhase,
   reviewSession,
 }: StudyWallViewProps) {
-  const {copy, language, selectText} = useI18n();
+  const {copy} = useI18n();
   const resolvedEmptyMessage = emptyMessage || copy.loadingVocabulary;
-  const sentenceTranslation = activeEntry ? selectText(activeEntry.sentence_translation_en, activeEntry.sentence_translation_zh) : "";
-  const sentenceTranslationLanguage = language === "zh" && activeEntry?.sentence_translation_zh?.trim()
-    ? "zh-CN"
-    : language === "en" && activeEntry?.sentence_translation_en?.trim()
-      ? "en"
-      : language === "zh" ? "en" : "zh-CN";
+  const sentenceTranslations = activeEntry ? [
+    {text: activeEntry.sentence_translation_en?.trim() || "", language: "en"},
+    {text: activeEntry.sentence_translation_zh?.trim() || "", language: "zh-CN"},
+  ].filter((translation) => translation.text) : [];
+  const sentenceTranslationTexts = sentenceTranslations.map((translation) => translation.text);
   const [listWidth, setListWidth] = useState(320);
   const [draggingDivider, setDraggingDivider] = useState(false);
   const activeRef = useRef<HTMLButtonElement | null>(null);
@@ -139,9 +138,14 @@ export function StudyWallView({
               >
                 <strong lang="ja">{activeEntry.sentence}</strong>
               </button>
-              {sentenceTranslation ? <p className="react-sentence-translation" lang={sentenceTranslationLanguage} aria-label={copy.sentenceTranslation}>{sentenceTranslation}</p> : null}
+              {sentenceTranslations.length ? <p className="react-sentence-translation" aria-label={copy.sentenceTranslation}>
+                {sentenceTranslations.map((translation, index) => <span key={translation.language}>
+                  {index ? <span aria-hidden="true"> · </span> : null}
+                  <span lang={translation.language}>{translation.text}</span>
+                </span>)}
+              </p> : null}
             </div> : null}
-          {activeEntry.explanation_md ? <SentenceExplanation sentenceTranslation={sentenceTranslation} value={activeEntry.explanation_md} /> : null}
+          {activeEntry.explanation_md ? <SentenceExplanation sentenceTranslations={sentenceTranslationTexts} value={activeEntry.explanation_md} /> : null}
         </> : <p className="react-empty">{resolvedEmptyMessage}</p>}
       </section>
     </div>

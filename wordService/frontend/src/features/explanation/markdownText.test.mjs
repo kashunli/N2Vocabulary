@@ -16,3 +16,10 @@ test("keeps an explanation paragraph that adds context", () => {
     false,
   );
 });
+
+test("can match either bilingual sentence translation", () => {
+  assert.equal(
+    isDuplicateMarkdownParagraph(["**上课时我记笔记。**"], ["During class, I take notes.", "上课时我记笔记。"]),
+    true,
+  );
+});

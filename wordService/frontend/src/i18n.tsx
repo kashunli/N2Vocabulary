@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
-import { normalizeLanguage, preferredTranslation, readStoredLanguage, LANGUAGE_STORAGE_KEY } from "./language.mjs";
+import { normalizeLanguage, readStoredLanguage, LANGUAGE_STORAGE_KEY } from "./language.mjs";
 import type { PlaybackEndBehavior, PlaybackRunMode } from "./features/player/playbackSettings";
 import type { MarkStatus } from "./features/study/markStatus";
 import type { FilterState } from "./features/study/studyTypes";
@@ -399,7 +399,6 @@ interface LanguageContextValue {
   language: AppLanguage;
   setLanguage: (language: AppLanguage) => void;
   copy: LanguageCopy;
-  selectText: (english?: string, chinese?: string) => string;
   localizeMessage: (message: string) => string;
 }
 
@@ -441,9 +440,8 @@ export function LanguageProvider({children}: {children: ReactNode}) {
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
-  const selectText = useCallback((english?: string, chinese?: string) => preferredTranslation(language, english, chinese), [language]);
   const localizeMessage = useCallback((message: string) => language === "zh" ? KNOWN_ERROR_TRANSLATIONS[message] || message : message, [language]);
-  const value = useMemo<LanguageContextValue>(() => ({language, setLanguage, copy, selectText, localizeMessage}), [copy, language, localizeMessage, selectText, setLanguage]);
+  const value = useMemo<LanguageContextValue>(() => ({language, setLanguage, copy, localizeMessage}), [copy, language, localizeMessage, setLanguage]);
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 }

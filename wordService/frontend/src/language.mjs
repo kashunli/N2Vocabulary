@@ -12,10 +12,3 @@ export function readStoredLanguage(storage) {
     return "en";
   }
 }
-
-/** Prefer the selected interface language, but never hide an available value. */
-export function preferredTranslation(language, english, chinese) {
-  const primary = language === "zh" ? chinese : english;
-  const fallback = language === "zh" ? english : chinese;
-  return (primary || "").trim() || (fallback || "").trim();
-}

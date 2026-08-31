@@ -7,7 +7,8 @@ export function normalizeMarkdownText(value) {
   return value.replace(/[`*_]/g, "").replace(/\s+/g, " ").trim().toLowerCase();
 }
 
-export function isDuplicateMarkdownParagraph(lines, translation) {
-  return Boolean(translation?.trim())
-    && normalizeMarkdownText(lines.join(" ")) === normalizeMarkdownText(translation);
+export function isDuplicateMarkdownParagraph(lines, translations) {
+  const candidates = Array.isArray(translations) ? translations : [translations];
+  return candidates.some((translation) => Boolean(translation?.trim())
+    && normalizeMarkdownText(lines.join(" ")) === normalizeMarkdownText(translation));
 }

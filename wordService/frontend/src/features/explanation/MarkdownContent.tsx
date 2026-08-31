@@ -84,8 +84,8 @@ function parseMarkdown(value: string): MarkdownBlock[] {
   return blocks;
 }
 
-export function MarkdownContent({value, omitParagraph}: {value: string; omitParagraph?: string}) {
-  const blocks = parseMarkdown(value).filter((block) => block.kind !== "paragraph" || !isDuplicateMarkdownParagraph(block.lines, omitParagraph));
+export function MarkdownContent({value, omitParagraphs = []}: {value: string; omitParagraphs?: string[]}) {
+  const blocks = parseMarkdown(value).filter((block) => block.kind !== "paragraph" || !isDuplicateMarkdownParagraph(block.lines, omitParagraphs));
   return <div className="react-explanation react-markdown">
     {blocks.map((block, index) => {
       if (block.kind === "rule") return <hr key={index} />;
