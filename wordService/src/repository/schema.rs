@@ -13,6 +13,7 @@ impl WordRepository {
         self.ensure_exclusive_mark_data(&mut conn)?;
         self.ensure_source_provenance_schema(&conn)?;
         self.ensure_example_metadata_schema(&conn)?;
+        self.ensure_audio_version_schema(&conn)?;
         // `query_row` is the startup probe because these statements return a
         // row; mutation-style `execute` would reject them.
         conn.query_row("SELECT 1 FROM book_entries LIMIT 1", [], |_| Ok(()))?;
@@ -154,6 +155,21 @@ impl WordRepository {
              WHERE position > 0
                AND kind = 'example_sentence'
                AND TRIM(COALESCE(category, '')) <> '';
+            "#,
+        )?;
+        Ok(())
+    }
+
+    fn ensure_audio_version_schema(&self, conn: &Connection) -> Result<()> {
+        conn.execute_batch(
+            r#"
+            CREATE TABLE IF NOT EXISTS audio_versions (
+              clip_path TEXT PRIMARY KEY,
+              sha256 TEXT NOT NULL,
+              file_size INTEGER NOT NULL,
+              modified_ns INTEGER NOT NULL,
+              updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
             "#,
         )?;
         Ok(())

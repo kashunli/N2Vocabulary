@@ -70,6 +70,15 @@ fn audio_urls_require_existing_files_and_normalize_legacy_db_prefixes() {
         b"replaced legacy word",
     )
     .unwrap();
+    let stale = fixture.repo.audio_url(Some("clips/unit07/word003.mp3"));
+    assert_eq!(
+        stale, None,
+        "runtime must reject a clip whose DB metadata is stale"
+    );
+    fixture
+        .repo
+        .record_audio_version("clips/unit07/word003.mp3")
+        .unwrap();
     let reloaded = WordRepository::new(fixture.db_path.clone(), fixture.clips_dir.clone(), "N2");
     let after = reloaded.audio_url(Some("clips/unit07/word003.mp3"));
     assert_ne!(before, after, "changed bytes must receive a new cache key");

@@ -45,12 +45,25 @@ impl Fixture {
 
         create_test_db(&db_path);
 
-        Self {
+        let fixture = Self {
             repo: WordRepository::new(db_path.clone(), clips_dir.clone(), "N2"),
             _tempdir: tempdir,
             db_path,
             clips_dir,
-        }
+        };
+        fixture
+            .repo
+            .record_audio_version("clips/words/word1.mp3")
+            .expect("record test word audio version");
+        fixture
+            .repo
+            .record_audio_version("clips/sentences/sentence1.mp3")
+            .expect("record test sentence audio version");
+        fixture
+            .repo
+            .record_audio_version("clips/unit07/word003.mp3")
+            .expect("record legacy test audio version");
+        fixture
     }
 }
 
@@ -204,4 +217,8 @@ fn create_test_db(db_path: &PathBuf) {
         "../../../db/migrations/010_remove_sentence_stars.sql"
     ))
     .expect("remove retired sentence-star schema");
+    conn.execute_batch(include_str!(
+        "../../../db/migrations/011_audio_versions.sql"
+    ))
+    .expect("create audio version schema");
 }

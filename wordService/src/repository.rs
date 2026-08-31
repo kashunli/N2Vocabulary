@@ -8,7 +8,6 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use std::time::SystemTime;
 
 mod audio_export;
 mod catalog;
@@ -39,18 +38,6 @@ pub struct WordRepository {
     // per-book clones every request creates. The frontend uses it to validate
     // its local content cache.
     content_revision: Arc<Mutex<Option<String>>>,
-    // Hashing a clip once gives its browser URL a content identity. Cache by
-    // metadata so normal list responses do not reread every MP3 on every
-    // request, while replacements invalidate naturally through their mtime or
-    // length and service-generated writes explicitly evict their entry.
-    audio_versions: Arc<Mutex<HashMap<PathBuf, CachedAudioVersion>>>,
-}
-
-#[derive(Clone, Debug)]
-struct CachedAudioVersion {
-    size: u64,
-    modified: SystemTime,
-    sha256: String,
 }
 
 /// A raw joined row from the `entries` query.
@@ -98,7 +85,6 @@ impl WordRepository {
             book_code: book_code.to_string(),
             write_lock: Arc::new(Mutex::new(())),
             content_revision: Arc::new(Mutex::new(None)),
-            audio_versions: Arc::new(Mutex::new(HashMap::new())),
         }
     }
 
@@ -109,7 +95,6 @@ impl WordRepository {
             book_code: normalize_book_code(book_code),
             write_lock: self.write_lock.clone(),
             content_revision: self.content_revision.clone(),
-            audio_versions: self.audio_versions.clone(),
         }
     }
 

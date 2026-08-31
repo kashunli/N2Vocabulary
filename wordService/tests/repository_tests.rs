@@ -323,6 +323,10 @@ fn mimikara_main_sentences_take_priority_in_n1_n2_n3_order() {
     let fixture = Fixture::new();
     for clip in ["n1-main.mp3", "n3-main.mp3", "gwb-main.mp3"] {
         fs::write(fixture.clips_dir.join("sentences").join(clip), clip).unwrap();
+        fixture
+            .repo
+            .record_audio_version(&format!("clips/sentences/{clip}"))
+            .unwrap();
     }
 
     let conn = Connection::open(&fixture.db_path).unwrap();
@@ -475,6 +479,14 @@ fn book_entry_audio_overrides_shared_item_audio() {
         b"generated sentence",
     )
     .unwrap();
+    for clip in [
+        "clips/book_audio/word1.mp3",
+        "clips/book_audio/sentence1.mp3",
+        "clips/generated/shared_word1.mp3",
+        "clips/generated/shared_sentence1.mp3",
+    ] {
+        fixture.repo.record_audio_version(clip).unwrap();
+    }
 
     let conn = Connection::open(&fixture.db_path).unwrap();
     conn.execute(

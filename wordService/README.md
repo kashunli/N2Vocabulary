@@ -307,14 +307,17 @@ workflow.
 
 Entry-list/card payloads use normalized `/audio/<clips/...>` paths without a
 hash. This keeps a large unit request cheap: the service checks that the file
-exists, and does not read every MP3 merely to build JSON. When playback starts,
-the audio route computes the clip's SHA-256 and returns a `307` redirect with
+exists, and does not read every MP3 merely to build JSON. Audio import/repair
+workflows must run `python tools/sync_audio_versions.py` after copying or
+replacing clips. That command compares size and mtime, hashes only new or
+changed files, and stores each SHA-256 in SQLite. When playback starts, the
+audio route only reads the stored version and returns a `307` redirect with
 `Cache-Control: no-store` to `/audio/<clips/...>?v=<full-sha256>`. Detail
 payloads and the final redirected URLs include that version directly. Exact
 versioned URLs are served with `Cache-Control: public, max-age=31536000,
 immutable`; a file that changes gets a different URL. A stale or forged
-version hash returns `404` instead of serving new bytes under an old immutable
-cache key.
+version hash, or a file changed without its metadata being refreshed, returns
+`404` instead of serving new bytes under an old immutable cache key.
 
 The flagged-audio export endpoint builds one MP3 for the selected unit's
 flagged words. The listening order is word audio, 1 second of silence, main
