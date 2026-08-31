@@ -259,6 +259,14 @@ fn entry_listing_can_search_current_unit_or_all_units() {
     );
     let serialized = serde_json::to_value(&no_search.items[0]).unwrap();
     assert_eq!(serialized.get("search_matches"), None::<&JsonValue>);
+    assert_eq!(
+        no_search.items[0].word_audio_url.as_deref(),
+        Some("/audio/clips/words/word1.mp3")
+    );
+    assert_eq!(
+        no_search.items[0].sentence_audio_url.as_deref(),
+        Some("/audio/clips/sentences/sentence1.mp3")
+    );
 
     let list_examples = no_search.items[0]
         .examples
@@ -488,13 +496,13 @@ fn book_entry_audio_overrides_shared_item_audio() {
 
     let listed = fixture.repo.list_entries(Some(1), "all", "人生").unwrap();
     let list_entry = &listed.items[0];
-    assert_versioned_audio_url(
+    assert_eq!(
         list_entry.word_audio_url.as_deref(),
-        "clips/book_audio/word1.mp3",
+        Some("/audio/clips/book_audio/word1.mp3")
     );
-    assert_versioned_audio_url(
+    assert_eq!(
         list_entry.sentence_audio_url.as_deref(),
-        "clips/book_audio/sentence1.mp3",
+        Some("/audio/clips/book_audio/sentence1.mp3")
     );
 
     let detail = fixture.repo.get_entry(1).unwrap().expect("entry exists");

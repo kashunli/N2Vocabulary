@@ -35,6 +35,13 @@ fn audio_resolution_stays_inside_clips() {
 fn audio_urls_require_existing_files_and_normalize_legacy_db_prefixes() {
     let fixture = Fixture::new();
 
+    assert_eq!(
+        fixture
+            .repo
+            .audio_path_url(Some("output\\clips\\unit07\\word003.mp3"))
+            .as_deref(),
+        Some("/audio/clips/unit07/word003.mp3")
+    );
     assert_versioned_audio_url(
         fixture
             .repo
@@ -50,6 +57,10 @@ fn audio_urls_require_existing_files_and_normalize_legacy_db_prefixes() {
     );
     assert_eq!(
         fixture.repo.audio_url(Some("clips/words/missing.mp3")),
+        None
+    );
+    assert_eq!(
+        fixture.repo.audio_path_url(Some("clips/words/missing.mp3")),
         None
     );
 

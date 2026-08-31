@@ -305,13 +305,16 @@ first initialized. Later browser edits are authoritative in
 Use **Export decisions** before applying changes through the validator/repair
 workflow.
 
-Every audio URL returned by the API includes `?v=<full-sha256>`, calculated
-from the MP3 bytes. Those exact versioned URLs are served with
-`Cache-Control: public, max-age=31536000, immutable`; a file that changes gets
-a different URL. Older unversioned `/audio/...` links remain usable for one
-compatibility period: they receive a `307` redirect with `Cache-Control:
-no-store` to the current versioned URL. A stale or forged version hash returns
-`404` instead of serving new bytes under an old immutable cache key.
+Entry-list/card payloads use normalized `/audio/<clips/...>` paths without a
+hash. This keeps a large unit request cheap: the service checks that the file
+exists, and does not read every MP3 merely to build JSON. When playback starts,
+the audio route computes the clip's SHA-256 and returns a `307` redirect with
+`Cache-Control: no-store` to `/audio/<clips/...>?v=<full-sha256>`. Detail
+payloads and the final redirected URLs include that version directly. Exact
+versioned URLs are served with `Cache-Control: public, max-age=31536000,
+immutable`; a file that changes gets a different URL. A stale or forged
+version hash returns `404` instead of serving new bytes under an old immutable
+cache key.
 
 The flagged-audio export endpoint builds one MP3 for the selected unit's
 flagged words. The listening order is word audio, 1 second of silence, main

@@ -5,6 +5,19 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 impl WordRepository {
+    /// Return a normalized audio path without computing its content hash.
+    ///
+    /// List responses can contain hundreds or thousands of clips.  The browser
+    /// only needs to know that a clip exists while building that list; the
+    /// audio route will redirect this URL to the immutable, hash-versioned URL
+    /// when playback actually starts.
+    pub fn audio_path_url(&self, clip_path: Option<&str>) -> Option<String> {
+        let normalized = normalize_clip_path(clip_path?, true)?;
+        let resolved = self.resolve_audio_path(&normalized)?;
+        let metadata = resolved.metadata().ok()?;
+        metadata.is_file().then(|| format!("/audio/{normalized}"))
+    }
+
     pub fn audio_url(&self, clip_path: Option<&str>) -> Option<String> {
         // Missing or invalid stored paths become absent audio rather than
         // making an otherwise valid vocabulary response fail.

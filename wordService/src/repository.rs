@@ -192,6 +192,7 @@ impl WordRepository {
         &self,
         conn: &Connection,
         item_ids: &[i64],
+        versioned_audio: bool,
     ) -> Result<HashMap<i64, Vec<EntryExample>>> {
         if item_ids.is_empty() {
             return Ok(HashMap::new());
@@ -269,7 +270,11 @@ impl WordRepository {
                     translation_en: row.get::<_, Option<String>>(5)?.unwrap_or_default(),
                     translation_zh: row.get::<_, Option<String>>(6)?.unwrap_or_default(),
                     explanation_md: row.get::<_, Option<String>>(7)?.unwrap_or_default(),
-                    audio_url: self.audio_url(audio_clip.as_deref()),
+                    audio_url: if versioned_audio {
+                        self.audio_url(audio_clip.as_deref())
+                    } else {
+                        self.audio_path_url(audio_clip.as_deref())
+                    },
                     category: row.get(9)?,
                     source_book_code: row.get(10)?,
                     source_index: row.get(11)?,
@@ -382,7 +387,13 @@ impl WordRepository {
             .and_then(|example| example.audio_url.clone())
             .or_else(|| {
                 selected_matches_current_book
-                    .then(|| self.audio_url(row.sentence_clip.as_deref()))
+                    .then(|| {
+                        if detail {
+                            self.audio_url(row.sentence_clip.as_deref())
+                        } else {
+                            self.audio_path_url(row.sentence_clip.as_deref())
+                        }
+                    })
                     .flatten()
             });
 
@@ -423,7 +434,11 @@ impl WordRepository {
                 .map(|example| example.translation_zh.clone())
                 .unwrap_or_default(),
             sentence_position: main_example.map(|example| example.position).unwrap_or(0),
-            word_audio_url: self.audio_url(row.word_clip.as_deref()),
+            word_audio_url: if detail {
+                self.audio_url(row.word_clip.as_deref())
+            } else {
+                self.audio_path_url(row.word_clip.as_deref())
+            },
             sentence_audio_url: sentence_audio_url.clone(),
             mark: MarkState {
                 known: row.known.map(int_to_bool).unwrap_or(false),

@@ -157,21 +157,23 @@ impl WordRepository {
         if !trimmed_search.is_empty() {
             let terms = search_terms(trimmed_search);
             let mut search_clauses = vec![
-                r#"
-                COALESCE(v.kanji, '') LIKE ?
-                OR COALESCE(v.reading, '') LIKE ?
-                OR COALESCE(v.meaning_en, '') LIKE ?
-                OR COALESCE(v.meaning_zh, '') LIKE ?
-                OR COALESCE(ex.text, '') LIKE ?
-                OR COALESCE(ex.reading, '') LIKE ?
-                OR COALESCE(ex.translation_en, '') LIKE ?
-                OR COALESCE(ex.translation_zh, '') LIKE ?
-                "#
-                .to_string(),
+                "COALESCE(v.kanji, '') LIKE ?".to_string(),
+                "COALESCE(v.reading, '') LIKE ?".to_string(),
+                "COALESCE(v.meaning_en, '') LIKE ?".to_string(),
+                "COALESCE(v.meaning_zh, '') LIKE ?".to_string(),
             ];
             // The same search text is bound to each LIKE placeholder. Binding
             // instead of interpolating prevents user input from becoming SQL.
-            for _ in 0..8 {
+            for _ in 0..4 {
+                query_params.push(Value::Text(format!("%{}%", terms[0])));
+            }
+            let mut example_search_clauses = vec![
+                "COALESCE(ex.text, '') LIKE ?".to_string(),
+                "COALESCE(ex.reading, '') LIKE ?".to_string(),
+                "COALESCE(ex.translation_en, '') LIKE ?".to_string(),
+                "COALESCE(ex.translation_zh, '') LIKE ?".to_string(),
+            ];
+            for _ in 0..4 {
                 query_params.push(Value::Text(format!("%{}%", terms[0])));
             }
             for term in terms.iter().skip(1) {
@@ -179,16 +181,23 @@ impl WordRepository {
                 // searching `覆う` should still find sentences with `覆われる`
                 // or `覆った`. Keep the wider stem match limited to examples so
                 // word/meaning searches remain predictable.
-                search_clauses.push("COALESCE(ex.text, '') LIKE ?".to_string());
+                example_search_clauses.push("COALESCE(ex.text, '') LIKE ?".to_string());
                 query_params.push(Value::Text(format!("%{term}%")));
             }
+            // Search examples with EXISTS instead of joining every example row
+            // into the entry result.  This preserves one result per entry and
+            // lets SQLite use item_examples(item_id, position) directly.
+            search_clauses.push(format!(
+                "EXISTS (SELECT 1 FROM item_examples ex WHERE ex.item_id = be.item_id AND ({}))",
+                example_search_clauses.join(" OR ")
+            ));
             clauses.push(format!("({})", search_clauses.join(" OR ")));
         }
 
         let conn = self.connect()?;
         let sql = format!(
             r#"
-            SELECT DISTINCT
+            SELECT
               be.entry_id, be.item_id, be.uuid, v.uuid AS item_uuid,
               be.book_code, be.source_index, be.unit_number,
               u.header AS unit_header, u.title AS unit_title, v.kanji, v.reading,
@@ -204,7 +213,6 @@ impl WordRepository {
             JOIN units u
               ON u.book_code = be.book_code AND u.number = be.unit_number
             LEFT JOIN item_marks m ON m.item_id = be.item_id
-            LEFT JOIN item_examples ex ON ex.item_id = be.item_id
             WHERE {}
             ORDER BY be.unit_number, be.position, be.source_index
             "#,
@@ -215,7 +223,7 @@ impl WordRepository {
         let item_ids = rows.iter().map(|row| row.item_id).collect::<Vec<_>>();
         // Load examples in one follow-up query instead of one query per entry.
         // This keeps list rendering fast while still leaving the SQL readable.
-        let examples = self.load_examples(&conn, &item_ids)?;
+        let examples = self.load_examples(&conn, &item_ids, false)?;
         let items = rows
             .iter()
             .map(|row| {
@@ -269,7 +277,7 @@ impl WordRepository {
             return Ok(None);
         };
 
-        let examples = self.load_examples(&conn, &[row.item_id])?;
+        let examples = self.load_examples(&conn, &[row.item_id], true)?;
         let source_notes = self.load_source_notes(&conn, row.item_id)?;
         Ok(Some(self.serialize_entry(
             row,
@@ -322,7 +330,7 @@ impl WordRepository {
         let Some(row) = rows.first() else {
             return Ok(None);
         };
-        let examples = self.load_examples(&conn, &[row.item_id])?;
+        let examples = self.load_examples(&conn, &[row.item_id], true)?;
         let source_notes = self.load_source_notes(&conn, row.item_id)?;
         Ok(Some(self.serialize_entry(
             row,
