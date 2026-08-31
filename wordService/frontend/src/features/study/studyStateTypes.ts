@@ -20,6 +20,11 @@ export interface StudySnapshot {
   cards: Record<string, StudyCardState>;
 }
 
+export type ImportedMark = {
+  item_uuid: string;
+  status: Exclude<MarkStatus, "unmarked">;
+};
+
 export function isReviewDue(dueAt?: string, now = Date.now()) {
   if (!dueAt) return false;
   const timestamp = Date.parse(dueAt);
@@ -31,6 +36,7 @@ export interface StudyStateStore {
   subscribe(listener: (snapshot: StudySnapshot) => void): () => void;
   seedLegacy(items: Array<{item_uuid: string; known: boolean; flagged: boolean}>): StudySnapshot;
   setMark(itemUuid: string, status: MarkStatus): Promise<StudyCardState>;
+  importMarks(items: ImportedMark[]): Promise<StudySnapshot>;
   recordStudyCompleted(entry: {item_uuid: string; book_code: string; source_index: number}): Promise<StudyCardState>;
   completeReview(entry: {item_uuid: string; book_code: string; source_index: number}, expectedDueAt: string): Promise<ReviewCompletionResult>;
 }

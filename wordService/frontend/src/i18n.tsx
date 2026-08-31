@@ -91,6 +91,14 @@ export interface LanguageCopy {
     whenListEnds: string;
     whenListEndsDescription: string;
     endBehaviorLabel: (behavior: PlaybackEndBehavior) => string;
+    markedWords: string;
+    markedWordsCount: (count: number) => string;
+    markedWordsDescription: string;
+    exportMarkedWords: string;
+    importMarkedWords: string;
+    chooseMarkedWordsFile: string;
+    markedWordsExported: (count: number) => string;
+    markedWordsImported: (count: number) => string;
     resetSequence: string;
   };
   account: {
@@ -125,6 +133,9 @@ export interface LanguageCopy {
     updateStudyMark: string;
     accountRequest: string;
     guestImport: string;
+    exportMarkedWords: string;
+    importMarkedWords: string;
+    invalidMarkedWordsFile: string;
     audioPlayback: string;
   };
   markMessage: (word: string, status: MarkStatus) => string;
@@ -216,6 +227,14 @@ const EN_COPY: LanguageCopy = {
     whenListEnds: "When the current list finishes",
     whenListEndsDescription: "These choices apply in Continuous mode. With All sections selected, the full selection is one list, so it stops at the end.",
     endBehaviorLabel: (behavior) => ({stop: "Stop", "restart-list": "Play from start again", "next-list": "Jump to next list"}[behavior]),
+    markedWords: "Marked words",
+    markedWordsCount: (count) => `${count} marked`,
+    markedWordsDescription: "Export Known and Flagged marks to a JSON file, or import them on another device. Import updates listed words and keeps other study progress.",
+    exportMarkedWords: "Export marked words",
+    importMarkedWords: "Import marked words",
+    chooseMarkedWordsFile: "Choose a marked words JSON file",
+    markedWordsExported: (count) => `Exported ${count} marked ${count === 1 ? "word" : "words"}.`,
+    markedWordsImported: (count) => `Imported ${count} marked ${count === 1 ? "word" : "words"}.`,
     resetSequence: "Reset sequence",
   },
   account: {
@@ -250,6 +269,9 @@ const EN_COPY: LanguageCopy = {
     updateStudyMark: "Could not update the study mark.",
     accountRequest: "Account request failed.",
     guestImport: "Guest import failed.",
+    exportMarkedWords: "Could not export marked words.",
+    importMarkedWords: "Could not import marked words.",
+    invalidMarkedWordsFile: "This is not a valid marked words file.",
     audioPlayback: "Audio could not be played.",
   },
   markMessage: (word, status) => `${word} is ${status === "known" ? "known" : status === "flagged" ? "flagged" : "unmarked"}.`,
@@ -341,6 +363,14 @@ const ZH_COPY: LanguageCopy = {
     whenListEnds: "当前列表播放结束时",
     whenListEndsDescription: "这些选项只适用于连续播放。选择“全部单元”时，全部内容是一个列表，因此会在末尾停止。",
     endBehaviorLabel: (behavior) => ({stop: "停止", "restart-list": "从头再播放", "next-list": "跳到下一个列表"}[behavior]),
+    markedWords: "已标记的单词",
+    markedWordsCount: (count) => `${count} 个已标记`,
+    markedWordsDescription: "将“已掌握”和“已标记”状态导出为 JSON 文件，也可以在其他设备上导入。导入只更新文件中的单词，不会覆盖其他学习进度。",
+    exportMarkedWords: "导出已标记单词",
+    importMarkedWords: "导入已标记单词",
+    chooseMarkedWordsFile: "选择已标记单词 JSON 文件",
+    markedWordsExported: (count) => `已导出 ${count} 个已标记单词。`,
+    markedWordsImported: (count) => `已导入 ${count} 个已标记单词。`,
     resetSequence: "重置播放序列",
   },
   account: {
@@ -375,6 +405,9 @@ const ZH_COPY: LanguageCopy = {
     updateStudyMark: "无法更新学习标记。",
     accountRequest: "账户请求失败。",
     guestImport: "访客进度导入失败。",
+    exportMarkedWords: "无法导出已标记单词。",
+    importMarkedWords: "无法导入已标记单词。",
+    invalidMarkedWordsFile: "这不是有效的已标记单词文件。",
     audioPlayback: "音频播放失败。",
   },
   markMessage: (word, status) => `${word}：${status === "known" ? "已掌握" : status === "flagged" ? "已标记" : "已取消标记"}。`,

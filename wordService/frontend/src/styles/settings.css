@@ -88,6 +88,15 @@
 .react-setting-options button.is-selected { background: var(--indigo); color: #fff; }
 .react-setting-options button.is-selected:hover { background: var(--indigo-deep); color: #fff; }
 .react-playback-mode-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.react-marked-words {
+  display: grid;
+  gap: 10px;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+.react-marked-words-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.react-marked-words-file { display: none; }
+.react-marked-words-feedback { margin: 0; color: var(--sage); font-size: 0.8rem; line-height: 1.4; }
 .react-settings-body > input[type="range"] { width: 100%; accent-color: var(--indigo); }
 .react-setting-scale { display: flex; justify-content: space-between; color: var(--faint); font-size: 0.72rem; }
 .react-settings-reset { justify-self: start; }

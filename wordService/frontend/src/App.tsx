@@ -317,6 +317,7 @@ function StudyApp(state: ReturnType<typeof useStudyState>) {
 
       {settingsOpen ? <PlaybackSettingsModal
         accountState={state}
+        entries={allEntries}
         playbackRunMode={playbackRunMode}
         playbackEndBehavior={playbackEndBehavior}
         sequence={sequence}

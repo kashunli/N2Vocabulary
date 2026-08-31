@@ -50,6 +50,34 @@ impl UserStore {
         get_card(&conn, user_id, item_uuid)
     }
 
+    /// Import only learner marks in one transaction. Existing review timing
+    /// and playback provenance remain untouched because the conflict update
+    /// names only the three mark-owned columns.
+    pub fn import_mark_statuses(
+        &self,
+        user_id: i64,
+        marks: &[(String, MarkStatus)],
+    ) -> Result<StudySnapshot> {
+        if marks.is_empty() {
+            return self.snapshot(user_id);
+        }
+        let _guard = self.write_lock.lock().expect("user write lock");
+        let mut conn = self.connect()?;
+        let transaction = conn.transaction()?;
+        let now = now_utc();
+        for (item_uuid, status) in marks {
+            transaction.execute(
+                r#"INSERT INTO study_cards(user_id,item_uuid,status,mark_updated_at,updated_at)
+                   VALUES(?,?,?,?,?) ON CONFLICT(user_id,item_uuid) DO UPDATE SET
+                   status=excluded.status, mark_updated_at=excluded.mark_updated_at,
+                   updated_at=excluded.updated_at"#,
+                params![user_id, item_uuid, status, now, now],
+            )?;
+        }
+        transaction.commit()?;
+        self.snapshot(user_id)
+    }
+
     pub fn record_study_completed(
         &self,
         user_id: i64,

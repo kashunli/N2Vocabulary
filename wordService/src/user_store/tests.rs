@@ -106,6 +106,34 @@ fn accounts_are_isolated_and_sessions_store_only_token_hashes() {
 }
 
 #[test]
+fn mark_import_updates_only_marks_and_preserves_review_progress() {
+    let (_dir, store) = fixture();
+    let session = store
+        .register("mark-import@example.com", "password")
+        .unwrap();
+    let before = store
+        .record_study_completed(session.user.id, "played", "N2", 7)
+        .unwrap();
+
+    let imported = store
+        .import_mark_statuses(
+            session.user.id,
+            &[
+                ("played".to_string(), MarkStatus::Flagged),
+                ("new".to_string(), MarkStatus::Known),
+            ],
+        )
+        .unwrap();
+
+    let played = &imported.cards["played"];
+    assert_eq!(played.status, MarkStatus::Flagged);
+    assert_eq!(played.due_at, before.due_at);
+    assert_eq!(played.preferred_book_code.as_deref(), Some("N2"));
+    assert_eq!(imported.cards["new"].status, MarkStatus::Known);
+    assert!(imported.cards["new"].due_at.is_none());
+}
+
+#[test]
 fn expired_sessions_are_rejected_and_deleted() {
     let (_dir, store) = fixture();
     let session = store.register("expired@example.com", "password").unwrap();

@@ -6,8 +6,12 @@ use crate::user_store::{
 use anyhow::Result;
 use serde::Deserialize;
 use serde_json::json;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use tiny_http::{Request, StatusCode};
+
+const MARKED_WORDS_FILE_FORMAT: &str = "n2-word-service-marked-words";
+const MARKED_WORDS_FILE_VERSION: i64 = 1;
+const MAX_MARKED_WORDS: usize = 10_000;
 
 #[derive(Deserialize)]
 struct Credentials {
@@ -24,10 +28,24 @@ struct GuestImport {
     cards: HashMap<String, StudyCard>,
 }
 
+#[derive(Deserialize)]
+struct MarkedWordsImport {
+    format: String,
+    version: i64,
+    items: Vec<MarkedWordImportItem>,
+}
+
+#[derive(Deserialize)]
+struct MarkedWordImportItem {
+    item_uuid: String,
+    status: MarkStatus,
+}
+
 pub(super) fn is_account_path(path: &str) -> bool {
     path.starts_with("/api/auth/")
         || path == "/api/study/state"
         || path == "/api/study/import-guest"
+        || path == "/api/study/import-marks"
         || path.starts_with("/api/study/cards/")
 }
 
@@ -98,8 +116,74 @@ pub(super) fn handle_post(
     if path == "/api/study/import-guest" {
         return handle_guest_import(request, &users, &repository, &auth, body);
     }
+    if path == "/api/study/import-marks" {
+        return handle_marked_words_import(request, &users, &repository, &auth, body);
+    }
 
     handle_study_card_action(request, &users, &repository, &auth, &path, &body)
+}
+
+fn handle_marked_words_import(
+    request: Request,
+    users: &UserStore,
+    repository: &WordRepository,
+    auth: &AuthContext,
+    body: serde_json::Value,
+) -> Result<()> {
+    let import: MarkedWordsImport = match serde_json::from_value(body) {
+        Ok(value) => value,
+        Err(_) => {
+            return send_json(
+                request,
+                StatusCode(400),
+                &json!({"error": "invalid marked words file"}),
+            );
+        }
+    };
+    if import.format != MARKED_WORDS_FILE_FORMAT
+        || import.version != MARKED_WORDS_FILE_VERSION
+        || import.items.len() > MAX_MARKED_WORDS
+    {
+        return send_json(
+            request,
+            StatusCode(400),
+            &json!({"error": "invalid marked words file"}),
+        );
+    }
+
+    let mut seen = HashSet::with_capacity(import.items.len());
+    let mut marks = Vec::with_capacity(import.items.len());
+    for item in import.items {
+        let item_uuid = item.item_uuid.trim().to_string();
+        if item_uuid.is_empty()
+            || item_uuid.len() > 200
+            || !matches!(item.status, MarkStatus::Known | MarkStatus::Flagged)
+            || !seen.insert(item_uuid.clone())
+        {
+            return send_json(
+                request,
+                StatusCode(400),
+                &json!({"error": "invalid marked words file"}),
+            );
+        }
+        if repository
+            .resolve_item_for_review(&item_uuid, None, None)?
+            .is_none()
+        {
+            return send_json(
+                request,
+                StatusCode(400),
+                &json!({"error": format!("unknown item UUID: {item_uuid}")}),
+            );
+        }
+        marks.push((item_uuid, item.status));
+    }
+
+    send_json(
+        request,
+        StatusCode(200),
+        &users.import_mark_statuses(auth.user.id, &marks)?,
+    )
 }
 
 fn handle_study_card_action(

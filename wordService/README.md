@@ -213,6 +213,9 @@ Study state and account endpoints:
 - `GET /api/study/state` returns the authenticated user's complete snapshot.
 - `PUT /api/study/cards/<item_uuid>/marks` and
   `POST /api/study/cards/<item_uuid>/played` update one account card.
+- `POST /api/study/import-marks` validates and applies a marked-word JSON file
+  in one transaction. It changes only `status`, `mark_updated_at`, and
+  `updated_at`; review scheduling and playback provenance are preserved.
 - `POST /api/study/cards/<item_uuid>/review-complete` atomically advances one
   due card when its supplied `expected_due_at` still matches the stored card.
 - `POST /api/study/import-guest` conservatively merges an explicitly selected
@@ -264,6 +267,13 @@ active guest snapshot only after the server transaction succeeds. **Keep
 account progress** leaves guest state available for later logged-out use;
 **Cancel** logs out and keeps guest mode active. Registered changes go only to
 `users.sqlite`; localStorage is not an offline account write queue.
+
+The configuration menu can export and import a portable marked-word file. The
+file format is `n2-word-service-marked-words` version 1 and contains only
+`item_uuid` plus `status` (`known` or `flagged`), with optional human-readable
+word metadata. Import updates the listed words and leaves other words and
+review progress unchanged. Guest imports commit once to localStorage; account
+imports use the authenticated batch endpoint above.
 
 `users.sqlite` stores normalized emails, Argon2id password hashes, hashed
 session tokens, CSRF tokens, card schedules, and import receipts. Raw session

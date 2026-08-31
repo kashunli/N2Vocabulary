@@ -1,6 +1,6 @@
-import {completeAccountReview, recordAccountPlayback, updateAccountMarks} from "../../api";
+import {completeAccountReview, importAccountMarks, recordAccountPlayback, updateAccountMarks} from "../../api";
 import type {MarkStatus} from "./markStatus";
-import type {StudyCardState, StudySnapshot, StudyStateStore} from "./studyStateTypes";
+import type {ImportedMark, StudyCardState, StudySnapshot, StudyStateStore} from "./studyStateTypes";
 
 export class AccountStudyStateStore implements StudyStateStore {
   private listeners = new Set<(snapshot: StudySnapshot) => void>();
@@ -17,6 +17,13 @@ export class AccountStudyStateStore implements StudyStateStore {
   }
   async setMark(itemUuid: string, status: MarkStatus) {
     return this.update((await updateAccountMarks(this.csrfToken, itemUuid, status)).card);
+  }
+  async importMarks(items: ImportedMark[]) {
+    if (!items.length) return this.snapshot;
+    const snapshot = await importAccountMarks(this.csrfToken, items);
+    this.snapshot = snapshot;
+    for (const listener of this.listeners) listener(this.snapshot);
+    return this.snapshot;
   }
   async recordStudyCompleted(entry: {item_uuid: string; book_code: string; source_index: number}) {
     return this.update((await recordAccountPlayback(this.csrfToken, entry)).card);

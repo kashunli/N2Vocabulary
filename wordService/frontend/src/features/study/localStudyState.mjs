@@ -203,6 +203,26 @@ export class LocalStudyStateStore {
     }}).cards[itemUuid];
   }
 
+  async importMarks(items) {
+    if (!items.length) return this.snapshot;
+    const now = this.now().toISOString();
+    const cards = {...this.snapshot.cards};
+    for (const item of items) {
+      const current = cards[item.item_uuid] || {
+        item_uuid: item.item_uuid,
+        status: "unmarked",
+        updated_at: now,
+      };
+      cards[item.item_uuid] = {
+        ...current,
+        status: normalizeMarkStatus(item.status),
+        mark_updated_at: now,
+        updated_at: now,
+      };
+    }
+    return this.commit(cards);
+  }
+
   async recordStudyCompleted(entry) {
     const now = this.now().toISOString();
     const current = this.snapshot.cards[entry.item_uuid] || {

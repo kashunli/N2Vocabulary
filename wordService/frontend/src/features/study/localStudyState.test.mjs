@@ -88,6 +88,26 @@ test("marking a card does not enroll or schedule it", async () => {
   assert.equal(marked.due_at, undefined);
 });
 
+test("mark import changes only statuses and preserves review progress", async () => {
+  let date = new Date("2026-08-13T00:00:00.000Z");
+  const store = new LocalStudyStateStore(new MemoryStorage(), () => date);
+  await store.recordStudyCompleted({item_uuid: "played", book_code: "N2", source_index: 4});
+  const beforeImport = store.load().cards.played;
+  date = new Date("2026-08-14T00:00:00.000Z");
+
+  await store.importMarks([
+    {item_uuid: "played", status: "flagged"},
+    {item_uuid: "new", status: "known"},
+  ]);
+
+  const afterImport = store.load().cards.played;
+  assert.equal(afterImport.status, "flagged");
+  assert.equal(afterImport.due_at, beforeImport.due_at);
+  assert.equal(afterImport.preferred_book_code, "N2");
+  assert.equal(store.load().cards.new.status, "known");
+  assert.equal(store.load().cards.new.due_at, undefined);
+});
+
 test("malformed state is archived before recovery", () => {
   const storage = new MemoryStorage();
   storage.setItem(STUDY_STATE_KEY, "{bad");

@@ -5,7 +5,9 @@ import type {
   VocabularySummary,
 } from "./types";
 import type { MarkStatus } from "./features/study/markStatus";
-import type {ReviewCompletionResult, StudyCardState, StudySnapshot} from "./features/study/studyStateTypes";
+import type {ImportedMark, ReviewCompletionResult, StudyCardState, StudySnapshot} from "./features/study/studyStateTypes";
+
+const MARKED_WORDS_FILE_FORMAT = "n2-word-service-marked-words";
 
 async function getJson<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, init);
@@ -55,6 +57,9 @@ export function logoutAccount(csrfToken: string) {
 export function getAccountStudyState() { return getJson<StudySnapshot>("/api/study/state"); }
 export function updateAccountMarks(csrfToken: string, itemUuid: string, status: MarkStatus) {
   return getJson<{card: StudyCardState}>(`/api/study/cards/${encodeURIComponent(itemUuid)}/marks`, {method: "PUT", headers: {"Content-Type": "application/json", "X-CSRF-Token": csrfToken}, body: JSON.stringify({status})});
+}
+export function importAccountMarks(csrfToken: string, items: ImportedMark[]) {
+  return getJson<StudySnapshot>("/api/study/import-marks", {method: "POST", headers: {"Content-Type": "application/json", "X-CSRF-Token": csrfToken}, body: JSON.stringify({format: MARKED_WORDS_FILE_FORMAT, version: 1, items})});
 }
 export function recordAccountPlayback(csrfToken: string, entry: {item_uuid: string; book_code: string; source_index: number}) {
   return getJson<{card: StudyCardState}>(`/api/study/cards/${encodeURIComponent(entry.item_uuid)}/played`, {method: "POST", headers: {"Content-Type": "application/json", "X-CSRF-Token": csrfToken}, body: JSON.stringify({preferred_book_code: entry.book_code, preferred_source_index: entry.source_index})});

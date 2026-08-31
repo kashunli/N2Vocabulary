@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 
 import { useI18n, type AppLanguage } from "../../i18n";
 import { AccountControls, type AccountState } from "../study/AccountControls";
+import { MarkedWordsControls } from "../study/MarkedWordsControls";
+import type { Entry } from "../../types";
 import { MAX_AUDIO_SEQUENCE_STEPS, MAX_SEQUENCE_PAUSE_MS } from "./audioSequence.mjs";
 import type {
   AudioSequenceConfig,
@@ -17,6 +19,7 @@ import {
 
 interface PlaybackSettingsModalProps {
   accountState: AccountState;
+  entries: Entry[];
   playbackRunMode: PlaybackRunMode;
   playbackEndBehavior: PlaybackEndBehavior;
   sequence: AudioSequenceConfig;
@@ -99,6 +102,7 @@ function PauseAfterControl({stepIndex, value, onChange}: PauseAfterControlProps)
 
 export function PlaybackSettingsModal({
   accountState,
+  entries,
   playbackRunMode,
   playbackEndBehavior,
   sequence,
@@ -219,6 +223,8 @@ export function PlaybackSettingsModal({
               </button>
             ))}
           </div>
+
+          <MarkedWordsControls entries={entries} snapshot={accountState.snapshot} store={accountState.store} />
 
           <AccountControls state={accountState} />
 
