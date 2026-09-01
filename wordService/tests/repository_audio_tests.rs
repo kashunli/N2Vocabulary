@@ -65,6 +65,10 @@ fn audio_urls_require_existing_files_and_normalize_legacy_db_prefixes() {
     );
 
     let before = fixture.repo.audio_url(Some("clips/unit07/word003.mp3"));
+    let before_id = fixture
+        .repo
+        .audio_id("clips/unit07/word003.mp3")
+        .expect("audio ID should be present");
     fs::write(
         fixture.clips_dir.join("unit07").join("word003.mp3"),
         b"replaced legacy word",
@@ -77,11 +81,19 @@ fn audio_urls_require_existing_files_and_normalize_legacy_db_prefixes() {
     );
     fixture
         .repo
-        .record_audio_version("clips/unit07/word003.mp3")
+        .record_audio_id("clips/unit07/word003.mp3")
         .unwrap();
     let reloaded = WordRepository::new(fixture.db_path.clone(), fixture.clips_dir.clone(), "N2");
     let after = reloaded.audio_url(Some("clips/unit07/word003.mp3"));
     assert_ne!(before, after, "changed bytes must receive a new cache key");
+    let after_id = reloaded
+        .audio_id("clips/unit07/word003.mp3")
+        .expect("updated audio ID should be present");
+    assert_ne!(
+        before_id.to_string(),
+        after_id,
+        "updated clips must get a new ID"
+    );
 }
 
 #[test]

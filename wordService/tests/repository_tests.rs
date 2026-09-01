@@ -325,7 +325,7 @@ fn mimikara_main_sentences_take_priority_in_n1_n2_n3_order() {
         fs::write(fixture.clips_dir.join("sentences").join(clip), clip).unwrap();
         fixture
             .repo
-            .record_audio_version(&format!("clips/sentences/{clip}"))
+            .record_audio_id(&format!("clips/sentences/{clip}"))
             .unwrap();
     }
 
@@ -424,8 +424,17 @@ fn detail_includes_examples_and_audio_urls() {
     let fixture = Fixture::new();
 
     let entry = fixture.repo.get_entry(1).unwrap().expect("entry exists");
-    let examples = entry.examples.unwrap();
+    let examples = entry.examples.as_ref().expect("entry examples");
     assert_eq!(examples.len(), 3);
+    assert!(
+        entry.word_audio_id.is_some(),
+        "word audio should expose its DB ID"
+    );
+    assert!(
+        entry.sentence_audio_id.is_some(),
+        "sentence audio should expose its DB ID"
+    );
+    assert_eq!(examples[0].audio_id, entry.sentence_audio_id);
     assert_versioned_audio_url(entry.word_audio_url.as_deref(), "clips/words/word1.mp3");
     assert_versioned_audio_url(
         entry.sentence_audio_url.as_deref(),
@@ -485,7 +494,7 @@ fn book_entry_audio_overrides_shared_item_audio() {
         "clips/generated/shared_word1.mp3",
         "clips/generated/shared_sentence1.mp3",
     ] {
-        fixture.repo.record_audio_version(clip).unwrap();
+        fixture.repo.record_audio_id(clip).unwrap();
     }
 
     let conn = Connection::open(&fixture.db_path).unwrap();

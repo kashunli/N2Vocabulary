@@ -178,7 +178,7 @@ impl WordRepository {
         fs::copy(&temp_output, &final_path)?;
 
         let relative = format!("clips/exports/flagged_units/{file_name}");
-        self.record_audio_version(&relative)?;
+        self.record_audio_id(&relative)?;
         let audio_url = self
             .audio_url(Some(&relative))
             .context("exported audio path should be servable")?;

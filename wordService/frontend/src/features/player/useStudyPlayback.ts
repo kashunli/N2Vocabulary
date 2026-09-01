@@ -39,7 +39,8 @@ function targetFor(
   sequenceOccurrenceId?: string,
 ): AudioTarget | null {
   const url = phase === "word" ? entry.word_audio_url : entry.sentence_audio_url;
-  return url ? {entry, phase, url, sequenceOccurrenceId} : null;
+  const audioId = phase === "word" ? entry.word_audio_id : entry.sentence_audio_id;
+  return url ? {entry, phase, url, audioId, sequenceOccurrenceId} : null;
 }
 
 function sequenceCuesFor(

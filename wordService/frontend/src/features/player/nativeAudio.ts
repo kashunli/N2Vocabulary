@@ -7,6 +7,8 @@ export interface NativeAudioQueueItem {
   id: string;
   title: string;
   url: string;
+  /** Database identity used to keep the native compressed-audio cache fresh. */
+  audioId?: number;
   pauseAfterMs: number;
 }
 
@@ -51,15 +53,19 @@ export function nativeAudioAvailable() {
 
 /** Native services receive absolute HTTP(S) URLs; a WebView can resolve a
  * relative `/audio/...` URL itself, but ExoPlayer cannot infer its origin. */
-export function nativeAudioUrl(url: string) {
-  return new URL(url, globalThis.location?.href || "https://invalid.local/").href;
+export function nativeAudioUrl(url: string, audioId?: number) {
+  const absolute = new URL(url, globalThis.location?.href || "https://invalid.local/");
+  if (audioId !== undefined && !absolute.searchParams.has("v")) {
+    absolute.searchParams.set("v", String(audioId));
+  }
+  return absolute.href;
 }
 
 export async function playNativeAudioQueue(items: NativeAudioQueueItem[]) {
   const nativeAudio = plugin();
   if (!nativeAudio) throw new Error("Native audio playback is unavailable.");
   await nativeAudio.playQueue({
-    items: items.map((item) => ({...item, url: nativeAudioUrl(item.url)})),
+    items: items.map((item) => ({...item, url: nativeAudioUrl(item.url, item.audioId)})),
   });
 }
 

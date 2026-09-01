@@ -13,7 +13,7 @@ impl WordRepository {
         self.ensure_exclusive_mark_data(&mut conn)?;
         self.ensure_source_provenance_schema(&conn)?;
         self.ensure_example_metadata_schema(&conn)?;
-        self.ensure_audio_version_schema(&conn)?;
+        self.ensure_audio_asset_schema(&conn)?;
         // `query_row` is the startup probe because these statements return a
         // row; mutation-style `execute` would reject them.
         conn.query_row("SELECT 1 FROM book_entries LIMIT 1", [], |_| Ok(()))?;
@@ -160,18 +160,33 @@ impl WordRepository {
         Ok(())
     }
 
-    fn ensure_audio_version_schema(&self, conn: &Connection) -> Result<()> {
+    fn ensure_audio_asset_schema(&self, conn: &Connection) -> Result<()> {
         conn.execute_batch(
             r#"
-            CREATE TABLE IF NOT EXISTS audio_versions (
-              clip_path TEXT PRIMARY KEY,
-              sha256 TEXT NOT NULL,
+            CREATE TABLE IF NOT EXISTS audio_assets (
+              audio_id INTEGER PRIMARY KEY AUTOINCREMENT,
+              clip_path TEXT NOT NULL UNIQUE,
               file_size INTEGER NOT NULL,
               modified_ns INTEGER NOT NULL,
               updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
             );
             "#,
         )?;
+
+        // A service can be started before the offline migration command has
+        // run.  Move the old digest rows once, without reading any MP3 bytes,
+        // so the runtime still converges on the ID-only schema.
+        if sqlite_table_exists(conn, "audio_versions")? {
+            conn.execute(
+                r#"
+                INSERT OR IGNORE INTO audio_assets(clip_path, file_size, modified_ns, updated_at)
+                SELECT clip_path, file_size, modified_ns, updated_at
+                FROM audio_versions
+                "#,
+                [],
+            )?;
+            conn.execute("DROP TABLE audio_versions", [])?;
+        }
         Ok(())
     }
 }

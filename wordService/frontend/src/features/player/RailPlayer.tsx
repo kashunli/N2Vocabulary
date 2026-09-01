@@ -81,10 +81,11 @@ export function RailPlayer({
 }: RailPlayerProps) {
   const {copy, localizeMessage} = useI18n();
   const [activeUrl, setActiveUrl] = useState<string>();
+  const [activeAudioId, setActiveAudioId] = useState<number>();
   const [error, setError] = useState("");
   const [nativeState, setNativeState] = useState<NativeAudioState>();
   const finish = useCallback(() => onEnded(), [onEnded]);
-  const player = useAudioBufferPlayer(activeUrl, finish);
+  const player = useAudioBufferPlayer(activeUrl, activeAudioId, finish);
   const nativeAvailable = nativeAudioAvailable();
   const reportNativeError = useCallback(() => setError(copy.errors.audioPlayback), [copy.errors.audioPlayback]);
   const currentTimeRef = useRef(player.currentTime);
@@ -151,19 +152,20 @@ export function RailPlayer({
   // the occurrence identity so repeated rows restart even when their URL is
   // unchanged.
   const targetKey = target
-    ? `${target.entry.item_uuid}:${target.phase}:${target.sequenceOccurrenceId || "direct"}:${target.url}`
+    ? `${target.entry.item_uuid}:${target.phase}:${target.sequenceOccurrenceId || "direct"}:${target.audioId ?? "missing-id"}:${target.url}`
     : "";
 
   useEffect(() => {
     setError("");
     setActiveUrl(target?.url);
+    setActiveAudioId(target?.audioId);
     if (targetKey !== lastTargetKey.current) {
       // Android queue transitions update the selected target, but must not
       // replace the native queue with a one-item request.
       pendingTargetPlay.current = !!target && autoPlay && !nativeAvailable;
       lastTargetKey.current = targetKey;
     }
-  }, [autoPlay, nativeAvailable, target?.url, targetKey]);
+  }, [autoPlay, nativeAvailable, target?.audioId, target?.url, targetKey]);
 
   const nativeItemsForRun = useCallback(() => {
     if (playbackRunMode === "continuous") return nativeQueue;
@@ -223,6 +225,7 @@ export function RailPlayer({
       || !activeUrl
       || activeUrl !== target.url
       || player.loadedAudioUrl !== activeUrl
+      || player.loadedAudioId !== target.audioId
       || !player.audioBuffer
       || player.isPlaying
     ) {
@@ -231,7 +234,7 @@ export function RailPlayer({
     pendingTargetPlay.current = false;
     lastPlayRequest.current = playRequest;
     void playFrom(0);
-  }, [activeUrl, autoPlay, nativeAvailable, playFrom, playRequest, player.audioBuffer, player.isPlaying, player.loadedAudioUrl, target?.url, targetKey]);
+  }, [activeUrl, autoPlay, nativeAvailable, playFrom, playRequest, player.audioBuffer, player.isPlaying, player.loadedAudioId, player.loadedAudioUrl, target?.audioId, target?.url, targetKey]);
 
   useEffect(() => {
     if (playRequest === lastPlayRequest.current) return;
@@ -251,8 +254,8 @@ export function RailPlayer({
       void playFrom();
       return;
     }
-    if (activeUrl === target.url && player.loadedAudioUrl === activeUrl && player.audioBuffer) void playFrom();
-  }, [activeUrl, autoPlay, nativeAvailable, nativeQueue, nativeState?.itemId, nativeState?.status, playFrom, playRequest, player.audioBuffer, player.loadedAudioUrl, reportNativeError, target]);
+    if (activeUrl === target.url && player.loadedAudioUrl === activeUrl && player.loadedAudioId === target.audioId && player.audioBuffer) void playFrom();
+  }, [activeUrl, autoPlay, nativeAvailable, nativeQueue, nativeState?.itemId, nativeState?.status, playFrom, playRequest, player.audioBuffer, player.loadedAudioId, player.loadedAudioUrl, reportNativeError, target]);
 
   useEffect(() => {
     if (replayRequest === lastReplayRequest.current) return;

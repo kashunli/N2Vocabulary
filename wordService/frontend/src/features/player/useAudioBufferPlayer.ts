@@ -26,16 +26,25 @@ interface ActiveRange {
 const MAX_CACHED_AUDIO_BUFFERS = 40;
 const cachedAudioBuffers = new Map<string, AudioBuffer>();
 
+function audioCacheKey(audioUrl: string, audioId: number | undefined) {
+  // The URL in a list payload is intentionally unversioned for a cheap bulk
+  // response. Prefer the persisted ID so replacing an MP3 cannot reuse the
+  // previous decoded PCM buffer when that path stays the same.
+  return audioId === undefined ? `url:${audioUrl}` : `id:${audioId}`;
+}
+
 function loadDecodedAudio(
   audioUrl: string,
+  audioId: number | undefined,
   controller: AbortController,
   context: AudioContext,
 ): Promise<AudioBuffer> {
-  const cached = cachedAudioBuffers.get(audioUrl);
+  const cacheKey = audioCacheKey(audioUrl, audioId);
+  const cached = cachedAudioBuffers.get(cacheKey);
   if (cached) {
     // Reinsert so Map iteration order keeps the cache LRU.
-    cachedAudioBuffers.delete(audioUrl);
-    cachedAudioBuffers.set(audioUrl, cached);
+    cachedAudioBuffers.delete(cacheKey);
+    cachedAudioBuffers.set(cacheKey, cached);
     return Promise.resolve(cached);
   }
   return (async () => {
@@ -47,20 +56,24 @@ function loadDecodedAudio(
       const oldestKey = cachedAudioBuffers.keys().next().value;
       if (oldestKey !== undefined) cachedAudioBuffers.delete(oldestKey);
     }
-    cachedAudioBuffers.set(audioUrl, decodedAudio);
+    cachedAudioBuffers.set(cacheKey, decodedAudio);
     return decodedAudio;
   })();
 }
 
 export function useAudioBufferPlayer(
   audioUrl: string | undefined,
+  audioId: number | undefined,
   onRangeEnd: (segmentId: string) => void,
 ) {
   const requestedUrlRef = useRef(audioUrl);
   requestedUrlRef.current = audioUrl;
+  const requestedAudioIdRef = useRef(audioId);
+  requestedAudioIdRef.current = audioId;
   const contextRef = useRef<AudioContext | null>(null);
   const bufferRef = useRef<AudioBuffer | null>(null);
   const loadedUrlRef = useRef("");
+  const loadedAudioIdRef = useRef<number | undefined>(undefined);
   const decodePromiseRef = useRef<Promise<AudioBuffer> | null>(null);
   const sourceRef = useRef<AudioBufferSourceNode | null>(null);
   const activeRangeRef = useRef<ActiveRange | null>(null);
@@ -79,6 +92,7 @@ export function useAudioBufferPlayer(
   // buffer asynchronously after RailPlayer has selected a new target, so a
   // consumer must be able to distinguish a ready new buffer from a stale one.
   const [loadedAudioUrl, setLoadedAudioUrl] = useState<string>();
+  const [loadedAudioId, setLoadedAudioId] = useState<number>();
   const [currentTime, setCurrentTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
@@ -141,10 +155,12 @@ export function useAudioBufferPlayer(
     activeRangeRef.current = null;
     bufferRef.current = null;
     loadedUrlRef.current = "";
+    loadedAudioIdRef.current = undefined;
     decodePromiseRef.current = null;
     publishCurrentTime(0);
     setAudioBuffer(null);
     setLoadedAudioUrl(undefined);
+    setLoadedAudioId(undefined);
     setIsPlaying(false);
     setLoadFailed(false);
 
@@ -153,14 +169,20 @@ export function useAudioBufferPlayer(
     const controller = new AbortController();
     const context = new AudioContext();
     contextRef.current = context;
-    const decodePromise = loadDecodedAudio(audioUrl, controller, context).then((decodedAudio) => {
-      if (controller.signal.aborted || requestedUrlRef.current !== audioUrl) {
+    const decodePromise = loadDecodedAudio(audioUrl, audioId, controller, context).then((decodedAudio) => {
+      if (
+        controller.signal.aborted
+        || requestedUrlRef.current !== audioUrl
+        || requestedAudioIdRef.current !== audioId
+      ) {
         throw new DOMException("Audio load was superseded", "AbortError");
       }
       bufferRef.current = decodedAudio;
       loadedUrlRef.current = audioUrl;
+      loadedAudioIdRef.current = audioId;
       setAudioBuffer(decodedAudio);
       setLoadedAudioUrl(audioUrl);
+      setLoadedAudioId(audioId);
       return decodedAudio;
     });
     decodePromiseRef.current = decodePromise;
@@ -178,7 +200,7 @@ export function useAudioBufferPlayer(
       if (contextRef.current === context) contextRef.current = null;
       void context.close();
     };
-  }, [audioUrl, cancelAnimation, detachSource, publishCurrentTime]);
+  }, [audioId, audioUrl, cancelAnimation, detachSource, publishCurrentTime]);
 
   const playRange = useCallback(async ({
     start,
@@ -188,17 +210,31 @@ export function useAudioBufferPlayer(
   }: PlayRangeOptions) => {
     const requestNumber = ++requestNumberRef.current;
     const expectedUrl = requestedUrlRef.current;
+    const expectedAudioId = requestedAudioIdRef.current;
     let buffer = bufferRef.current;
-    if (!buffer || loadedUrlRef.current !== expectedUrl) {
+    if (
+      !buffer
+      || loadedUrlRef.current !== expectedUrl
+      || loadedAudioIdRef.current !== expectedAudioId
+    ) {
       const pendingDecode = decodePromiseRef.current;
       if (!pendingDecode) throw new Error("audio is not ready");
       buffer = await pendingDecode;
     }
     const context = contextRef.current;
-    if (!context || expectedUrl !== requestedUrlRef.current || requestNumber !== requestNumberRef.current) return;
+    if (
+      !context
+      || expectedUrl !== requestedUrlRef.current
+      || expectedAudioId !== requestedAudioIdRef.current
+      || requestNumber !== requestNumberRef.current
+    ) return;
 
     await context.resume();
-    if (expectedUrl !== requestedUrlRef.current || requestNumber !== requestNumberRef.current) return;
+    if (
+      expectedUrl !== requestedUrlRef.current
+      || expectedAudioId !== requestedAudioIdRef.current
+      || requestNumber !== requestNumberRef.current
+    ) return;
 
     const range = playableRange(start, end, buffer.duration);
     const safeOffset = Math.min(range.end, Math.max(range.start, offset));
@@ -274,6 +310,7 @@ export function useAudioBufferPlayer(
 
   return {
     audioBuffer,
+    loadedAudioId,
     loadedAudioUrl,
     currentTime,
     isPlaying,

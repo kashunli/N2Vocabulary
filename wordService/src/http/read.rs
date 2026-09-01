@@ -39,7 +39,7 @@ fn classify_content_version_request(
     }
 }
 
-/// Only the exact SHA-256 URL published by the API may receive an immutable
+/// Only the exact database ID URL published by the API may receive an immutable
 /// cache lifetime. A missing version is a legacy route and is redirected once;
 /// a different version must not accidentally serve the current file bytes.
 fn classify_audio_version_request(
@@ -174,7 +174,7 @@ pub(super) fn handle_read(
                 &json!({"error": "audio not found"}),
             );
         };
-        let Some(version) = repository.audio_version(audio_path) else {
+        let Some(version) = repository.audio_id(audio_path) else {
             return send_json(
                 request,
                 StatusCode(404),
@@ -183,7 +183,7 @@ pub(super) fn handle_read(
         };
         match classify_audio_version_parameters(&parsed, &version) {
             AudioVersionRequest::ServeImmutable => {
-                return send_audio(request, &file_path, &version);
+                return send_audio(request, &file_path);
             }
             AudioVersionRequest::Missing => {
                 return send_json(

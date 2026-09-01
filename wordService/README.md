@@ -305,19 +305,21 @@ first initialized. Later browser edits are authoritative in
 Use **Export decisions** before applying changes through the validator/repair
 workflow.
 
-Entry-list/card payloads use normalized `/audio/<clips/...>` paths without a
-hash. This keeps a large unit request cheap: the service checks that the file
-exists, and does not read every MP3 merely to build JSON. Audio import/repair
-workflows must run `python tools/sync_audio_versions.py` after copying or
-replacing clips. That command compares size and mtime, hashes only new or
-changed files, and stores each SHA-256 in SQLite. When playback starts, the
-audio route only reads the stored version and returns a `307` redirect with
-`Cache-Control: no-store` to `/audio/<clips/...>?v=<full-sha256>`. Detail
-payloads and the final redirected URLs include that version directly. Exact
-versioned URLs are served with `Cache-Control: public, max-age=31536000,
-immutable`; a file that changes gets a different URL. A stale or forged
-version hash, or a file changed without its metadata being refreshed, returns
-`404` instead of serving new bytes under an old immutable cache key.
+Entry-list/card payloads use normalized `/audio/<clips/...>` paths plus the
+persisted `word_audio_id`, `sentence_audio_id`, and example `audio_id` fields.
+The list request therefore checks that files exist without reading every MP3,
+while the frontend can key its decoded-audio cache by the database ID. Audio
+import/repair workflows must run `python tools/sync_audio_versions.py` after
+copying or replacing clips. That command compares size and mtime without
+opening the MP3; unchanged clips keep their ID and new or changed clips get a
+new SQLite AUTOINCREMENT ID. When playback starts, the audio route only reads
+the stored ID and returns a `307` redirect with `Cache-Control: no-store` to
+`/audio/<clips/...>?v=<audio-id>`. Detail payloads and the final redirected
+URLs include that ID directly. Exact versioned URLs are served with
+`Cache-Control: public, max-age=31536000, immutable`; a file that changes gets
+a different URL. A stale or forged ID, or a file changed without its metadata
+being refreshed, returns `404` instead of serving new bytes under an old
+immutable cache key.
 
 The flagged-audio export endpoint builds one MP3 for the selected unit's
 flagged words. The listening order is word audio, 1 second of silence, main

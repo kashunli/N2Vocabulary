@@ -1,9 +1,8 @@
 use anyhow::{Context, Result};
 use serde::Serialize;
 use serde_json::json;
-use sha2::{Digest, Sha256};
 use std::fs::File;
-use std::io::{Read, Seek, SeekFrom};
+use std::io::Read;
 use std::path::{Path, PathBuf};
 use tiny_http::{Header, Method, Request, Response, StatusCode};
 use url::Url;
@@ -115,54 +114,15 @@ pub(super) fn send_file(request: Request, path: &Path, content_type: &str) -> Re
     serve_file(request, path, content_type, "no-store")
 }
 
-/// Serve only the exact bytes named by a versioned URL. Hash through the same
-/// open handle that is sent to the client so a concurrent replacement cannot
-/// put changed bytes behind an already-immutable cache key.
-pub(super) fn send_audio(request: Request, path: &Path, expected_version: &str) -> Result<()> {
-    let Ok(mut file) = File::open(path) else {
-        return send_json(
-            request,
-            StatusCode(404),
-            &json!({"error": "audio not found"}),
-        );
-    };
-    let metadata = file.metadata()?;
-    if !metadata.is_file() {
-        return send_json(
-            request,
-            StatusCode(404),
-            &json!({"error": "audio not found"}),
-        );
-    }
-
-    let actual_version = sha256_open_file(&mut file)?;
-    if actual_version != expected_version {
-        return send_json(
-            request,
-            StatusCode(404),
-            &json!({"error": "audio version not found"}),
-        );
-    }
-    file.seek(SeekFrom::Start(0))?;
-    let headers = vec![
-        header("Cache-Control", VERSIONED_AUDIO_CACHE_CONTROL),
-        header("Content-Type", "audio/mpeg"),
-        header("Content-Length", &metadata.len().to_string()),
-    ];
-
-    if request.method() == &Method::Head {
-        request.respond(add_headers(Response::empty(StatusCode(200)), headers))?;
-    } else {
-        request.respond(add_headers(
-            Response::from_file(file).with_status_code(StatusCode(200)),
-            headers,
-        ))?;
-    }
-    Ok(())
+/// Serve the exact file whose persisted database ID was validated by the
+/// request handler. The ID check happens before this function; serving the
+/// bytes itself must stay a streaming operation and must not hash the MP3.
+pub(super) fn send_audio(request: Request, path: &Path) -> Result<()> {
+    serve_file(request, path, "audio/mpeg", VERSIONED_AUDIO_CACHE_CONTROL)
 }
 
 /// Old links remain valid without reusing their cache key for changed bytes.
-/// Browsers and native players follow this redirect to the hash-versioned URL.
+/// Browsers and native players follow this redirect to the ID-versioned URL.
 pub(super) fn redirect_to_versioned_audio(request: Request, location: &str) -> Result<()> {
     request.respond(add_headers(
         Response::empty(StatusCode(307)),
@@ -209,19 +169,6 @@ fn serve_file(
         ))?;
     }
     Ok(())
-}
-
-fn sha256_open_file(file: &mut File) -> Result<String> {
-    let mut hasher = Sha256::new();
-    let mut buffer = [0_u8; 32 * 1024];
-    loop {
-        let read = file.read(&mut buffer)?;
-        if read == 0 {
-            break;
-        }
-        hasher.update(&buffer[..read]);
-    }
-    Ok(format!("{:x}", hasher.finalize()))
 }
 
 fn add_headers<R: Read>(mut response: Response<R>, headers: Vec<Header>) -> Response<R> {

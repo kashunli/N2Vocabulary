@@ -65,6 +65,8 @@ pub struct EntryExample {
     pub translation_en: String,
     pub translation_zh: String,
     pub explanation_md: String,
+    /// Database identity used as the browser's decoded-audio cache key.
+    pub audio_id: Option<i64>,
     pub audio_url: Option<String>,
     pub source_book_code: Option<String>,
     pub source_index: Option<i64>,
@@ -116,7 +118,9 @@ pub struct EntryPayload {
     pub sentence_translation_en: String,
     pub sentence_translation_zh: String,
     pub sentence_position: i64,
+    pub word_audio_id: Option<i64>,
     pub word_audio_url: Option<String>,
+    pub sentence_audio_id: Option<i64>,
     pub sentence_audio_url: Option<String>,
     pub mark: MarkState,
 

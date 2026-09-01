@@ -67,6 +67,8 @@ struct EntryRow {
     known: Option<i64>,
     flagged: Option<i64>,
     mark_updated_at: Option<String>,
+    word_audio_id: Option<i64>,
+    sentence_audio_id: Option<i64>,
 }
 
 impl WordRepository {
@@ -167,6 +169,8 @@ impl WordRepository {
                 known: row.get(18)?,
                 flagged: row.get(19)?,
                 mark_updated_at: row.get(20)?,
+                word_audio_id: row.get(21)?,
+                sentence_audio_id: row.get(22)?,
             })
         })?;
 
@@ -187,11 +191,42 @@ impl WordRepository {
         let placeholders = vec!["?"; item_ids.len()].join(",");
         let sql = format!(
             r#"
-            SELECT ex.item_id, ex.position, ex.kind, text, reading, translation_en,
-                   translation_zh, explanation_md,
-                   COALESCE(
+            SELECT example_rows.*, audio_assets.audio_id
+            FROM (
+              SELECT ex.item_id, ex.position, ex.kind, text, reading, translation_en,
+                     translation_zh, explanation_md,
+                     COALESCE(
+                       (
+                         SELECT source_entry.sentence_clip
+                         FROM item_example_sources p
+                         JOIN book_entries source_entry
+                           ON source_entry.item_id = p.item_id
+                          AND source_entry.book_code = p.source_book_code
+                          AND source_entry.source_index = p.source_index
+                         WHERE p.item_id = ex.item_id AND p.position = ex.position
+                           AND TRIM(COALESCE(source_entry.sentence, '')) = TRIM(COALESCE(ex.text, ''))
+                           AND TRIM(COALESCE(source_entry.sentence_clip, '')) <> ''
+                         ORDER BY CASE p.source_book_code
+                                    WHEN 'N1' THEN 0 WHEN 'N2' THEN 1 WHEN 'N3' THEN 2 ELSE 3
+                                  END,
+                                  p.source_book_code, p.source_index
+                         LIMIT 1
+                       ),
+                       ex.audio_clip
+                     ) AS resolved_audio_clip,
+                     ex.category,
                      (
-                       SELECT source_entry.sentence_clip
+                       SELECT p.source_book_code FROM item_example_sources p
+                       WHERE p.item_id = ex.item_id AND p.position = ex.position
+                       ORDER BY p.source_book_code, p.source_index LIMIT 1
+                     ) AS source_book_code,
+                     (
+                       SELECT p.source_index FROM item_example_sources p
+                       WHERE p.item_id = ex.item_id AND p.position = ex.position
+                       ORDER BY p.source_book_code, p.source_index LIMIT 1
+                     ) AS source_index,
+                     (
+                       SELECT p.source_book_code
                        FROM item_example_sources p
                        JOIN book_entries source_entry
                          ON source_entry.item_id = p.item_id
@@ -199,50 +234,25 @@ impl WordRepository {
                         AND source_entry.source_index = p.source_index
                        WHERE p.item_id = ex.item_id AND p.position = ex.position
                          AND TRIM(COALESCE(source_entry.sentence, '')) = TRIM(COALESCE(ex.text, ''))
-                         AND TRIM(COALESCE(source_entry.sentence_clip, '')) <> ''
                        ORDER BY CASE p.source_book_code
                                   WHEN 'N1' THEN 0 WHEN 'N2' THEN 1 WHEN 'N3' THEN 2 ELSE 3
                                 END,
                                 p.source_book_code, p.source_index
                        LIMIT 1
-                     ),
-                     ex.audio_clip
-                   ) AS resolved_audio_clip,
-                   ex.category,
-                   (
-                     SELECT p.source_book_code FROM item_example_sources p
-                     WHERE p.item_id = ex.item_id AND p.position = ex.position
-                     ORDER BY p.source_book_code, p.source_index LIMIT 1
-                   ) AS source_book_code,
-                   (
-                     SELECT p.source_index FROM item_example_sources p
-                     WHERE p.item_id = ex.item_id AND p.position = ex.position
-                     ORDER BY p.source_book_code, p.source_index LIMIT 1
-                   ) AS source_index,
-                   (
-                     SELECT p.source_book_code
-                     FROM item_example_sources p
-                     JOIN book_entries source_entry
-                       ON source_entry.item_id = p.item_id
-                      AND source_entry.book_code = p.source_book_code
-                      AND source_entry.source_index = p.source_index
-                     WHERE p.item_id = ex.item_id AND p.position = ex.position
-                       AND TRIM(COALESCE(source_entry.sentence, '')) = TRIM(COALESCE(ex.text, ''))
-                     ORDER BY CASE p.source_book_code
-                                WHEN 'N1' THEN 0 WHEN 'N2' THEN 1 WHEN 'N3' THEN 2 ELSE 3
-                              END,
-                              p.source_book_code, p.source_index
-                     LIMIT 1
-                   ) AS main_source_book_code
-            FROM item_examples ex
-            WHERE ex.item_id IN ({placeholders})
-            ORDER BY ex.item_id, ex.position
+                     ) AS main_source_book_code
+              FROM item_examples ex
+              WHERE ex.item_id IN ({placeholders})
+            ) AS example_rows
+            LEFT JOIN audio_assets
+              ON audio_assets.clip_path = example_rows.resolved_audio_clip
+            ORDER BY example_rows.item_id, example_rows.position
             "#
         );
         let mut statement = conn.prepare(&sql)?;
         let rows = statement.query_map(params_from_iter(item_ids.iter()), |row| {
             let item_id: i64 = row.get(0)?;
             let audio_clip: Option<String> = row.get(8)?;
+            let audio_id: Option<i64> = row.get(13)?;
             Ok((
                 item_id,
                 EntryExample {
@@ -255,6 +265,7 @@ impl WordRepository {
                     translation_en: row.get::<_, Option<String>>(5)?.unwrap_or_default(),
                     translation_zh: row.get::<_, Option<String>>(6)?.unwrap_or_default(),
                     explanation_md: row.get::<_, Option<String>>(7)?.unwrap_or_default(),
+                    audio_id,
                     audio_url: if versioned_audio {
                         self.audio_url(audio_clip.as_deref())
                     } else {
@@ -381,6 +392,13 @@ impl WordRepository {
                     })
                     .flatten()
             });
+        let sentence_audio_id = main_example
+            .and_then(|example| example.audio_id)
+            .or_else(|| {
+                selected_matches_current_book
+                    .then_some(row.sentence_audio_id)
+                    .flatten()
+            });
 
         // The explanation is static content the card pane renders on every
         // entry, so list and detail payloads both carry it. Keeping it in the
@@ -419,11 +437,13 @@ impl WordRepository {
                 .map(|example| example.translation_zh.clone())
                 .unwrap_or_default(),
             sentence_position: main_example.map(|example| example.position).unwrap_or(0),
+            word_audio_id: row.word_audio_id,
             word_audio_url: if detail {
                 self.audio_url(row.word_clip.as_deref())
             } else {
                 self.audio_path_url(row.word_clip.as_deref())
             },
+            sentence_audio_id,
             sentence_audio_url: sentence_audio_url.clone(),
             mark: MarkState {
                 known: row.known.map(int_to_bool).unwrap_or(false),

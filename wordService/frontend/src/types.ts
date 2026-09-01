@@ -19,7 +19,9 @@ export interface Entry {
   sentence: string;
   sentence_translation_en: string;
   sentence_translation_zh: string;
+  word_audio_id?: number;
   word_audio_url?: string;
+  sentence_audio_id?: number;
   sentence_audio_url?: string;
   explanation_md?: string;
   mark?: Mark;
@@ -76,6 +78,7 @@ export interface Example {
   translation_en?: string;
   translation_zh?: string;
   explanation_md?: string;
+  audio_id?: number;
   audio_url?: string;
 }
 
@@ -95,6 +98,8 @@ export interface AudioTarget {
   entry: Entry;
   phase: "word" | "sentence";
   url: string;
+  /** Stable database identity used as the decoded-audio cache key. */
+  audioId?: number;
   /** Distinguishes repeated recipe occurrences that use the same audio URL. */
   sequenceOccurrenceId?: string;
 }

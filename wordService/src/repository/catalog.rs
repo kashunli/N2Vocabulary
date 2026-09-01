@@ -207,7 +207,11 @@ impl WordRepository {
               be.sentence,
               COALESCE(be.explanation_md, v.explanation_md) AS explanation_md,
               COALESCE(be.word_clip, v.word_clip) AS word_clip, be.sentence_clip,
-              m.known, m.flagged, m.updated_at AS mark_updated_at
+              m.known, m.flagged, m.updated_at AS mark_updated_at,
+              (SELECT audio_id FROM audio_assets
+               WHERE clip_path = COALESCE(be.word_clip, v.word_clip)) AS word_audio_id,
+              (SELECT audio_id FROM audio_assets
+               WHERE clip_path = be.sentence_clip) AS sentence_audio_id
             FROM book_entries be
             JOIN vocabulary_items v ON v.item_id = be.item_id
             JOIN units u
@@ -257,7 +261,11 @@ impl WordRepository {
               be.sentence,
               COALESCE(be.explanation_md, v.explanation_md) AS explanation_md,
               COALESCE(be.word_clip, v.word_clip) AS word_clip, be.sentence_clip,
-              m.known, m.flagged, m.updated_at AS mark_updated_at
+              m.known, m.flagged, m.updated_at AS mark_updated_at,
+              (SELECT audio_id FROM audio_assets
+               WHERE clip_path = COALESCE(be.word_clip, v.word_clip)) AS word_audio_id,
+              (SELECT audio_id FROM audio_assets
+               WHERE clip_path = be.sentence_clip) AS sentence_audio_id
             FROM book_entries be
             JOIN vocabulary_items v ON v.item_id = be.item_id
             JOIN units u
@@ -306,7 +314,11 @@ impl WordRepository {
               COALESCE(NULLIF(be.meaning_zh, ''), v.meaning_zh),
               be.sentence, COALESCE(be.explanation_md, v.explanation_md),
               COALESCE(be.word_clip, v.word_clip), be.sentence_clip,
-              m.known, m.flagged, m.updated_at
+              m.known, m.flagged, m.updated_at,
+              (SELECT audio_id FROM audio_assets
+               WHERE clip_path = COALESCE(be.word_clip, v.word_clip)),
+              (SELECT audio_id FROM audio_assets
+               WHERE clip_path = be.sentence_clip)
             FROM vocabulary_items v
             JOIN book_entries be ON be.item_id = v.item_id
             JOIN units u ON u.book_code = be.book_code AND u.number = be.unit_number

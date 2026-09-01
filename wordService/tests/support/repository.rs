@@ -22,8 +22,8 @@ pub fn assert_versioned_audio_url(actual: Option<&str>, path: &str) {
         .split_once("?v=")
         .expect("audio URL should carry a version query parameter");
     assert_eq!(base, format!("/audio/{path}"));
-    assert_eq!(version.len(), 64, "audio version must be a full SHA-256");
-    assert!(version.bytes().all(|byte| byte.is_ascii_hexdigit()));
+    assert!(!version.is_empty(), "audio URL must carry a database ID");
+    assert!(version.bytes().all(|byte| byte.is_ascii_digit()));
 }
 
 impl Fixture {
@@ -53,16 +53,16 @@ impl Fixture {
         };
         fixture
             .repo
-            .record_audio_version("clips/words/word1.mp3")
-            .expect("record test word audio version");
+            .record_audio_id("clips/words/word1.mp3")
+            .expect("record test word audio ID");
         fixture
             .repo
-            .record_audio_version("clips/sentences/sentence1.mp3")
-            .expect("record test sentence audio version");
+            .record_audio_id("clips/sentences/sentence1.mp3")
+            .expect("record test sentence audio ID");
         fixture
             .repo
-            .record_audio_version("clips/unit07/word003.mp3")
-            .expect("record legacy test audio version");
+            .record_audio_id("clips/unit07/word003.mp3")
+            .expect("record legacy test audio ID");
         fixture
     }
 }
@@ -220,5 +220,7 @@ fn create_test_db(db_path: &PathBuf) {
     conn.execute_batch(include_str!(
         "../../../db/migrations/011_audio_versions.sql"
     ))
-    .expect("create audio version schema");
+    .expect("create legacy audio version schema");
+    conn.execute_batch(include_str!("../../../db/migrations/012_audio_ids.sql"))
+        .expect("create audio ID schema");
 }

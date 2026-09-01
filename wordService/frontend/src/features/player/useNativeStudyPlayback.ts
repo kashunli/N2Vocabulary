@@ -68,11 +68,13 @@ export function useNativeStudyPlayback({
       for (let cueIndex = startCueIndex; cueIndex < cues.length; cueIndex += 1) {
         const cue = cues[cueIndex];
         const url = cue.phase === "word" ? entry.word_audio_url : entry.sentence_audio_url;
+        const audioId = cue.phase === "word" ? entry.word_audio_id : entry.sentence_audio_id;
         if (!url) continue;
         result.push({
           id: nativeCueId(entryIndex, cueIndex),
           title: `${entry.kanji} · ${cue.phase === "word" ? copy.word : copy.sentence}`,
           url,
+          audioId,
           pauseAfterMs: cue.pauseAfterMs
             ?? (cue.phase === "word" ? postWordSilence : postSentenceSilence),
         });
